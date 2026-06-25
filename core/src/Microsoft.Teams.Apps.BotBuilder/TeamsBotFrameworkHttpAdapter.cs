@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 
@@ -69,7 +70,7 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient)
             {
                 ServiceUrl = activity.ServiceUrl?.ToString(),
-                AgenticIdentity = activity.From?.GetAgenticIdentity()
+                RequestProperties = BotRequestProperties.FromInboundActivity(activity)
             });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             //turnContext.TurnState.Add<Microsoft.Teams.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
@@ -127,7 +128,7 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
 
         using TurnContext turnContext = new(this, reference.GetContinuationActivity());
         turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
-        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl, RequestProperties = BotRequestProperties.ForBotAppId(botId) }));
         await RunPipelineAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -554,7 +554,7 @@ public class OAuthFlowTests
     private static void SetupSendActivity(TestHarness harness)
     {
         harness.MockConversationClient
-            .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<IReadOnlyDictionary<string, object?>?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SendActivityResponse { Id = "activity-1" });
     }
 }

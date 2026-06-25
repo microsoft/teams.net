@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
@@ -46,6 +47,6 @@ public class ConversationApiClient
     /// </summary>
     public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

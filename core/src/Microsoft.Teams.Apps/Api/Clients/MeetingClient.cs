@@ -40,7 +40,7 @@ public class MeetingClient
     }
 
     private static BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        agenticIdentity is null ? null : new() { AgenticIdentity = agenticIdentity };
+        agenticIdentity is null ? null : new() { RequestProperties = BotRequestProperties.ForAgenticIdentity(agenticIdentity) };
 }
 
 /// <summary>

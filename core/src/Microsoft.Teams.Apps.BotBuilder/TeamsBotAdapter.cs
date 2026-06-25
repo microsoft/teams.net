@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 
@@ -58,14 +59,11 @@ public class TeamsBotAdapter(
 
         Uri serviceUrl = new(serviceUrlString);
 
-        // Extract agentic identity from turn context if available
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromBotFrameworkActivity().From);
-
         await botApplication.ConversationClient.DeleteActivityAsync(
             conversationId,
             activityId,
             serviceUrl,
-            agenticIdentity,
+            BotRequestProperties.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             customHeaders: null,
             cancellationToken).ConfigureAwait(false);
     }
@@ -149,6 +147,7 @@ public class TeamsBotAdapter(
             activity.Conversation.Id,
             activity.Id,
             coreActivity,
+            requestProperties: BotRequestProperties.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };
     }

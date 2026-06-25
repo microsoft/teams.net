@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
@@ -42,8 +43,7 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(activity.From);
-        return _client.UpdateActivityAsync(conversationId, id, activity, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.UpdateActivityAsync(conversationId, id, activity, requestProperties: BotRequestProperties.FromActivity(activity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public class ActivityClient
     /// </summary>
     public Task DeleteAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, agenticIdentity: activity.From?.GetAgenticIdentity(), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, requestProperties: BotRequestProperties.FromActivity(activity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -100,6 +100,6 @@ public class ActivityClient
     /// </summary>
     public Task DeleteTargetedAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }
