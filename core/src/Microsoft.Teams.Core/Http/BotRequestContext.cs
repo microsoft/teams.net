@@ -47,13 +47,13 @@ public record BotRequestContext
         => Build(Schema.AgenticIdentity.FromAccount(activity?.From), NormalizeAppId(activity?.From?.Id));
 
     /// <summary>
-    /// Builds context for an <b>inbound</b> activity: the bot is the recipient, so the bot app id comes from
-    /// <see cref="CoreActivity.Recipient"/> while the agentic identity comes from <see cref="CoreActivity.From"/>.
+    /// Builds context for an <b>inbound</b> activity: the bot is the recipient, so both the bot app id and the
+    /// agentic identity are derived from <see cref="CoreActivity.Recipient"/> (the bot's own account).
     /// </summary>
     /// <param name="activity">The inbound activity, or null.</param>
     /// <returns>The context, or null when nothing could be derived.</returns>
     public static BotRequestContext? FromInboundActivity(CoreActivity? activity)
-        => Build(Schema.AgenticIdentity.FromAccount(activity?.From), NormalizeAppId(activity?.Recipient?.Id));
+        => Build(Schema.AgenticIdentity.FromAccount(activity?.Recipient), NormalizeAppId(activity?.Recipient?.Id));
 
     /// <summary>
     /// Builds context carrying only the supplied agentic identity.

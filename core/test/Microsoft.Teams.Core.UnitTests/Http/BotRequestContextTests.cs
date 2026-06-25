@@ -106,11 +106,29 @@ public class BotRequestContextTests
         Assert.Null(BotRequestContext.FromActivity(activity));
     }
 
-    // ---- FromInboundActivity (inbound: bot app id from Recipient) ----------
+    // ---- FromInboundActivity (inbound: bot app id + agentic from Recipient) -
 
     [Fact]
-    public void FromInboundActivity_TakesBotAppIdFromRecipient_AndAgenticFromSender()
+    public void FromInboundActivity_TakesBotAppIdAndAgenticFromRecipient()
     {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            From = new ChannelAccount { Id = "user-id" },
+            Recipient = new ChannelAccount { Id = "28:recipient-bot-id", AgenticUserId = "agentic-user" },
+        };
+
+        BotRequestContext? ctx = BotRequestContext.FromInboundActivity(activity);
+
+        Assert.NotNull(ctx);
+        Assert.Equal("recipient-bot-id", ctx!.BotAppId);
+        Assert.Equal("agentic-user", ctx.AgenticIdentity?.AgenticUserId);
+    }
+
+    [Fact]
+    public void FromInboundActivity_IgnoresAgenticFieldsOnSender()
+    {
+        // Agentic identity lives on the bot's account (Recipient), not the sender (From).
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
@@ -122,7 +140,7 @@ public class BotRequestContextTests
 
         Assert.NotNull(ctx);
         Assert.Equal("recipient-bot-id", ctx!.BotAppId);
-        Assert.Equal("agentic-user", ctx.AgenticIdentity?.AgenticUserId);
+        Assert.Null(ctx.AgenticIdentity);
     }
 
     // ---- Merge -------------------------------------------------------------
