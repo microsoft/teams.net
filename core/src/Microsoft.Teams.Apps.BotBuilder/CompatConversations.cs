@@ -5,7 +5,6 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.BotBuilder
@@ -61,7 +60,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                BotRequestProperties.Merge(BotRequestProperties.FromActivity(convoParams.Activity), RequestProperties),
+                RequestProperties,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 

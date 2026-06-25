@@ -41,7 +41,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// </summary>
     /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl and Conversation with an Id.
     /// The recipient's IsTargeted property determines if this is a targeted activity.</param>
-    /// <param name="requestProperties">Optional per-request properties (see <see cref="Http.BotRequestProperties"/>) that override the values derived from the activity.</param>
+    /// <param name="requestProperties">Optional per-request properties (see <see cref="Http.BotRequestProperties"/>) used as a fallback; values derived from the activity take precedence.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
@@ -57,9 +57,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 #pragma warning disable ExperimentalTeamsTargeted
         bool isTargeted = activity.Recipient?.IsTargeted == true;
 #pragma warning restore ExperimentalTeamsTargeted
-        // Derive the per-request properties (agentic identity, bot app id) from the outbound activity,
-        // letting caller-supplied properties override (e.g. the per-turn bot app id captured on inbound).
-        IReadOnlyDictionary<string, object?>? properties = BotRequestProperties.Merge(BotRequestProperties.FromActivity(activity), requestProperties);
+
+        IReadOnlyDictionary<string, object?>? properties = BotRequestProperties.Merge(requestProperties, BotRequestProperties.FromActivity(activity));
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
 
@@ -455,6 +454,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(parameters);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
+        IReadOnlyDictionary<string, object?>? properties = BotRequestProperties.Merge(requestProperties, BotRequestProperties.FromActivity(parameters.Activity));
+
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
 
         string paramsJson = JsonSerializer.Serialize(parameters, _jsonSerializerOptions);
@@ -465,7 +466,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Post,
             url,
             paramsJson,
-            CreateRequestOptions(requestProperties, "creating conversation", customHeaders),
+            CreateRequestOptions(properties, "creating conversation", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 

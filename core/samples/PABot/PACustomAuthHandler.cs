@@ -30,6 +30,12 @@ namespace PABot
         /// </summary>
         public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
 
+        /// <summary>
+        /// Key used to read the bot app id from HttpRequestMessage options.
+        /// When set, a token is minted as that specific bot.
+        /// </summary>
+        public static readonly HttpRequestOptionsKey<string?> BotAppIdKey = new(BotRequestProperties.BotAppIdKey);
+
         /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -37,8 +43,7 @@ namespace PABot
 
             // The per-request properties (bot app id, etc.) were derived from the activity by core and
             // stamped onto request.Options — no ambient state in this handler. Read the bot app id here.
-            request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestProperties.BotAppIdKey), out object? botAppIdValue);
-            string? botAppId = botAppIdValue as string;
+            request.Options.TryGetValue(BotAppIdKey, out string? botAppId);
 
             string token = await GetAuthorizationHeaderAsync(agenticIdentity, botAppId, cancellationToken).ConfigureAwait(false);
 
