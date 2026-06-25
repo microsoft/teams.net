@@ -63,7 +63,7 @@ public class TeamsBotAdapter(
             conversationId,
             activityId,
             serviceUrl,
-            BotRequestProperties.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
+            BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             customHeaders: null,
             cancellationToken).ConfigureAwait(false);
     }
@@ -147,7 +147,7 @@ public class TeamsBotAdapter(
             activity.Conversation.Id,
             activity.Id,
             coreActivity,
-            requestProperties: BotRequestProperties.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
+            requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };
     }

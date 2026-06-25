@@ -28,13 +28,13 @@ namespace PABot
         /// Key used to store the agentic identity in HttpRequestMessage options.
         /// When set, agentic application credentials will be used instead of bot credentials.
         /// </summary>
-        public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
+        public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new(BotRequestContext.AgenticIdentityKey);
 
         /// <summary>
         /// Key used to read the bot app id from HttpRequestMessage options.
         /// When set, a token is minted as that specific bot.
         /// </summary>
-        public static readonly HttpRequestOptionsKey<string?> BotAppIdKey = new(BotRequestProperties.BotAppIdKey);
+        public static readonly HttpRequestOptionsKey<string?> BotAppIdKey = new(BotRequestContext.BotAppIdKey);
 
         /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

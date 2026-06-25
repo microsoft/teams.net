@@ -286,7 +286,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     private BotRequestOptions CreateRequestOptions(string operationDescription, bool returnNullOnNotFound = false) =>
         new()
         {
-            RequestProperties = BotRequestProperties.FromAgenticIdentity(AgenticIdentity),
+            RequestContext = BotRequestContext.FromAgenticIdentity(AgenticIdentity),
             OperationDescription = operationDescription,
             ReturnNullOnNotFound = returnNullOnNotFound
         };

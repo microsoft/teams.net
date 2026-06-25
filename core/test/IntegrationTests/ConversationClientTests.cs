@@ -66,7 +66,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .Build();
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
-            _f.ConversationId, sent.Id, updated, false, BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, updated, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(res?.Id);
         _output.WriteLine($"Updated activity: {res.Id}");
@@ -90,7 +90,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         await Task.Delay(2000);
 
         await _f.ConversationClient.DeleteActivityAsync(
-            _f.ConversationId, sent.Id, _f.ServiceUrl, BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
@@ -100,7 +100,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task GetConversationMembers()
     {
         IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
@@ -118,7 +118,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         ChannelAccount member = await _f.ConversationClient.GetConversationMemberAsync<ChannelAccount>(
-            _f.ConversationId, memberId, _f.ServiceUrl, BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, memberId, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
@@ -133,7 +133,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         Skip.If(_f.IsCanary, "Paged members returns empty on canary — service limitation");
 
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, pageSize: 5, requestProperties: BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, _f.ServiceUrl, pageSize: 5, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(result?.Members);
         Assert.NotEmpty(result.Members);
@@ -163,13 +163,13 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(sent?.Id);
 
         await _f.ConversationClient.AddReactionAsync(
-            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         _output.WriteLine("Added 'like' reaction");
 
         await Task.Delay(1000);
 
         await _f.ConversationClient.DeleteReactionAsync(
-            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, BotRequestProperties.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         _output.WriteLine("Removed 'like' reaction");
     }
 }

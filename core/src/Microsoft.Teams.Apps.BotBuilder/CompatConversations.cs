@@ -5,6 +5,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.BotBuilder
@@ -34,7 +35,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// bot app id). Threaded into each outbound conversation operation and stamped onto the request's
         /// options for the authentication handler to read.
         /// </summary>
-        internal IReadOnlyDictionary<string, object?>? RequestProperties { get; set; }
+        internal BotRequestContext? RequestContext { get; set; }
 
         /// <summary>
         /// Creates a new conversation with the specified parameters.
@@ -60,7 +61,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -95,7 +96,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl),
-                RequestProperties,
+                RequestContext,
                 ConvertHeaders(customHeaders),
                 cancellationToken).ConfigureAwait(false);
             return new HttpOperationResponse
@@ -112,7 +113,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 memberId,
                 new Uri(ServiceUrl),
-                RequestProperties,
+                RequestContext,
                 ConvertHeaders(customHeaders),
                 cancellationToken).ConfigureAwait(false);
             return new HttpOperationResponse { Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK) };
@@ -126,7 +127,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl!),
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -159,7 +160,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetConversationMembersAsync(
                 conversationId,
                 new Uri(ServiceUrl),
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -183,7 +184,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 new Uri(ServiceUrl),
                 pageSize,
                 continuationToken,
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -208,7 +209,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             GetConversationsResponse conversations = await _client.GetConversationsAsync(
                 new Uri(ServiceUrl),
                 continuationToken,
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -244,7 +245,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             coreActivity.ReplyToId = activityId;
             coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestProperties: RequestProperties, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -273,7 +274,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 coreTranscript,
                 new Uri(ServiceUrl),
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -314,7 +315,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestProperties: RequestProperties, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -383,7 +384,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 coreAttachmentData,
                 new Uri(ServiceUrl),
-                RequestProperties,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -422,7 +423,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             Microsoft.Teams.Core.Schema.ChannelAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Core.Schema.ChannelAccount>(
-                conversationId, userId, new Uri(ServiceUrl), RequestProperties, convertedHeaders, cancellationToken).ConfigureAwait(false);
+                conversationId, userId, new Uri(ServiceUrl), RequestContext, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<Microsoft.Bot.Schema.ChannelAccount>
             {

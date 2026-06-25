@@ -7,6 +7,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
@@ -40,7 +41,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     "conversation-456",
                     "activity-123",
                     It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://smba.trafficmanager.net/teams"),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     null,
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -72,7 +73,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     "conversation-456",
                     "activity-123",
                     It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://fallback-service-url.com"),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     null,
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -151,7 +152,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient.Setup(c => c.SendActivityAsync(
                     It.IsAny<CoreActivity>(),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "sent-123" });
@@ -178,7 +179,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(
                     It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -194,7 +195,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     It.IsAny<string>(),
                     It.IsAny<CoreActivity>(),
                     It.IsAny<bool>(),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new UpdateActivityResponse { Id = "updated-123" });
@@ -224,7 +225,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     "activity-123",
                     It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
                     It.IsAny<bool>(),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -240,14 +241,14 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<Uri>(),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             mock.Setup(c => c.SendActivityAsync(
                     It.IsAny<CoreActivity>(),
-                    It.IsAny<IReadOnlyDictionary<string, object?>?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "default-sent-id" });

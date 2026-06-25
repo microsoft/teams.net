@@ -143,11 +143,11 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             request.Content = new StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json);
         }
 
-        // Stamp the per-request property bag onto the request so a DelegatingHandler can read the
+        // Stamp the per-request properties onto the request so a DelegatingHandler can read the
         // values (e.g. agentic identity, bot app id) from request.Options.
-        if (options.RequestProperties is { Count: > 0 } properties)
+        if (options.RequestContext is { } properties)
         {
-            foreach (KeyValuePair<string, object?> property in properties)
+            foreach (KeyValuePair<string, object?> property in properties.ToOptions())
             {
                 request.Options.Set(new HttpRequestOptionsKey<object?>(property.Key), property.Value);
             }

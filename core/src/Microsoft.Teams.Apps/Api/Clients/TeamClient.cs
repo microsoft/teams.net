@@ -42,7 +42,7 @@ public class TeamClient
     }
 
     private static BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        agenticIdentity is null ? null : new() { RequestProperties = BotRequestProperties.FromAgenticIdentity(agenticIdentity) };
+        agenticIdentity is null ? null : new() { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity) };
 
     private sealed class ConversationListResponse
     {
