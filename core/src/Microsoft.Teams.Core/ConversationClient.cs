@@ -40,7 +40,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// Sends the specified activity to the conversation endpoint asynchronously.
     /// </summary>
     /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl and Conversation with an Id.
-    /// The recipient's IsTargeted property determines if this is a targeted activity, and AgenticIdentity is extracted from the recipient's properties.</param>
+    /// The recipient's IsTargeted property determines if this is a targeted activity.</param>
     /// <param name="requestProperties">Optional per-request properties (see <see cref="Http.BotRequestProperties"/>) that override the values derived from the activity.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
