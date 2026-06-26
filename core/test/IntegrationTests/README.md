@@ -106,7 +106,7 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
 
 - **Agentic identity**: Targeted activities, paged members, and reactions return 500/404 with agentic identity. These are service-side limitations pending investigation.
 - **Group chat creation**: Bot-only identity cannot create group chats with `IsGroup=true` + multiple members via the conversations API.
-- **User token tests**: `SignIn` and `Users.Token` tests are skipped when agentic identity is configured (not supported).
+- **User token tests**: `SignIn` and `Users` token tests are skipped when agentic identity is configured (not supported).
 - **BAMI tenant expiration**: Test resources expire every few months. Re-provision and update runsettings when the tenant rotates.
 
 ## Cross-SDK Runbook

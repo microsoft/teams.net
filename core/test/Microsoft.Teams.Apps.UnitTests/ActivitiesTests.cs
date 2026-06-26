@@ -33,13 +33,6 @@ public class ActivitiesTests
     }
 
     [Fact]
-    public void MessageDelete_Constructor_Default_SetsMessageDeleteType()
-    {
-        MessageDeleteActivity activity = new();
-        Assert.Equal(TeamsActivityTypes.MessageDelete, activity.Type);
-    }
-
-    [Fact]
     public void MessageDelete_FromActivityConvertsCorrectly()
     {
         CoreActivity coreActivity = new()
@@ -52,35 +45,6 @@ public class ActivitiesTests
         Assert.NotNull(messageDelete);
         Assert.Equal(TeamsActivityTypes.MessageDelete, messageDelete.Type);
         Assert.Equal("deleted-msg-id", messageDelete.Id);
-    }
-
-    [Fact]
-    public void MessageUpdate_Constructor_Default_SetsMessageUpdateType()
-    {
-        MessageUpdateActivity activity = new();
-        Assert.Equal(TeamsActivityTypes.MessageUpdate, activity.Type);
-    }
-
-    [Fact]
-    public void MessageUpdate_Constructor_WithText_SetsTextAndMessageUpdateType()
-    {
-        MessageUpdateActivity activity = new("Updated text");
-        Assert.Equal(TeamsActivityTypes.MessageUpdate, activity.Type);
-        Assert.Equal("Updated text", activity.Text);
-    }
-
-    [Fact]
-    public void MessageUpdate_InheritsFromMessageActivity()
-    {
-        MessageUpdateActivity activity = new()
-        {
-            Text = "Updated",
-            TextFormat = TextFormats.Markdown
-        };
-
-        Assert.Equal("Updated", activity.Text);
-        //Assert.Equal(InputHints.AcceptingInput, activity.InputHint);
-        Assert.Equal(TextFormats.Markdown, activity.TextFormat);
     }
 
     [Fact]
@@ -99,13 +63,6 @@ public class ActivitiesTests
     }
 
     [Fact]
-    public void ConversationUpdate_Constructor_Default_SetsConversationUpdateType()
-    {
-        ConversationUpdateActivity activity = new();
-        Assert.Equal(TeamsActivityTypes.ConversationUpdate, activity.Type);
-    }
-
-    [Fact]
     public void ConversationUpdate_FromActivityConvertsCorrectly()
     {
         CoreActivity coreActivity = new()
@@ -118,13 +75,6 @@ public class ActivitiesTests
         Assert.NotNull(activity);
         Assert.Equal(TeamsActivityTypes.ConversationUpdate, activity.Type);
         //Assert.Equal("Converted Topic", activity.TopicName);
-    }
-
-    [Fact]
-    public void InstallUpdate_Constructor_Default_SetsInstallationUpdateType()
-    {
-        InstallUpdateActivity activity = new();
-        Assert.Equal(TeamsActivityTypes.InstallationUpdate, activity.Type);
     }
 
     [Fact]

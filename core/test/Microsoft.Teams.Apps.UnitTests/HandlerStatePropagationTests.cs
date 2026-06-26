@@ -391,12 +391,12 @@ public class HandlerStatePropagationTests
     }
 
     [Fact]
-    public async Task OnMeetingParticipantJoin_PropagatesState()
+    public async Task OnMeetingJoin_PropagatesState()
     {
         TeamsBotApplication app = CreateApp();
         TurnStateContainer? captured = null;
 
-        app.OnMeetingParticipantJoin((ctx, _) =>
+        app.OnMeetingJoin((ctx, _) =>
         {
             captured = ctx.State;
             return Task.CompletedTask;
@@ -413,12 +413,12 @@ public class HandlerStatePropagationTests
     }
 
     [Fact]
-    public async Task OnMeetingParticipantLeave_PropagatesState()
+    public async Task OnMeetingLeave_PropagatesState()
     {
         TeamsBotApplication app = CreateApp();
         TurnStateContainer? captured = null;
 
-        app.OnMeetingParticipantLeave((ctx, _) =>
+        app.OnMeetingLeave((ctx, _) =>
         {
             captured = ctx.State;
             return Task.CompletedTask;

@@ -8,6 +8,7 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
@@ -189,10 +190,11 @@ public class PromptPreviewTests
         harness.MockConversationClient
             .Setup(c => c.SendActivityAsync(
                 It.IsAny<CoreActivity>(),
+                It.IsAny<BotRequestContext?>(),
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<CoreActivity, Dictionary<string, string>?, CancellationToken>(
-                (activity, _, _) => slot.Value = activity)
+            .Callback<CoreActivity, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (activity, _, _, _) => slot.Value = activity)
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
         return slot;
     }

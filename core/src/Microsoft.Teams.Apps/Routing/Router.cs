@@ -26,7 +26,7 @@ internal sealed class Router
     /// <summary>
     /// Routes registered in the router.
     /// </summary>
-    public IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
+    internal IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
 
     /// <summary>
     /// Registers a route. Routes are checked and invoked in registration order.
@@ -37,7 +37,7 @@ internal sealed class Router
     /// Thrown if a route with the same name is already registered, or if an invoke catch-all
     /// is mixed with specific invoke handlers.
     /// </exception>
-    public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
+    internal Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         if (_routes.Any(r => r.Name == route.Name))
         {
@@ -63,7 +63,7 @@ internal sealed class Router
     /// <summary>
     /// Dispatches the activity to all matching routes in registration order.
     /// </summary>
-    public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
@@ -141,7 +141,7 @@ internal sealed class Router
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a response object with the outcome
     /// of the invocation.</returns>
-    public async Task<InvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task<InvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 

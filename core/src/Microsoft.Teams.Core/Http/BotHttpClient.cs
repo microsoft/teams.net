@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Core.Hosting;
 
 namespace Microsoft.Teams.Core.Http;
 /// <summary>
@@ -144,9 +143,14 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             request.Content = new StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json);
         }
 
-        if (options.AgenticIdentity is not null)
+        // Stamp the per-request properties onto the request so a DelegatingHandler can read the
+        // values (e.g. agentic identity, bot app id) from request.Options.
+        if (options.RequestContext is { } properties)
         {
-            request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, options.AgenticIdentity);
+            foreach (KeyValuePair<string, object?> property in properties.ToOptions())
+            {
+                request.Options.Set(new HttpRequestOptionsKey<object?>(property.Key), property.Value);
+            }
         }
 
         if (options.CustomHeaders is not null)
