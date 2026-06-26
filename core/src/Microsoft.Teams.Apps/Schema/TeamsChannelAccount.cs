@@ -103,10 +103,4 @@ public class TeamsChannelAccount : ChannelAccount
     /// </summary>
     [JsonPropertyName("userRole")]
     public string? UserRole { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Microsoft Entra tenant ID associated with this account.
-    /// </summary>
-    [JsonPropertyName("tenantId")]
-    public string? TenantId { get; set; }
 }
