@@ -96,7 +96,7 @@ public sealed class TeamsBaggageBuilder
     /// <summary>
     /// Populates every baggage key reachable from <c>ctx.Activity</c> — including the Apps-only keys
     /// backed by <see cref="TeamsChannelAccount"/>. Tenant fallback uses the typed
-    /// <see cref="TeamsChannelData"/> when <see cref="Core.Schema.ChannelAccount.TenantId"/> is null.
+    /// <see cref="TeamsChannelData"/> when <see cref="TeamsChannelAccount.TenantId"/> is null.
     /// </summary>
     public TeamsBaggageBuilder FromTeamsContext<TActivity>(Context<TActivity> ctx) where TActivity : TeamsActivity
     {
