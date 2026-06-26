@@ -8,6 +8,7 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.BotBuilder;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Http;
 using Xunit.Abstractions;
 using TeamsChannelData = Microsoft.Bot.Schema.Teams.TeamsChannelData;
 
@@ -92,7 +93,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         CompatConversations compatConversations = new(_f.ConversationClient)
         {
             ServiceUrl = _f.ServiceUrl.ToString(),
-            AgenticIdentity = _f.AgenticIdentity
+            RequestContext = BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity)
         };
         CompatConnectorClient connectorClient = new(compatConversations);
         turnContext.TurnState.Add<IConnectorClient>(connectorClient);

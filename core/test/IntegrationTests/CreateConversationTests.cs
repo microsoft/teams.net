@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
@@ -56,7 +57,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, _f.AgenticIdentity);
+            parameters, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -77,7 +78,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, _f.AgenticIdentity);
+            parameters, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(response?.Id);
 
@@ -112,7 +113,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, _f.AgenticIdentity);
+            parameters, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -149,7 +150,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, _f.AgenticIdentity);
+            parameters, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -181,7 +182,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, _f.AgenticIdentity);
+            parameters, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(response?.Id);
 
@@ -218,7 +219,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, _f.AgenticIdentity);
+            parameters, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);

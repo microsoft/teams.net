@@ -7,6 +7,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Apps.BotBuilder;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -100,7 +101,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             //incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromAccount(incomingRecipient),
+            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -111,7 +112,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             res.Id,
             "sad",
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromAccount(incomingRecipient),
+            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -123,7 +124,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromAccount(incomingRecipient),
+            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
