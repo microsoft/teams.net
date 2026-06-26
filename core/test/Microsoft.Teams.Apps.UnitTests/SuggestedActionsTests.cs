@@ -13,16 +13,16 @@ public class SuggestedActionsTests
     [Fact]
     public void ActionTypes_Constants_HaveExpectedValues()
     {
-        Assert.Equal("openUrl", ActionType.OpenUrl);
-        Assert.Equal("imBack", ActionType.IMBack);
-        Assert.Equal("postBack", ActionType.PostBack);
-        Assert.Equal("playAudio", ActionType.PlayAudio);
-        Assert.Equal("playVideo", ActionType.PlayVideo);
-        Assert.Equal("showImage", ActionType.ShowImage);
-        Assert.Equal("downloadFile", ActionType.DownloadFile);
-        Assert.Equal("signin", ActionType.SignIn);
-        Assert.Equal("call", ActionType.Call);
-        Assert.Equal("Action.Submit", ActionType.Submit);
+        Assert.Equal("openUrl", ActionTypes.OpenUrl);
+        Assert.Equal("imBack", ActionTypes.IMBack);
+        Assert.Equal("postBack", ActionTypes.PostBack);
+        Assert.Equal("playAudio", ActionTypes.PlayAudio);
+        Assert.Equal("playVideo", ActionTypes.PlayVideo);
+        Assert.Equal("showImage", ActionTypes.ShowImage);
+        Assert.Equal("downloadFile", ActionTypes.DownloadFile);
+        Assert.Equal("signin", ActionTypes.SignIn);
+        Assert.Equal("call", ActionTypes.Call);
+        Assert.Equal("Action.Submit", ActionTypes.Submit);
     }
 
     [Fact]
@@ -43,9 +43,9 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedAction_ConvenienceConstructor_SetsTypeAndTitle()
     {
-        SuggestedAction action = new(ActionType.IMBack, "Say Hello");
+        SuggestedAction action = new(ActionTypes.IMBack, "Say Hello");
 
-        Assert.Equal(ActionType.IMBack, action.Type);
+        Assert.Equal(ActionTypes.IMBack, action.Type);
         Assert.Equal("Say Hello", action.Title);
     }
 
@@ -76,7 +76,7 @@ public class SuggestedActionsTests
     public void SuggestedActions_AddAction_AddsToList()
     {
         SuggestedActions suggestedActions = new();
-        SuggestedAction action = new(ActionType.IMBack, "Click me");
+        SuggestedAction action = new(ActionTypes.IMBack, "Click me");
 
         suggestedActions.AddAction(action);
 
@@ -90,9 +90,9 @@ public class SuggestedActionsTests
         SuggestedActions suggestedActions = new();
 
         suggestedActions.AddActions(
-            new SuggestedAction(ActionType.IMBack, "Option 1"),
-            new SuggestedAction(ActionType.IMBack, "Option 2"),
-            new SuggestedAction(ActionType.PostBack, "Option 3")
+            new SuggestedAction(ActionTypes.IMBack, "Option 1"),
+            new SuggestedAction(ActionTypes.IMBack, "Option 2"),
+            new SuggestedAction(ActionTypes.PostBack, "Option 3")
         );
 
         Assert.Equal(3, suggestedActions.Actions.Count);
@@ -102,7 +102,7 @@ public class SuggestedActionsTests
     public void SuggestedActions_FluentChaining_ReturnsSameInstance()
     {
         SuggestedActions suggestedActions = new();
-        SuggestedAction action = new(ActionType.IMBack, "Test");
+        SuggestedAction action = new(ActionTypes.IMBack, "Test");
 
         SuggestedActions result1 = suggestedActions.AddRecipients("user1");
         SuggestedActions result2 = suggestedActions.AddAction(action);
@@ -121,7 +121,7 @@ public class SuggestedActionsTests
             SuggestedActions = new SuggestedActions()
         };
         activity.SuggestedActions.AddRecipients("user1");
-        activity.SuggestedActions.AddAction(new SuggestedAction(ActionType.IMBack, "Option 1", "opt1"));
+        activity.SuggestedActions.AddAction(new SuggestedAction(ActionTypes.IMBack, "Option 1", "opt1"));
 
         string json = activity.ToJson();
 
@@ -195,7 +195,7 @@ public class SuggestedActionsTests
         SuggestedActions suggestedActions = new();
 
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
             .Build();
@@ -211,10 +211,10 @@ public class SuggestedActionsTests
     public void MessageActivity_WithSuggestedActions()
     {
         SuggestedActions suggestedActions = new SuggestedActions()
-            .AddAction(new SuggestedAction(ActionType.IMBack, "Option 1", "opt1"));
+            .AddAction(new SuggestedAction(ActionTypes.IMBack, "Option 1", "opt1"));
 
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
             .Build();
@@ -234,8 +234,8 @@ public class SuggestedActionsTests
         activity.SuggestedActions = new SuggestedActions();
         activity.SuggestedActions.AddRecipients("user1");
         activity.SuggestedActions.AddActions(
-            new SuggestedAction(ActionType.OpenUrl, "Open", "https://example.com"),
-            new SuggestedAction(ActionType.IMBack, "Say Hi", "hi")
+            new SuggestedAction(ActionTypes.OpenUrl, "Open", "https://example.com"),
+            new SuggestedAction(ActionTypes.IMBack, "Say Hi", "hi")
         );
 
         string json = activity.ToJson();

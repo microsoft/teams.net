@@ -11,6 +11,9 @@ WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
+// Obtain a standard ILogger from DI.
+ILogger logger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogger("SuggestedActionBot");
+
 // Reply to any user message with two Action.Submit suggested-action chips.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
@@ -20,8 +23,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         {
             To = [context.Activity.From?.Id!],
             Actions = [
-                new SuggestedAction(ActionType.Submit, "Approve", new { vote = "approve" }),
-                new SuggestedAction(ActionType.Submit, "Reject", new { vote = "reject" }),
+                new SuggestedAction(ActionTypes.Submit, "Approve", new { vote = "approve" }),
+                new SuggestedAction(ActionTypes.Submit, "Reject", new { vote = "reject" }),
             ]
         }
     };
@@ -36,7 +39,7 @@ teamsApp.OnSuggestedActionSubmit(async (context, cancellationToken) =>
         ? value.ToJsonString()
         : "<none>";
 
-    context.Log.Info($"[SUGGESTED_ACTION_SUBMIT] value={serializedValue}");
+    logger.LogInformation("[SUGGESTED_ACTION_SUBMIT] value={Value}", serializedValue);
     await context.SendActivityAsync(
         new MessageActivity($"Got suggestedActions/submit with value: {serializedValue}"),
         cancellationToken);

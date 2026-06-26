@@ -9,6 +9,7 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Teams.Apps;
 /// </summary>
 public class TeamsBotApplication : BotApplication
 {
-    private readonly Api.Clients.ApiClient _teamsApiClient;
+    private readonly TurnStateLoader? _stateLoader;
     private Uri? _lastServiceUrl;
 
     /// <summary>
@@ -62,10 +63,6 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <summary>
-    /// Gets the client used to interact with the Teams API service.
-    /// </summary>
-    public ApiClient TeamsApiClient => _teamsApiClient;
-    /// <summary>
     /// Gets the hierarchical API facade for Teams operations.
     /// </summary>
     /// <remarks>
@@ -73,13 +70,13 @@ public class TeamsBotApplication : BotApplication
     /// <list type="bullet">
     /// <item><c>Api.Conversations.Activities</c> - Activity operations (send, update, delete)</item>
     /// <item><c>Api.Conversations.Members</c> - Member operations (get, delete)</item>
-    /// <item><c>Api.Users.Token</c> - User token operations (OAuth SSO, sign-in resources)</item>
+    /// <item><c>Api.UserToken</c> - User token operations (OAuth SSO, sign-in resources)</item>
     /// <item><c>Api.Teams</c> - Team operations (get details, channels)</item>
     /// <item><c>Api.Meetings</c> - Meeting operations (get info, participant, notifications)</item>
     /// <item><c>Api.Batch</c> - Batch messaging operations</item>
     /// </list>
     /// </remarks>
-    public ApiClient Api { get; }
+    public virtual ApiClient Api { get; }
 
     /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
@@ -88,6 +85,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
+    /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
@@ -105,14 +103,15 @@ public class TeamsBotApplication : BotApplication
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        TeamsBotApplicationOptions? options = null)
+        TeamsBotApplicationOptions? options = null,
+        TurnStateLoader? stateLoader = null)
         : base(
             (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
             teamsApiClient.UserTokenClient,
             logger,
             options)
     {
-        _teamsApiClient = teamsApiClient;
+        _stateLoader = stateLoader;
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
@@ -138,34 +137,55 @@ public class TeamsBotApplication : BotApplication
 
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
+            // Load per-turn state if configured
+            string? conversationId = teamsActivity.Conversation?.Id;
+            if (_stateLoader is not null && !string.IsNullOrEmpty(conversationId))
+            {
+                TurnStateContainer stateContainer = await _stateLoader.LoadAsync(conversationId, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
+                stateContainer.SetDeleteDelegate(ct => _stateLoader.DeleteAsync(conversationId, teamsActivity.From?.Id, ct));
+                defaultContext.State = stateContainer;
+            }
+
             // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
             // child spans.
             using IDisposable baggageScope = new TeamsBaggageBuilder()
                 .FromTeamsContext(defaultContext)
                 .Build();
 
-            if (teamsActivity.Type != TeamsActivityType.Invoke)
+            try
             {
-                await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-            }
-            else // invokes
-            {
-                InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                HttpContext? httpContext = httpContextAccessor.HttpContext;
-                if (httpContext is not null && invokeResponse is not null)
+                if (teamsActivity.Type != TeamsActivityTypes.Invoke)
                 {
-                    httpContext.Response.StatusCode = invokeResponse.Status;
-                    logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
-                    logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                    if (invokeResponse.Body is not null)
+                    await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                }
+                else // invokes
+                {
+                    InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                    HttpContext? httpContext = httpContextAccessor.HttpContext;
+                    if (httpContext is not null && invokeResponse is not null)
                     {
-                        await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                        httpContext.Response.StatusCode = invokeResponse.Status;
+                        logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
+                        logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                        if (invokeResponse.Body is not null)
+                        {
+                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                        }
                     }
+                }
+            }
+            finally
+            {
+                // Save dirty state back to the cache
+                if (_stateLoader is not null && defaultContext.HasState)
+                {
+                    await _stateLoader.SaveAsync(defaultContext.State, conversationId!, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
                 }
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
     }
+
 
     // ==================== Proactive Messaging ====================
 
@@ -175,7 +195,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationId">The conversation ID to send to. For channel threads, include <c>;messageid=</c>.</param>
     /// <param name="text">The text to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
-    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ConversationAccount.GetAgenticIdentity"/>.</param>
+    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendAsync(string conversationId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
@@ -184,7 +204,7 @@ public class TeamsBotApplication : BotApplication
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
 
         TeamsActivityBuilder builder = new TeamsActivityBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithServiceUrl(resolvedUrl)
             .WithChannelId("msteams")
             .WithConversation(new Conversation { Id = conversationId })
@@ -192,7 +212,7 @@ public class TeamsBotApplication : BotApplication
 
         if (agenticIdentity is not null)
         {
-            builder.WithFrom(new ConversationAccount
+            builder.WithFrom(new ChannelAccount
             {
                 AgenticAppId = agenticIdentity.AgenticAppId,
                 AgenticUserId = agenticIdentity.AgenticUserId,
@@ -212,7 +232,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationId">The conversation ID.</param>
     /// <param name="messageId">The thread root message ID.</param>
     /// <param name="text">The text to send.</param>
-    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ConversationAccount.GetAgenticIdentity"/>.</param>
+    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
@@ -222,10 +242,12 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>
+    [Obsolete("Use SendAsync instead.")]
     public Task<SendActivityResponse?> Send(string conversationId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => SendAsync(conversationId, text, serviceUrl, agenticIdentity, cancellationToken);
 
     /// <inheritdoc cref="ReplyAsync(string, string, string, AgenticIdentity?, CancellationToken)"/>
+    [Obsolete("Use ReplyAsync instead.")]
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => ReplyAsync(conversationId, messageId, text, agenticIdentity, cancellationToken);
 

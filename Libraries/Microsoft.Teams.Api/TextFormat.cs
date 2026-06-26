@@ -18,4 +18,7 @@ public class TextFormat(string value) : StringEnum(value)
 
     public static readonly TextFormat Xml = new("xml");
     public bool IsXml => Xml.Equals(Value);
+
+    public static readonly TextFormat ExtendedMarkdown = new("extendedmarkdown");
+    public bool IsExtendedMarkdown => ExtendedMarkdown.Equals(Value);
 }

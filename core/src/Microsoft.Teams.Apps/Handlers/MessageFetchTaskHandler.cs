@@ -33,12 +33,12 @@ public static class MessageFetchTaskExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageFetchTask),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageFetchTask),
             Selector = activity => activity.Name == InvokeNames.MessageFetchTask,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageFetchTaskInvokeValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageFetchTaskInvokeValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

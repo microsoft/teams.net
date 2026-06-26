@@ -55,7 +55,7 @@ teams.OnMessage(async (context, ct) => { ... });
 // Regex pattern match
 teams.OnMessage(@"^help$", async (context, ct) =>
 {
-    await context.Send("Here's how to use the bot...");
+    await context.SendAsync("Here's how to use the bot...");
 });
 ```
 

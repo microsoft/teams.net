@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
 
@@ -22,10 +23,11 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="builder">The web application builder.</param>
     /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
     /// <returns>The service collection for chaining.</returns>
+    [Obsolete("AddTeams is a backward-compatibility shim for the old library and will be removed. Use AddTeamsBotApplication instead.")]
     public static IServiceCollection AddTeams(this WebApplicationBuilder builder, string sectionName = "AzureAd")
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.Services.AddTeams(sectionName);
+        return builder.Services.AddTeamsBotApplication(sectionName);
     }
 
     /// <summary>
@@ -36,13 +38,17 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="appBuilder">The app builder containing configuration.</param>
     /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
     /// <returns>The service collection for chaining.</returns>
+    [Obsolete("The AppBuilder overload is a backward-compatibility shim for the old library's App.Builder() pattern and will be removed. Configure OAuth flows via DI instead: builder.Services.AddTeamsBotApplication(options => options.AddOAuthFlow(\"connectionName\")).")]
     public static IServiceCollection AddTeams(this WebApplicationBuilder builder, AppBuilder appBuilder, string sectionName = "AzureAd")
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(appBuilder);
+#pragma warning disable CS0618 // AppBuilder is obsolete; this overload exists solely to support it.
+        IReadOnlyList<TeamsBotApplicationOptions.OAuthFlowDescriptor> flows = appBuilder.Options.OAuthFlows;
+#pragma warning restore CS0618
         return builder.Services.AddTeamsBotApplication(options =>
         {
-            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor flow in appBuilder.Options.OAuthFlows)
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor flow in flows)
             {
                 options.AddOAuthFlow(flow.ConnectionName);
             }
@@ -58,6 +64,7 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="sectionName">The name of the configuration section containing Azure Active Directory settings. Defaults to "AzureAd" if not
     /// specified.</param>
     /// <returns>The service collection with Teams bot application services registered.</returns>
+    [Obsolete("AddTeams is a backward-compatibility shim for the old library and will be removed. Use AddTeamsBotApplication instead.")]
     public static IServiceCollection AddTeams(this IServiceCollection services, string sectionName = "AzureAd")
         => AddTeamsBotApplication(services, sectionName);
 
@@ -113,6 +120,12 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
+
+        if (teamsOptions.IsStateEnabled)
+        {
+            AddTeamsBotApplicationState(services, teamsOptions.StateConfiguration);
+        }
+
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
         services.AddSingleton(sp =>
         {
@@ -153,6 +166,27 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
     /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
+    [Obsolete("UseTeams is a backward-compatibility shim for the old library and will be removed. Use UseTeamsBotApplication instead.")]
     public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
+
+    private static void AddTeamsBotApplicationState(IServiceCollection services, Action<TurnStateOptions>? configure)
+    {
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+        else
+        {
+            services.AddOptions<TurnStateOptions>();
+        }
+
+        // Provide an in-memory cache as fallback so UseState() works out of the box.
+        // AddDistributedMemoryCache() uses TryAdd, so it will not replace an existing IDistributedCache registration.
+        // If the developer registers another IDistributedCache later using Add*,
+        // the last registration will be resolved (e.g., AddStackExchangeRedisCache).
+        services.AddDistributedMemoryCache();
+
+        services.AddSingleton<TurnStateLoader>();
+    }
 }

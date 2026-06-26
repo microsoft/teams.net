@@ -191,6 +191,22 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 return Results.BadRequest("Missing activity");
             }
 
+            // Require the token's serviceurl claim to match the activity's serviceUrl
+            // (normalized, case-insensitive) when the activity specifies one. Mismatches
+            // are logged server-side.
+            if (!string.IsNullOrEmpty(activity.ServiceUrl))
+            {
+                var claimServiceUrl = token.Token.Payload.TryGetValue("serviceurl", out var serviceUrlClaim)
+                    ? serviceUrlClaim as string
+                    : null;
+
+                if (!NormalizeServiceUrl(claimServiceUrl).Equals(NormalizeServiceUrl(activity.ServiceUrl), StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Warn($"Rejecting activity {activity.Id}: serviceUrl '{activity.ServiceUrl}' does not match the token serviceurl claim '{claimServiceUrl}'.");
+                    return Results.Unauthorized();
+                }
+            }
+
             var data = new Dictionary<string, object?>
             {
                 ["Request.TraceId"] = httpContext.TraceIdentifier
@@ -241,6 +257,12 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             return Results.Problem(detail: ex.Message, statusCode: 500);
         }
     }
+
+    // Normalize a serviceUrl for comparison: null/empty becomes empty, and a single
+    // trailing slash is trimmed so "https://host/teams" and "https://host/teams/" match.
+    private static string NormalizeServiceUrl(string? serviceUrl) =>
+        string.IsNullOrEmpty(serviceUrl) ? string.Empty :
+            serviceUrl.EndsWith('/') ? serviceUrl[..^1] : serviceUrl;
 
     public JsonWebToken ExtractToken(HttpRequest httpRequest)
     {

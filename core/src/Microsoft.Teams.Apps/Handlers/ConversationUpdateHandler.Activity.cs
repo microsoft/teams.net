@@ -27,7 +27,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public ConversationUpdateActivity() : base(TeamsActivityType.ConversationUpdate)
+    internal ConversationUpdateActivity() : base(TeamsActivityTypes.ConversationUpdate)
     {
     }
 
@@ -35,7 +35,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Internal constructor to create ConversationUpdateActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected ConversationUpdateActivity(CoreActivity activity) : base(activity)
+    internal ConversationUpdateActivity(CoreActivity activity) : base(activity)
     {
         /*
         if (activity.Properties.TryGetValue("topicName", out var topicName))
@@ -45,8 +45,8 @@ public class ConversationUpdateActivity : TeamsActivity
         }
         */
 
-        MembersAdded = activity.Properties.Extract<IList<TeamsConversationAccount>>("membersAdded");
-        MembersRemoved = activity.Properties.Extract<IList<TeamsConversationAccount>>("membersRemoved");
+        MembersAdded = activity.Properties.Extract<IList<TeamsChannelAccount>>("membersAdded");
+        MembersRemoved = activity.Properties.Extract<IList<TeamsChannelAccount>>("membersRemoved");
     }
 
     //TODO : review properties
@@ -62,13 +62,13 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Gets or sets the collection of members added to the conversation.
     /// </summary>
     [JsonPropertyName("membersAdded")]
-    public IList<TeamsConversationAccount>? MembersAdded { get; set; }
+    public IList<TeamsChannelAccount>? MembersAdded { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of members removed from the conversation.
     /// </summary>
     [JsonPropertyName("membersRemoved")]
-    public IList<TeamsConversationAccount>? MembersRemoved { get; set; }
+    public IList<TeamsChannelAccount>? MembersRemoved { get; set; }
 }
 
 /// <summary>

@@ -26,7 +26,7 @@ internal sealed class Router
     /// <summary>
     /// Routes registered in the router.
     /// </summary>
-    public IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
+    internal IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
 
     /// <summary>
     /// Registers a route. Routes are checked and invoked in registration order.
@@ -37,21 +37,21 @@ internal sealed class Router
     /// Thrown if a route with the same name is already registered, or if an invoke catch-all
     /// is mixed with specific invoke handlers.
     /// </exception>
-    public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
+    internal Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         if (_routes.Any(r => r.Name == route.Name))
         {
             throw new InvalidOperationException($"A route with name '{route.Name}' is already registered.");
         }
 
-        string invokePrefix = TeamsActivityType.Invoke + "/";
+        string invokePrefix = TeamsActivityTypes.Invoke + "/";
 
-        if (route.Name == TeamsActivityType.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
+        if (route.Name == TeamsActivityTypes.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Cannot register a catch-all invoke handler when specific invoke handlers are already registered. Use specific handlers or handle all invoke types inside OnInvoke.");
         }
 
-        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityType.Invoke))
+        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityTypes.Invoke))
         {
             throw new InvalidOperationException($"Cannot register '{route.Name}' when a catch-all invoke handler is already registered. Remove OnInvoke or use specific handlers exclusively.");
         }
@@ -63,7 +63,7 @@ internal sealed class Router
     /// <summary>
     /// Dispatches the activity to all matching routes in registration order.
     /// </summary>
-    public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
@@ -141,7 +141,7 @@ internal sealed class Router
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a response object with the outcome
     /// of the invocation.</returns>
-    public async Task<InvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task<InvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
@@ -216,8 +216,8 @@ internal sealed class Router
 
     private static (string handlerType, string dispatch) GetHandlerTags(string routeName)
     {
-        const string invokePrefix = TeamsActivityType.Invoke + "/";
-        if (string.Equals(routeName, TeamsActivityType.Invoke, StringComparison.Ordinal))
+        const string invokePrefix = TeamsActivityTypes.Invoke + "/";
+        if (string.Equals(routeName, TeamsActivityTypes.Invoke, StringComparison.Ordinal))
         {
             return (routeName, "catchall");
         }

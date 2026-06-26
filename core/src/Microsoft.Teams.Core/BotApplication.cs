@@ -127,7 +127,7 @@ public class BotApplication
     /// <remarks>This property is only available when the bot is constructed via dependency injection or
     /// with an explicit <see cref="Core.ConversationClient"/>. It throws <see cref="InvalidOperationException"/>
     /// if accessed on a test instance created with the parameterless constructor.</remarks>
-    public ConversationClient ConversationClient => _conversationClient ?? throw new InvalidOperationException("ConversationClient not initialized");
+    public virtual ConversationClient ConversationClient => _conversationClient ?? throw new InvalidOperationException("ConversationClient not initialized");
 
     /// <summary>
     /// Gets the <see cref="Core.UserTokenClient"/> used to manage OAuth user tokens (sign-in, sign-out, token exchange).
@@ -135,7 +135,7 @@ public class BotApplication
     /// <remarks>This property is only available when the bot is constructed via dependency injection or
     /// with an explicit <see cref="Core.UserTokenClient"/>. It throws <see cref="InvalidOperationException"/>
     /// if accessed on a test instance created with the parameterless constructor.</remarks>
-    public UserTokenClient UserTokenClient => _userTokenClient ?? throw new InvalidOperationException("UserTokenClient not registered");
+    public virtual UserTokenClient UserTokenClient => _userTokenClient ?? throw new InvalidOperationException("UserTokenClient not registered");
 
     /// <summary>
     /// Gets or sets the delegate that is invoked to handle each incoming activity.

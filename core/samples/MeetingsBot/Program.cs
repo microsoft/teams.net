@@ -26,7 +26,7 @@ teamsApp.OnMeetingEnd(async (context, cancellationToken) =>
     await context.SendActivityAsync($"Meeting ended: **{meeting?.Title}**\nEnd time: {meeting?.EndTime:u}", cancellationToken);
 });
 
-teamsApp.OnMeetingParticipantJoin(async (context, cancellationToken) =>
+teamsApp.OnMeetingJoin(async (context, cancellationToken) =>
 {
     IList<MeetingParticipantMember> members = context.Activity.Value?.Members ?? [];
     string names = string.Join(", ", members.Select(m => m.User.Name ?? m.User.Id));
@@ -34,7 +34,7 @@ teamsApp.OnMeetingParticipantJoin(async (context, cancellationToken) =>
     await context.SendActivityAsync($"Participant(s) joined: {names}", cancellationToken);
 });
 
-teamsApp.OnMeetingParticipantLeave(async (context, cancellationToken) =>
+teamsApp.OnMeetingLeave(async (context, cancellationToken) =>
 {
     IList<MeetingParticipantMember> members = context.Activity.Value?.Members ?? [];
     string names = string.Join(", ", members.Select(m => m.User.Name ?? m.User.Id));

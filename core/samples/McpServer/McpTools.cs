@@ -24,7 +24,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
     {
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         TeamsActivity notifyActivity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithServiceUrl(state.ServiceUrl)
             .WithConversation(new Conversation(conversationId))
             .WithText(message)
@@ -46,7 +46,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         // Record the pending ask before sending, so a fast reply is never lost.
         state.PendingAsks[requestId] = new PendingAsk(userId);
         TeamsActivity askActivity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithServiceUrl(state.ServiceUrl)
             .WithConversation(new Conversation(conversationId))
             .WithAdaptiveCardAttachment(Cards.AskCard(requestId, question))
@@ -130,7 +130,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         string approvalId = Guid.NewGuid().ToString();
 
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithServiceUrl(state.ServiceUrl)
             .WithConversation(new Conversation(conversationId))
             .WithAdaptiveCardAttachment(Cards.ApprovalCard(approvalId, title, description))
@@ -224,7 +224,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
 
         ConversationParameters parameters = new()
         {
-            Members = [new ConversationAccount { Id = userId }],
+            Members = [new ChannelAccount { Id = userId }],
             TenantId = config["AzureAd:TenantId"],
         };
 

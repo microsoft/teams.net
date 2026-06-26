@@ -38,12 +38,12 @@ public static class MessageActivityExtensions
     /// <summary>
     /// Sets the sender account.
     /// </summary>
-    public static MessageActivity WithFrom(this MessageActivity message, ConversationAccount? value)
+    public static MessageActivity WithFrom(this MessageActivity message, ChannelAccount? value)
     {
         ArgumentNullException.ThrowIfNull(message);
-        message.From = value is TeamsConversationAccount teamsAccount
+        message.From = value is TeamsChannelAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(value);
+            : TeamsChannelAccount.FromChannelAccount(value);
         return message;
     }
 
@@ -53,13 +53,13 @@ public static class MessageActivityExtensions
     /// <param name="message">The message activity.</param>
     /// <param name="account">The recipient account.</param>
     /// <returns>The message activity for chaining.</returns>
-    public static MessageActivity WithRecipient(this MessageActivity message, ConversationAccount account)
+    public static MessageActivity WithRecipient(this MessageActivity message, ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        message.Recipient = account is TeamsConversationAccount teamsAccount
+        message.Recipient = account is TeamsChannelAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(account);
+            : TeamsChannelAccount.FromChannelAccount(account);
         return message;
     }
 
@@ -71,16 +71,16 @@ public static class MessageActivityExtensions
     /// <param name="isTargeted">Whether the recipient is targeted.</param>
     /// <returns>The message activity for chaining.</returns>
     [Experimental("ExperimentalTeamsTargeted")]
-    public static MessageActivity WithRecipient(this MessageActivity message, ConversationAccount account, bool isTargeted = false)
+    public static MessageActivity WithRecipient(this MessageActivity message, ChannelAccount account, bool isTargeted = false)
     {
         ArgumentNullException.ThrowIfNull(message);
 
         if (account is not null)
         {
             account.IsTargeted = isTargeted ? true : null;
-            message.Recipient = account is TeamsConversationAccount teamsAccount
+            message.Recipient = account is TeamsChannelAccount teamsAccount
                 ? teamsAccount
-                : TeamsConversationAccount.FromConversationAccount(account);
+                : TeamsChannelAccount.FromChannelAccount(account);
         }
         return message;
     }
@@ -302,7 +302,6 @@ public static class MessageActivityExtensions
     /// <param name="messageId">The ID of the message being quoted.</param>
     /// <param name="text">Optional text to append after the quote placeholder.</param>
     /// <returns>The message activity for chaining.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public static MessageActivity AddQuote(this MessageActivity message, string messageId, string? text = null)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -319,7 +318,6 @@ public static class MessageActivityExtensions
     /// <param name="message">The message activity.</param>
     /// <param name="messageId">The ID of the message being quoted.</param>
     /// <returns>The message activity for chaining.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public static MessageActivity PrependQuote(this MessageActivity message, string messageId)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -357,7 +355,7 @@ public static class MessageActivityExtensions
     /// <param name="text">Optional mention text. If null, uses account name.</param>
     /// <param name="addText">Whether mention text should be prepended to message text.</param>
     /// <returns>The message activity for chaining.</returns>
-    public static MessageActivity AddMention(this MessageActivity message, ConversationAccount account, string? text = null, bool addText = true)
+    public static MessageActivity AddMention(this MessageActivity message, ChannelAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(account);
@@ -369,7 +367,7 @@ public static class MessageActivityExtensions
 
     /// <summary>
     /// Marks the message as a final streaming message by adding a <see cref="StreamInfoEntity"/>
-    /// with <see cref="StreamType.Final"/>.
+    /// with <see cref="StreamTypes.Final"/>.
     /// </summary>
     /// <param name="message">The message activity.</param>
     /// <returns>The message activity for chaining.</returns>
@@ -377,7 +375,7 @@ public static class MessageActivityExtensions
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        StreamInfoEntityExtensions.AddToActivity(message, StreamType.Final);
+        StreamInfoEntityExtensions.AddToActivity(message, StreamTypes.Final);
         return message;
     }
 
@@ -431,7 +429,7 @@ public static class MessageActivityExtensions
     /// Configures feedback loop mode on the message.
     /// </summary>
     /// <param name="message">The message activity.</param>
-    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackTypes"/> for known values.</param>
     /// <returns>The message activity for chaining.</returns>
     public static MessageActivity AddFeedback(this MessageActivity message, string mode)
     {

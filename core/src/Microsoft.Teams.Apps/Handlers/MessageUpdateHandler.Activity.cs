@@ -27,26 +27,17 @@ public class MessageUpdateActivity : MessageActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageUpdateActivity() : base()
+    internal MessageUpdateActivity() : base()
     {
-        Type = TeamsActivityType.MessageUpdate;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MessageUpdateActivity"/> class with the specified text.
-    /// </summary>
-    /// <param name="text">The text content of the message.</param>
-    public MessageUpdateActivity(string text) : base(text)
-    {
-        Type = TeamsActivityType.MessageUpdate;
+        Type = TeamsActivityTypes.MessageUpdate;
     }
 
     /// <summary>
     /// Internal constructor to create MessageUpdateActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected MessageUpdateActivity(CoreActivity activity) : base(activity)
+    internal MessageUpdateActivity(CoreActivity activity) : base(activity)
     {
-        Type = TeamsActivityType.MessageUpdate;
+        Type = TeamsActivityTypes.MessageUpdate;
     }
 }

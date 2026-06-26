@@ -30,19 +30,19 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         cancellationToken);
 });
 
-// Reply() — auto-quotes the inbound message
+// ReplyAsync() — auto-quotes the inbound message
 teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 {
-    await context.Reply("Thanks for your message! This reply auto-quotes it.", cancellationToken);
+    await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
 });
 
-// Quote() — quote a previously sent message by ID
+// QuoteAsync() — quote a previously sent message by ID
 teamsApp.OnMessage("(?i)^test quote$", async (context, cancellationToken) =>
 {
     SendActivityResponse? sent = await context.SendActivityAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
     if (sent?.Id != null)
     {
-        await context.Quote(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
+        await context.QuoteAsync(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
     }
 });
 
@@ -70,7 +70,7 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
         TeamsActivity msg = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
             .AddQuote(sentB.Id, "Looks great, approved!")
             .AddQuote(sentC.Id)

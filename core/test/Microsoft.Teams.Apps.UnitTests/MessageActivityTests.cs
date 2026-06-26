@@ -12,14 +12,14 @@ public class MessageActivityTests
     public void Constructor_Default_SetsMessageType()
     {
         MessageActivity activity = new();
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
     }
 
     [Fact]
     public void Constructor_WithText_SetsTextAndMessageType()
     {
         MessageActivity activity = new("Hello World");
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
     }
 
@@ -68,6 +68,9 @@ public class MessageActivityTests
 
         activity.TextFormat = TextFormats.Xml;
         Assert.Equal("xml", activity.TextFormat);
+
+        activity.TextFormat = TextFormats.ExtendedMarkdown;
+        Assert.Equal("extendedmarkdown", activity.TextFormat);
     }
 
     [Fact]

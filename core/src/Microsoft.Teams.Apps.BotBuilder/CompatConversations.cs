@@ -5,6 +5,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.BotBuilder
@@ -30,10 +31,11 @@ namespace Microsoft.Teams.Apps.BotBuilder
         internal string? ServiceUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the agentic identity extracted from the incoming activity.
-        /// Used for user-delegated token acquisition when the bot acts on behalf of an agentic app.
+        /// Gets or sets the per-request properties captured from the incoming activity (agentic identity,
+        /// bot app id). Threaded into each outbound conversation operation and stamped onto the request's
+        /// options for the authentication handler to read.
         /// </summary>
-        internal AgenticIdentity? AgenticIdentity { get; set; }
+        internal BotRequestContext? RequestContext { get; set; }
 
         /// <summary>
         /// Creates a new conversation with the specified parameters.
@@ -59,7 +61,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                AgenticIdentity.FromAccount(convoParams.Activity?.From),
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -94,7 +96,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl),
-                AgenticIdentity,
+                RequestContext,
                 ConvertHeaders(customHeaders),
                 cancellationToken).ConfigureAwait(false);
             return new HttpOperationResponse
@@ -111,27 +113,27 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 memberId,
                 new Uri(ServiceUrl),
-                AgenticIdentity,
+                RequestContext,
                 ConvertHeaders(customHeaders),
                 cancellationToken).ConfigureAwait(false);
             return new HttpOperationResponse { Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK) };
         }
 
-        public async Task<HttpOperationResponse<IList<ChannelAccount>>> GetActivityMembersWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<IList<Microsoft.Bot.Schema.ChannelAccount>>> GetActivityMembersWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            IList<Microsoft.Teams.Core.Schema.ConversationAccount> members = await _client.GetActivityMembersAsync(
+            IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetActivityMembersAsync(
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl!),
-                AgenticIdentity,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
-            List<ChannelAccount> channelAccounts = [.. members.Select(m => m.ToCompatChannelAccount())];
+            List<Microsoft.Bot.Schema.ChannelAccount> channelAccounts = [.. members.Select(m => m.ToCompatChannelAccount())];
 
-            return new HttpOperationResponse<IList<ChannelAccount>>
+            return new HttpOperationResponse<IList<Microsoft.Bot.Schema.ChannelAccount>>
             {
                 Body = channelAccounts,
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -146,25 +148,25 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains an HTTP operation response with
-        /// a list of <see cref="ChannelAccount"/> objects representing the conversation members.
+        /// a list of <see cref="Microsoft.Bot.Schema.ChannelAccount"/> objects representing the conversation members.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when <see cref="ServiceUrl"/> is null or whitespace.</exception>
-        public async Task<HttpOperationResponse<IList<ChannelAccount>>> GetConversationMembersWithHttpMessagesAsync(string conversationId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<IList<Microsoft.Bot.Schema.ChannelAccount>>> GetConversationMembersWithHttpMessagesAsync(string conversationId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            IList<Microsoft.Teams.Core.Schema.ConversationAccount> members = await _client.GetConversationMembersAsync(
+            IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetConversationMembersAsync(
                 conversationId,
                 new Uri(ServiceUrl),
-                AgenticIdentity,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
-            List<ChannelAccount> channelAccounts = [.. members.Select(m => m.ToCompatChannelAccount())];
+            List<Microsoft.Bot.Schema.ChannelAccount> channelAccounts = [.. members.Select(m => m.ToCompatChannelAccount())];
 
-            return new HttpOperationResponse<IList<ChannelAccount>>
+            return new HttpOperationResponse<IList<Microsoft.Bot.Schema.ChannelAccount>>
             {
                 Body = channelAccounts,
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -182,7 +184,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 new Uri(ServiceUrl),
                 pageSize,
                 continuationToken,
-                AgenticIdentity,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -207,7 +209,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             GetConversationsResponse conversations = await _client.GetConversationsAsync(
                 new Uri(ServiceUrl),
                 continuationToken,
-                AgenticIdentity,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -243,7 +245,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             coreActivity.ReplyToId = activityId;
             coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -272,7 +274,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 coreTranscript,
                 new Uri(ServiceUrl),
-                AgenticIdentity,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -313,7 +315,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -382,7 +384,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 coreAttachmentData,
                 new Uri(ServiceUrl),
-                AgenticIdentity,
+                RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -414,16 +416,16 @@ namespace Microsoft.Teams.Apps.BotBuilder
             return convertedHeaders;
         }
 
-        public async Task<HttpOperationResponse<ChannelAccount>> GetConversationMemberWithHttpMessagesAsync(string userId, string conversationId, Dictionary<string, List<string>> customHeaders = null!, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<Microsoft.Bot.Schema.ChannelAccount>> GetConversationMemberWithHttpMessagesAsync(string userId, string conversationId, Dictionary<string, List<string>> customHeaders = null!, CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Core.Schema.ConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Core.Schema.ConversationAccount>(
-                conversationId, userId, new Uri(ServiceUrl), AgenticIdentity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            Microsoft.Teams.Core.Schema.ChannelAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Core.Schema.ChannelAccount>(
+                conversationId, userId, new Uri(ServiceUrl), RequestContext, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
-            return new HttpOperationResponse<ChannelAccount>
+            return new HttpOperationResponse<Microsoft.Bot.Schema.ChannelAccount>
             {
                 Body = response.ToCompatChannelAccount(),
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)

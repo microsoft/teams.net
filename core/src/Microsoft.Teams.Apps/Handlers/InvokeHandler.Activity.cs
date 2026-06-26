@@ -41,7 +41,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
     /// </summary>
     [JsonConstructor]
-    public InvokeActivity() : base(TeamsActivityType.Invoke)
+    internal InvokeActivity() : base(TeamsActivityTypes.Invoke)
     {
     }
 
@@ -49,8 +49,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class with the specified name.
     /// </summary>
     /// <param name="name">The invoke operation name.</param>
-
-    public InvokeActivity(string name) : base(TeamsActivityType.Invoke)
+    internal InvokeActivity(string name) : base(TeamsActivityTypes.Invoke)
     {
         Name = name;
     }
@@ -59,7 +58,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the InvokeActivity class with the specified core activity.
     /// </summary>
     /// <param name="activity">The core activity to be invoked. Cannot be null.</param>
-    protected InvokeActivity(CoreActivity activity) : base(activity)
+    internal InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         Name = activity.Properties.Extract<string>("name");
@@ -91,25 +90,10 @@ public class InvokeActivity<TValue> : InvokeActivity
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class.
-    /// </summary>
-    public InvokeActivity() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class with the specified name.
-    /// </summary>
-    /// <param name="name">The invoke operation name.</param>
-    public InvokeActivity(string name) : base(name)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class from an InvokeActivity.
     /// </summary>
     /// <param name="activity">The invoke activity.</param>
-    public InvokeActivity(InvokeActivity activity) : base(activity)
+    internal InvokeActivity(InvokeActivity activity) : base(activity)
     {
     }
 }
@@ -128,16 +112,6 @@ public static class InvokeNames
     /// Adaptive card action invoke name.
     /// </summary>
     public const string AdaptiveCardAction = "adaptiveCard/action";
-
-    /// <summary>
-    /// Tab fetch invoke name.
-    /// </summary>
-    public const string TabFetch = "tab/fetch";
-
-    /// <summary>
-    /// Tab submit invoke name.
-    /// </summary>
-    public const string TabSubmit = "tab/submit";
 
     /// <summary>
     /// Task fetch invoke name.
@@ -216,41 +190,4 @@ public static class InvokeNames
     /// </summary>
     [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
     public const string SuggestedActionSubmit = "suggestedActions/submit";
-
-    //TODO : review
-    /*
-    /// <summary>
-    /// Execute action invoke name.
-    /// </summary>
-    public const string ExecuteAction = "actionableMessage/executeAction";
-
-    /// <summary>
-    /// Handoff invoke name.
-    /// </summary>
-    public const string Handoff = "handoff/action";
-
-    /// <summary>
-    /// Search invoke name.
-    /// </summary>
-    public const string Search = "search";
-    /// <summary>
-    /// Config fetch invoke name.
-    /// </summary>
-    public const string ConfigFetch = "config/fetch";
-
-    /// <summary>
-    /// Config submit invoke name.
-    /// </summary>
-    public const string ConfigSubmit = "config/submit";
-
-     /// <summary>
-     /// Message extension card button clicked invoke name.
-     /// </summary>
-     public const string MessageExtensionCardButtonClicked = "composeExtension/onCardButtonClicked";
-
-     /// <summary>
-     /// Message extension setting invoke name.
-     /// </summary>
-     public const string MessageExtensionSetting = "composeExtension/setting";
-     */
 }

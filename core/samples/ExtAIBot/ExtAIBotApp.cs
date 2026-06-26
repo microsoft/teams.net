@@ -56,10 +56,10 @@ internal class ExtAIBotApp : TeamsBotApplication
             string? reaction = context.Activity.Value?.Data?.ActionValue?.Reaction;
 
             return Task.FromResult(TaskModuleResponse.CreateBuilder()
-                .WithType(TaskModuleResponseType.Continue)
+                .WithType(TaskModuleResponseTypes.Continue)
                 .WithTitle("Feedback")
-                .WithHeight(TaskModuleSize.Small)
-                .WithWidth(TaskModuleSize.Small)
+                .WithHeight(TaskModuleSizes.Small)
+                .WithWidth(TaskModuleSizes.Small)
                 .WithCard(BuildFeedbackCard(reaction))
                 .Build());
         });
@@ -99,7 +99,7 @@ internal class ExtAIBotApp : TeamsBotApplication
         }
         else
         {
-            final.AddFeedback(FeedbackType.Custom);
+            final.AddFeedback(FeedbackTypes.Custom);
         }
 
         foreach (Entity entity in entities) final.AddEntity(entity);

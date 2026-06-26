@@ -14,7 +14,7 @@ namespace Microsoft.Teams.Core.Schema;
 [JsonSerializable(typeof(CoreActivity))]
 [JsonSerializable(typeof(ChannelData))]
 [JsonSerializable(typeof(Conversation))]
-[JsonSerializable(typeof(ConversationAccount))]
+[JsonSerializable(typeof(ChannelAccount))]
 [JsonSerializable(typeof(ExtendedPropertiesDictionary))]
 [JsonSerializable(typeof(System.Text.Json.JsonElement))]
 [JsonSerializable(typeof(System.Text.Json.Nodes.JsonNode))]

@@ -53,11 +53,11 @@ public static class ActivitySchemaMapper
 
 
     /// <summary>
-    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
     /// </summary>
     /// <param name="account">The conversation account to convert.</param>
     /// <returns>The equivalent channel account.</returns>
-    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -109,11 +109,11 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/> with all known properties.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/> with all known properties.
     /// </summary>
     /// <param name="account">The conversation account to convert.</param>
     /// <returns>The equivalent Teams channel account.</returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -149,11 +149,11 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/>.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/>.
     /// </summary>
     /// <param name="account">The conversation account to convert.</param>
     /// <returns>The equivalent Teams channel account.</returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -198,13 +198,13 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a Bot Framework ChannelAccount to a Core ConversationAccount.
+    /// Converts a Bot Framework ChannelAccount to a Core ChannelAccount.
     /// </summary>
-    public static Microsoft.Teams.Core.Schema.ConversationAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
+    public static Microsoft.Teams.Core.Schema.ChannelAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        Microsoft.Teams.Core.Schema.ConversationAccount result = new() { Id = account.Id, Name = account.Name };
+        Microsoft.Teams.Core.Schema.ChannelAccount result = new() { Id = account.Id, Name = account.Name };
 
         if (!string.IsNullOrEmpty(account.AadObjectId))
         {

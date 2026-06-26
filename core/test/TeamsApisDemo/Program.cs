@@ -32,7 +32,7 @@ int pages = 1;
 string cid = "19%3ALydFnezGKSkhYoiLNP6kZ8AuXQr36EDAkvG9CNJSPKc1%40thread.tacv2";
 var paged = await membersClient.GetPagedAsync(cid, 52);
 
-List<TeamsConversationAccount?> members = [..paged.Members];
+List<TeamsChannelAccount?> members = [..paged.Members];
 
 while (!string.IsNullOrEmpty(paged.ContinuationToken))
 {

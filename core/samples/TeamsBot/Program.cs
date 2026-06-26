@@ -34,14 +34,14 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 
 
     TeamsActivity helpActivity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
         {
             To = [context.Activity.From?.Id!],
             Actions = [
-                    new SuggestedAction(ActionType.IMBack, "hello"),
-                    new SuggestedAction(ActionType.IMBack, "feedback"),
+                    new SuggestedAction(ActionTypes.IMBack, "hello"),
+                    new SuggestedAction(ActionTypes.IMBack, "feedback"),
                  ]
         })
         .Build();
@@ -59,11 +59,33 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
     string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
     TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText(replyText)
         .AddMention(context.Activity.From)
         .Build();
     await context.SendActivityAsync(ta, cancellationToken);
+});
+
+// Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
+teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
+{
+    MessageActivity extendedMarkdownMessage = new("""
+# Extended Markdown Demo
+
+## Table
+| Feature | Status |
+|---------|--------|
+| Tables  | Supported |
+| Math    | Supported |
+
+## Math
+$$E = mc^2$$
+""")
+    {
+        TextFormat = TextFormats.ExtendedMarkdown
+    };
+
+    await context.SendActivityAsync(extendedMarkdownMessage, cancellationToken);
 });
 
 // Markdown handler: matches "markdown" (case-insensitive)
@@ -111,7 +133,7 @@ public class Example
 teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
 {
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("Here is a response with citations [1] [2].")
         .WithProperty("textFormat", TextFormats.Markdown)
         .AddCitation(1, new CitationAppearance()
@@ -119,7 +141,7 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
             Name = "Teams SDK Documentation",
             Abstract = "The Teams Bot SDK provides a streamlined way to build bots for Microsoft Teams.",
             Url = new Uri("https://github.com/microsoft/teams.net"),
-            Icon = CitationIcon.Text
+            Icon = CitationIcons.Text
         })
         .AddCitation(2, new CitationAppearance()
         {
@@ -144,7 +166,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
 
     // Send a targeted message visible only to the sender
     TeamsActivity targeted = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("This is a targeted message only you can see!")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
@@ -155,7 +177,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
 
     // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
     TeamsActivity updated = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("This targeted message was updated!")
         .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
@@ -184,7 +206,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
     TeamsActivity tmMsgToReact = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("I'm going to add and remove reactions to this message.")
         .WithRecipient(context.Activity.From, false)
         .WithServiceUrl(context.Activity.ServiceUrl)
@@ -261,14 +283,14 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
     {
         To = [context.Activity.From?.Id!],
         Actions = [
-            new SuggestedAction(ActionType.IMBack, "Option 1", "You chose option 1"),
-            new SuggestedAction(ActionType.IMBack, "Option 2", "You chose option 2"),
-            new SuggestedAction(ActionType.IMBack, "Option 3", "You chose option 3")
+            new SuggestedAction(ActionTypes.IMBack, "Option 1", "You chose option 1"),
+            new SuggestedAction(ActionTypes.IMBack, "Option 2", "You chose option 2"),
+            new SuggestedAction(ActionTypes.IMBack, "Option 3", "You chose option 3")
         ]
     };
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("Here are some suggested actions for you:")
         .WithSuggestedActions(suggestedActions)
         .Build();
@@ -349,10 +371,10 @@ teamsApp.OnTaskFetch(async (context, cancellationToken) =>
     await Task.CompletedTask;
 
     return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Continue)
+        .WithType(TaskModuleResponseTypes.Continue)
         .WithTitle("Task Module Demo")
-        .WithHeight(TaskModuleSize.Medium)
-        .WithWidth(TaskModuleSize.Medium)
+        .WithHeight(TaskModuleSizes.Medium)
+        .WithWidth(TaskModuleSizes.Medium)
         .WithCard(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.TaskModuleFormCard)
             .Build())
@@ -370,14 +392,14 @@ teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
     string? comment = data?["userComment"]?.ToString();
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText($"**Task module submitted!**\n- Name: {name ?? "(empty)"}\n- Comment: {comment ?? "(empty)"}")
         .Build();
 
     await context.SendActivityAsync(reply, cancellationToken);
 
     return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Message)
+        .WithType(TaskModuleResponseTypes.Message)
         .WithMessage($"Thanks {name ?? "there"}! Your response was recorded.")
         .Build();
 });

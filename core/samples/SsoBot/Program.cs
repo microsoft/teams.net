@@ -3,7 +3,7 @@
 
 // This sample demonstrates Teams SSO using the context-level API with a single OAuth connection.
 // The context API is the simplest way to add authentication -- when only one OAuthFlow is registered,
-// context.SignIn() and context.SignOut() automatically resolve to it without specifying a connection name.
+// Resolve the flow once via bot.GetOAuthFlow("sso") and call SignInAsync/SignOutAsync on it.
 //
 // Azure Bot resource must have one OAuth connection setting configured:
 // | Connection name   | Provider    | Scopes                   |
@@ -12,22 +12,43 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Diagnostics;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
-AppBuilder appBuilder = App.Builder().AddOAuth("sso");
+string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotApplicationTelemetry.ActivitySourceName];
+string[] meterNames = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName];
 
-webAppBuilder.AddTeams(appBuilder);
+webAppBuilder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r
+        .AddService(serviceName: "SsoBot", serviceVersion: "0.0.1")
+        .AddAttributes(new Dictionary<string, object>
+        {
+            ["deployment.environment"] = webAppBuilder.Environment.EnvironmentName,
+            ["service.namespace"] = "Microsoft.Teams"
+        }))
+    .UseMicrosoftOpenTelemetry(o =>
+    {
+        o.Exporters = ExportTarget.Otlp;
+        o.Instrumentation.EnableHttpClientInstrumentation = true;
+        o.Instrumentation.EnableAspNetCoreInstrumentation = true;
+    })
+    .WithTracing(t => t.AddSource(activitySources))
+    .WithMetrics(m => m.AddMeter(meterNames));
 
 // Configure the single OAuth flow at the DI level
-//webAppBuilder.Services.AddTeamsBotApplication(options =>
-//{
-//    options.AddOAuthFlow("sso");
-//});
+webAppBuilder.Services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("sso");
+});
 
 WebApplication webApp = webAppBuilder.Build();
 
@@ -53,8 +74,8 @@ auth.OnSignInFailure(async (context, failure, ct) =>
 
 bot.OnMessage("(?i)^login$", async (context, ct) =>
 {
-    // context.SignIn() resolves to the single registered OAuthFlow automatically
-    string? token = await context.SignIn(cancellationToken: ct);
+    // auth is the pre-resolved OAuthFlow (bot.GetOAuthFlow("sso"))
+    string? token = await auth.SignInAsync(context, ct);
     if (token is not null)
     {
         await context.SendActivityAsync("You're already signed in.", ct);
@@ -65,7 +86,7 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
 bot.OnMessage("(?i)^profile$", async (context, ct) =>
 {
     // SignIn doubles as "get token if cached, else start sign-in"
-    string? token = await context.SignIn(cancellationToken: ct);
+    string? token = await auth.SignInAsync(context, ct);
     if (token is null) return; // sign-in card sent, wait for completion
 
     using HttpClient http = new();
@@ -85,7 +106,7 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
 
 bot.OnMessage("(?i)^calendar$", async (context, ct) =>
 {
-    string? token = await context.SignIn(cancellationToken: ct);
+    string? token = await auth.SignInAsync(context, ct);
     if (token is null) return;
 
     using HttpClient http = new();
@@ -106,13 +127,13 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
 
 bot.OnMessage("(?i)^logout$", async (context, ct) =>
 {
-    await context.SignOut(cancellationToken: ct);
+    await auth.SignOutAsync(context, ct);
     await context.SendActivityAsync("Signed out.", ct);
 });
 
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
-    bool signedIn = await context.IsSignedInAsync(cancellationToken: ct);
+    bool signedIn = await auth.IsSignedInAsync(context, ct);
     await context.SendActivityAsync(signedIn ? "Signed in." : "Not signed in.", ct);
 });
 

@@ -17,7 +17,7 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
 {
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("👋 Only you can see this targeted message.")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
@@ -29,11 +29,11 @@ teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 {
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("🔒 Targeted reply visible only to you.")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
-    await context.Reply(reply, cancellationToken);
+    await context.ReplyAsync(reply, cancellationToken);
 });
 
 // Send → Update a targeted message after 3 seconds.
@@ -42,7 +42,7 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
 
     TeamsActivity initial = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("📝 This targeted message will be updated in 3 seconds…")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
@@ -73,7 +73,7 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
 
     TeamsActivity initial = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+        .WithType(TeamsActivityTypes.Message)
         .WithText("🗑️ This targeted message will be deleted in 3 seconds…")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();

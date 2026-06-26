@@ -74,7 +74,7 @@ public class ConversationMembers
     /// Gets or sets the list of members in this conversation.
     /// </summary>
     [JsonPropertyName("members")]
-    public IList<ConversationAccount>? Members { get; set; }
+    public IList<ChannelAccount>? Members { get; set; }
 }
 
 /// <summary>
@@ -92,13 +92,13 @@ public class ConversationParameters
     /// Gets or sets the bot's account for this conversation.
     /// </summary>
     [JsonPropertyName("bot")]
-    public ConversationAccount? Bot { get; set; }
+    public ChannelAccount? Bot { get; set; }
 
     /// <summary>
     /// Gets or sets the list of members to add to the conversation.
     /// </summary>
     [JsonPropertyName("members")]
-    public IList<ConversationAccount>? Members { get; set; }
+    public IList<ChannelAccount>? Members { get; set; }
 
     /// <summary>
     /// Gets or sets the topic name for the conversation (if supported by the channel).
@@ -164,7 +164,7 @@ public class PagedMembersResult
     /// Gets or sets the list of members in this page.
     /// </summary>
     [JsonPropertyName("members")]
-    public IList<ConversationAccount>? Members { get; set; }
+    public IList<ChannelAccount>? Members { get; set; }
 }
 
 /// <summary>

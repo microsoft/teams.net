@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+using Microsoft.Identity.Web.TokenCacheProviders.Distributed;
 
 namespace Microsoft.Teams.Core.Hosting;
 
@@ -157,7 +157,7 @@ public static class AddBotApplicationExtensions
     {
         services.AddHttpClient()
                 .AddTokenAcquisition(true)
-                .AddInMemoryTokenCaches()
+                .AddDistributedTokenCaches()
                 .AddAgentIdentities();
 
         ArgumentNullException.ThrowIfNull(botConfig);
