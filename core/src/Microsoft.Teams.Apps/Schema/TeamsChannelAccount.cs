@@ -54,7 +54,7 @@ public class TeamsChannelAccount : ChannelAccount
         result.Email = result.Properties.Extract<string>("email");
         result.UserPrincipalName = result.Properties.Extract<string>("userPrincipalName");
         result.UserRole = result.Properties.Extract<string>("userRole");
-        result.TenantId = result.Properties.Extract<string>("tenantId");
+        result.TenantId = channelAccount.TenantId;
         if (string.IsNullOrEmpty(result.AadObjectId))
         {
             result.AadObjectId = result.ObjectId;
