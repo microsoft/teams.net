@@ -18,6 +18,11 @@ public sealed class AgenticIdentity
     public string? AgenticUserId { get; set; }
 
     /// <summary>
+    /// Tenant ID associated with the agentic identity.
+    /// </summary>
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// Agentic application blueprint ID.
     /// </summary>
     public string? AgenticAppBlueprintId { get; set; }
@@ -37,7 +42,8 @@ public sealed class AgenticIdentity
         {
             AgenticAppId = account.AgenticAppId,
             AgenticUserId = account.AgenticUserId,
-            AgenticAppBlueprintId = account.AgenticAppBlueprintId
+            AgenticAppBlueprintId = account.AgenticAppBlueprintId,
+            TenantId = account.TenantId
         };
     }
 }
