@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -190,9 +191,52 @@ public static class InvokeNames
     public const string MessageSubmitAction = "message/submitAction";
 
     /// <summary>
+    /// HTML widget call tool invoke name.
+    /// </summary>
+    [Experimental("ExperimentalTeamsHtmlWidget")]
+    public const string HtmlWidgetCallTool = "htmlwidget/calltool";
+
+    /// <summary>
     /// Suggested action submit invoke name.
     /// Sent when the user clicks a suggested action of type <c>Action.Submit</c>.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    [Experimental("ExperimentalTeamsSuggestedAction")]
     public const string SuggestedActionSubmit = "suggestedActions/submit";
+
+    //TODO : review
+    /*
+    /// <summary>
+    /// Execute action invoke name.
+    /// </summary>
+    public const string ExecuteAction = "actionableMessage/executeAction";
+
+    /// <summary>
+    /// Handoff invoke name.
+    /// </summary>
+    public const string Handoff = "handoff/action";
+
+    /// <summary>
+    /// Search invoke name.
+    /// </summary>
+    public const string Search = "search";
+    /// <summary>
+    /// Config fetch invoke name.
+    /// </summary>
+    public const string ConfigFetch = "config/fetch";
+
+    /// <summary>
+    /// Config submit invoke name.
+    /// </summary>
+    public const string ConfigSubmit = "config/submit";
+
+     /// <summary>
+     /// Message extension card button clicked invoke name.
+     /// </summary>
+     public const string MessageExtensionCardButtonClicked = "composeExtension/onCardButtonClicked";
+
+     /// <summary>
+     /// Message extension setting invoke name.
+     /// </summary>
+     public const string MessageExtensionSetting = "composeExtension/setting";
+     */
 }
