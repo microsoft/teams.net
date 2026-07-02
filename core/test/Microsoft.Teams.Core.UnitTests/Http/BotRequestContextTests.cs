@@ -115,7 +115,7 @@ public class BotRequestContextTests
         {
             Type = ActivityType.Message,
             From = new ChannelAccount { Id = "user-id" },
-            Recipient = new ChannelAccount { Id = "28:recipient-bot-id", AgenticUserId = "agentic-user" },
+            Recipient = new ChannelAccount { Id = "recipient-account-id", BotId = "28:recipient-bot-id", AgenticUserId = "agentic-user" },
         };
 
         BotRequestContext? ctx = BotRequestContext.FromInboundActivity(activity);
@@ -133,7 +133,7 @@ public class BotRequestContextTests
         {
             Type = ActivityType.Message,
             From = new ChannelAccount { Id = "user-id", AgenticUserId = "agentic-user" },
-            Recipient = new ChannelAccount { Id = "28:recipient-bot-id" },
+            Recipient = new ChannelAccount { Id = "recipient-account-id", BotId = "28:recipient-bot-id" },
         };
 
         BotRequestContext? ctx = BotRequestContext.FromInboundActivity(activity);
