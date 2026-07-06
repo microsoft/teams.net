@@ -37,19 +37,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains an array of token status results for each connection.</returns>
     public virtual async Task<GetTokenStatusResult[]> GetTokenStatusAsync(string userId, string channelId, string? include = null, CancellationToken cancellationToken = default)
-        => await GetTokenStatusAsync(userId, channelId, include, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Gets the token status for each connection for the given user.
-    /// </summary>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="channelId">The channel ID.</param>
-    /// <param name="include">The optional include parameter.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation. The result contains an array of token status results for each connection.</returns>
-    public virtual async Task<GetTokenStatusResult[]> GetTokenStatusAsync(string userId, string channelId, string? include, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await GetTokenStatusAsync(userId, channelId, include, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await GetTokenStatusAsync(userId, channelId, include, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Gets the token status for each connection for the given user.
@@ -99,20 +87,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains the token, or null if no token is available.</returns>
     public virtual async Task<GetTokenResult?> GetTokenAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
-        => await GetTokenAsync(userId, connectionName, channelId, code, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Gets the user token for a particular connection.
-    /// </summary>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="connectionName">The connection name.</param>
-    /// <param name="channelId">The channel ID.</param>
-    /// <param name="code">The optional code.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation. The result contains the token, or null if no token is available.</returns>
-    public virtual async Task<GetTokenResult?> GetTokenAsync(string userId, string connectionName, string channelId, string? code, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await GetTokenAsync(userId, connectionName, channelId, code, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await GetTokenAsync(userId, connectionName, channelId, code, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Gets the user token for a particular connection.
@@ -159,21 +134,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains the sign-in resource with the sign-in link and token exchange information.</returns>
     public virtual Task<GetSignInResourceResult> GetSignInResourceAsync(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
-        => GetSignInResourceAsync(userId, connectionName, channelId, finalRedirect, agenticIdentity: null, cancellationToken);
-
-    /// <summary>
-    /// Get the token or raw signin link to be sent to the user for signin for a connection.
-    /// Builds the state parameter internally from the userId and connectionName.
-    /// </summary>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="connectionName">The connection name.</param>
-    /// <param name="channelId">The channel ID.</param>
-    /// <param name="finalRedirect">The optional final redirect URL.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation. The result contains the sign-in resource with the sign-in link and token exchange information.</returns>
-    public virtual Task<GetSignInResourceResult> GetSignInResourceAsync(string userId, string connectionName, string channelId, string? finalRedirect, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => GetSignInResourceAsync(userId, connectionName, channelId, finalRedirect, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken);
+        => GetSignInResourceAsync(userId, connectionName, channelId, finalRedirect, requestContext: null, cancellationToken);
 
     /// <summary>
     /// Get the token or raw signin link to be sent to the user for signin for a connection.
@@ -213,20 +174,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The sign-in URL, or null if not available.</returns>
     public virtual async Task<string?> GetSignInUrlAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
-        => await GetSignInUrlAsync(state, codeChallenge, emulatorUrl, finalRedirect, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Gets the sign-in URL for the given state.
-    /// </summary>
-    /// <param name="state">The encoded state parameter.</param>
-    /// <param name="codeChallenge">The optional code challenge for PKCE.</param>
-    /// <param name="emulatorUrl">The optional emulator URL.</param>
-    /// <param name="finalRedirect">The optional final redirect URL.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The sign-in URL, or null if not available.</returns>
-    public virtual async Task<string?> GetSignInUrlAsync(string state, string? codeChallenge, Uri? emulatorUrl, Uri? finalRedirect, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await GetSignInUrlAsync(state, codeChallenge, emulatorUrl, finalRedirect, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await GetSignInUrlAsync(state, codeChallenge, emulatorUrl, finalRedirect, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Gets the sign-in URL for the given state.
@@ -269,20 +217,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The sign-in resource result.</returns>
     public virtual async Task<GetSignInResourceResult> GetSignInResourceAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
-        => await GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Gets the sign-in resource for the given state.
-    /// </summary>
-    /// <param name="state">The encoded state parameter.</param>
-    /// <param name="codeChallenge">The optional code challenge for PKCE.</param>
-    /// <param name="emulatorUrl">The optional emulator URL.</param>
-    /// <param name="finalRedirect">The optional final redirect URL.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The sign-in resource result.</returns>
-    public virtual async Task<GetSignInResourceResult> GetSignInResourceAsync(string state, string? codeChallenge, Uri? emulatorUrl, Uri? finalRedirect, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Gets the sign-in resource for the given state.
@@ -324,19 +259,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="exchangeToken">The token to exchange.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public virtual async Task<GetTokenResult> ExchangeTokenAsync(string userId, string connectionName, string channelId, string? exchangeToken, CancellationToken cancellationToken = default)
-        => await ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Exchanges a token for another token.
-    /// </summary>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="connectionName">The connection name.</param>
-    /// <param name="channelId">The channel ID.</param>
-    /// <param name="exchangeToken">The token to exchange.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    public virtual async Task<GetTokenResult> ExchangeTokenAsync(string userId, string connectionName, string channelId, string? exchangeToken, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Exchanges a token for another token.
@@ -380,19 +303,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous sign-out operation.</returns>
     public virtual async Task SignOutUserAsync(string userId, string? connectionName = null, string? channelId = null, CancellationToken cancellationToken = default)
-        => await SignOutUserAsync(userId, connectionName, channelId, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Signs the user out of a connection, revoking their OAuth token.
-    /// </summary>
-    /// <param name="userId">The unique identifier of the user to sign out. Cannot be null or empty.</param>
-    /// <param name="connectionName">Optional name of the OAuth connection to sign out from. If null, signs out from all connections.</param>
-    /// <param name="channelId">Optional channel identifier. If provided, limits sign-out to tokens for this channel.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous sign-out operation.</returns>
-    public virtual async Task SignOutUserAsync(string userId, string? connectionName, string? channelId, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await SignOutUserAsync(userId, connectionName, channelId, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await SignOutUserAsync(userId, connectionName, channelId, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Signs the user out of a connection, revoking their OAuth token.
@@ -440,20 +351,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains a dictionary mapping resource URLs to their token results.</returns>
     public virtual async Task<IDictionary<string, GetTokenResult>> GetAadTokensAsync(string userId, string connectionName, string channelId, string[]? resourceUrls = null, CancellationToken cancellationToken = default)
-        => await GetAadTokensAsync(userId, connectionName, channelId, resourceUrls, agenticIdentity: null, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Gets AAD tokens for a user.
-    /// </summary>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="connectionName">The connection name.</param>
-    /// <param name="channelId">The channel ID.</param>
-    /// <param name="resourceUrls">The resource URLs.</param>
-    /// <param name="agenticIdentity">The optional agentic identity for user-delegated token acquisition.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation. The result contains a dictionary mapping resource URLs to their token results.</returns>
-    public virtual async Task<IDictionary<string, GetTokenResult>> GetAadTokensAsync(string userId, string connectionName, string channelId, string[]? resourceUrls, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken = default)
-        => await GetAadTokensAsync(userId, connectionName, channelId, resourceUrls, BotRequestContext.FromAgenticIdentity(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        => await GetAadTokensAsync(userId, connectionName, channelId, resourceUrls, requestContext: null, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Gets AAD tokens for a user.

@@ -13,7 +13,7 @@ namespace Microsoft.Teams.Core.UnitTests;
 public class UserTokenClientTests
 {
     [Fact]
-    public async Task GetTokenAsync_WithAgenticIdentity_StampsRequestOption()
+    public async Task GetTokenAsync_WithRequestContext_StampsRequestOptions()
     {
         CapturingHandler handler = new();
         UserTokenClient client = CreateClient(handler);
@@ -23,12 +23,19 @@ public class UserTokenClientTests
             AgenticUserId = "agentic-user",
             AgenticAppBlueprintId = "agentic-blueprint",
         };
+        BotRequestContext requestContext = new()
+        {
+            AgenticIdentity = identity,
+            BotAppId = "bot-app",
+        };
 
-        await client.GetTokenAsync("user", "connection", "msteams", code: null, identity);
+        await client.GetTokenAsync("user", "connection", "msteams", code: null, requestContext);
 
         Assert.NotNull(handler.Request);
-        Assert.True(handler.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticIdentityKey), out object? value));
-        Assert.Same(identity, value);
+        Assert.True(handler.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticIdentityKey), out object? identityValue));
+        Assert.Same(identity, identityValue);
+        Assert.True(handler.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.BotAppIdKey), out object? botAppIdValue));
+        Assert.Equal("bot-app", botAppIdValue);
     }
 
     private static UserTokenClient CreateClient(HttpMessageHandler handler)
