@@ -7,6 +7,7 @@ using AdaptiveCards;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
@@ -312,6 +313,17 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
+        public void FromCompatChannelAccount_MapsBotId()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "bot-account-id" };
+            account.Properties["botId"] = "28:bot-app-id";
+
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
+
+            Assert.Equal("28:bot-app-id", result.BotId);
+        }
+
+        [Fact]
         public void FromCompatChannelAccount_MapsAadObjectIdToProperties()
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", AadObjectId = "aad-123" };
@@ -349,6 +361,17 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount? account = null;
             Assert.Throws<ArgumentNullException>(() => account!.FromCompatChannelAccount());
+        }
+
+        [Fact]
+        public void ToCompatChannelAccount_MapsBotId()
+        {
+            Microsoft.Teams.Core.Schema.ChannelAccount account = new() { Id = "bot-account-id", BotId = "28:bot-app-id" };
+
+            Microsoft.Bot.Schema.ChannelAccount result = account.ToCompatChannelAccount();
+
+            Assert.True(result.Properties.TryGetValue("botId", out JToken? botId));
+            Assert.Equal("28:bot-app-id", botId?.ToString());
         }
     }
 

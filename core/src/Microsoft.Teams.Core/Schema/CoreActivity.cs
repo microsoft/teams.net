@@ -170,11 +170,13 @@ public class CoreActivity
     private static ChannelAccount CloneChannelAccount(ChannelAccount source) => new()
     {
         Id = source.Id,
+        BotId = source.BotId,
         Name = source.Name,
         IsTargeted = source.IsTargeted,
         AgenticAppId = source.AgenticAppId,
         AgenticUserId = source.AgenticUserId,
         AgenticAppBlueprintId = source.AgenticAppBlueprintId,
+        TenantId = source.TenantId,
         Properties = new ExtendedPropertiesDictionary(source.Properties)
     };
 #pragma warning restore ExperimentalTeamsTargeted
