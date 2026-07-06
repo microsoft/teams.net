@@ -143,6 +143,40 @@ public class BotRequestContextTests
         Assert.Null(ctx.AgenticIdentity);
     }
 
+    [Fact]
+    public void FromInboundActivity_FallsBackToRecipientId_WhenBotIdAbsent()
+    {
+        // Standard (non-agentic) inbound activity: SMBA does not populate BotId, but Recipient.Id
+        // carries the Teams-style "28:<appId>" value.
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            From = new ChannelAccount { Id = "user-id" },
+            Recipient = new ChannelAccount { Id = "28:recipient-app-id" },
+        };
+
+        BotRequestContext? ctx = BotRequestContext.FromInboundActivity(activity);
+
+        Assert.NotNull(ctx);
+        Assert.Equal("recipient-app-id", ctx!.BotAppId);
+    }
+
+    [Fact]
+    public void FromInboundActivity_PrefersBotId_WhenBothPresent()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            From = new ChannelAccount { Id = "user-id" },
+            Recipient = new ChannelAccount { Id = "28:recipient-account-id", BotId = "28:recipient-bot-id" },
+        };
+
+        BotRequestContext? ctx = BotRequestContext.FromInboundActivity(activity);
+
+        Assert.NotNull(ctx);
+        Assert.Equal("recipient-bot-id", ctx!.BotAppId);
+    }
+
     // ---- Merge -------------------------------------------------------------
 
     [Fact]
