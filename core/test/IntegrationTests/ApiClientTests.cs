@@ -351,8 +351,6 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_GetSignInUrlAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
-
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
@@ -378,8 +376,6 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_GetSignInResourceAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
-
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
@@ -409,8 +405,6 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_Token_GetStatusAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
-
         string userId = _f.MemberMri1!;
 
         IList<GetTokenStatusResult>? statuses = await _api.UserToken.GetStatusAsync(userId, "msteams");
@@ -430,8 +424,6 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_Token_GetAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
-
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
@@ -443,8 +435,6 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_Token_SignOutAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
-
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 

@@ -10,6 +10,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
@@ -139,7 +140,9 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl);
+    public ApiClient ScopedApiClient => ApiClient
+        .ForRequestContext(BotRequestContext.FromAgenticIdentity(AgenticIdentity))
+        .ForServiceUrl(ServiceUrl);
 
     public void Dispose()
     {

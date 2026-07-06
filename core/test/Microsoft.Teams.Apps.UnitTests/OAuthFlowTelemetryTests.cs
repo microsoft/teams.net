@@ -38,7 +38,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "tok", ConnectionName = GraphConnection });
 
         Context<MessageActivity> ctx = CreateMessageContext(harness);
@@ -64,7 +64,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
 
         Context<MessageActivity> ctx = CreateMessageContext(harness);
@@ -87,7 +87,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "cached", ConnectionName = GraphConnection });
 
         Context<MessageActivity> ctx = CreateMessageContext(harness);
@@ -135,7 +135,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.SignOutUserAsync(TestUserId, GraphConnection, TestChannelId, It.IsAny<CancellationToken>()))
+            .Setup(c => c.SignOutUserAsync(TestUserId, GraphConnection, TestChannelId, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         Context<MessageActivity> ctx = CreateMessageContext(harness);
@@ -157,7 +157,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenStatusAsync(TestUserId, TestChannelId, null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenStatusAsync(TestUserId, TestChannelId, null, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { new GetTokenStatusResult { ConnectionName = GraphConnection, HasToken = true } });
 
         Context<MessageActivity> ctx = CreateMessageContext(harness);
@@ -184,7 +184,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access", ConnectionName = GraphConnection });
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-success", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -208,7 +208,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access", ConnectionName = GraphConnection });
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-dup", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -237,7 +237,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-bad", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -261,7 +261,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Forbidden", null, System.Net.HttpStatusCode.Forbidden));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-forbidden", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -310,7 +310,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
 
         Context<InvokeActivity> ctx = CreateInvokeContext(harness);
@@ -333,7 +333,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest));
 
         Context<InvokeActivity> ctx = CreateInvokeContext(harness);
@@ -357,7 +357,7 @@ public class OAuthFlowTelemetryTests
         TestHarness harness = CreateHarness();
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Forbidden", null, System.Net.HttpStatusCode.Forbidden));
 
         Context<InvokeActivity> ctx = CreateInvokeContext(harness);
@@ -474,13 +474,13 @@ public class OAuthFlowTelemetryTests
 
     private static void SetupSilentTokenReturnsNull(Mock<UserTokenClient> mock)
     {
-        mock.Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
     }
 
     private static void SetupGetSignInResource(Mock<UserTokenClient> mock)
     {
-        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, (Uri?)null, (Uri?)null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, (Uri?)null, (Uri?)null, It.IsAny<BotRequestContext?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetSignInResourceResult
             {
                 SignInLink = "https://login.microsoftonline.com/test",

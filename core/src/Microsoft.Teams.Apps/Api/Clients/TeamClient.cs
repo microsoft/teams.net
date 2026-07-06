@@ -15,11 +15,13 @@ public class TeamClient
 {
     private readonly BotHttpClient _http;
     private readonly string _serviceUrl;
+    private readonly BotRequestContext? _requestContext;
 
-    internal TeamClient(string serviceUrl, BotHttpClient http)
+    internal TeamClient(string serviceUrl, BotHttpClient http, BotRequestContext? requestContext = null)
     {
         _serviceUrl = serviceUrl.TrimEnd('/');
         _http = http;
+        _requestContext = requestContext;
     }
 
     /// <summary>
@@ -41,8 +43,8 @@ public class TeamClient
         return response?.Conversations;
     }
 
-    private static BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        agenticIdentity is null ? null : new() { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity) };
+    private BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
+        new() { RequestContext = BotRequestContext.Merge(_requestContext, BotRequestContext.FromAgenticIdentity(agenticIdentity)) };
 
     private sealed class ConversationListResponse
     {

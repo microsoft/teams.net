@@ -10,6 +10,8 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Diagnostics;
+using Microsoft.Teams.Core.Http;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.OAuth;
 
@@ -108,7 +110,7 @@ public class OAuthFlow
         string result = AppsTelemetry.OAuthResults.Miss;
         try
         {
-            GetTokenResult? tokenResult = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+            GetTokenResult? tokenResult = await GetTokenAsync(context, userId, _connectionName, channelId, code: null, cancellationToken).ConfigureAwait(false);
             result = tokenResult?.Token is not null ? AppsTelemetry.OAuthResults.Hit : AppsTelemetry.OAuthResults.Miss;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
             return tokenResult?.Token;
@@ -160,7 +162,7 @@ public class OAuthFlow
         try
         {
             // 1. Try silent token acquisition
-            GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+            GetTokenResult? existingToken = await GetTokenAsync(context, userId, _connectionName, channelId, code: null, cancellationToken).ConfigureAwait(false);
             if (existingToken?.Token is not null)
             {
                 _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", _connectionName, userId);
@@ -189,8 +191,7 @@ public class OAuthFlow
             };
             string state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
 
-            GetSignInResourceResult signInResource = await _app.UserTokenClient
-                .GetSignInResourceAsync(state, cancellationToken: cancellationToken)
+            GetSignInResourceResult signInResource = await GetSignInResourceAsync(context, state, cancellationToken)
                 .ConfigureAwait(false);
 
             OAuthCard oauthCard = new()
@@ -264,7 +265,7 @@ public class OAuthFlow
         try
         {
             _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, _connectionName);
-            await _app.UserTokenClient.SignOutUserAsync(userId, _connectionName, channelId, cancellationToken).ConfigureAwait(false);
+            await SignOutUserAsync(context, userId, _connectionName, channelId, cancellationToken).ConfigureAwait(false);
             result = AppsTelemetry.OAuthResults.Success;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
         }
@@ -317,7 +318,7 @@ public class OAuthFlow
         string result = AppsTelemetry.OAuthResults.Failure;
         try
         {
-            IList<GetTokenStatusResult> statuses = await _app.UserTokenClient.GetTokenStatusAsync(userId, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+            IList<GetTokenStatusResult> statuses = await GetTokenStatusAsync(context, userId, channelId, include: null, cancellationToken).ConfigureAwait(false);
             result = AppsTelemetry.OAuthResults.Success;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
             return statuses;
@@ -370,9 +371,7 @@ public class OAuthFlow
 
             try
             {
-                GetTokenResult tokenResult = await _app.UserTokenClient
-                    .ExchangeTokenAsync(userId, connectionName, channelId, exchangeValue.Token, cancellationToken)
-                    .ConfigureAwait(false);
+                GetTokenResult tokenResult = await ExchangeTokenAsync(context, userId, connectionName, channelId, exchangeValue.Token, cancellationToken).ConfigureAwait(false);
 
                 if (tokenResult?.Token is not null)
                 {
@@ -505,9 +504,7 @@ public class OAuthFlow
 
             try
             {
-                GetTokenResult? tokenResult = await _app.UserTokenClient
-                    .GetTokenAsync(userId, connectionName, channelId, code: verifyValue.State, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                GetTokenResult? tokenResult = await GetTokenAsync(context, userId, connectionName, channelId, code: verifyValue.State, cancellationToken).ConfigureAwait(false);
 
                 if (tokenResult?.Token is not null)
                 {
@@ -742,6 +739,36 @@ public class OAuthFlow
                 _pendingSignIns.TryRemove(kvp.Key, out _);
             }
         }
+    }
+
+    private Task<GetTokenResult?> GetTokenAsync<TActivity>(Context<TActivity> context, string userId, string connectionName, string channelId, string? code, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(context.Activity);
+        return _app.UserTokenClient.GetTokenAsync(userId, connectionName, channelId, code, requestContext, cancellationToken);
+    }
+
+    private Task<GetSignInResourceResult> GetSignInResourceAsync<TActivity>(Context<TActivity> context, string state, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(context.Activity);
+        return _app.UserTokenClient.GetSignInResourceAsync(state, codeChallenge: null, emulatorUrl: null, finalRedirect: null, requestContext: requestContext, cancellationToken: cancellationToken);
+    }
+
+    private Task SignOutUserAsync<TActivity>(Context<TActivity> context, string userId, string connectionName, string channelId, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(context.Activity);
+        return _app.UserTokenClient.SignOutUserAsync(userId, connectionName, channelId, requestContext, cancellationToken);
+    }
+
+    private Task<GetTokenStatusResult[]> GetTokenStatusAsync<TActivity>(Context<TActivity> context, string userId, string channelId, string? include, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(context.Activity);
+        return _app.UserTokenClient.GetTokenStatusAsync(userId, channelId, include, requestContext, cancellationToken);
+    }
+
+    private Task<GetTokenResult> ExchangeTokenAsync<TActivity>(Context<TActivity> context, string userId, string connectionName, string channelId, string? token, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(context.Activity);
+        return _app.UserTokenClient.ExchangeTokenAsync(userId, connectionName, channelId, token, requestContext, cancellationToken);
     }
 
     private static string GetUserId<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity

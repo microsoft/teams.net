@@ -17,6 +17,7 @@ public class ConversationApiClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
+    private readonly BotRequestContext? _requestContext;
 
     /// <summary>
     /// Client for activity operations.
@@ -33,13 +34,14 @@ public class ConversationApiClient
     /// </summary>
     public ReactionClient Reactions { get; }
 
-    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client)
+    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client, BotRequestContext? requestContext = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
-        Activities = new ActivityClient(serviceUrl, client);
-        Members = new MemberClient(serviceUrl, client);
-        Reactions = new ReactionClient(serviceUrl, client);
+        _requestContext = requestContext;
+        Activities = new ActivityClient(serviceUrl, client, requestContext);
+        Members = new MemberClient(serviceUrl, client, requestContext);
+        Reactions = new ReactionClient(serviceUrl, client, requestContext);
     }
 
     /// <summary>
@@ -47,6 +49,14 @@ public class ConversationApiClient
     /// </summary>
     public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return CreateAsync(request, BotRequestContext.FromAgenticIdentity(agenticIdentity), additionalHeaders, cancellationToken);
+    }
+
+    /// <summary>
+    /// Create a new conversation.
+    /// </summary>
+    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, BotRequestContext? requestContext, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    {
+        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: BotRequestContext.Merge(_requestContext, requestContext), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }
