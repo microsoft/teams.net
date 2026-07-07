@@ -44,37 +44,38 @@ public class HtmlWidgetSecurityPolicy
 
 /// <summary>
 /// Permissions that the widget may request from the host.
+/// Presence of a field means the permission is requested (value should be an empty object).
 /// </summary>
 [Experimental("ExperimentalTeamsHtmlWidget")]
 public class HtmlWidgetPermissions
 {
     /// <summary>
-    /// Request camera access.
+    /// Request camera access. Set to an empty dictionary to request.
     /// </summary>
     [JsonPropertyName("camera")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Camera { get; set; }
+    public IDictionary<string, object>? Camera { get; set; }
 
     /// <summary>
-    /// Request microphone access.
+    /// Request microphone access. Set to an empty dictionary to request.
     /// </summary>
     [JsonPropertyName("microphone")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Microphone { get; set; }
+    public IDictionary<string, object>? Microphone { get; set; }
 
     /// <summary>
-    /// Request geolocation access.
+    /// Request geolocation access. Set to an empty dictionary to request.
     /// </summary>
     [JsonPropertyName("geolocation")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Geolocation { get; set; }
+    public IDictionary<string, object>? Geolocation { get; set; }
 
     /// <summary>
-    /// Request clipboard write access.
+    /// Request clipboard write access. Set to an empty dictionary to request.
     /// </summary>
     [JsonPropertyName("clipboardWrite")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? ClipboardWrite { get; set; }
+    public IDictionary<string, object>? ClipboardWrite { get; set; }
 }
 
 /// <summary>
@@ -112,6 +113,8 @@ public class HtmlWidgetPayload
     /// <summary>
     /// The domain associated with the widget, applied to sandbox metadata.
     /// Must be a valid domain URL (e.g. 'https://example.com').
+    /// This is informational metadata, not a verified identity claim.
+    /// The platform does not authenticate this value.
     /// </summary>
     [JsonPropertyName("domain")]
     public string Domain { get; set; } = string.Empty;

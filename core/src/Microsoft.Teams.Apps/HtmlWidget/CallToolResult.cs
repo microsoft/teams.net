@@ -13,7 +13,8 @@ namespace Microsoft.Teams.Apps.HtmlWidget;
 public class McpUiCallToolResultContent
 {
     /// <summary>
-    /// The type of content (e.g. "text").
+    /// The type of content. MCP defines: "text", "image", "audio", "resource".
+    /// Teams currently only renders "text" content.
     /// </summary>
     [JsonPropertyName("type")]
     public string Type { get; set; } = "text";
