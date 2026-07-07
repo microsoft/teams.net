@@ -558,7 +558,7 @@ public class HtmlWidgetHelpersTests
                 BaseUriDomains = [],
             },
             ToolInput = JsonSerializer.SerializeToElement(new { location = "Seattle" }),
-            Permissions = new HtmlWidgetPermissions { ClipboardWrite = new() },
+            Permissions = new HtmlWidgetPermissions { ClipboardWrite = new Dictionary<string, object>() },
         };
         var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
         Assert.StartsWith("```html-widget\n", result);
@@ -732,6 +732,24 @@ public class HtmlWidgetHelpersTests
         var policy = new HtmlWidgetSecurityPolicy();
         var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
         Assert.Single(warnings);
+    }
+
+    [Fact]
+    public async Task InjectWidgetProtocol_FullScriptSnapshot()
+    {
+        var opts = new InjectWidgetProtocolOptions
+        {
+            Name = "My Widget",
+            Version = "2.0.0",
+            AvailableDisplayModes = ["inline", "fullscreen"],
+            Notifications = ["tool-result", "tool-input"],
+            DebugCspViolations = true,
+        };
+        var result = HtmlWidgetHelpers.InjectWidgetProtocol("<body><h1>Hello</h1></body>", opts);
+
+        var match = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>");
+        Assert.True(match.Success);
+        await VerifyXunit.Verifier.Verify(match.Groups[1].Value);
     }
 }
 
