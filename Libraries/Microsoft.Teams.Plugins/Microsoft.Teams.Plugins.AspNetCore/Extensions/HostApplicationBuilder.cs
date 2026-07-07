@@ -128,13 +128,22 @@ public static class HostApplicationBuilderExtensions
         {
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
         }
+        else if (skipAuth)
+        {
+            // No Teams:ClientId configured and skipAuth is set, so the authorization
+            // policy bypasses authentication and the bot will accept anonymous traffic.
+            // The warning routes through whatever logging pipeline the consumer set up.
+            LogFromServices(builder.Services, l => l.LogWarning(
+                "No Teams:ClientId configured and skipAuth is enabled. Bot will accept unauthenticated requests on the messaging endpoint."));
+        }
         else
         {
-            // No Teams:ClientId configured; warn the consumer their bot will accept
-            // anonymous traffic. The warning routes through whatever logging
-            // pipeline the consumer set up.
+            // No Teams:ClientId configured and skipAuth is not set, so the authorization
+            // policy rejects every request to the messaging endpoint. Warn the consumer
+            // their bot will not receive traffic until credentials are configured (or
+            // skipAuth: true is passed to AddTeams(...) for local development).
             LogFromServices(builder.Services, l => l.LogWarning(
-                "No Teams:ClientId configured. Bot will accept unauthenticated requests on /api/messages."));
+                "No Teams:ClientId configured. Bot will reject all requests on the messaging endpoint until credentials are configured."));
         }
 
         builder.Services.

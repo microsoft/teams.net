@@ -53,7 +53,7 @@ public record BotRequestContext
     /// <param name="activity">The inbound activity, or null.</param>
     /// <returns>The context, or null when nothing could be derived.</returns>
     public static BotRequestContext? FromInboundActivity(CoreActivity? activity)
-        => Build(Schema.AgenticIdentity.FromAccount(activity?.Recipient), NormalizeAppId(activity?.Recipient?.Id));
+        => Build(Schema.AgenticIdentity.FromAccount(activity?.Recipient), NormalizeAppId(activity?.Recipient?.BotId ?? activity?.Recipient?.Id));
 
     /// <summary>
     /// Builds context carrying only the supplied agentic identity.

@@ -19,6 +19,12 @@ public class ChannelAccount()
     public string? Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the bot application ID associated with the account.
+    /// </summary>
+    [JsonPropertyName("botId")]
+    public string? BotId { get; set; }
+
+    /// <summary>
     /// Gets or sets the display name of the channel account.
     /// </summary>
     [JsonPropertyName("name")]
