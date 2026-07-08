@@ -310,7 +310,7 @@ public sealed class TeamsStreamingWriter
         {
             _cancelled = true;
             _logger.LogWarning("The streaming was stopped by the user (streamId '{StreamId}').", _streamId);
-            throw new StreamCancelledException(message);
+            throw new StreamCancelledException(message, ex);
         }
     }
 
