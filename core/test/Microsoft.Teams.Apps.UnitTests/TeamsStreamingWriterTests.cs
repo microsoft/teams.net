@@ -59,25 +59,37 @@ public class TeamsStreamingWriterTests
     // ── Guard conditions ──────────────────────────────────────────────────────
 
     [Fact]
-    public async Task AppendAsync_AfterFinalizeAsync_ThrowsInvalidOperationException()
+    public async Task AppendAsync_AfterFinalizeAsync_ReopensStreamForNextMessage()
     {
-        (TeamsStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendResponseAsync("Hello");
         await writer.FinalizeResponseAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.AppendResponseAsync("Too late"));
+        // Appending after finalize reopens the stream on the same instance instead of throwing.
+        await writer.AppendResponseAsync("Second message");
+        await writer.FinalizeResponseAsync();
+
+        int finalCount = handler.RequestBodies.Count(b => b.Contains("\"streamType\": \"final\"", StringComparison.Ordinal));
+        Assert.Equal(2, finalCount);
+        // The reopened cycle only carries the second message's text (accumulated text was reset).
+        Assert.Contains("Second message", handler.RequestBodies.Last());
     }
 
     [Fact]
-    public async Task FinalizeAsync_CalledTwice_ThrowsInvalidOperationException()
+    public async Task FinalizeAsync_CalledTwice_IsIdempotent()
     {
-        (TeamsStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendResponseAsync("Hello");
         await writer.FinalizeResponseAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
+        int countAfterFirstFinalize = handler.RequestBodies.Count;
+
+        // A second finalize is a no-op until the next append/informative reopens the stream.
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(countAfterFirstFinalize, handler.RequestBodies.Count);
     }
 
     // ── Informative-first path ────────────────────────────────────────────────
@@ -247,5 +259,97 @@ public class TeamsStreamingWriterTests
         Assert.Null(streamIds[0]);
         Assert.NotNull(streamIds[1]);
         Assert.Equal(streamIds[1], streamIds[2]);
+    }
+
+    // ── Error handling (HTTP 403) ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task AppendAsync_403NotAllowed_ThrowsStreamNotAllowedException()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream is not allowed\"}}", HttpStatusCode.Forbidden);
+
+        await Assert.ThrowsAsync<StreamNotAllowedException>(() => writer.AppendResponseAsync("hi"));
+    }
+
+    [Fact]
+    public async Task AppendAsync_403UnknownMessage_ThrowsTerminalStreamException()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Message size too large\"}}", HttpStatusCode.Forbidden);
+
+        await Assert.ThrowsAsync<TerminalStreamException>(() => writer.AppendResponseAsync("hi"));
+    }
+
+    [Fact]
+    public async Task AppendAsync_403Cancelled_IsSwallowedAndFlagsCancelled()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream was canceled by user\"}}", HttpStatusCode.Forbidden);
+
+        // Cancellation is swallowed, not thrown.
+        await writer.AppendResponseAsync("hi");
+
+        Assert.True(writer.Cancelled);
+
+        // Finalize sends nothing once the stream is cancelled.
+        int countBeforeFinalize = handler.Requests.Count;
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(countBeforeFinalize, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_AfterStreamingTimeout_UpdatesOriginalMessageInPlace()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        // Informative send assigns the streamId that the in-place update will target.
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        // The next chunk trips the two-minute limit.
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        await writer.AppendResponseAsync("Final answer");
+
+        Assert.True(writer.TimedOut);
+
+        await writer.FinalizeResponseAsync();
+
+        // Finalize updates the original streamed message in place: a PUT to the streamId,
+        // carrying the buffered text without any stream markers.
+        HttpRequestMessage lastRequest = handler.Requests.Last();
+        Assert.Equal(HttpMethod.Put, lastRequest.Method);
+        Assert.EndsWith("/activities/stream-1", lastRequest.RequestUri!.AbsolutePath);
+
+        string lastBody = handler.RequestBodies.Last();
+        Assert.Contains("Final answer", lastBody);
+        Assert.DoesNotContain("\"streamType\": \"final\"", lastBody);
+        Assert.DoesNotContain("streaminfo", lastBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_WhenFinalSendTimesOut_FallsBackToInPlaceUpdate()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        // First chunk streams fine and assigns the streamId.
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.AppendResponseAsync("Buffered answer");
+
+        // The final streamed send itself trips the two-minute limit.
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        await writer.FinalizeResponseAsync();
+
+        Assert.True(writer.TimedOut);
+
+        // The final send fell back to updating the original message in place.
+        HttpRequestMessage lastRequest = handler.Requests.Last();
+        Assert.Equal(HttpMethod.Put, lastRequest.Method);
+        Assert.EndsWith("/activities/stream-1", lastRequest.RequestUri!.AbsolutePath);
+        Assert.Contains("Buffered answer", handler.RequestBodies.Last());
     }
 }
