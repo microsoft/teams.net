@@ -285,24 +285,24 @@ public sealed class TeamsStreamingWriter
             {
                 _timedOut = true;
                 _logger.LogWarning("The bot failed to complete streaming within the two-minute limit (streamId '{StreamId}').", _streamId);
-                throw new StreamTimedOutException(message);
+                throw new StreamTimedOutException(message, ex);
             }
 
             if (message.Contains("cancel", StringComparison.OrdinalIgnoreCase))
             {
                 _cancelled = true;
                 _logger.LogWarning("The streaming was stopped by the user (streamId '{StreamId}').", _streamId);
-                throw new StreamCancelledException(message);
+                throw new StreamCancelledException(message, ex);
             }
 
             if (message.Contains("not allowed", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("The streaming API isn't allowed for the user or bot (streamId '{StreamId}').", _streamId);
-                throw new StreamNotAllowedException(message);
+                throw new StreamNotAllowedException(message, ex);
             }
 
             _logger.LogWarning("Teams returned a streaming error (streamId '{StreamId}'): {Message}", _streamId, message);
-            throw new TerminalStreamException(message);
+            throw new TerminalStreamException(message, ex);
         }
 
         // Preserve the historical treatment of Gone/NoContent as a user cancellation.
