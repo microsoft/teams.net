@@ -111,7 +111,10 @@ public class TeamsBotAdapter(
             coreActivity.Conversation ??= new Microsoft.Teams.Core.Schema.Conversation(
                 turnContext.Activity.Conversation?.Id
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
+                coreActivity,
+                BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.SendActivitiesResponse(resp?.Id);
 
