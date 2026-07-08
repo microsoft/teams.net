@@ -14,15 +14,17 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests;
 public class TeamsApiClientTests
 {
     [Fact]
-    public async Task GetMembersAsync_PassesInboundRequestContext()
+    public async Task GetPagedMembersAsync_PassesInboundRequestContext()
     {
         Mock<ConversationClient> mockConversationClient = new(
             new HttpClient(),
             NullLogger<ConversationClient>.Instance);
         mockConversationClient
-            .Setup(c => c.GetConversationMembersAsync(
+            .Setup(c => c.GetConversationPagedMembersAsync(
                 "conversation-id",
                 It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://smba.trafficmanager.net/teams"),
+                null,
+                null,
                 It.Is<BotRequestContext?>(c =>
                     c != null
                     && c.BotAppId == "recipient-bot-id"
@@ -31,18 +33,22 @@ public class TeamsApiClientTests
                     && c.AgenticIdentity.AgenticUserId == "agentic-user-id"),
                 null,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync([
-                new Microsoft.Teams.Core.Schema.ChannelAccount
+            .ReturnsAsync(new Microsoft.Teams.Core.PagedMembersResult
+            {
+                Members = new List<Microsoft.Teams.Core.Schema.ChannelAccount>
                 {
-                    Id = "member-id",
-                    Name = "Member"
+                    new Microsoft.Teams.Core.Schema.ChannelAccount
+                    {
+                        Id = "member-id",
+                        Name = "Member"
+                    }
                 }
-            ]);
+            });
 
         Activity activity = new()
         {
             Type = ActivityTypes.Message,
-            ChannelId = Channels.Msteams,
+            ChannelId = "msteams",
             ServiceUrl = "https://smba.trafficmanager.net/teams/",
             Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conversation-id" },
             Recipient = new Microsoft.Bot.Schema.ChannelAccount
@@ -63,10 +69,10 @@ public class TeamsApiClientTests
             [typeof(Microsoft.Bot.Connector.IConnectorClient).FullName!] = new CompatConnectorClient(new CompatConversations(mockConversationClient.Object))
         });
 
-        IEnumerable<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> members =
-            await TeamsApiClient.GetMembersAsync(turnContext.Object, CancellationToken.None);
+        Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult pagedMembers =
+            await TeamsApiClient.GetPagedMembersAsync(turnContext.Object, cancellationToken: CancellationToken.None);
 
-        Assert.Single(members);
+        Assert.Single(pagedMembers.Members);
         mockConversationClient.VerifyAll();
     }
 }
