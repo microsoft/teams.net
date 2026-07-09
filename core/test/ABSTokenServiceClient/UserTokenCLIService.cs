@@ -31,23 +31,23 @@ namespace ABSTokenServiceClient
             try
             {
                 logger.LogInformation("=== Testing GetTokenStatus ===");
-                GetTokenStatusResult[] tokenStatus = await userTokenClient.GetTokenStatusAsync(userId, channelId, null, cancellationToken);
+                GetTokenStatusResult[] tokenStatus = await userTokenClient.GetTokenStatusAsync(userId, channelId, null, cancellationToken: cancellationToken);
                 logger.LogInformation("GetTokenStatus result: {Result}", JsonSerializer.Serialize(tokenStatus, new JsonSerializerOptions { WriteIndented = true }));
 
                 if (tokenStatus[0].HasToken == true)
                 {
-                    GetTokenResult? tokenResponse = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, null, cancellationToken);
+                    GetTokenResult? tokenResponse = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, null, cancellationToken: cancellationToken);
                     logger.LogInformation("GetToken result: {Result}", JsonSerializer.Serialize(tokenResponse, new JsonSerializerOptions { WriteIndented = true }));
                 }
                 else
                 {
-                    GetSignInResourceResult req = await userTokenClient.GetSignInResourceAsync(userId, connectionName, channelId, null, cancellationToken);
+                    GetSignInResourceResult req = await userTokenClient.GetSignInResourceAsync(userId, connectionName, channelId, null, cancellationToken: cancellationToken);
                     logger.LogInformation("GetSignInResource result: {Result}", JsonSerializer.Serialize(req, new JsonSerializerOptions { WriteIndented = true }));
 
                     Console.WriteLine("Code?");
                     string code = Console.ReadLine()!;
 
-                    GetTokenResult? tokenResponse2 = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken);
+                    GetTokenResult? tokenResponse2 = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken: cancellationToken);
                     logger.LogInformation("GetToken With Code result: {Result}", JsonSerializer.Serialize(tokenResponse2, new JsonSerializerOptions { WriteIndented = true }));
                 }
 
@@ -57,7 +57,7 @@ namespace ABSTokenServiceClient
                 {
                     try
                     {
-                        await userTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken);
+                        await userTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken: cancellationToken);
                         logger.LogInformation("SignOutUser completed successfully");
                     }
                     catch (Exception ex)

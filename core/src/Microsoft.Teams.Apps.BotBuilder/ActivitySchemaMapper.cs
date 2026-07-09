@@ -8,6 +8,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Teams.Apps.BotBuilder;
 
@@ -69,6 +70,10 @@ public static class ActivitySchemaMapper
             Name = account.Name
         };
 
+        if (!string.IsNullOrEmpty(account.BotId))
+        {
+            channelAccount.Properties.Add("botId", account.BotId);
+        }
 
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
@@ -205,6 +210,11 @@ public static class ActivitySchemaMapper
         ArgumentNullException.ThrowIfNull(account);
 
         Microsoft.Teams.Core.Schema.ChannelAccount result = new() { Id = account.Id, Name = account.Name };
+
+        if (account.Properties is not null && account.Properties.TryGetValue("botId", out JToken? botId))
+        {
+            result.BotId = GetStringValue(botId);
+        }
 
         if (!string.IsNullOrEmpty(account.AadObjectId))
         {

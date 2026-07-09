@@ -19,6 +19,12 @@ public class ChannelAccount()
     public string? Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the bot application ID associated with the account.
+    /// </summary>
+    [JsonPropertyName("botId")]
+    public string? BotId { get; set; }
+
+    /// <summary>
     /// Gets or sets the display name of the channel account.
     /// </summary>
     [JsonPropertyName("name")]
@@ -50,6 +56,12 @@ public class ChannelAccount()
     public string? AgenticAppBlueprintId { get; set; }
 
     /// <summary>
+    /// Gets or sets the tenant ID associated with the account.
+    /// </summary>
+    [JsonPropertyName("tenantId")]
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]
@@ -71,7 +83,8 @@ public class ChannelAccount()
         {
             AgenticAppId = AgenticAppId,
             AgenticUserId = AgenticUserId,
-            AgenticAppBlueprintId = AgenticAppBlueprintId
+            AgenticAppBlueprintId = AgenticAppBlueprintId,
+            TenantId = TenantId
         };
     }
 }
