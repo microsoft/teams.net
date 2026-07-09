@@ -34,7 +34,9 @@ namespace Microsoft.Teams.Core.Hosting
         public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = BotConfig.DefaultSectionName, ILogger? logger = null)
         {
             BotConfig botConfig = BotConfig.Resolve(services, aadSectionName);
-            return services.AddBotAuthentication(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
+            AuthenticationBuilder builder = services.AddAuthentication();
+            builder.AddBotAuthentication(botConfig, logger);
+            return builder;
         }
 
         /// <summary>
@@ -79,7 +81,7 @@ namespace Microsoft.Teams.Core.Hosting
 
             if (string.IsNullOrWhiteSpace(clientId))
             {
-                builder.AddBypassAuthentication(schemeName, logger);
+                builder.AddAuthenticationNotConfigured(schemeName);
             }
             else
             {
@@ -118,14 +120,7 @@ namespace Microsoft.Teams.Core.Hosting
             // BotConfig.Resolve call (and duplicate startup log) that would occur through the
             // public string-based AddBotAuthentication → AddTeamsJwtBearer chain.
             AuthenticationBuilder authBuilder = services.AddAuthentication();
-            if (botConfig.DangerouslyAllowUnauthenticatedRequests || string.IsNullOrWhiteSpace(botConfig.ClientId))
-            {
-                authBuilder.AddBypassAuthentication(botConfig.SectionName, logger);
-            }
-            else
-            {
-                authBuilder.AddTeamsJwtBearer(botConfig, logger);
-            }
+            authBuilder.AddBotAuthentication(botConfig, logger);
 
             return services
                 .AddAuthorizationBuilder()
@@ -223,6 +218,30 @@ namespace Microsoft.Teams.Core.Hosting
                 botConfig.EntraInstance,
                 botConfig.BotTokenIssuer,
                 logger);
+        }
+
+        private static AuthenticationBuilder AddBotAuthentication(this AuthenticationBuilder builder, BotConfig botConfig, ILogger? logger = null)
+        {
+            if (botConfig.DangerouslyAllowUnauthenticatedRequests)
+            {
+                builder.AddBypassAuthentication(botConfig.SectionName, logger);
+            }
+            else if (string.IsNullOrWhiteSpace(botConfig.ClientId))
+            {
+                builder.AddAuthenticationNotConfigured(botConfig.SectionName);
+            }
+            else
+            {
+                builder.AddTeamsJwtBearer(botConfig, logger);
+            }
+
+            return builder;
+        }
+
+        private static AuthenticationBuilder AddAuthenticationNotConfigured(this AuthenticationBuilder builder, string schemeName)
+        {
+            builder.AddScheme<AuthenticationSchemeOptions, AuthenticationNotConfiguredHandler>(schemeName, _ => { });
+            return builder;
         }
 
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)

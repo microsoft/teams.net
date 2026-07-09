@@ -222,4 +222,38 @@ public class JwtExtensionsTests
         Assert.True(result.Succeeded);
         Assert.Equal("BypassAuth", result.Principal?.Identity?.AuthenticationType);
     }
+
+    [Fact]
+    public async Task AddBotAuthorization_NoClientId_ChallengesWithAuthenticationNotConfigured()
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:TenantId"] = Tenant,
+            })
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddBotAuthorization();
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        await using MemoryStream responseBody = new();
+        DefaultHttpContext httpContext = new()
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Response.Body = responseBody;
+
+        AuthenticateResult result = await httpContext.AuthenticateAsync("AzureAd");
+        await httpContext.ChallengeAsync("AzureAd");
+
+        responseBody.Position = 0;
+        string body = await new StreamReader(responseBody).ReadToEndAsync();
+        Assert.False(result.Succeeded);
+        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.Equal("application/json", httpContext.Response.ContentType);
+        Assert.Equal("{\"error\":\"Authentication not configured\"}", body);
+    }
 }
