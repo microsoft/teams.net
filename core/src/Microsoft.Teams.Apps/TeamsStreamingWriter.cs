@@ -98,12 +98,15 @@ public sealed class TeamsStreamingWriter
     /// </summary>
     public async Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
     {
-        // Sending after finalize reopens the stream on the same instance, starting a new streamed message.
-        if (_finalized)
-            ResetForNextStream();
-
         if (_cancelled)
             return;
+
+        // Sending after finalize reopens the stream on the same instance, starting a new streamed message.
+        if (_finalized)
+        {
+            _logger.LogDebug("Reopening stream after finalize for a new informative update.");
+            ResetForNextStream();
+        }
 
         if (_lastChunkSent > DateTime.MinValue)
             throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
@@ -125,12 +128,15 @@ public sealed class TeamsStreamingWriter
     /// </remarks>
     public async Task AppendResponseAsync(string chunk, CancellationToken cancellationToken = default)
     {
-        // Appending after finalize reopens the stream on the same instance, starting a new streamed message.
-        if (_finalized)
-            ResetForNextStream();
-
         if (_cancelled)
             return;
+
+        // Appending after finalize reopens the stream on the same instance, starting a new streamed message.
+        if (_finalized)
+        {
+            _logger.LogDebug("Reopening stream after finalize for a new streamed message.");
+            ResetForNextStream();
+        }
 
         _accumulated.Append(chunk);
 
@@ -148,10 +154,11 @@ public sealed class TeamsStreamingWriter
         _sequence++;
         _logger.LogDebug("Sending streaming chunk (sequence {Sequence}, accumulated {Length} chars).", _sequence, _accumulated.Length);
         SendActivityResponse? response = await TrySendChunkAsync(BuildActivity(_accumulated.ToString(), StreamTypes.Streaming), cancellationToken).ConfigureAwait(false);
+        _streamId ??= response?.Id;
+
         if (_cancelled || _timedOut)
             return;
 
-        _streamId ??= response?.Id;
         _lastChunkSent = DateTime.UtcNow;
     }
 
@@ -230,6 +237,7 @@ public sealed class TeamsStreamingWriter
             catch (StreamCancelledException)
             {
                 // Cancelled during the final send; nothing more to send.
+                _logger.LogDebug("Stream cancelled during finalize; no final message sent (streamId '{StreamId}').", _streamId);
             }
         }
 
@@ -257,10 +265,12 @@ public sealed class TeamsStreamingWriter
             }
             catch (StreamCancelledException)
             {
+                _logger.LogDebug("Chunk send stopped: stream cancelled (streamId '{StreamId}').", _streamId);
                 return null; // soft stop: FinalizeResponseAsync returns without sending.
             }
             catch (StreamTimedOutException)
             {
+                _logger.LogDebug("Chunk send stopped: stream timed out (streamId '{StreamId}').", _streamId);
                 return null; // soft stop: FinalizeResponseAsync updates the message in place.
             }
 
