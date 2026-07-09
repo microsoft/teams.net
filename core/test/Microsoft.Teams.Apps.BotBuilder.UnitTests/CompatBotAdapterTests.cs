@@ -179,7 +179,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(
                     It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
-                    It.IsAny<BotRequestContext?>(),
+                    It.Is<BotRequestContext?>(c => c != null && c.BotAppId == "bot-123"),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
