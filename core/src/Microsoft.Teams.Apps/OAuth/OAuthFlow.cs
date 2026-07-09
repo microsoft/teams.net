@@ -264,7 +264,7 @@ public class OAuthFlow
         try
         {
             _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, _connectionName);
-            await _app.UserTokenClient.SignOutUserAsync(userId, _connectionName, channelId, cancellationToken).ConfigureAwait(false);
+            await _app.UserTokenClient.SignOutUserAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
             result = AppsTelemetry.OAuthResults.Success;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
         }
@@ -371,7 +371,7 @@ public class OAuthFlow
             try
             {
                 GetTokenResult tokenResult = await _app.UserTokenClient
-                    .ExchangeTokenAsync(userId, connectionName, channelId, exchangeValue.Token, cancellationToken)
+                    .ExchangeTokenAsync(userId, connectionName, channelId, exchangeValue.Token, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 if (tokenResult?.Token is not null)

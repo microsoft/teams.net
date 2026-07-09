@@ -25,6 +25,15 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
     TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+    // Send "multi-stream" to demo reusing the same writer for a second streamed message
+    // after FinalizeResponseAsync (stream reuse). This path does not call OpenAI.
+    if ((context.Activity.Text ?? string.Empty).Replace("-", " ").Contains("multi stream", StringComparison.OrdinalIgnoreCase))
+    {
+        await RunMultiStreamDemoAsync(writer, cancellationToken);
+        return;
+    }
+
     await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
     await Task.Delay(500, cancellationToken);
     await writer.SendInformativeUpdateAsync("Thinking again !!!", cancellationToken);
@@ -90,5 +99,83 @@ teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 
     return new InvokeResponse(200);
 });
+
+static async Task RunMultiStreamDemoAsync(TeamsStreamingWriter writer, CancellationToken cancellationToken)
+{
+    string[] firstStreamMessages =
+    [
+        "[stream 1] Starting the first streamed response. ",
+        "[stream 1] This is using the default writer instance. ",
+        "[stream 1] Next the handler will finalize the current streamed message.",
+    ];
+
+    string[] secondStreamMessages =
+    [
+        "[stream 2] Reusing the writer after finalize reopens the stream. ",
+        "[stream 2] This should render after stream 1's final Adaptive Card message. ",
+        "[stream 2] The handler finalizes this stream at the end.",
+    ];
+
+    // Stream 1: informative placeholder, streamed text chunks, then an Adaptive Card
+    // carried on the final message.
+    await writer.SendInformativeUpdateAsync("Starting stream 1...", cancellationToken);
+    await Task.Delay(1000, cancellationToken);
+
+    foreach (string message in firstStreamMessages)
+    {
+        await Task.Delay(500, cancellationToken);
+        await writer.AppendResponseAsync(message, cancellationToken);
+    }
+
+    await writer.AppendResponseAsync("Adaptive Card emitted as part of stream 1.", cancellationToken);
+
+    // A null Text lets the writer fill in the accumulated streamed text; the attachment
+    // rides along on the final message.
+    MessageActivity stream1Final = new();
+    stream1Final.AddAttachment(CreateSimpleCard());
+    await writer.FinalizeResponseAsync(stream1Final, cancellationToken);
+
+    await Task.Delay(2000, cancellationToken);
+
+    // Stream 2: reuse the same writer after finalize — the informative update reopens the stream.
+    await writer.SendInformativeUpdateAsync("Starting stream 2...", cancellationToken);
+    await Task.Delay(1000, cancellationToken);
+
+    foreach (string message in secondStreamMessages)
+    {
+        await Task.Delay(500, cancellationToken);
+        await writer.AppendResponseAsync(message, cancellationToken);
+    }
+
+    await writer.FinalizeResponseAsync(cancellationToken: cancellationToken);
+}
+
+static TeamsAttachment CreateSimpleCard()
+{
+    return TeamsAttachment.CreateBuilder()
+        .WithAdaptiveCard(new JsonObject
+        {
+            ["type"] = "AdaptiveCard",
+            ["version"] = "1.5",
+            ["body"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["type"] = "TextBlock",
+                    ["text"] = "Simple Adaptive Card",
+                    ["weight"] = "Bolder",
+                    ["size"] = "Large",
+                    ["wrap"] = true,
+                },
+                new JsonObject
+                {
+                    ["type"] = "TextBlock",
+                    ["text"] = "If you can see this card, basic Adaptive Card delivery is working.",
+                    ["wrap"] = true,
+                }
+            }
+        })
+        .Build();
+}
 
 webApp.Run();

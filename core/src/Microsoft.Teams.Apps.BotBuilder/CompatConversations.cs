@@ -353,7 +353,13 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 coreActivity.ServiceUrl = new Uri(ServiceUrl);
             }
 
-            UpdateActivityResponse response = await _client.UpdateActivityAsync(conversationId, activityId, coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            UpdateActivityResponse response = await _client.UpdateActivityAsync(
+                conversationId,
+                activityId,
+                coreActivity,
+                requestContext: RequestContext,
+                customHeaders: convertedHeaders,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
