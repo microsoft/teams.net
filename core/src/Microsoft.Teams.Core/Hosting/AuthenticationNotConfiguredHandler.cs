@@ -21,8 +21,10 @@ internal sealed class AuthenticationNotConfiguredHandler(
 
     protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
     {
-        Response.StatusCode = StatusCodes.Status401Unauthorized;
-        Response.ContentType = "application/json";
-        await Response.WriteAsync("{\"error\":\"Authentication not configured\"}").ConfigureAwait(false);
+        await Results.Problem(
+            statusCode: StatusCodes.Status401Unauthorized,
+            title: "Authentication not configured",
+            detail: "Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development."
+        ).ExecuteAsync(Context).ConfigureAwait(false);
     }
 }

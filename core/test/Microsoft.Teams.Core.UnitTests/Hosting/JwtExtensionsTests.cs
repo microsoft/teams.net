@@ -253,7 +253,13 @@ public class JwtExtensionsTests
         string body = await new StreamReader(responseBody).ReadToEndAsync();
         Assert.False(result.Succeeded);
         Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
-        Assert.Equal("application/json", httpContext.Response.ContentType);
-        Assert.Equal("{\"error\":\"Authentication not configured\"}", body);
+        Assert.Equal("application/problem+json", httpContext.Response.ContentType);
+
+        using JsonDocument problem = JsonDocument.Parse(body);
+        Assert.Equal("Authentication not configured", problem.RootElement.GetProperty("title").GetString());
+        Assert.Equal(StatusCodes.Status401Unauthorized, problem.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal(
+            "Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.",
+            problem.RootElement.GetProperty("detail").GetString());
     }
 }
