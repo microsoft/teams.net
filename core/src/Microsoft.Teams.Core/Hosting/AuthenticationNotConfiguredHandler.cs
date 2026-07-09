@@ -14,6 +14,12 @@ internal sealed class AuthenticationNotConfiguredHandler(
     ILoggerFactory logger,
     UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
+    private static readonly Action<ILogger, Exception?> _logAuthenticationNotConfigured =
+        LoggerMessage.Define(
+            LogLevel.Warning,
+            new EventId(1, "AuthenticationNotConfigured"),
+            "Authentication is not configured. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.");
+
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         return Task.FromResult(AuthenticateResult.Fail("Authentication not configured"));
@@ -21,10 +27,11 @@ internal sealed class AuthenticationNotConfiguredHandler(
 
     protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
     {
+        _logAuthenticationNotConfigured(Logger, null);
+
         await Results.Problem(
             statusCode: StatusCodes.Status401Unauthorized,
-            title: "Authentication not configured",
-            detail: "Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development."
+            title: "Authentication not configured"
         ).ExecuteAsync(Context).ConfigureAwait(false);
     }
 }

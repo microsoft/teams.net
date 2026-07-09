@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -234,8 +235,9 @@ public class JwtExtensionsTests
             .Build();
 
         ServiceCollection services = new();
+        ListLoggerProvider loggerProvider = new();
         services.AddSingleton<IConfiguration>(configuration);
-        services.AddLogging();
+        services.AddLogging(builder => builder.AddProvider(loggerProvider));
         services.AddBotAuthorization();
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -258,8 +260,50 @@ public class JwtExtensionsTests
         using JsonDocument problem = JsonDocument.Parse(body);
         Assert.Equal("Authentication not configured", problem.RootElement.GetProperty("title").GetString());
         Assert.Equal(StatusCodes.Status401Unauthorized, problem.RootElement.GetProperty("status").GetInt32());
-        Assert.Equal(
-            "Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.",
-            problem.RootElement.GetProperty("detail").GetString());
+        Assert.False(problem.RootElement.TryGetProperty("detail", out _));
+        Assert.Contains(
+            "Authentication is not configured. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.",
+            loggerProvider.Messages);
+    }
+
+    private sealed class ListLoggerProvider : ILoggerProvider
+    {
+        public List<string> Messages { get; } = [];
+
+        public ILogger CreateLogger(string categoryName) => new ListLogger(Messages);
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class ListLogger(List<string> messages) : ILogger
+    {
+        public IDisposable BeginScope<TState>(TState state)
+            where TState : notnull => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == LogLevel.Warning)
+            {
+                messages.Add(formatter(state, exception));
+            }
+        }
+    }
+
+    private sealed class NullScope : IDisposable
+    {
+        public static readonly NullScope Instance = new();
+
+        public void Dispose()
+        {
+        }
     }
 }
