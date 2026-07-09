@@ -8,6 +8,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
@@ -62,6 +63,51 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedConnectorClient);
             Assert.Equal("CompatConnectorClient", capturedConnectorClient.GetType().Name);
             Assert.IsAssignableFrom<Microsoft.Bot.Connector.IConnectorClient>(capturedConnectorClient);
+        }
+
+        [Fact]
+        public async Task ContinueConversationAsync_UserTokenClientUsesBotRequestContext()
+        {
+            // Arrange
+            Mock<UserTokenClient> mockUserTokenClient = CreateMockUserTokenClient();
+            TeamsBotFrameworkHttpAdapter compatAdapter = CreateCompatAdapter(mockUserTokenClient.Object);
+            ConversationReference conversationReference = new()
+            {
+                ServiceUrl = "https://smba.trafficmanager.net/teams",
+                ChannelId = "msteams",
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "test-conversation-id" }
+            };
+
+            mockUserTokenClient
+                .Setup(c => c.GetTokenStatusAsync(
+                    "user-id",
+                    "msteams",
+                    "include",
+                    It.Is<BotRequestContext?>(c => c != null && c.BotAppId == "test-bot-id"),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync([new GetTokenStatusResult { HasToken = true }]);
+
+            BotCallbackHandler callback = async (turnContext, cancellationToken) =>
+            {
+                Microsoft.Bot.Connector.Authentication.UserTokenClient userTokenClient =
+                    turnContext.TurnState.Get<Microsoft.Bot.Connector.Authentication.UserTokenClient>();
+
+                await userTokenClient.GetTokenStatusAsync(
+                    "user-id",
+                    "msteams",
+                    "include",
+                    cancellationToken).ConfigureAwait(false);
+            };
+
+            // Act
+            await compatAdapter.ContinueConversationAsync(
+                "test-bot-id",
+                conversationReference,
+                callback,
+                CancellationToken.None);
+
+            // Assert
+            mockUserTokenClient.VerifyAll();
         }
 
         [Fact]
@@ -122,19 +168,14 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.Equal("customTurnStateValue", capturedCustomTurnState);
         }
 
-        private static TeamsBotFrameworkHttpAdapter CreateCompatAdapter()
+        private static TeamsBotFrameworkHttpAdapter CreateCompatAdapter(UserTokenClient? userTokenClient = null)
         {
             HttpClient httpClient = new();
             ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
 
-            Mock<IConfiguration> mockConfig = new();
-            mockConfig.Setup(c => c["UserTokenApiEndpoint"]).Returns("https://token.botframework.com");
-
-            UserTokenClient userTokenClient = new(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
-
             BotApplication botApplication = new(
                 conversationClient,
-                userTokenClient,
+                userTokenClient ?? CreateMockUserTokenClient().Object,
                 NullLogger<BotApplication>.Instance);
 
             TeamsBotFrameworkHttpAdapter compatAdapter = new(
@@ -143,6 +184,17 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 NullLogger<TeamsBotFrameworkHttpAdapter>.Instance);
 
             return compatAdapter;
+        }
+
+        private static Mock<UserTokenClient> CreateMockUserTokenClient()
+        {
+            Mock<IConfiguration> mockConfig = new();
+            mockConfig.Setup(c => c["UserTokenApiEndpoint"]).Returns("https://token.botframework.com");
+
+            return new Mock<UserTokenClient>(
+                new HttpClient(),
+                mockConfig.Object,
+                NullLogger<UserTokenClient>.Instance);
         }
     }
 }

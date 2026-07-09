@@ -143,7 +143,7 @@ public class OAuthFlowTests
 
         // Arrange exchange
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access-token", ConnectionName = GraphConnection });
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "exchange-1", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -173,7 +173,7 @@ public class OAuthFlowTests
 
         // Arrange exchange failure
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "bad-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "bad-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Unauthorized", null, System.Net.HttpStatusCode.Unauthorized));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "exchange-2", ConnectionName = GraphConnection, Token = "bad-token" };
@@ -203,7 +203,7 @@ public class OAuthFlowTests
 
         // Arrange verify state
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "123456", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "123456", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access-token", ConnectionName = GraphConnection });
 
         SignInVerifyStateValue verifyValue = new() { State = "123456" };
@@ -243,7 +243,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Not found", null, System.Net.HttpStatusCode.NotFound));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-1", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -261,7 +261,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Forbidden", null, System.Net.HttpStatusCode.Forbidden));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-2", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -280,7 +280,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access-token", ConnectionName = GraphConnection });
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "dup-1", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -296,7 +296,7 @@ public class OAuthFlowTests
 
         // ExchangeTokenAsync only called once
         harness.MockUserTokenClient.Verify(
-            c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()),
+            c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -323,7 +323,7 @@ public class OAuthFlowTests
         harness.GraphFlow!.OnSignInFailure((_, _, _) => { failureFired = true; return Task.CompletedTask; });
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "badcode", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "badcode", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
 
         SignInVerifyStateValue verifyValue = new() { State = "badcode" };
@@ -342,7 +342,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest));
 
         SignInVerifyStateValue verifyValue = new() { State = "code" };
@@ -359,7 +359,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Forbidden", null, System.Net.HttpStatusCode.Forbidden));
 
         SignInVerifyStateValue verifyValue = new() { State = "code" };
@@ -405,7 +405,7 @@ public class OAuthFlowTests
         });
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-fail", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -425,7 +425,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "cached-token", ConnectionName = GraphConnection });
 
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
@@ -537,13 +537,13 @@ public class OAuthFlowTests
 
     private static void SetupSilentTokenReturnsNull(Mock<UserTokenClient> mock, string connectionName)
     {
-        mock.Setup(c => c.GetTokenAsync(TestUserId, connectionName, TestChannelId, null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetTokenAsync(TestUserId, connectionName, TestChannelId, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
     }
 
     private static void SetupGetSignInResource(Mock<UserTokenClient> mock)
     {
-        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, (Uri?)null, (Uri?)null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, (Uri?)null, (Uri?)null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetSignInResourceResult
             {
                 SignInLink = "https://login.microsoftonline.com/test",
