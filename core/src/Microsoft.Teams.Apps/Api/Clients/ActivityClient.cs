@@ -14,6 +14,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// Client for creating, updating, and deleting activities in a conversation.
 /// Delegates to the core <see cref="CoreConversationClient"/>.
 /// </summary>
+[Obsolete("Use the activity methods on ConversationApiClient directly instead.")]
 public class ActivityClient
 {
     private readonly CoreConversationClient _client;

@@ -122,7 +122,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     public async Task InitializeAsync()
     {
         ApiClient scoped = ScopedApiClient;
-        IList<TeamsChannelAccount?> raw = await scoped.Conversations.Members.GetAsync(ConversationId, AgenticIdentity);
+        IList<TeamsChannelAccount?> raw = await scoped.Conversations.GetMembersAsync(ConversationId, AgenticIdentity);
 
         string botMri = $"28:{BotAppId}";
         CachedMembers = raw

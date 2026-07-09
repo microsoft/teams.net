@@ -9,20 +9,22 @@
 ```
 ApiClient (top-level facade)
 ├── Conversations     → ConversationApiClient   [→ core ConversationClient]
-│   ├── Activities    → ActivityClient
-│   ├── Members       → MemberClient
-│   └── Reactions     → ReactionClient           [Experimental]
+│   ├── Activities    → [deprecated] ActivityClient
+│   ├── Members       → [deprecated] MemberClient
+│   └── Reactions     → [deprecated] ReactionClient
 ├── Users             → UserTokenApiClient        [token + sign-in; → core UserTokenClient]
 ├── Teams             → TeamClient                [BotHttpClient → serviceUrl/v3/teams/]
 └── Meetings          → MeetingClient             [BotHttpClient → serviceUrl/v1/meetings/]
 ```
+
+`ConversationApiClient` now exposes activity, member, and reaction methods directly (e.g. `CreateActivityAsync`, `GetMembersPagedAsync`, `AddReactionAsync`). The sub-client properties (`Activities`, `Members`, `Reactions`) are retained but marked `[Obsolete]` for backward compatibility.
 
 | Sub-client | Backed by | Why |
 |---|---|---|
 | Conversations, Users | core `ConversationClient` / `UserTokenClient` | Single source of truth for URL construction, auth, agents-channel handling, agentic identity, headers, and logging |
 | Teams, Meetings | `BotHttpClient` directly | No core client exists for these endpoints |
 
-**Experimental APIs:** `ReactionClient` (`ExperimentalTeamsReactions`); `ActivityClient.CreateTargetedAsync` / `UpdateTargetedAsync` / `DeleteTargetedAsync` (`ExperimentalTeamsTargeted`, not supported in team channels).
+**Experimental APIs:** `ConversationApiClient.CreateTargetedActivityAsync` / `UpdateTargetedActivityAsync` (`ExperimentalTeamsTargeted`, not supported in team channels).
 
 ## Construction & scoping
 
@@ -36,7 +38,7 @@ In handlers, use `ctx.Api`, which lazily scopes to `Activity.ServiceUrl`:
 ```csharp
 botApp.OnMessage(async (ctx, ct) =>
 {
-    var members = await ctx.Api.Conversations.Members.GetAsync(conversationId, ct);
+    var members = await ctx.Api.Conversations.GetMembersPagedAsync(conversationId, cancellationToken: ct);
     var team = await ctx.Api.Teams.GetByIdAsync(teamId, ct);
 });
 ```
@@ -54,10 +56,10 @@ Sub-clients are thin adapters: they bridge the Libraries-style `(conversationId,
 ```
 core/src/Microsoft.Teams.Apps/Api/Clients/
 ├── ApiClient.cs              Facade, DI entry point, ForServiceUrl factory
-├── ConversationApiClient.cs  Conversation facade → core ConversationClient
-├── ActivityClient.cs         Activity CRUD + targeted → core ConversationClient
-├── MemberClient.cs           Member operations → core ConversationClient
-├── ReactionClient.cs         Reaction operations → core ConversationClient [Experimental]
+├── ConversationApiClient.cs  Conversation facade → core ConversationClient (activities, members, reactions)
+├── ActivityClient.cs         [deprecated] Activity CRUD + targeted → core ConversationClient
+├── MemberClient.cs           [deprecated] Member operations → core ConversationClient
+├── ReactionClient.cs         [deprecated] Reaction operations → core ConversationClient
 ├── TeamClient.cs             Team info → BotHttpClient (v3/teams/)
 ├── MeetingClient.cs          Meeting info → BotHttpClient (v1/meetings/) + models
 └── UserTokenApiClient.cs     User token + sign-in → core UserTokenClient

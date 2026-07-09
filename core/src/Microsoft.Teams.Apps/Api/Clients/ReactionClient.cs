@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
+
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 
 namespace Microsoft.Teams.Apps.Api.Clients;
@@ -11,6 +12,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// Client for managing reactions on activities in a conversation.
 /// Delegates to the core <see cref="CoreConversationClient"/>.
 /// </summary>
+[Obsolete("Use ConversationApiClient.AddReactionAsync and ConversationApiClient.DeleteReactionAsync instead.")]
 public class ReactionClient
 {
     private readonly CoreConversationClient _client;

@@ -182,7 +182,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
         .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
-    await context.Api.Conversations.Activities.UpdateTargetedAsync(
+    await context.Api.Conversations.UpdateTargetedActivityAsync(
         context.Activity.Conversation.Id!,
         sendResponse!.Id!,
         updated,
@@ -191,7 +191,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Delete the targeted message
-    await context.Api.Conversations.Activities.DeleteTargetedAsync(
+    await context.Api.Conversations.DeleteTargetedActivityAsync(
         context.Activity.Conversation.Id!,
         sendResponse.Id!,
         cancellationToken: cancellationToken);
@@ -217,7 +217,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Add a waving hand reaction
-    await context.Api.Conversations.Reactions.AddAsync(
+    await context.Api.Conversations.AddReactionAsync(
         context.Activity.Conversation.Id,
         response!.Id!,
         "1f44b_wavinghand-tone4",
@@ -227,7 +227,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Add a beaming face reaction
-    await context.Api.Conversations.Reactions.AddAsync(
+    await context.Api.Conversations.AddReactionAsync(
         context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
@@ -237,7 +237,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
     ArgumentNullException.ThrowIfNull(context);
     // Remove the beaming face reaction
-    await context.Api.Conversations.Reactions.DeleteAsync(
+    await context.Api.Conversations.DeleteReactionAsync(
         context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
