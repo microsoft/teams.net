@@ -118,7 +118,7 @@ namespace Microsoft.Teams.Core.Hosting
             // BotConfig.Resolve call (and duplicate startup log) that would occur through the
             // public string-based AddBotAuthentication → AddTeamsJwtBearer chain.
             AuthenticationBuilder authBuilder = services.AddAuthentication();
-            if (string.IsNullOrWhiteSpace(botConfig.ClientId))
+            if (botConfig.DangerouslyAllowUnauthenticatedRequests || string.IsNullOrWhiteSpace(botConfig.ClientId))
             {
                 authBuilder.AddBypassAuthentication(botConfig.SectionName, logger);
             }

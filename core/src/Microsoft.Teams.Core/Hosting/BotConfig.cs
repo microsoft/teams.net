@@ -17,6 +17,10 @@ public sealed class BotConfig
 
     internal const string BotFrameworkSectionName = "BotFramework";
 
+    private const string TeamsSectionName = "Teams";
+
+    private const string DangerouslyAllowUnauthenticatedRequestsKey = "DangerouslyAllowUnauthenticatedRequests";
+
     internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
 
     internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
@@ -65,6 +69,12 @@ public sealed class BotConfig
     /// </summary>
     public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
 
+    /// <summary>
+    /// Gets or sets whether inbound bot requests should bypass authentication.
+    /// This should only be enabled for local development.
+    /// </summary>
+    public bool DangerouslyAllowUnauthenticatedRequests { get; set; }
+
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
     /// <summary>
@@ -96,6 +106,10 @@ public sealed class BotConfig
 
         IConfigurationSection section = configuration.GetSection(sectionName);
         IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
+        bool dangerouslyAllowUnauthenticatedRequests =
+            ResolveOptionalBoolean(section, DangerouslyAllowUnauthenticatedRequestsKey)
+            ?? ResolveOptionalBoolean(configuration.GetSection(TeamsSectionName), DangerouslyAllowUnauthenticatedRequestsKey)
+            ?? false;
         BotConfig config = new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
@@ -103,6 +117,7 @@ public sealed class BotConfig
             EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
             OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
             BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
+            DangerouslyAllowUnauthenticatedRequests = dangerouslyAllowUnauthenticatedRequests,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
@@ -116,6 +131,25 @@ public sealed class BotConfig
         }, typeof(BotConfig));
 
         return config;
+    }
+
+    private static bool? ResolveOptionalBoolean(IConfigurationSection section, string key)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        string? value = section[key];
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (bool.TryParse(value, out bool result))
+        {
+            return result;
+        }
+
+        throw new InvalidOperationException(
+            $"Configuration value '{section.Path}:{key}' is not a valid boolean: '{value}'.");
     }
 
     private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)

@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -44,6 +45,16 @@ public class AspNetCorePluginTests
         var bytes = Encoding.UTF8.GetBytes(json);
         ctx.Request.Body = new MemoryStream(bytes);
         ctx.Request.ContentLength = bytes.Length;
+        return ctx;
+    }
+
+    private static DefaultHttpContext CreateUnauthenticatedRequestsAllowedHttpContext(IActivity activity)
+    {
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Remove("Authorization");
+        ctx.RequestServices = new ServiceCollection()
+            .AddSingleton(new AspNetCorePluginOptions { DangerouslyAllowUnauthenticatedRequests = true })
+            .BuildServiceProvider();
         return ctx;
     }
 
@@ -153,6 +164,30 @@ public class AspNetCorePluginTests
         Assert.Equal(500, problem.StatusCode);
         Assert.Contains("boom", problem.Value!.ToString());
         logger.Verify(l => l.Error(It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_DangerouslyAllowUnauthenticatedRequests_NoAuthorizationHeader_Processes()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        var eventsCalled = new List<string>();
+
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            if (name == "activity") return Task.FromResult<object?>(coreResponse);
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateUnauthenticatedRequestsAllowedHttpContext(activity);
+
+        var result = await plugin.Do(ctx);
+
+        Assert.Contains("activity", eventsCalled);
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
     }
 
     [Fact]

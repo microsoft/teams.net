@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Teams.Core.Hosting;
@@ -189,5 +192,34 @@ public class JwtExtensionsTests
         Exception? caught = Record.Exception(() => services.AddBotAuthentication(ClientId, Tenant));
 
         Assert.Null(caught);
+    }
+
+    [Fact]
+    public async Task AddBotAuthorization_DangerouslyAllowUnauthenticatedRequests_AuthenticatesWithoutAuthorizationHeader()
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = ClientId,
+                ["AzureAd:TenantId"] = Tenant,
+                ["AzureAd:DangerouslyAllowUnauthenticatedRequests"] = "true",
+            })
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddBotAuthorization();
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        DefaultHttpContext httpContext = new()
+        {
+            RequestServices = serviceProvider
+        };
+
+        AuthenticateResult result = await httpContext.AuthenticateAsync("AzureAd");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("BypassAuth", result.Principal?.Identity?.AuthenticationType);
     }
 }
