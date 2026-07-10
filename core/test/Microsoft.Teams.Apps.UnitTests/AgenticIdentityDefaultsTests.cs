@@ -39,7 +39,7 @@ public class AgenticIdentityDefaultsTests
                 }
             });
 
-        await context.Api.Conversations.Members.GetPagedAsync("conversation-id");
+        await context.Api.Conversations.GetMembersPagedAsync("conversation-id");
 
         CapturedRequest request = Assert.Single(handler.Requests);
         AssertIdentity(expected, request.AgenticIdentity);
@@ -66,7 +66,7 @@ public class AgenticIdentityDefaultsTests
                 }
             });
 
-        await context.Api.Conversations.Members.GetByIdAsync("conversation-id", "member-id", explicitIdentity);
+        await context.Api.Conversations.GetMemberByIdAsync("conversation-id", "member-id", explicitIdentity);
 
         CapturedRequest request = Assert.Single(handler.Requests);
         AssertIdentity(explicitIdentity, request.AgenticIdentity);
@@ -80,8 +80,8 @@ public class AgenticIdentityDefaultsTests
         ApiClient api = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected);
 
         await api.Conversations.CreateAsync(new ConversationParameters());
-        await api.Conversations.Members.GetByIdAsync("conversation-id", "member-id");
-        await api.Conversations.Reactions.AddAsync("conversation-id", "activity-id", "like");
+        await api.Conversations.GetMemberByIdAsync("conversation-id", "member-id");
+        await api.Conversations.AddReactionAsync("conversation-id", "activity-id", "like");
         await api.Teams.GetByIdAsync("team-id");
         await api.Meetings.GetByIdAsync("meeting-id");
 
@@ -103,11 +103,77 @@ public class AgenticIdentityDefaultsTests
     }
 
     [Fact]
+    public async Task ConversationApi_ActivityMethodsUseDefaultIdentityWhenExplicitIdentityIsMissing()
+    {
+        CapturingHttpMessageHandler handler = new();
+        AgenticIdentity expected = DefaultIdentity();
+        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected).Conversations;
+
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity());
+        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity());
+        await conversations.ReplyToActivityAsync("conversation-id", "activity-id", CreateActivity());
+        await conversations.DeleteActivityAsync("conversation-id", "activity-id");
+        await conversations.GetActivityMembersAsync("conversation-id", "activity-id");
+        await conversations.CreateTargetedActivityAsync("conversation-id", CreateTargetedActivity());
+        await conversations.UpdateTargetedActivityAsync("conversation-id", "activity-id", CreateActivity());
+        await conversations.DeleteTargetedActivityAsync("conversation-id", "activity-id");
+
+        Assert.Equal(8, handler.Requests.Count);
+        Assert.All(handler.Requests, request => AssertIdentity(expected, request.AgenticIdentity));
+    }
+
+    [Fact]
+    public async Task ConversationApi_ActivityMethodsExplicitIdentityOverridesDefaultIdentity()
+    {
+        CapturingHttpMessageHandler handler = new();
+        AgenticIdentity explicitIdentity = ExplicitIdentity();
+        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity(), agenticIdentity: explicitIdentity);
+        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
+        await conversations.ReplyToActivityAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
+        await conversations.DeleteActivityAsync("conversation-id", "activity-id", explicitIdentity);
+        await conversations.GetActivityMembersAsync("conversation-id", "activity-id", explicitIdentity);
+        await conversations.CreateTargetedActivityAsync("conversation-id", CreateTargetedActivity(), agenticIdentity: explicitIdentity);
+        await conversations.UpdateTargetedActivityAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
+        await conversations.DeleteTargetedActivityAsync("conversation-id", "activity-id", explicitIdentity);
+
+        Assert.Equal(8, handler.Requests.Count);
+        Assert.All(handler.Requests, request => AssertIdentity(explicitIdentity, request.AgenticIdentity));
+    }
+
+    [Fact]
+    public async Task ConversationApi_ActivityFromIdentityOverridesFallbackIdentity()
+    {
+        CapturingHttpMessageHandler handler = new();
+        AgenticIdentity fromIdentity = new()
+        {
+            AgenticAppId = "from-agentic-app-id",
+            AgenticUserId = "from-agentic-user-id",
+            AgenticAppBlueprintId = "from-agentic-blueprint-id",
+            TenantId = "from-tenant-id"
+        };
+        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
+        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request =>
+        {
+            AssertIdentity(fromIdentity, request.AgenticIdentity);
+            Assert.Equal("from-bot-id", request.BotAppId);
+        });
+    }
+
+    [Fact]
     public async Task ActivityClient_UsesDefaultIdentityWhenExplicitIdentityIsMissing()
     {
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity expected = DefaultIdentity();
+#pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected).Conversations.Activities;
+#pragma warning restore CS0618
 
         await activities.CreateAsync("conversation-id", CreateActivity());
         await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity());
@@ -127,7 +193,9 @@ public class AgenticIdentityDefaultsTests
     {
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity explicitIdentity = ExplicitIdentity();
+#pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
+#pragma warning restore CS0618
 
         await activities.CreateAsync("conversation-id", CreateActivity(), agenticIdentity: explicitIdentity);
         await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
@@ -153,7 +221,9 @@ public class AgenticIdentityDefaultsTests
             AgenticAppBlueprintId = "from-agentic-blueprint-id",
             TenantId = "from-tenant-id"
         };
+#pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
+#pragma warning restore CS0618
 
         await activities.CreateAsync("conversation-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
         await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
