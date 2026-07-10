@@ -147,7 +147,7 @@ public class ApiClient
     }
 
     /// <summary>
-    /// Creates a new <see cref="ApiClient"/> scoped to the service URL and default agentic identity in the request options.
+    /// Creates a new <see cref="ApiClient"/> with defaults from the request options.
     /// </summary>
     /// <param name="options">The request options. <see cref="RequestOptions.ServiceUrl"/> is required.</param>
     /// <returns>A new <see cref="ApiClient"/> bound to the request options.</returns>
