@@ -20,6 +20,7 @@ public class ConversationApiClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
+    private readonly BotRequestContext? _defaultRequestContext;
 
     /// <summary>
     /// Client for activity operations.
@@ -39,14 +40,15 @@ public class ConversationApiClient
     [Obsolete("Use ConversationApiClient.AddReactionAsync and ConversationApiClient.DeleteReactionAsync instead.")]
     public ReactionClient Reactions { get; }
 
-    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client)
+    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client, BotRequestContext? defaultRequestContext = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
+        _defaultRequestContext = defaultRequestContext;
 #pragma warning disable CS0618 // Suppress obsolete warnings for backward-compatible initialization
-        Activities = new ActivityClient(serviceUrl, client);
-        Members = new MemberClient(serviceUrl, client);
-        Reactions = new ReactionClient(serviceUrl, client);
+        Activities = new ActivityClient(serviceUrl, client, defaultRequestContext);
+        Members = new MemberClient(serviceUrl, client, defaultRequestContext);
+        Reactions = new ReactionClient(serviceUrl, client, defaultRequestContext);
 #pragma warning restore CS0618
     }
 
@@ -55,7 +57,7 @@ public class ConversationApiClient
     /// </summary>
     public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultRequestContext, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     #region Activity Methods

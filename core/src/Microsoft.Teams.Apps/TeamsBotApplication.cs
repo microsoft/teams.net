@@ -21,6 +21,7 @@ namespace Microsoft.Teams.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly TurnStateLoader? _stateLoader;
+    private readonly string? _tenantId;
     private Uri? _lastServiceUrl;
 
     /// <summary>
@@ -112,6 +113,7 @@ public class TeamsBotApplication : BotApplication
             options)
     {
         _stateLoader = stateLoader;
+        _tenantId = string.IsNullOrWhiteSpace(options?.TenantId) ? null : options.TenantId;
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
@@ -217,6 +219,7 @@ public class TeamsBotApplication : BotApplication
                 AgenticAppId = agenticIdentity.AgenticAppId,
                 AgenticUserId = agenticIdentity.AgenticUserId,
                 AgenticAppBlueprintId = agenticIdentity.AgenticAppBlueprintId,
+                TenantId = agenticIdentity.TenantId,
             });
         }
 
@@ -239,6 +242,33 @@ public class TeamsBotApplication : BotApplication
     {
         string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
         return SendAsync(threadedConversationId, text, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates an agentic identity using this application's defaults.
+    /// </summary>
+    /// <remarks>
+    /// The agentic app blueprint ID defaults to <see cref="BotApplication.AppId"/>.
+    /// The tenant ID defaults to the configured <see cref="TeamsBotApplicationOptions.TenantId"/> when available;
+    /// otherwise it remains null unless explicitly provided.
+    /// </remarks>
+    /// <param name="agenticAppId">The agentic application ID.</param>
+    /// <param name="agenticUserId">The agentic user ID.</param>
+    /// <param name="tenantId">Optional tenant ID. Overrides the configured tenant ID when provided.</param>
+    /// <param name="agenticAppBlueprintId">Optional agentic application blueprint ID. Defaults to this application's AppId.</param>
+    /// <returns>An <see cref="AgenticIdentity"/> populated with application defaults.</returns>
+    public AgenticIdentity GetAgenticIdentity(string agenticAppId, string agenticUserId, string? tenantId = null, string? agenticAppBlueprintId = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(agenticAppId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(agenticUserId);
+
+        return new AgenticIdentity
+        {
+            AgenticAppId = agenticAppId,
+            AgenticUserId = agenticUserId,
+            TenantId = tenantId ?? _tenantId,
+            AgenticAppBlueprintId = agenticAppBlueprintId ?? AppId
+        };
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>

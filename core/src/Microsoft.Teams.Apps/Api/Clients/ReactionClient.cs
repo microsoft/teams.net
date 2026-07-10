@@ -17,11 +17,13 @@ public class ReactionClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
+    private readonly BotRequestContext? _defaultRequestContext;
 
-    internal ReactionClient(Uri serviceUrl, CoreConversationClient client)
+    internal ReactionClient(Uri serviceUrl, CoreConversationClient client, BotRequestContext? defaultRequestContext = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
+        _defaultRequestContext = defaultRequestContext;
     }
 
     /// <summary>
@@ -35,7 +37,7 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task AddAsync(string conversationId, string activityId, string reactionType, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultRequestContext, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -49,6 +51,6 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task DeleteAsync(string conversationId, string activityId, string reactionType, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultRequestContext, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

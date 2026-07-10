@@ -16,6 +16,11 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
 
     /// <summary>
+    /// Gets or sets the configured tenant ID. Used as the default tenant for agentic identities created by <see cref="TeamsBotApplication.GetAgenticIdentity"/>.
+    /// </summary>
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// Register an OAuth flow with the given connection name and optional configuration.
     /// </summary>
     /// <param name="connectionName">The OAuth connection name configured on the bot.</param>

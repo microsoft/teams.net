@@ -14,11 +14,13 @@ public class MeetingClient
 {
     private readonly BotHttpClient _http;
     private readonly string _serviceUrl;
+    private readonly BotRequestContext? _defaultRequestContext;
 
-    internal MeetingClient(string serviceUrl, BotHttpClient http)
+    internal MeetingClient(string serviceUrl, BotHttpClient http, BotRequestContext? defaultRequestContext = null)
     {
         _serviceUrl = serviceUrl.TrimEnd('/');
         _http = http;
+        _defaultRequestContext = defaultRequestContext;
     }
 
     /// <summary>
@@ -39,8 +41,8 @@ public class MeetingClient
         return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
     }
 
-    private static BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        agenticIdentity is null ? null : new() { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity) };
+    private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
+        ApiRequestContext.CreateOptions(_defaultRequestContext, agenticIdentity);
 }
 
 /// <summary>
