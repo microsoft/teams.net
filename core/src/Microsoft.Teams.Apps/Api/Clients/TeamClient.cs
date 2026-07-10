@@ -44,7 +44,9 @@ public class TeamClient
     }
 
     private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        ApiRequestContext.CreateOptions(_defaultAgenticIdentity, agenticIdentity);
+        BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity) is { } requestContext
+            ? new BotRequestOptions { RequestContext = requestContext }
+            : null;
 
     private sealed class ConversationListResponse
     {

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
@@ -56,7 +57,7 @@ public class ConversationApiClient
     /// </summary>
     public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultAgenticIdentity, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     #region Activity Methods
