@@ -41,10 +41,16 @@ public class MeetingClient
         return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
     }
 
-    private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity) is { } requestContext
-            ? new BotRequestOptions { RequestContext = requestContext }
-            : null;
+    private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity)
+    {
+        AgenticIdentity? effectiveIdentity = agenticIdentity ?? _defaultAgenticIdentity;
+        return effectiveIdentity is null
+            ? null
+            : new BotRequestOptions
+            {
+                RequestContext = BotRequestContext.FromAgenticIdentity(effectiveIdentity)
+            };
+    }
 }
 
 /// <summary>
