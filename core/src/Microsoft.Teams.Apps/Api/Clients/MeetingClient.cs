@@ -29,7 +29,7 @@ public class MeetingClient
     public async Task<Meeting?> GetByIdAsync(string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(id)}";
-        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: new BotRequestOptions { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity) }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -38,18 +38,7 @@ public class MeetingClient
     public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}";
-        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
-    }
-
-    private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity)
-    {
-        AgenticIdentity? effectiveIdentity = agenticIdentity ?? _defaultAgenticIdentity;
-        return effectiveIdentity is null
-            ? null
-            : new BotRequestOptions
-            {
-                RequestContext = BotRequestContext.FromAgenticIdentity(effectiveIdentity)
-            };
+        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: new BotRequestOptions { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity) }, cancellationToken).ConfigureAwait(false);
     }
 }
 

@@ -30,7 +30,7 @@ public class TeamClient
     public async Task<Team?> GetByIdAsync(string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}";
-        return await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        return await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: new BotRequestOptions { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity) }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -39,19 +39,8 @@ public class TeamClient
     public async Task<List<TeamsChannel>?> GetConversationsAsync(string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}/conversations";
-        ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: new BotRequestOptions { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity) }, cancellationToken).ConfigureAwait(false);
         return response?.Conversations;
-    }
-
-    private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity)
-    {
-        AgenticIdentity? effectiveIdentity = agenticIdentity ?? _defaultAgenticIdentity;
-        return effectiveIdentity is null
-            ? null
-            : new BotRequestOptions
-            {
-                RequestContext = BotRequestContext.FromAgenticIdentity(effectiveIdentity)
-            };
     }
 
     private sealed class ConversationListResponse
