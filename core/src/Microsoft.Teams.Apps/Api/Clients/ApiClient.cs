@@ -21,7 +21,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// </para>
 /// <list type="bullet">
 /// <item><b>DI-friendly (no serviceUrl)</b> — Use <c>ApiClient(HttpClient, ConversationClient, UserTokenClient, ILogger)</c>
-/// and call <see cref="ForServiceUrl(Uri)"/> or <see cref="ForInboundActivity(TeamsActivity)"/> per-request to create a scoped instance.</item>
+/// and call <see cref="ForServiceUrl(Uri)"/>, <see cref="ForRequestOptions(RequestOptions)"/>, or <see cref="ForInboundActivity(TeamsActivity)"/> per-request to create a scoped instance.</item>
 /// <item><b>Fully initialized</b> — Use <c>ApiClient(Uri, HttpClient, ConversationClient, UserTokenClient, ILogger)</c>
 /// when the service URL is known upfront.</item>
 /// </list>
@@ -39,7 +39,7 @@ public class ApiClient
     /// <summary>
     /// The service URL used by this client.
     /// Null when constructed without a service URL (DI-friendly constructor).
-    /// Call <see cref="ForServiceUrl(Uri)"/> to create a scoped instance with a service URL.
+    /// Call <see cref="ForServiceUrl(Uri)"/> or <see cref="ForRequestOptions(RequestOptions)"/> to create a scoped instance with a service URL.
     /// </summary>
     public virtual Uri ServiceUrl { get; }
 
@@ -144,23 +144,6 @@ public class ApiClient
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         return ForRequestOptions(new RequestOptions { ServiceUrl = serviceUrl });
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="ApiClient"/> scoped to the specified service URL with a default agentic identity
-    /// used when per-call methods do not receive an explicit identity.
-    /// </summary>
-    /// <param name="serviceUrl">The Bot Framework service URL for this scope.</param>
-    /// <param name="defaultAgenticIdentity">The default agentic identity for service URL-bound sub-clients.</param>
-    /// <returns>A new <see cref="ApiClient"/> bound to the given service URL and default identity.</returns>
-    public virtual ApiClient ForServiceUrl(Uri serviceUrl, AgenticIdentity? defaultAgenticIdentity)
-    {
-        ArgumentNullException.ThrowIfNull(serviceUrl);
-        return ForRequestOptions(new RequestOptions
-        {
-            ServiceUrl = serviceUrl,
-            AgenticIdentity = defaultAgenticIdentity
-        });
     }
 
     /// <summary>

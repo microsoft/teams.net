@@ -77,7 +77,11 @@ public class AgenticIdentityDefaultsTests
     {
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity expected = DefaultIdentity();
-        ApiClient api = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected);
+        ApiClient api = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = expected
+        });
 
         await api.Conversations.CreateAsync(new ConversationParameters());
         await api.Conversations.GetMemberByIdAsync("conversation-id", "member-id");
@@ -94,7 +98,11 @@ public class AgenticIdentityDefaultsTests
     {
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity explicitIdentity = ExplicitIdentity();
-        ApiClient api = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity());
+        ApiClient api = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = DefaultIdentity()
+        });
 
         await api.Meetings.GetParticipantAsync("meeting-id", "participant-id", "tenant-id", explicitIdentity);
 
@@ -169,7 +177,11 @@ public class AgenticIdentityDefaultsTests
     {
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity expected = DefaultIdentity();
-        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected).Conversations;
+        ConversationApiClient conversations = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = expected
+        }).Conversations;
 
         await conversations.CreateActivityAsync("conversation-id", CreateActivity());
         await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity());
@@ -189,7 +201,11 @@ public class AgenticIdentityDefaultsTests
     {
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity explicitIdentity = ExplicitIdentity();
-        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+        ConversationApiClient conversations = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = DefaultIdentity()
+        }).Conversations;
         RequestOptions options = CreateRequestOptions(explicitIdentity);
 
         await conversations.CreateActivityAsync("conversation-id", CreateActivity(), options);
@@ -216,7 +232,11 @@ public class AgenticIdentityDefaultsTests
             AgenticAppBlueprintId = "from-agentic-blueprint-id",
             TenantId = "from-tenant-id"
         };
-        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+        ConversationApiClient conversations = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = DefaultIdentity()
+        }).Conversations;
         RequestOptions options = CreateRequestOptions(ExplicitIdentity());
 
         await conversations.CreateActivityAsync("conversation-id", CreateActivity(fromIdentity), options);
@@ -235,7 +255,11 @@ public class AgenticIdentityDefaultsTests
     {
         CapturingHttpMessageHandler handler = new();
         Uri serviceUrl = new("https://override.example.com/");
-        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+        ConversationApiClient conversations = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = DefaultIdentity()
+        }).Conversations;
 
         await conversations.CreateActivityAsync("conversation-id", CreateActivity(), new RequestOptions { ServiceUrl = serviceUrl });
 
@@ -249,7 +273,11 @@ public class AgenticIdentityDefaultsTests
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity expected = DefaultIdentity();
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
-        ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected).Conversations.Activities;
+        ActivityClient activities = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = expected
+        }).Conversations.Activities;
 #pragma warning restore CS0618
 
         await activities.CreateAsync("conversation-id", CreateActivity());
@@ -271,7 +299,11 @@ public class AgenticIdentityDefaultsTests
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity explicitIdentity = ExplicitIdentity();
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
-        ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
+        ActivityClient activities = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = DefaultIdentity()
+        }).Conversations.Activities;
 #pragma warning restore CS0618
         RequestOptions options = CreateRequestOptions(explicitIdentity);
 
@@ -300,7 +332,11 @@ public class AgenticIdentityDefaultsTests
             TenantId = "from-tenant-id"
         };
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
-        ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
+        ActivityClient activities = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = DefaultIdentity()
+        }).Conversations.Activities;
 #pragma warning restore CS0618
         RequestOptions options = CreateRequestOptions(ExplicitIdentity());
 
