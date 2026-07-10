@@ -20,7 +20,10 @@ public class EventActivity : TeamsActivity
     public static new EventActivity FromActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return new EventActivity(activity);
+        EventActivity eventActivity = new(activity);
+        return eventActivity.Name == EventNames.AgentLifecycle
+            ? AgentLifecycleEventActivity.FromEventActivity(eventActivity)
+            : eventActivity;
     }
 
     /// <summary>
@@ -30,10 +33,19 @@ public class EventActivity : TeamsActivity
     public string? Name { get; internal set; }
 
     /// <summary>
+    /// Gets or sets the value payload type for event activities that carry typed variants.
+    /// </summary>
+    [JsonPropertyName("valueType")]
+    public string? ValueType { get; set; }
+
+    /// <summary>
     /// Gets or sets the value payload of the event activity.
     /// </summary>
     [JsonPropertyName("value")]
     public JsonNode? Value { get; internal set; }
+
+    /// <inheritdoc/>
+    public override string ToJson() => CoreActivity.ToJson(this);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
@@ -48,10 +60,17 @@ public class EventActivity : TeamsActivity
     /// </summary>
     internal EventActivity(CoreActivity activity) : base(activity)
     {
-        Name = activity.Properties.Extract<string>("name");
-        Value = activity is EventActivity evt
-            ? evt.Value
-            : activity.Properties.Extract<JsonNode>("value");
+        if (activity is EventActivity evt)
+        {
+            Name = evt.Name;
+            ValueType = evt.ValueType;
+            Value = evt.Value;
+            return;
+        }
+
+        Name = Properties.Extract<string>("name");
+        ValueType = Properties.Extract<string>("valueType");
+        Value = Properties.Extract<JsonNode>("value");
     }
 }
 
@@ -91,6 +110,9 @@ public class EventActivity<TValue> : EventActivity
 /// </summary>
 public static class EventNames
 {
+    /// <summary>Agent 365 lifecycle event name.</summary>
+    public const string AgentLifecycle = "agentLifecycle";
+
     /// <summary>Meeting start event name.</summary>
     public const string MeetingStart = "application/vnd.microsoft.meetingStart";
 

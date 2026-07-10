@@ -66,8 +66,21 @@ public class TeamsActivity : CoreActivity
         base.From = TeamsChannelAccount.FromChannelAccount(activity.From) ?? new TeamsChannelAccount();
         base.Recipient = TeamsChannelAccount.FromChannelAccount(activity.Recipient) ?? new TeamsChannelAccount();
         base.Conversation = TeamsConversation.FromConversation(activity.Conversation) ?? new TeamsConversation();
-        ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
-        Entities = activity.Properties.Extract<EntityList>("entities");
+        if (activity is TeamsActivity teamsActivity)
+        {
+            ChannelData = teamsActivity.ChannelData;
+            Entities = teamsActivity.Entities;
+            Timestamp = teamsActivity.Timestamp;
+            LocalTimestamp = teamsActivity.LocalTimestamp;
+            Locale = teamsActivity.Locale;
+            LocalTimezone = teamsActivity.LocalTimezone;
+            SuggestedActions = teamsActivity.SuggestedActions;
+        }
+        else
+        {
+            ChannelData = Properties.Extract<TeamsChannelData>("channelData");
+            Entities = Properties.Extract<EntityList>("entities");
+        }
     }
 
     /// <summary>
