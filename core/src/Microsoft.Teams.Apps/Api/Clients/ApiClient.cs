@@ -33,7 +33,7 @@ public class ApiClient
 
     internal CoreUserTokenClient UserTokenClient { get; }
 
-    internal BotRequestContext? DefaultRequestContext { get; }
+    internal AgenticIdentity? DefaultAgenticIdentity { get; }
 
     /// <summary>
     /// The service URL used by this client.
@@ -83,7 +83,7 @@ public class ApiClient
         _http = new BotHttpClient(httpClient, logger);
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
-        DefaultRequestContext = null;
+        DefaultAgenticIdentity = null;
 
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
@@ -111,24 +111,24 @@ public class ApiClient
         _http = new BotHttpClient(httpClient, logger);
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
-        DefaultRequestContext = BotRequestContext.FromAgenticIdentity(defaultAgenticIdentity);
+        DefaultAgenticIdentity = defaultAgenticIdentity;
         ServiceUrl = serviceUrl;
-        Conversations = new ConversationApiClient(serviceUrl, conversationClient, DefaultRequestContext);
-        Teams = new TeamClient(serviceUrl.ToString(), _http, DefaultRequestContext);
-        Meetings = new MeetingClient(serviceUrl.ToString(), _http, DefaultRequestContext);
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient, DefaultAgenticIdentity);
+        Teams = new TeamClient(serviceUrl.ToString(), _http, DefaultAgenticIdentity);
+        Meetings = new MeetingClient(serviceUrl.ToString(), _http, DefaultAgenticIdentity);
     }
 
     // Private constructor for ForServiceUrl — shares BotHttpClient, ConversationClient, and UserTokenClient
-    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl, BotRequestContext? defaultRequestContext)
+    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl, AgenticIdentity? defaultAgenticIdentity)
     {
         _http = http;
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
-        DefaultRequestContext = defaultRequestContext;
+        DefaultAgenticIdentity = defaultAgenticIdentity;
         ServiceUrl = serviceUrl;
-        Conversations = new ConversationApiClient(serviceUrl, conversationClient, defaultRequestContext);
-        Teams = new TeamClient(serviceUrl.ToString(), http, defaultRequestContext);
-        Meetings = new MeetingClient(serviceUrl.ToString(), http, defaultRequestContext);
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient, defaultAgenticIdentity);
+        Teams = new TeamClient(serviceUrl.ToString(), http, defaultAgenticIdentity);
+        Meetings = new MeetingClient(serviceUrl.ToString(), http, defaultAgenticIdentity);
     }
 
     /// <summary>
@@ -140,7 +140,7 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, defaultRequestContext: null);
+        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, defaultAgenticIdentity: null);
     }
 
     /// <summary>
@@ -153,6 +153,6 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl, AgenticIdentity? defaultAgenticIdentity)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, BotRequestContext.FromAgenticIdentity(defaultAgenticIdentity));
+        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, defaultAgenticIdentity);
     }
 }

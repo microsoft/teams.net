@@ -14,13 +14,13 @@ public class MeetingClient
 {
     private readonly BotHttpClient _http;
     private readonly string _serviceUrl;
-    private readonly BotRequestContext? _defaultRequestContext;
+    private readonly AgenticIdentity? _defaultAgenticIdentity;
 
-    internal MeetingClient(string serviceUrl, BotHttpClient http, BotRequestContext? defaultRequestContext = null)
+    internal MeetingClient(string serviceUrl, BotHttpClient http, AgenticIdentity? defaultAgenticIdentity = null)
     {
         _serviceUrl = serviceUrl.TrimEnd('/');
         _http = http;
-        _defaultRequestContext = defaultRequestContext;
+        _defaultAgenticIdentity = defaultAgenticIdentity;
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public class MeetingClient
     }
 
     private BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        ApiRequestContext.CreateOptions(_defaultRequestContext, agenticIdentity);
+        ApiRequestContext.CreateOptions(_defaultAgenticIdentity, agenticIdentity);
 }
 
 /// <summary>

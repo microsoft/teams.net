@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
@@ -20,7 +19,7 @@ public class ConversationApiClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
-    private readonly BotRequestContext? _defaultRequestContext;
+    private readonly AgenticIdentity? _defaultAgenticIdentity;
 
     /// <summary>
     /// Client for activity operations.
@@ -40,15 +39,15 @@ public class ConversationApiClient
     [Obsolete("Use ConversationApiClient.AddReactionAsync and ConversationApiClient.DeleteReactionAsync instead.")]
     public ReactionClient Reactions { get; }
 
-    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client, BotRequestContext? defaultRequestContext = null)
+    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client, AgenticIdentity? defaultAgenticIdentity = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
-        _defaultRequestContext = defaultRequestContext;
+        _defaultAgenticIdentity = defaultAgenticIdentity;
 #pragma warning disable CS0618 // Suppress obsolete warnings for backward-compatible initialization
-        Activities = new ActivityClient(serviceUrl, client, defaultRequestContext);
-        Members = new MemberClient(serviceUrl, client, defaultRequestContext);
-        Reactions = new ReactionClient(serviceUrl, client, defaultRequestContext);
+        Activities = new ActivityClient(serviceUrl, client, defaultAgenticIdentity);
+        Members = new MemberClient(serviceUrl, client, defaultAgenticIdentity);
+        Reactions = new ReactionClient(serviceUrl, client, defaultAgenticIdentity);
 #pragma warning restore CS0618
     }
 
@@ -57,7 +56,7 @@ public class ConversationApiClient
     /// </summary>
     public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultRequestContext, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultAgenticIdentity, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     #region Activity Methods

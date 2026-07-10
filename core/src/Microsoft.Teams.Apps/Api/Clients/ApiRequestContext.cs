@@ -9,15 +9,15 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 
 internal static class ApiRequestContext
 {
-    public static BotRequestContext? Resolve(BotRequestContext? defaultRequestContext, AgenticIdentity? agenticIdentity)
-        => BotRequestContext.Merge(defaultRequestContext, BotRequestContext.FromAgenticIdentity(agenticIdentity));
+    public static BotRequestContext? Resolve(AgenticIdentity? defaultAgenticIdentity, AgenticIdentity? agenticIdentity)
+        => BotRequestContext.FromAgenticIdentity(agenticIdentity ?? defaultAgenticIdentity);
 
-    public static BotRequestContext? ResolveActivity(BotRequestContext? defaultRequestContext, AgenticIdentity? agenticIdentity, CoreActivity? activity)
-        => BotRequestContext.Merge(Resolve(defaultRequestContext, agenticIdentity), BotRequestContext.FromActivity(activity));
+    public static BotRequestContext? ResolveActivity(AgenticIdentity? defaultAgenticIdentity, AgenticIdentity? agenticIdentity, CoreActivity? activity)
+        => BotRequestContext.Merge(Resolve(defaultAgenticIdentity, agenticIdentity), BotRequestContext.FromActivity(activity));
 
-    public static BotRequestOptions? CreateOptions(BotRequestContext? defaultRequestContext, AgenticIdentity? agenticIdentity)
+    public static BotRequestOptions? CreateOptions(AgenticIdentity? defaultAgenticIdentity, AgenticIdentity? agenticIdentity)
     {
-        BotRequestContext? requestContext = Resolve(defaultRequestContext, agenticIdentity);
+        BotRequestContext? requestContext = Resolve(defaultAgenticIdentity, agenticIdentity);
         return requestContext is null ? null : new BotRequestOptions { RequestContext = requestContext };
     }
 }

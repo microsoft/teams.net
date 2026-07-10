@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
@@ -17,13 +16,13 @@ public class ReactionClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
-    private readonly BotRequestContext? _defaultRequestContext;
+    private readonly AgenticIdentity? _defaultAgenticIdentity;
 
-    internal ReactionClient(Uri serviceUrl, CoreConversationClient client, BotRequestContext? defaultRequestContext = null)
+    internal ReactionClient(Uri serviceUrl, CoreConversationClient client, AgenticIdentity? defaultAgenticIdentity = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
-        _defaultRequestContext = defaultRequestContext;
+        _defaultAgenticIdentity = defaultAgenticIdentity;
     }
 
     /// <summary>
@@ -37,7 +36,7 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task AddAsync(string conversationId, string activityId, string reactionType, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultRequestContext, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultAgenticIdentity, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -51,6 +50,6 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task DeleteAsync(string conversationId, string activityId, string reactionType, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultRequestContext, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: ApiRequestContext.Resolve(_defaultAgenticIdentity, agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }
