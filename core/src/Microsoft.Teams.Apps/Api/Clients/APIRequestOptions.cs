@@ -15,8 +15,4 @@ public readonly record struct APIRequestOptions
     /// </summary>
     public AgenticIdentity? AgenticIdentity { get; init; }
 
-    /// <summary>
-    /// Gets additional headers to include in this request.
-    /// </summary>
-    public Dictionary<string, string>? AdditionalHeaders { get; init; }
 }

@@ -275,31 +275,6 @@ public class AgenticIdentityDefaultsTests
     }
 
     [Fact]
-    public async Task ActivityMethods_AcceptPositionalNullAdditionalHeaders()
-    {
-        CapturingHttpMessageHandler handler = new();
-        AgenticIdentity expected = DefaultIdentity();
-        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected).Conversations;
-#pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
-        ActivityClient activities = conversations.Activities;
-#pragma warning restore CS0618
-
-        await conversations.CreateActivityAsync("conversation-id", CreateActivity(), null);
-        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(), null);
-        await conversations.ReplyToActivityAsync("conversation-id", "activity-id", CreateActivity(), null);
-        await conversations.CreateTargetedActivityAsync("conversation-id", CreateTargetedActivity(), null);
-        await conversations.UpdateTargetedActivityAsync("conversation-id", "activity-id", CreateActivity(), null);
-        await activities.CreateAsync("conversation-id", CreateActivity(), null);
-        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), null);
-        await activities.ReplyAsync("conversation-id", "activity-id", CreateActivity(), null);
-        await activities.CreateTargetedAsync("conversation-id", CreateTargetedActivity(), null);
-        await activities.UpdateTargetedAsync("conversation-id", "activity-id", CreateActivity(), null);
-
-        Assert.Equal(10, handler.Requests.Count);
-        Assert.All(handler.Requests, request => AssertIdentity(expected, request.AgenticIdentity));
-    }
-
-    [Fact]
     public void GetAgenticIdentity_DefaultsBlueprintAndTenant()
     {
         TeamsBotApplication app = CreateApp(options: new TeamsBotApplicationOptions
