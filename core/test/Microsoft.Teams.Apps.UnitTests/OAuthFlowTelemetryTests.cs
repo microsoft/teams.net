@@ -492,7 +492,7 @@ public class OAuthFlowTelemetryTests
     private static void SetupSendActivity(TestHarness harness)
     {
         harness.MockConversationClient
-            .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SendActivityResponse { Id = "activity-1" });
     }
 

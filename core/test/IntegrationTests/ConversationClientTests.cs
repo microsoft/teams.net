@@ -35,7 +35,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .WithProperty("text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity, _f.ServiceUrl);
 
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
@@ -54,7 +54,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .WithProperty("text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ServiceUrl);
         Assert.NotNull(sent?.Id);
 
         CoreActivity updated = CoreActivity.CreateBuilder()
@@ -66,7 +66,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .Build();
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
-            _f.ConversationId, sent.Id, updated, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, updated, _f.ServiceUrl, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(res?.Id);
         _output.WriteLine($"Updated activity: {res.Id}");
@@ -84,7 +84,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .WithProperty("text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ServiceUrl);
         Assert.NotNull(sent?.Id);
 
         await Task.Delay(2000);
@@ -159,7 +159,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .WithProperty("text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ServiceUrl);
         Assert.NotNull(sent?.Id);
 
         await _f.ConversationClient.AddReactionAsync(

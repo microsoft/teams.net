@@ -105,17 +105,21 @@ public class TeamsBotAdapter(
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
-            // Ensure ServiceUrl is set from turn context if not already present
-            if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(inboundActivity.ServiceUrl))
+            string? serviceUrlString = !string.IsNullOrWhiteSpace(activity.ServiceUrl)
+                ? activity.ServiceUrl
+                : inboundActivity.ServiceUrl;
+            if (string.IsNullOrWhiteSpace(serviceUrlString))
             {
-                coreActivity.ServiceUrl = new Uri(inboundActivity.ServiceUrl);
+                throw new InvalidOperationException("ServiceUrl is required to send activities.");
             }
+            Uri serviceUrl = new(serviceUrlString);
 
             coreActivity.Conversation ??= new Microsoft.Teams.Core.Schema.Conversation(
                 inboundActivity.Conversation?.Id
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
             SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
                 coreActivity,
+                serviceUrl,
                 requestContext,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -143,16 +147,20 @@ public class TeamsBotAdapter(
 
         CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
-        // Ensure ServiceUrl is set from turn context if not already present
-        if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
+        string? serviceUrlString = !string.IsNullOrWhiteSpace(activity.ServiceUrl)
+            ? activity.ServiceUrl
+            : turnContext.Activity.ServiceUrl;
+        if (string.IsNullOrWhiteSpace(serviceUrlString))
         {
-            coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
+            throw new InvalidOperationException("ServiceUrl is required to update activities.");
         }
+        Uri serviceUrl = new(serviceUrlString);
 
         UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
             activity.Conversation.Id,
             activity.Id,
             coreActivity,
+            serviceUrl,
             requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };

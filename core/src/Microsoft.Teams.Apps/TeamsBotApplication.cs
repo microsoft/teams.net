@@ -222,7 +222,7 @@ public class TeamsBotApplication : BotApplication
 
         TeamsActivity activity = builder.Build();
 
-        return SendActivityAsync(activity, cancellationToken: cancellationToken);
+        return SendActivityAsync(activity, resolvedUrl, cancellationToken: cancellationToken);
     }
 
     /// <summary>

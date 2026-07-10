@@ -37,7 +37,7 @@ public class ConversationClientTests
             Conversation = new("conv123")
         };
 
-        SendActivityResponse? result = await conversationClient.SendActivityAsync(activity);
+        SendActivityResponse? result = await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result.Id);
@@ -50,7 +50,7 @@ public class ConversationClientTests
         ConversationClient conversationClient = new(httpClient);
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            conversationClient.SendActivityAsync(null!));
+            conversationClient.SendActivityAsync(null!, new Uri("https://test.service.url/")));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class ConversationClientTests
         };
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            conversationClient.SendActivityAsync(activity));
+            conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/")));
     }
 
     [Fact]
@@ -83,11 +83,11 @@ public class ConversationClientTests
         };
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            conversationClient.SendActivityAsync(activity));
+            conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/")));
     }
 
     [Fact]
-    public async Task SendActivityAsync_WithNullServiceUrl_ThrowsArgumentNullException()
+    public async Task SendActivityAsync_WithNullServiceUrlParameter_ThrowsArgumentNullException()
     {
         HttpClient httpClient = new();
         ConversationClient conversationClient = new(httpClient);
@@ -99,7 +99,7 @@ public class ConversationClientTests
         };
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            conversationClient.SendActivityAsync(activity));
+            conversationClient.SendActivityAsync(activity, null!));
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class ConversationClientTests
         };
 
         HttpRequestException exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
-            conversationClient.SendActivityAsync(activity));
+            conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/")));
 
         Assert.Contains("Error sending activity", exception.Message);
         Assert.Contains("BadRequest", exception.Message);
@@ -159,11 +159,11 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/"),
+            ServiceUrl = new Uri("https://ignored.service.url/"),
             Conversation = new("conv123")
         };
 
-        await conversationClient.SendActivityAsync(activity);
+        await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(capturedRequest);
         Assert.Equal("https://test.service.url/v3/conversations/conv123/activities/", capturedRequest.RequestUri?.ToString());
@@ -199,7 +199,7 @@ public class ConversationClientTests
             Recipient = new ChannelAccount { IsTargeted = true }
         };
 
-        await conversationClient.SendActivityAsync(activity);
+        await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
@@ -232,7 +232,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        await conversationClient.UpdateActivityAsync("conv123", "activity123", activity, isTargeted: true);
+        await conversationClient.UpdateActivityAsync("conv123", "activity123", activity, new Uri("https://test.service.url/"), isTargeted: true);
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
@@ -297,7 +297,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        await conversationClient.DeleteActivityAsync("conv123", activity, isTargeted: true);
+        await conversationClient.DeleteActivityAsync("conv123", activity, new Uri("https://test.service.url/"), isTargeted: true);
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
@@ -336,7 +336,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/"),
         };
 
-        await conversationClient.UpdateTargetedActivityAsync("conv123", "activity123", activity);
+        await conversationClient.UpdateTargetedActivityAsync("conv123", "activity123", activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
@@ -405,7 +405,7 @@ public class ConversationClientTests
             Conversation = new(longConversationId)
         };
 
-        await conversationClient.SendActivityAsync(activity);
+        await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(capturedRequest);
         string expectedTruncatedId = "acf";
@@ -444,7 +444,7 @@ public class ConversationClientTests
         """;
         CoreActivity activity = CoreActivity.FromJsonString(activityJson);
 
-        await conversationClient.SendActivityAsync(activity);
+        await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
@@ -482,7 +482,7 @@ public class ConversationClientTests
         """;
         CoreActivity activity = CoreActivity.FromJsonString(activityJson);
 
-        await conversationClient.SendActivityAsync(activity);
+        await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         // Verify the request was made (agenticIdentity is passed to BotHttpClient via request options)
         Assert.NotNull(capturedRequest);
@@ -518,7 +518,7 @@ public class ConversationClientTests
             From = from
         };
 
-        SendActivityResponse? result = await conversationClient.SendActivityAsync(activity);
+        SendActivityResponse? result = await conversationClient.SendActivityAsync(activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(result);
     }

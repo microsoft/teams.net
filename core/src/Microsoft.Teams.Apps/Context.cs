@@ -29,6 +29,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     public TActivity Activity { get; } = activity;
 
+    private Uri ServiceUrl => Activity.ServiceUrl
+        ?? throw new InvalidOperationException("Activity.ServiceUrl is required.");
+
     /// <summary>
     /// Gets the application (client) ID configured for this bot.
     /// </summary>
@@ -48,8 +51,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Gets the <see cref="ApiClient"/> scoped to the current activity's service URL.
     /// </summary>
-    public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(
-        Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."));
+    public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(ServiceUrl);
 
     // ==================== Turn State ====================
 
@@ -260,7 +262,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         TeamsActivity reply = new TeamsActivityBuilder(activity)
             .WithConversationReference(Activity)
             .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+        return TeamsBotApplication.SendActivityAsync(reply, ServiceUrl, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -274,7 +276,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             .WithType(TeamsActivityTypes.Typing)
             .WithConversationReference(Activity)
             .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+        return TeamsBotApplication.SendActivityAsync(reply, ServiceUrl, cancellationToken: cancellationToken);
     }
 
     // ==================== OAuth Sign-In ====================

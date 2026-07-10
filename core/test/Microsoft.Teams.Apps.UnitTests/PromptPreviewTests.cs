@@ -190,11 +190,12 @@ public class PromptPreviewTests
         harness.MockConversationClient
             .Setup(c => c.SendActivityAsync(
                 It.IsAny<CoreActivity>(),
+                It.IsAny<Uri>(),
                 It.IsAny<BotRequestContext?>(),
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<CoreActivity, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
-                (activity, _, _, _) => slot.Value = activity)
+            .Callback<CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (activity, _, _, _, _) => slot.Value = activity)
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
         return slot;
     }

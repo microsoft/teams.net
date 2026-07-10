@@ -84,11 +84,12 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             .WithProperty("text", "Hello TM !")
             .WithRecipient(incomingFrom)
             .WithFrom(incomingRecipient)
-            //.WithServiceUrl(activity.ServiceUrl!)
-            .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+        await teamsBotApp.ConversationClient.SendActivityAsync(
+            tm,
+            new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
+            cancellationToken: cancellationToken);
 
         ResourceResponse res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
