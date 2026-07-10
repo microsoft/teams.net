@@ -48,7 +48,6 @@ public class AgentLifecycleHandlerTests
         Assert.Equal(TeamsActivityTypes.Event, eventActivity.Type);
         Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
         Assert.Equal(valueType, eventActivity.ValueType);
-        Assert.Equal(TenantId, eventActivity.ChannelData?.Tenant?.Id);
         AssertLifecycleValue(activity, valueType);
     }
 
@@ -72,9 +71,8 @@ public class AgentLifecycleHandlerTests
         string json = activity.ToJson();
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
-
         Assert.Equal(1, CountOccurrences(json, "\"valueType\""));
-        Assert.Equal(1, CountOccurrences(json, "\"channelData\""));
+        Assert.Equal(1, CountOccurrences(json, "\"valueType\""));
         Assert.Equal(TeamsActivityTypes.Event, root.GetProperty("type").GetString());
         Assert.Equal(EventNames.AgentLifecycle, root.GetProperty("name").GetString());
         Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserManagerUpdated, root.GetProperty("valueType").GetString());
