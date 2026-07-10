@@ -232,7 +232,6 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
         public async Task<HttpOperationResponse<ResourceResponse>> ReplyToActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
@@ -240,7 +239,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             coreActivity.ReplyToId = activityId;
             coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, new Uri(ServiceUrl), requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, ResolveActivityServiceUrl(activity, "reply to activities"), requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -298,14 +297,13 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> SendToConversationWithHttpMessagesAsync(string conversationId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, new Uri(ServiceUrl), requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, ResolveActivityServiceUrl(activity, "send activities"), requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -333,7 +331,6 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> UpdateActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
@@ -342,7 +339,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 activityId,
                 coreActivity,
-                new Uri(ServiceUrl),
+                ResolveActivityServiceUrl(activity, "update activities"),
                 requestContext: RequestContext,
                 customHeaders: convertedHeaders,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -406,6 +403,20 @@ namespace Microsoft.Teams.Apps.BotBuilder
             }
 
             return convertedHeaders;
+        }
+
+        private Uri ResolveActivityServiceUrl(Activity activity, string operation)
+        {
+            string? serviceUrl = !string.IsNullOrWhiteSpace(activity.ServiceUrl)
+                ? activity.ServiceUrl
+                : ServiceUrl;
+
+            if (string.IsNullOrWhiteSpace(serviceUrl))
+            {
+                throw new InvalidOperationException($"ServiceUrl is required to {operation}.");
+            }
+
+            return new Uri(serviceUrl);
         }
 
         public async Task<HttpOperationResponse<Microsoft.Bot.Schema.ChannelAccount>> GetConversationMemberWithHttpMessagesAsync(string userId, string conversationId, Dictionary<string, List<string>> customHeaders = null!, CancellationToken cancellationToken = default)

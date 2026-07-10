@@ -84,7 +84,7 @@ app.MapPost("/functions/post-to-chat", async (
         .WithServiceUrl(serviceUrl)
         .WithConversation(new TeamsConversation { Id = conversationId! })
         .Build();
-    await conversations.SendActivityAsync(activity, cancellationToken: ct);
+    await conversations.SendActivityAsync(activity, serviceUrl, cancellationToken: ct);
 
     return Results.Json(new PostToChatResult(Ok: true));
 }).RequireAuthorization();

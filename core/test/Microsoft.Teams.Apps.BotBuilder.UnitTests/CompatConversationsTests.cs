@@ -57,7 +57,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public async Task SendToConversationWithHttpMessagesAsync_DoesNotOverrideServiceUrl_WhenActivityServiceUrlIsSet()
+        public async Task SendToConversationWithHttpMessagesAsync_UsesActivityServiceUrl_WhenActivityServiceUrlIsSet()
         {
             // Arrange
             const string activityServiceUrl = "https://custom.service.url/";
@@ -93,7 +93,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedActivity.ServiceUrl);
             Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.ServiceUrl.ToString().TrimEnd('/'));
             Assert.NotNull(capturedServiceUrl);
-            Assert.Equal(TestServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
+            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -141,7 +141,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public async Task ReplyToActivityWithHttpMessagesAsync_DoesNotOverrideServiceUrl_WhenActivityServiceUrlIsSet()
+        public async Task ReplyToActivityWithHttpMessagesAsync_UsesActivityServiceUrl_WhenActivityServiceUrlIsSet()
         {
             // Arrange
             const string activityServiceUrl = "https://custom.service.url/";
@@ -177,7 +177,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedActivity.ServiceUrl);
             Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.ServiceUrl.ToString().TrimEnd('/'));
             Assert.NotNull(capturedServiceUrl);
-            Assert.Equal(TestServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
+            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -279,7 +279,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public async Task UpdateActivityWithHttpMessagesAsync_DoesNotOverrideServiceUrl_WhenActivityServiceUrlIsSet()
+        public async Task UpdateActivityWithHttpMessagesAsync_UsesActivityServiceUrl_WhenActivityServiceUrlIsSet()
         {
             // Arrange
             const string activityServiceUrl = "https://custom.service.url/";
@@ -323,7 +323,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedActivity.ServiceUrl);
             Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.ServiceUrl.ToString().TrimEnd('/'));
             Assert.NotNull(capturedServiceUrl);
-            Assert.Equal(TestServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
+            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
             mockConversationClient.Verify(
                 c => c.UpdateActivityAsync(
                     TestConversationId,

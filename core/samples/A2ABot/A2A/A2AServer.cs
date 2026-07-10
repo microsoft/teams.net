@@ -73,7 +73,7 @@ internal sealed class A2AServer(
             .WithServiceUrl(serviceUrl)
             .WithConversation(new TeamsConversation { Id = newConvId })
             .Build();
-        SendActivityResponse? sent = await conversations.SendActivityAsync(proactive, cancellationToken: ct);
+        SendActivityResponse? sent = await conversations.SendActivityAsync(proactive, serviceUrl, cancellationToken: ct);
         logger.LogInformation("[{Bot}/A2A] proactive greeting sent (conv={ConvId}, activityId={ActivityId})",
             config.Name, newConvId, sent?.Id ?? "<none>");
 
