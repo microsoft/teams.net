@@ -129,13 +129,13 @@ public class AgenticIdentityDefaultsTests
         AgenticIdentity explicitIdentity = ExplicitIdentity();
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
 
-        await activities.CreateAsync("conversation-id", CreateActivity(), explicitIdentity);
-        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), explicitIdentity);
-        await activities.ReplyAsync("conversation-id", "activity-id", CreateActivity(), explicitIdentity);
+        await activities.CreateAsync("conversation-id", CreateActivity(), agenticIdentity: explicitIdentity);
+        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
+        await activities.ReplyAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
         await activities.DeleteAsync("conversation-id", "activity-id", explicitIdentity);
         await activities.GetMembersAsync("conversation-id", "activity-id", explicitIdentity);
-        await activities.CreateTargetedAsync("conversation-id", CreateTargetedActivity(), explicitIdentity);
-        await activities.UpdateTargetedAsync("conversation-id", "activity-id", CreateActivity(), explicitIdentity);
+        await activities.CreateTargetedAsync("conversation-id", CreateTargetedActivity(), agenticIdentity: explicitIdentity);
+        await activities.UpdateTargetedAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
         await activities.DeleteTargetedAsync("conversation-id", "activity-id", explicitIdentity);
 
         Assert.Equal(8, handler.Requests.Count);
@@ -155,8 +155,8 @@ public class AgenticIdentityDefaultsTests
         };
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
 
-        await activities.CreateAsync("conversation-id", CreateActivity(fromIdentity), ExplicitIdentity());
-        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), ExplicitIdentity());
+        await activities.CreateAsync("conversation-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
+        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
 
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request =>

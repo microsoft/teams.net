@@ -31,13 +31,7 @@ public class ActivityClient
     /// <summary>
     /// Create a new activity in a conversation.
     /// </summary>
-    public Task<SendActivityResponse?> CreateAsync(string conversationId, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-        => CreateAsync(conversationId, activity, agenticIdentity: null, additionalHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    /// <summary>
-    /// Create a new activity in a conversation.
-    /// </summary>
-    public Task<SendActivityResponse?> CreateAsync(string conversationId, CoreActivity activity, AgenticIdentity? agenticIdentity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> CreateAsync(string conversationId, CoreActivity activity, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -48,13 +42,7 @@ public class ActivityClient
     /// <summary>
     /// Update an existing activity in a conversation.
     /// </summary>
-    public Task<UpdateActivityResponse> UpdateAsync(string conversationId, string id, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-        => UpdateAsync(conversationId, id, activity, agenticIdentity: null, additionalHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    /// <summary>
-    /// Update an existing activity in a conversation.
-    /// </summary>
-    public Task<UpdateActivityResponse> UpdateAsync(string conversationId, string id, CoreActivity activity, AgenticIdentity? agenticIdentity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task<UpdateActivityResponse> UpdateAsync(string conversationId, string id, CoreActivity activity, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -64,13 +52,7 @@ public class ActivityClient
     /// <summary>
     /// Reply to an existing activity in a conversation.
     /// </summary>
-    public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-        => ReplyAsync(conversationId, id, activity, agenticIdentity: null, additionalHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    /// <summary>
-    /// Reply to an existing activity in a conversation.
-    /// </summary>
-    public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, CoreActivity activity, AgenticIdentity? agenticIdentity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, CoreActivity activity, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
@@ -101,15 +83,7 @@ public class ActivityClient
     /// Targeted activities are only visible to the specified recipient.
     /// </summary>
     [Experimental("ExperimentalTeamsTargeted")]
-    public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-        => CreateTargetedAsync(conversationId, activity, agenticIdentity: null, additionalHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    /// <summary>
-    /// Create a new targeted activity in a conversation.
-    /// Targeted activities are only visible to the specified recipient.
-    /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
-    public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, CoreActivity activity, AgenticIdentity? agenticIdentity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, CoreActivity activity, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -126,14 +100,7 @@ public class ActivityClient
     /// Update an existing targeted activity in a conversation.
     /// </summary>
     [Experimental("ExperimentalTeamsTargeted")]
-    public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-        => UpdateTargetedAsync(conversationId, id, activity, agenticIdentity: null, additionalHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    /// <summary>
-    /// Update an existing targeted activity in a conversation.
-    /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
-    public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, CoreActivity activity, AgenticIdentity? agenticIdentity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, CoreActivity activity, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
