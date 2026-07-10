@@ -254,7 +254,7 @@ public class TeamsBotApplication : BotApplication
     /// </remarks>
     /// <param name="agenticAppId">The agentic application ID.</param>
     /// <param name="agenticUserId">The agentic user ID.</param>
-    /// <param name="tenantId">Optional tenant ID. Overrides the configured tenant ID when provided.</param>
+    /// <param name="tenantId">Optional tenant ID of the agent instance for multi-tenant applications. Overrides the configured tenant ID when provided.</param>
     /// <param name="agenticAppBlueprintId">Optional agentic application blueprint ID. Defaults to this application's AppId.</param>
     /// <returns>An <see cref="AgenticIdentity"/> populated with application defaults.</returns>
     public AgenticIdentity GetAgenticIdentity(string agenticAppId, string agenticUserId, string? tenantId = null, string? agenticAppBlueprintId = null)
