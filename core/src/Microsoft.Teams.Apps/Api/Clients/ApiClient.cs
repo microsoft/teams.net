@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// </para>
 /// <list type="bullet">
 /// <item><b>DI-friendly (no serviceUrl)</b> — Use <c>ApiClient(HttpClient, ConversationClient, UserTokenClient, ILogger)</c>
-/// and call <see cref="ForServiceUrl(Uri)"/> per-request to create a scoped instance.</item>
+/// and call <see cref="ForServiceUrl(Uri)"/> or <see cref="ForInboundActivity(TeamsActivity)"/> per-request to create a scoped instance.</item>
 /// <item><b>Fully initialized</b> — Use <c>ApiClient(Uri, HttpClient, ConversationClient, UserTokenClient, ILogger)</c>
 /// when the service URL is known upfront.</item>
 /// </list>
@@ -154,5 +155,19 @@ public class ApiClient
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, defaultAgenticIdentity);
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ApiClient"/> scoped to an inbound activity's service URL and recipient agentic identity.
+    /// </summary>
+    /// <param name="activity">The inbound activity for this scope.</param>
+    /// <returns>A new <see cref="ApiClient"/> bound to the inbound activity's service URL and default identity.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="activity"/> does not include a service URL.</exception>
+    public virtual ApiClient ForInboundActivity(TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return ForServiceUrl(
+            activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."),
+            activity.Recipient?.GetAgenticIdentity());
     }
 }

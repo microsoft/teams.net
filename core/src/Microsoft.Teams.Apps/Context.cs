@@ -48,9 +48,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Gets the <see cref="ApiClient"/> scoped to the current activity's service URL.
     /// </summary>
-    public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(
-        Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."),
-        Activity.Recipient?.GetAgenticIdentity());
+    public ApiClient Api => _api ??= TeamsBotApplication.Api.ForInboundActivity(Activity);
 
     // ==================== Turn State ====================
 

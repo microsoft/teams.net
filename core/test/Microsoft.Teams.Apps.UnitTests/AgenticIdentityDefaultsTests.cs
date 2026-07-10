@@ -103,6 +103,40 @@ public class AgenticIdentityDefaultsTests
     }
 
     [Fact]
+    public async Task ForInboundActivity_UsesServiceUrlAndRecipientAgenticIdentity()
+    {
+        CapturingHttpMessageHandler handler = new();
+        AgenticIdentity expected = DefaultIdentity();
+        ApiClient api = CreateApiClient(handler).ForInboundActivity(new TeamsActivity
+        {
+            ServiceUrl = ServiceUrl,
+            Recipient = new TeamsChannelAccount
+            {
+                AgenticAppId = expected.AgenticAppId,
+                AgenticUserId = expected.AgenticUserId,
+                AgenticAppBlueprintId = expected.AgenticAppBlueprintId,
+                TenantId = expected.TenantId
+            }
+        });
+
+        await api.Conversations.GetMembersPagedAsync("conversation-id");
+
+        Assert.Equal(ServiceUrl, api.ServiceUrl);
+        CapturedRequest request = Assert.Single(handler.Requests);
+        AssertIdentity(expected, request.AgenticIdentity);
+    }
+
+    [Fact]
+    public void ForInboundActivity_ThrowsWhenServiceUrlIsMissing()
+    {
+        ApiClient api = CreateApiClient(new CapturingHttpMessageHandler());
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => api.ForInboundActivity(new TeamsActivity()));
+
+        Assert.Equal("Activity.ServiceUrl is required to use the Api client.", exception.Message);
+    }
+
+    [Fact]
     public async Task ConversationApi_ActivityMethodsUseDefaultIdentityWhenExplicitIdentityIsMissing()
     {
         CapturingHttpMessageHandler handler = new();
