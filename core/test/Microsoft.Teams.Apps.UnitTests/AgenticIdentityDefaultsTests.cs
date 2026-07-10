@@ -162,15 +162,16 @@ public class AgenticIdentityDefaultsTests
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity explicitIdentity = ExplicitIdentity();
         ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+        APIRequestOptions options = RequestOptions(explicitIdentity);
 
-        await conversations.CreateActivityAsync("conversation-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await conversations.ReplyToActivityAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await conversations.DeleteActivityAsync("conversation-id", "activity-id", explicitIdentity);
-        await conversations.GetActivityMembersAsync("conversation-id", "activity-id", explicitIdentity);
-        await conversations.CreateTargetedActivityAsync("conversation-id", CreateTargetedActivity(), agenticIdentity: explicitIdentity);
-        await conversations.UpdateTargetedActivityAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await conversations.DeleteTargetedActivityAsync("conversation-id", "activity-id", explicitIdentity);
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity(), options);
+        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(), options);
+        await conversations.ReplyToActivityAsync("conversation-id", "activity-id", CreateActivity(), options);
+        await conversations.DeleteActivityAsync("conversation-id", "activity-id", options);
+        await conversations.GetActivityMembersAsync("conversation-id", "activity-id", options);
+        await conversations.CreateTargetedActivityAsync("conversation-id", CreateTargetedActivity(), options);
+        await conversations.UpdateTargetedActivityAsync("conversation-id", "activity-id", CreateActivity(), options);
+        await conversations.DeleteTargetedActivityAsync("conversation-id", "activity-id", options);
 
         Assert.Equal(8, handler.Requests.Count);
         Assert.All(handler.Requests, request => AssertIdentity(explicitIdentity, request.AgenticIdentity));
@@ -188,9 +189,10 @@ public class AgenticIdentityDefaultsTests
             TenantId = "from-tenant-id"
         };
         ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+        APIRequestOptions options = RequestOptions(ExplicitIdentity());
 
-        await conversations.CreateActivityAsync("conversation-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
-        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity(fromIdentity), options);
+        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), options);
 
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request =>
@@ -230,15 +232,16 @@ public class AgenticIdentityDefaultsTests
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
 #pragma warning restore CS0618
+        APIRequestOptions options = RequestOptions(explicitIdentity);
 
-        await activities.CreateAsync("conversation-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await activities.ReplyAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await activities.DeleteAsync("conversation-id", "activity-id", explicitIdentity);
-        await activities.GetMembersAsync("conversation-id", "activity-id", explicitIdentity);
-        await activities.CreateTargetedAsync("conversation-id", CreateTargetedActivity(), agenticIdentity: explicitIdentity);
-        await activities.UpdateTargetedAsync("conversation-id", "activity-id", CreateActivity(), agenticIdentity: explicitIdentity);
-        await activities.DeleteTargetedAsync("conversation-id", "activity-id", explicitIdentity);
+        await activities.CreateAsync("conversation-id", CreateActivity(), options);
+        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), options);
+        await activities.ReplyAsync("conversation-id", "activity-id", CreateActivity(), options);
+        await activities.DeleteAsync("conversation-id", "activity-id", options);
+        await activities.GetMembersAsync("conversation-id", "activity-id", options);
+        await activities.CreateTargetedAsync("conversation-id", CreateTargetedActivity(), options);
+        await activities.UpdateTargetedAsync("conversation-id", "activity-id", CreateActivity(), options);
+        await activities.DeleteTargetedAsync("conversation-id", "activity-id", options);
 
         Assert.Equal(8, handler.Requests.Count);
         Assert.All(handler.Requests, request => AssertIdentity(explicitIdentity, request.AgenticIdentity));
@@ -258,9 +261,10 @@ public class AgenticIdentityDefaultsTests
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
 #pragma warning restore CS0618
+        APIRequestOptions options = RequestOptions(ExplicitIdentity());
 
-        await activities.CreateAsync("conversation-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
-        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), agenticIdentity: ExplicitIdentity());
+        await activities.CreateAsync("conversation-id", CreateActivity(fromIdentity), options);
+        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), options);
 
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request =>
@@ -268,6 +272,31 @@ public class AgenticIdentityDefaultsTests
             AssertIdentity(fromIdentity, request.AgenticIdentity);
             Assert.Equal("from-bot-id", request.BotAppId);
         });
+    }
+
+    [Fact]
+    public async Task ActivityMethods_AcceptPositionalNullAdditionalHeaders()
+    {
+        CapturingHttpMessageHandler handler = new();
+        AgenticIdentity expected = DefaultIdentity();
+        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, expected).Conversations;
+#pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
+        ActivityClient activities = conversations.Activities;
+#pragma warning restore CS0618
+
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity(), null);
+        await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(), null);
+        await conversations.ReplyToActivityAsync("conversation-id", "activity-id", CreateActivity(), null);
+        await conversations.CreateTargetedActivityAsync("conversation-id", CreateTargetedActivity(), null);
+        await conversations.UpdateTargetedActivityAsync("conversation-id", "activity-id", CreateActivity(), null);
+        await activities.CreateAsync("conversation-id", CreateActivity(), null);
+        await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), null);
+        await activities.ReplyAsync("conversation-id", "activity-id", CreateActivity(), null);
+        await activities.CreateTargetedAsync("conversation-id", CreateTargetedActivity(), null);
+        await activities.UpdateTargetedAsync("conversation-id", "activity-id", CreateActivity(), null);
+
+        Assert.Equal(10, handler.Requests.Count);
+        Assert.All(handler.Requests, request => AssertIdentity(expected, request.AgenticIdentity));
     }
 
     [Fact]
@@ -378,6 +407,9 @@ public class AgenticIdentityDefaultsTests
             AgenticAppBlueprintId = "explicit-agentic-blueprint-id",
             TenantId = "explicit-tenant-id"
         };
+
+    private static APIRequestOptions RequestOptions(AgenticIdentity agenticIdentity)
+        => new() { AgenticIdentity = agenticIdentity };
 
     private static void AssertIdentity(AgenticIdentity expected, AgenticIdentity? actual)
     {

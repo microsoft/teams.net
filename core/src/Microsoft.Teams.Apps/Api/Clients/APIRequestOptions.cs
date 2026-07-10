@@ -1,0 +1,22 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Teams.Core.Schema;
+
+namespace Microsoft.Teams.Apps.Api.Clients;
+
+/// <summary>
+/// Options for Apps API requests that need per-call settings beyond the required method parameters.
+/// </summary>
+public readonly record struct APIRequestOptions
+{
+    /// <summary>
+    /// Gets the agentic identity to authenticate as for this request.
+    /// </summary>
+    public AgenticIdentity? AgenticIdentity { get; init; }
+
+    /// <summary>
+    /// Gets additional headers to include in this request.
+    /// </summary>
+    public Dictionary<string, string>? AdditionalHeaders { get; init; }
+}
