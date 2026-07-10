@@ -65,7 +65,7 @@ public class ConversationApiClient
     /// <summary>
     /// Create a new activity in a conversation.
     /// </summary>
-    public Task<SendActivityResponse?> CreateActivityAsync(string conversationId, CoreActivity activity, APIRequestOptions options = default, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> CreateActivityAsync(string conversationId, CoreActivity activity, RequestOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -76,7 +76,7 @@ public class ConversationApiClient
     /// <summary>
     /// Update an existing activity in a conversation.
     /// </summary>
-    public Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string id, CoreActivity activity, APIRequestOptions options = default, CancellationToken cancellationToken = default)
+    public Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string id, CoreActivity activity, RequestOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -89,7 +89,7 @@ public class ConversationApiClient
     /// <summary>
     /// Reply to an existing activity in a conversation.
     /// </summary>
-    public Task<SendActivityResponse?> ReplyToActivityAsync(string conversationId, string id, CoreActivity activity, APIRequestOptions options = default, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> ReplyToActivityAsync(string conversationId, string id, CoreActivity activity, RequestOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
@@ -102,12 +102,12 @@ public class ConversationApiClient
     /// Delete an activity from a conversation.
     /// </summary>
     public Task DeleteActivityAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
-        => DeleteActivityAsync(conversationId, id, new APIRequestOptions { AgenticIdentity = agenticIdentity }, cancellationToken);
+        => DeleteActivityAsync(conversationId, id, new RequestOptions { AgenticIdentity = agenticIdentity }, cancellationToken);
 
     /// <summary>
     /// Delete an activity from a conversation.
     /// </summary>
-    public Task DeleteActivityAsync(string conversationId, string id, APIRequestOptions options, CancellationToken cancellationToken = default)
+    public Task DeleteActivityAsync(string conversationId, string id, RequestOptions options, CancellationToken cancellationToken = default)
     {
         return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(options.AgenticIdentity ?? _defaultAgenticIdentity), cancellationToken: cancellationToken);
     }
@@ -115,7 +115,7 @@ public class ConversationApiClient
     /// <summary>
     /// Get members of a specific activity.
     /// </summary>
-    public async Task<IList<TeamsChannelAccount?>> GetActivityMembersAsync(string conversationId, string id, APIRequestOptions options = default, CancellationToken cancellationToken = default)
+    public async Task<IList<TeamsChannelAccount?>> GetActivityMembersAsync(string conversationId, string id, RequestOptions options = default, CancellationToken cancellationToken = default)
     {
         IList<ChannelAccount> members = await _client.GetActivityMembersAsync(conversationId, id, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(options.AgenticIdentity ?? _defaultAgenticIdentity), cancellationToken: cancellationToken).ConfigureAwait(false);
         return [.. members.Select(m => TeamsChannelAccount.FromChannelAccount(m))];
@@ -126,7 +126,7 @@ public class ConversationApiClient
     /// Targeted activities are only visible to the specified recipient.
     /// </summary>
     [Experimental("ExperimentalTeamsTargeted")]
-    public Task<SendActivityResponse?> CreateTargetedActivityAsync(string conversationId, CoreActivity activity, APIRequestOptions options = default, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> CreateTargetedActivityAsync(string conversationId, CoreActivity activity, RequestOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -142,7 +142,7 @@ public class ConversationApiClient
     /// Update an existing targeted activity in a conversation.
     /// </summary>
     [Experimental("ExperimentalTeamsTargeted")]
-    public Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string id, CoreActivity activity, APIRequestOptions options = default, CancellationToken cancellationToken = default)
+    public Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string id, CoreActivity activity, RequestOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
@@ -156,12 +156,12 @@ public class ConversationApiClient
     /// Delete a targeted activity from a conversation.
     /// </summary>
     public Task DeleteTargetedActivityAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
-        => DeleteTargetedActivityAsync(conversationId, id, new APIRequestOptions { AgenticIdentity = agenticIdentity }, cancellationToken);
+        => DeleteTargetedActivityAsync(conversationId, id, new RequestOptions { AgenticIdentity = agenticIdentity }, cancellationToken);
 
     /// <summary>
     /// Delete a targeted activity from a conversation.
     /// </summary>
-    public Task DeleteTargetedActivityAsync(string conversationId, string id, APIRequestOptions options, CancellationToken cancellationToken = default)
+    public Task DeleteTargetedActivityAsync(string conversationId, string id, RequestOptions options, CancellationToken cancellationToken = default)
     {
         return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(options.AgenticIdentity ?? _defaultAgenticIdentity), cancellationToken: cancellationToken);
     }

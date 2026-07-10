@@ -162,7 +162,7 @@ public class AgenticIdentityDefaultsTests
         CapturingHttpMessageHandler handler = new();
         AgenticIdentity explicitIdentity = ExplicitIdentity();
         ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
-        APIRequestOptions options = RequestOptions(explicitIdentity);
+        RequestOptions options = CreateRequestOptions(explicitIdentity);
 
         await conversations.CreateActivityAsync("conversation-id", CreateActivity(), options);
         await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(), options);
@@ -189,7 +189,7 @@ public class AgenticIdentityDefaultsTests
             TenantId = "from-tenant-id"
         };
         ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
-        APIRequestOptions options = RequestOptions(ExplicitIdentity());
+        RequestOptions options = CreateRequestOptions(ExplicitIdentity());
 
         await conversations.CreateActivityAsync("conversation-id", CreateActivity(fromIdentity), options);
         await conversations.UpdateActivityAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), options);
@@ -232,7 +232,7 @@ public class AgenticIdentityDefaultsTests
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
 #pragma warning restore CS0618
-        APIRequestOptions options = RequestOptions(explicitIdentity);
+        RequestOptions options = CreateRequestOptions(explicitIdentity);
 
         await activities.CreateAsync("conversation-id", CreateActivity(), options);
         await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(), options);
@@ -261,7 +261,7 @@ public class AgenticIdentityDefaultsTests
 #pragma warning disable CS0618 // Verifies backward-compatible obsolete wrapper behavior.
         ActivityClient activities = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations.Activities;
 #pragma warning restore CS0618
-        APIRequestOptions options = RequestOptions(ExplicitIdentity());
+        RequestOptions options = CreateRequestOptions(ExplicitIdentity());
 
         await activities.CreateAsync("conversation-id", CreateActivity(fromIdentity), options);
         await activities.UpdateAsync("conversation-id", "activity-id", CreateActivity(fromIdentity), options);
@@ -383,7 +383,7 @@ public class AgenticIdentityDefaultsTests
             TenantId = "explicit-tenant-id"
         };
 
-    private static APIRequestOptions RequestOptions(AgenticIdentity agenticIdentity)
+    private static RequestOptions CreateRequestOptions(AgenticIdentity agenticIdentity)
         => new() { AgenticIdentity = agenticIdentity };
 
     private static void AssertIdentity(AgenticIdentity expected, AgenticIdentity? actual)
