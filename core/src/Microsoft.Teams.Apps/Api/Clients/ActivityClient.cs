@@ -47,7 +47,10 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateActivityAsync(conversationId, id, activity, requestContext: BotRequestContext.Merge(BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity), BotRequestContext.FromActivity(activity)), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        BotRequestContext? requestContext = BotRequestContext.Merge(
+            BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity),
+            BotRequestContext.FromActivity(activity));
+        return _client.UpdateActivityAsync(conversationId, id, activity, requestContext: requestContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -105,7 +108,10 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, requestContext: BotRequestContext.Merge(BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity), BotRequestContext.FromActivity(activity)), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        BotRequestContext? requestContext = BotRequestContext.Merge(
+            BotRequestContext.FromAgenticIdentity(agenticIdentity ?? _defaultAgenticIdentity),
+            BotRequestContext.FromActivity(activity));
+        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, requestContext: requestContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
