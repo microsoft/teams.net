@@ -127,6 +127,24 @@ public class AgenticIdentityDefaultsTests
     }
 
     [Fact]
+    public async Task ForRequestOptions_UsesServiceUrlAndAgenticIdentity()
+    {
+        CapturingHttpMessageHandler handler = new();
+        AgenticIdentity expected = DefaultIdentity();
+        ApiClient api = CreateApiClient(handler).ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = ServiceUrl,
+            AgenticIdentity = expected
+        });
+
+        await api.Conversations.GetMembersPagedAsync("conversation-id");
+
+        Assert.Equal(ServiceUrl, api.ServiceUrl);
+        CapturedRequest request = Assert.Single(handler.Requests);
+        AssertIdentity(expected, request.AgenticIdentity);
+    }
+
+    [Fact]
     public void ForInboundActivity_ThrowsWhenServiceUrlIsMissing()
     {
         ApiClient api = CreateApiClient(new CapturingHttpMessageHandler());
@@ -134,6 +152,16 @@ public class AgenticIdentityDefaultsTests
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => api.ForInboundActivity(new TeamsActivity()));
 
         Assert.Equal("Activity.ServiceUrl is required to use the Api client.", exception.Message);
+    }
+
+    [Fact]
+    public void ForRequestOptions_ThrowsWhenServiceUrlIsMissing()
+    {
+        ApiClient api = CreateApiClient(new CapturingHttpMessageHandler());
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => api.ForRequestOptions(new RequestOptions()));
+
+        Assert.Equal("RequestOptions.ServiceUrl is required to scope the Api client.", exception.Message);
     }
 
     [Fact]
@@ -200,6 +228,19 @@ public class AgenticIdentityDefaultsTests
             AssertIdentity(fromIdentity, request.AgenticIdentity);
             Assert.Equal("from-bot-id", request.BotAppId);
         });
+    }
+
+    [Fact]
+    public async Task ConversationApi_ActivityRequestOptionsServiceUrlOverridesScopedServiceUrl()
+    {
+        CapturingHttpMessageHandler handler = new();
+        Uri serviceUrl = new("https://override.example.com/");
+        ConversationApiClient conversations = CreateApiClient(handler).ForServiceUrl(ServiceUrl, DefaultIdentity()).Conversations;
+
+        await conversations.CreateActivityAsync("conversation-id", CreateActivity(), new RequestOptions { ServiceUrl = serviceUrl });
+
+        CapturedRequest request = Assert.Single(handler.Requests);
+        Assert.StartsWith(serviceUrl.ToString(), request.Url, StringComparison.Ordinal);
     }
 
     [Fact]

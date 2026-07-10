@@ -119,17 +119,19 @@ public class ApiClient
         Meetings = new MeetingClient(serviceUrl.ToString(), _http, DefaultAgenticIdentity);
     }
 
-    // Private constructor for ForServiceUrl — shares BotHttpClient, ConversationClient, and UserTokenClient
-    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl, AgenticIdentity? defaultAgenticIdentity)
+    // Private constructor for scoped clients — shares BotHttpClient, ConversationClient, and UserTokenClient
+    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, RequestOptions options)
     {
+        Uri serviceUrl = options.ServiceUrl ?? throw new InvalidOperationException("RequestOptions.ServiceUrl is required to scope the Api client.");
+
         _http = http;
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
-        DefaultAgenticIdentity = defaultAgenticIdentity;
+        DefaultAgenticIdentity = options.AgenticIdentity;
         ServiceUrl = serviceUrl;
-        Conversations = new ConversationApiClient(serviceUrl, conversationClient, defaultAgenticIdentity);
-        Teams = new TeamClient(serviceUrl.ToString(), http, defaultAgenticIdentity);
-        Meetings = new MeetingClient(serviceUrl.ToString(), http, defaultAgenticIdentity);
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient, DefaultAgenticIdentity);
+        Teams = new TeamClient(serviceUrl.ToString(), http, DefaultAgenticIdentity);
+        Meetings = new MeetingClient(serviceUrl.ToString(), http, DefaultAgenticIdentity);
     }
 
     /// <summary>
@@ -141,7 +143,7 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, defaultAgenticIdentity: null);
+        return ForRequestOptions(new RequestOptions { ServiceUrl = serviceUrl });
     }
 
     /// <summary>
@@ -154,7 +156,22 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl, AgenticIdentity? defaultAgenticIdentity)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, defaultAgenticIdentity);
+        return ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = serviceUrl,
+            AgenticIdentity = defaultAgenticIdentity
+        });
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ApiClient"/> scoped to the service URL and default agentic identity in the request options.
+    /// </summary>
+    /// <param name="options">The request options. <see cref="RequestOptions.ServiceUrl"/> is required.</param>
+    /// <returns>A new <see cref="ApiClient"/> bound to the request options.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when <see cref="RequestOptions.ServiceUrl"/> is not provided.</exception>
+    public virtual ApiClient ForRequestOptions(RequestOptions options)
+    {
+        return new ApiClient(_http, ConversationClient, UserTokenClient, options);
     }
 
     /// <summary>
@@ -166,8 +183,10 @@ public class ApiClient
     public virtual ApiClient ForInboundActivity(TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return ForServiceUrl(
-            activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."),
-            activity.Recipient?.GetAgenticIdentity());
+        return ForRequestOptions(new RequestOptions
+        {
+            ServiceUrl = activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."),
+            AgenticIdentity = activity.Recipient?.GetAgenticIdentity()
+        });
     }
 }

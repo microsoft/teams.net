@@ -12,6 +12,11 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 public readonly record struct RequestOptions
 {
     /// <summary>
+    /// Gets the service URL for this request.
+    /// </summary>
+    public Uri? ServiceUrl { get; init; }
+
+    /// <summary>
     /// Gets the agentic identity to authenticate as for this request.
     /// </summary>
     public AgenticIdentity? AgenticIdentity { get; init; }
