@@ -19,12 +19,11 @@ public class Worker(ConversationClient conversationClient, ILogger<Worker> logge
             if (logger.IsEnabled(LogLevel.Information))
             {
                 CoreActivity proactiveMessage = CoreActivity.CreateBuilder()
-                    .WithServiceUrl(new Uri(ServiceUrl))
                     .WithConversation(new(ConversationId))
                     .Build();
                 proactiveMessage.From = new ChannelAccount { Id = FromId };
                 proactiveMessage.Properties["text"] = $"Proactive hello at {DateTimeOffset.Now}";
-                SendActivityResponse? aid = await conversationClient.SendActivityAsync(proactiveMessage, cancellationToken: stoppingToken);
+                SendActivityResponse? aid = await conversationClient.SendActivityAsync(proactiveMessage, new Uri(ServiceUrl), cancellationToken: stoppingToken);
                 logger.LogInformation("Activity {Aid} sent", aid?.Id ?? "unknown");
             }
             await Task.Delay(1000, stoppingToken);

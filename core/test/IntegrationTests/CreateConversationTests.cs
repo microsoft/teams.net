@@ -85,7 +85,6 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`")
             .Build();
@@ -189,7 +188,6 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] Group message at `{DateTime.UtcNow:s}`")
             .Build();

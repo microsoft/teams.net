@@ -19,13 +19,12 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithChannelId(activity.ChannelId)
-        .WithServiceUrl(activity.ServiceUrl)
         .WithConversation(activity.Conversation)
         .WithFrom(activity.Recipient)
         .WithProperty("text", replyText)
         .Build();
 
-    await botApp.SendActivityAsync(replyActivity, cancellationToken: cancellationToken);
+    await botApp.SendActivityAsync(replyActivity, activity.ServiceUrl!, cancellationToken: cancellationToken);
 };
 
 webApp.Run();

@@ -29,7 +29,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
             .WithConversation(new Conversation(conversationId))
             .WithText(message)
             .Build();
-        await app.SendActivityAsync(notifyActivity, cancellationToken);
+        await app.SendActivityAsync(notifyActivity, state.ServiceUrl, cancellationToken);
         return new NotifyResult(Notified: true, UserId: userId);
     }
 
@@ -53,7 +53,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
             .Build();
         try
         {
-            await app.SendActivityAsync(askActivity, cancellationToken);
+            await app.SendActivityAsync(askActivity, state.ServiceUrl, cancellationToken);
         }
         catch
         {
@@ -139,7 +139,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         state.Approvals[approvalId] = ApprovalStatus.Pending;
         try
         {
-            await app.SendActivityAsync(activity, cancellationToken);
+            await app.SendActivityAsync(activity, state.ServiceUrl, cancellationToken);
         }
         catch
         {

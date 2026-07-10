@@ -30,7 +30,6 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`")
             .Build();
@@ -49,7 +48,6 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`")
             .Build();
@@ -60,7 +58,6 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity updated = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`")
             .Build();
@@ -79,7 +76,6 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`")
             .Build();
@@ -153,7 +149,6 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithServiceUrl(_f.ServiceUrl)
             .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`")

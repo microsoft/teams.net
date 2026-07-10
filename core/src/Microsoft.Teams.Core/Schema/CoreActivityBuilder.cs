@@ -41,27 +41,6 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Sets the service URL.
-    /// </summary>
-    /// <param name="serviceUrl">The service URL.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithServiceUrl(Uri? serviceUrl)
-    {
-        _activity.ServiceUrl = serviceUrl;
-        return (TBuilder)this;
-    }
-    /// <summary>
-    /// Sets the service URL from a string.
-    /// </summary>
-    /// <param name="serviceUrlString">The service URL as a string.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithServiceUrl(string serviceUrlString)
-    {
-        _activity.ServiceUrl = new Uri(serviceUrlString);
-        return (TBuilder)this;
-    }
-
-    /// <summary>
     /// Sets the channel ID.
     /// </summary>
     /// <param name="channelId">The channel ID.</param>

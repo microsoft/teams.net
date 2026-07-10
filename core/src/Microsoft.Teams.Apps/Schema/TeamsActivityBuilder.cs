@@ -28,6 +28,28 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// Sets the service URL.
+    /// </summary>
+    /// <param name="serviceUrl">The service URL.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder WithServiceUrl(Uri? serviceUrl)
+    {
+        _activity.ServiceUrl = serviceUrl;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the service URL from a string.
+    /// </summary>
+    /// <param name="serviceUrlString">The service URL as a string.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder WithServiceUrl(string serviceUrlString)
+    {
+        _activity.ServiceUrl = new Uri(serviceUrlString);
+        return this;
+    }
+
+    /// <summary>
     /// Apply Conversation Reference from the specified activity.
     /// </summary>
     /// <param name="activity">The source activity to copy conversation reference from.</param>

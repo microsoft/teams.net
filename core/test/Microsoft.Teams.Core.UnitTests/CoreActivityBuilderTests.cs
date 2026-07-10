@@ -47,18 +47,6 @@ public class CoreActivityBuilderTests
     }
 
     [Fact]
-    public void WithServiceUrl_SetsServiceUrl()
-    {
-        Uri serviceUrl = new("https://smba.trafficmanager.net/teams/");
-
-        CoreActivity activity = new CoreActivityBuilder()
-            .WithServiceUrl(serviceUrl)
-            .Build();
-
-        Assert.Equal(serviceUrl, activity.ServiceUrl);
-    }
-
-    [Fact]
     public void WithChannelId_SetsChannelId()
     {
         CoreActivity activity = new CoreActivityBuilder()
@@ -96,7 +84,6 @@ public class CoreActivityBuilderTests
             .WithId("activity-123")
             .WithChannelId("msteams")
             .WithProperty("text", "Test message")
-            .WithServiceUrl(new Uri("https://smba.trafficmanager.net/teams/"))
             .Build();
 
         Assert.Equal(ActivityType.Message, activity.Type);
@@ -194,16 +181,6 @@ public class CoreActivityBuilderTests
 
         Assert.Same(activity1, activity2);
         Assert.Equal("id-2", activity2.Id);
-    }
-
-    [Fact]
-    public void WithServiceUrl_String_SetsServiceUrl()
-    {
-        CoreActivity activity = new CoreActivityBuilder()
-            .WithServiceUrl("https://smba.trafficmanager.net/teams/")
-            .Build();
-
-        Assert.Equal(new Uri("https://smba.trafficmanager.net/teams/"), activity.ServiceUrl);
     }
 
 }
