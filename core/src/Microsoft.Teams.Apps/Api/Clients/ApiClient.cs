@@ -158,11 +158,11 @@ public class ApiClient
     }
 
     /// <summary>
-    /// Creates a new <see cref="ApiClient"/> scoped to an inbound activity's service URL and recipient agentic identity.
+    /// Creates a new <see cref="ApiClient"/> with defaults from the inbound activity.
     /// </summary>
-    /// <param name="activity">The inbound activity for this scope.</param>
-    /// <returns>A new <see cref="ApiClient"/> bound to the inbound activity's service URL and default identity.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when <paramref name="activity"/> does not include a service URL.</exception>
+    /// <param name="activity">The inbound activity that supplies defaults for this scope.</param>
+    /// <returns>A new <see cref="ApiClient"/> with defaults from the inbound activity.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="activity"/> does not include required API defaults.</exception>
     public virtual ApiClient ForInboundActivity(TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
