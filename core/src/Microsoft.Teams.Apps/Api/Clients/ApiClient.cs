@@ -20,7 +20,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// </para>
 /// <list type="bullet">
 /// <item><b>DI-friendly (no serviceUrl)</b> — Use <c>ApiClient(HttpClient, ConversationClient, UserTokenClient, ILogger)</c>
-/// and call <c>ForServiceUrl</c> per-request to create a scoped instance.</item>
+/// and call <see cref="ForServiceUrl(Uri)"/> per-request to create a scoped instance.</item>
 /// <item><b>Fully initialized</b> — Use <c>ApiClient(Uri, HttpClient, ConversationClient, UserTokenClient, ILogger)</c>
 /// when the service URL is known upfront.</item>
 /// </list>
@@ -38,7 +38,7 @@ public class ApiClient
     /// <summary>
     /// The service URL used by this client.
     /// Null when constructed without a service URL (DI-friendly constructor).
-    /// Call <c>ForServiceUrl</c> to create a scoped instance with a service URL.
+    /// Call <see cref="ForServiceUrl(Uri)"/> to create a scoped instance with a service URL.
     /// </summary>
     public virtual Uri ServiceUrl { get; }
 
@@ -67,7 +67,7 @@ public class ApiClient
 
     /// <summary>
     /// Creates a new <see cref="ApiClient"/> without a service URL (DI-friendly).
-    /// Use <c>ForServiceUrl</c> to create a scoped instance bound to a specific service URL.
+    /// Use <see cref="ForServiceUrl(Uri)"/> to create a scoped instance bound to a specific service URL.
     /// </summary>
     /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
