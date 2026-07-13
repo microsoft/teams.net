@@ -44,7 +44,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
     /// <param name="activity">The activity to send. Cannot be null.</param>
     /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
-    /// <param name="requestContext">Optional per-request properties (see <see cref="Http.BotRequestContext"/>) used as a fallback; values derived from the activity take precedence.</param>
+    /// <param name="requestContext">Optional per-request properties (see <see cref="Http.BotRequestContext"/>) to stamp onto the request's options.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
@@ -89,7 +89,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
                 HttpMethod.Post,
                 url,
                 body,
-                CreateRequestOptions(BotRequestContext.Merge(requestContext, BotRequestContext.FromActivity(activity)), "sending activity", customHeaders),
+                CreateRequestOptions(requestContext, "sending activity", customHeaders),
                 cancellationToken).ConfigureAwait(false);
             span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
             Telemetry.OutboundCalls.Add(1, opTag);
