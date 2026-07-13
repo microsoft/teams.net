@@ -93,6 +93,36 @@ public class BotRequestContextTests
     }
 
     [Fact]
+    public void FromActivity_PrefersBotId_WhenBothPresent()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            From = new ChannelAccount { Id = "28:from-account-id", BotId = "28:from-bot-id" },
+        };
+
+        BotRequestContext? ctx = BotRequestContext.FromActivity(activity);
+
+        Assert.NotNull(ctx);
+        Assert.Equal("from-bot-id", ctx!.BotAppId);
+    }
+
+    [Fact]
+    public void FromActivity_FallsBackToId_WhenBotIdAbsent()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            From = new ChannelAccount { Id = "28:from-app-id" },
+        };
+
+        BotRequestContext? ctx = BotRequestContext.FromActivity(activity);
+
+        Assert.NotNull(ctx);
+        Assert.Equal("from-app-id", ctx!.BotAppId);
+    }
+
+    [Fact]
     public void FromActivity_WithNullActivity_ReturnsNull()
     {
         Assert.Null(BotRequestContext.FromActivity(null));

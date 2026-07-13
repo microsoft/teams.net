@@ -44,7 +44,7 @@ public record BotRequestContext
     /// <param name="activity">The outbound activity, or null.</param>
     /// <returns>The context, or null when nothing could be derived.</returns>
     public static BotRequestContext? FromActivity(CoreActivity? activity)
-        => Build(Schema.AgenticIdentity.FromAccount(activity?.From), NormalizeAppId(activity?.From?.Id));
+        => Build(Schema.AgenticIdentity.FromAccount(activity?.From), NormalizeAppId(activity?.From?.BotId ?? activity?.From?.Id));
 
     /// <summary>
     /// Builds context for an <b>inbound</b> activity: the bot is the recipient, so both the bot app id and the
