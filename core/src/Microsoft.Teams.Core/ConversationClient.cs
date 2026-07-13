@@ -89,7 +89,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
                 HttpMethod.Post,
                 url,
                 body,
-                CreateRequestOptions(requestContext, "sending activity", customHeaders),
+                CreateRequestOptions(BotRequestContext.Merge(requestContext, BotRequestContext.FromActivity(activity)), "sending activity", customHeaders),
                 cancellationToken).ConfigureAwait(false);
             span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
             Telemetry.OutboundCalls.Add(1, opTag);
