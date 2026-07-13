@@ -69,16 +69,15 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("help"))
     {
-        MessageActivity helpMessage = new(
+        MessageActivity helpMessage = MessageActivity.CreateBuilder()
+            .WithText(
             "**Threading Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test reply` - context.ReplyAsync() reactive in-thread reply\n" +
             "- `test send` - context.SendActivityAsync() send to the same conversation\n" +
             "- `test proactive` - teamsApp.ReplyAsync() proactive threaded reply\n" +
-            "- `test manual` - ToThreadedConversationId() + teamsApp.SendAsync() for advanced control")
-        {
-            TextFormat = TextFormats.Markdown
-        };
+            "- `test manual` - ToThreadedConversationId() + teamsApp.SendAsync() for advanced control", TextFormats.Markdown)
+            .Build();
         await context.ReplyAsync(helpMessage, cancellationToken);
         return;
     }

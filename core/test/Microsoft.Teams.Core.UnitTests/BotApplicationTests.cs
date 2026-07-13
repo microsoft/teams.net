@@ -168,10 +168,8 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/"),
-            Conversation = new("conv123")
         };
-        SendActivityResponse? result = await botApp.SendActivityAsync(activity);
+        SendActivityResponse? result = await botApp.SendActivityAsync("conv123", activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result.Id);
@@ -183,7 +181,7 @@ public class BotApplicationTests
         BotApplication botApp = CreateBotApplication();
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            botApp.SendActivityAsync(null!));
+            botApp.SendActivityAsync("conv123", null!, new Uri("https://test.service.url/")));
     }
 
     [Fact]

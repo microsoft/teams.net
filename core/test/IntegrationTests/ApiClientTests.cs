@@ -33,17 +33,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     private static CoreActivity CreateMessageActivity(string text) =>
         CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithProperty("text", text)
             .Build();
 
-    private static CoreActivity CreateMessageActivity(string text, ChannelAccount recipient) =>
-        CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithRecipient(recipient)
-            .WithProperty("text", text)
-            .Build();
+    private static CoreActivity CreateMessageActivity(string text, ChannelAccount recipient)
+    {
+        CoreActivity activity = CreateMessageActivity(text);
+        return activity;
+    }
 
     #region Activities
 
@@ -107,7 +104,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
         await Task.Delay(2000);
 
-        await _api.Conversations.Activities.DeleteAsync(_f.ConversationId, sent.Id, _f.AgenticIdentity);
+        await _api.Conversations.Activities.DeleteAsync(_f.ConversationId, sent.Id);
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
@@ -167,7 +164,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
         await Task.Delay(2000);
 
-        await _api.Conversations.Activities.DeleteTargetedAsync(_f.ConversationId, sent.Id, _f.AgenticIdentity);
+        await _api.Conversations.Activities.DeleteTargetedAsync(_f.ConversationId, sent.Id);
         _output.WriteLine($"Deleted targeted activity: {sent.Id}");
     }
 
@@ -179,7 +176,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Members")]
     public async Task Members_GetAsync()
     {
-        IList<TeamsChannelAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsChannelAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
@@ -196,7 +193,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     {
         Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
 
-        PagedTeamsMembersResult paged = await _api.Conversations.Members.GetPagedAsync(_f.ConversationId, agenticIdentity: _f.AgenticIdentity);
+        PagedTeamsMembersResult paged = await _api.Conversations.Members.GetPagedAsync(_f.ConversationId);
 
         Assert.NotNull(paged);
         Assert.NotEmpty(paged.Members);
@@ -215,7 +212,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         TeamsChannelAccount? member = await _api.Conversations.Members.GetByIdAsync(
-            _f.ConversationId, memberId, _f.AgenticIdentity);
+            _f.ConversationId, memberId);
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
@@ -229,7 +226,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         TeamsChannelAccount member = await _api.Conversations.Members.GetByIdAsync<TeamsChannelAccount>(
-            _f.ConversationId, memberId, _f.AgenticIdentity);
+            _f.ConversationId, memberId);
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
@@ -252,12 +249,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
 
-        await _api.Conversations.Reactions.AddAsync(_f.ConversationId, sent.Id, "like", _f.AgenticIdentity);
+        await _api.Conversations.Reactions.AddAsync(_f.ConversationId, sent.Id, "like");
         _output.WriteLine("Added 'like' reaction");
 
         await Task.Delay(1000);
 
-        await _api.Conversations.Reactions.DeleteAsync(_f.ConversationId, sent.Id, "like", _f.AgenticIdentity);
+        await _api.Conversations.Reactions.DeleteAsync(_f.ConversationId, sent.Id, "like");
         _output.WriteLine("Removed 'like' reaction");
     }
 
@@ -269,7 +266,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Teams")]
     public async Task Teams_GetByIdAsync()
     {
-        Team? team = await _api.Teams.GetByIdAsync(_f.TeamId, _f.AgenticIdentity);
+        Team? team = await _api.Teams.GetByIdAsync(_f.TeamId);
 
         Assert.NotNull(team);
         _output.WriteLine($"Team: {team.Id} — {team.Name}, Members: {team.MemberCount}, Channels: {team.ChannelCount}");
@@ -279,7 +276,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Teams")]
     public async Task Teams_GetConversationsAsync()
     {
-        List<TeamsChannel>? channels = await _api.Teams.GetConversationsAsync(_f.TeamId, _f.AgenticIdentity);
+        List<TeamsChannel>? channels = await _api.Teams.GetConversationsAsync(_f.TeamId);
 
         Assert.NotNull(channels);
         Assert.NotEmpty(channels);
@@ -298,7 +295,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Meetings")]
     public async Task Meetings_GetByIdAsync()
     {
-        Meeting? meeting = await _api.Meetings.GetByIdAsync(_f.MeetingId, _f.AgenticIdentity);
+        Meeting? meeting = await _api.Meetings.GetByIdAsync(_f.MeetingId);
 
         Assert.NotNull(meeting);
         _output.WriteLine($"Meeting: {meeting.Id}");
@@ -326,7 +323,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
             }
             // If not available on the cached list, fetch full details for this member
             TeamsChannelAccount tm = await _api.Conversations.Members
-                .GetByIdAsync<TeamsChannelAccount>(_f.ConversationId, m.Id, _f.AgenticIdentity);
+                .GetByIdAsync<TeamsChannelAccount>(_f.ConversationId, m.Id);
             if (tm.AadObjectId is not null)
             {
                 aadObjectId = tm.AadObjectId;
@@ -337,7 +334,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         Skip.If(aadObjectId is null, "No members with AAD object ID found in test conversation");
 
         MeetingParticipant? participant = await _api.Meetings.GetParticipantAsync(
-            _f.MeetingId, aadObjectId!, _f.TenantId, _f.AgenticIdentity);
+            _f.MeetingId, aadObjectId!, _f.TenantId);
 
         Assert.NotNull(participant);
         _output.WriteLine($"Participant: {participant.User?.Id} — Role: {participant.Meeting?.Role}, InMeeting: {participant.Meeting?.InMeeting}");
@@ -460,7 +457,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Client")]
     public async Task ForServiceUrl_CreatesScopedClient()
     {
-        ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl);
+        ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl).ForAgenticIdentity(_f.AgenticIdentity);
 
         Assert.NotNull(scoped.Conversations);
         Assert.NotNull(scoped.Teams);
@@ -468,7 +465,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.Equal(_f.ServiceUrl, scoped.ServiceUrl);
 
         // Verify the scoped client can make a real call
-        IList<TeamsChannelAccount?> members = await scoped.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsChannelAccount?> members = await scoped.Conversations.Members.GetAsync(_f.ConversationId);
         Assert.NotNull(members);
         Assert.NotEmpty(members);
         _output.WriteLine($"ForServiceUrl scoped client retrieved {members.Count} members");

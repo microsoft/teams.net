@@ -27,14 +27,12 @@ teamsApp.UseMiddleware(new WelcomeMessageMiddleware());
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync(
-        new MessageActivity(WelcomeMessageMiddleware.WelcomeMessage)
-        {
-            TextFormat = TextFormats.Markdown
-        }, cancellationToken);
+        MessageActivity.CreateBuilder()
+            .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
+            .Build(), cancellationToken);
 
 
-    TeamsActivity helpActivity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivity helpActivity = MessageActivity.CreateBuilder()
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
         {
@@ -58,8 +56,7 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 
     string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
-    TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    TeamsActivity ta = MessageActivity.CreateBuilder()
         .WithText(replyText)
         .AddMention(context.Activity.From)
         .Build();
@@ -69,7 +66,8 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 // Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
 teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
 {
-    MessageActivity extendedMarkdownMessage = new("""
+    MessageActivity extendedMarkdownMessage = MessageActivity.CreateBuilder()
+        .WithText("""
 # Extended Markdown Demo
 
 ## Table
@@ -80,10 +78,8 @@ teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) 
 
 ## Math
 $$E = mc^2$$
-""")
-    {
-        TextFormat = TextFormats.ExtendedMarkdown
-    };
+""", TextFormats.ExtendedMarkdown)
+        .Build();
 
     await context.SendActivityAsync(extendedMarkdownMessage, cancellationToken);
 });
@@ -91,7 +87,8 @@ $$E = mc^2$$
 // Markdown handler: matches "markdown" (case-insensitive)
 teamsApp.OnMessage("(?i)markdown", async (context, cancellationToken) =>
 {
-    MessageActivity markdownMessage = new("""
+    MessageActivity markdownMessage = MessageActivity.CreateBuilder()
+        .WithText("""
 # Markdown Examples
 
 Here are some **markdown** formatting examples:
@@ -121,10 +118,8 @@ public class Example
 ## Quotes
 > This is a blockquote
 > It can span multiple lines
-""")
-    {
-        TextFormat = TextFormats.Markdown
-    };
+""", TextFormats.Markdown)
+        .Build();
 
     await context.SendActivityAsync(markdownMessage, cancellationToken);
 });
@@ -132,8 +127,7 @@ public class Example
 // Citation handler: matches "citation" (case-insensitive)
 teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
 {
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivity reply = MessageActivity.CreateBuilder()
         .WithText("Here is a response with citations [1] [2].")
         .WithProperty("textFormat", TextFormats.Markdown)
         .AddCitation(1, new CitationAppearance()
@@ -165,21 +159,17 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
     // Send a targeted message visible only to the sender
-    TeamsActivity targeted = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivity targeted = MessageActivity.CreateBuilder()
         .WithText("This is a targeted message only you can see!")
-        .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
 
-    SendActivityResponse? sendResponse = await context.SendActivityAsync(targeted, cancellationToken);
+    SendActivityResponse? sendResponse = await context.SendActivityAsync(targeted, targeted: true, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
     // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
-    TeamsActivity updated = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivity updated = MessageActivity.CreateBuilder()
         .WithText("This targeted message was updated!")
-        .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
     await context.Api.Conversations.Activities.UpdateTargetedAsync(
@@ -205,11 +195,8 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
-    TeamsActivity tmMsgToReact = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivity tmMsgToReact = MessageActivity.CreateBuilder()
         .WithText("I'm going to add and remove reactions to this message.")
-        .WithRecipient(context.Activity.From, false)
-        .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
     SendActivityResponse? response = await context.SendActivityAsync(tmMsgToReact, cancellationToken);
@@ -221,7 +208,6 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context.Activity.Conversation.Id,
         response!.Id!,
         "1f44b_wavinghand-tone4",
-        context.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
@@ -231,7 +217,6 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
-        context?.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
@@ -241,7 +226,6 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
-        context?.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 });
 
@@ -251,7 +235,7 @@ teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
             .Build();
-    MessageActivity feedbackActivity = new([feedbackCard]);
+    MessageActivity feedbackActivity = MessageActivity.CreateBuilder().AddAttachment(feedbackCard).Build();
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
 
@@ -263,7 +247,7 @@ teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
             .Build();
-    MessageActivity feedbackActivity = new([feedbackCard]);
+    MessageActivity feedbackActivity = MessageActivity.CreateBuilder().AddAttachment(feedbackCard).Build();
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
 
@@ -273,7 +257,7 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
     TeamsAttachment taskCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.TaskModuleLauncherCard)
             .Build();
-    MessageActivity taskActivity = new([taskCard]);
+    MessageActivity taskActivity = MessageActivity.CreateBuilder().AddAttachment(taskCard).Build();
     await context.SendActivityAsync(taskActivity, cancellationToken);
 });
 
@@ -289,8 +273,7 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
         ]
     };
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    TeamsActivity reply = MessageActivity.CreateBuilder()
         .WithText("Here are some suggested actions for you:")
         .WithSuggestedActions(suggestedActions)
         .Build();
@@ -324,7 +307,7 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
 teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
 {
     string updatedText = context.Activity.Text ?? "<no text>";
-    MessageActivity reply = new($"I saw that you updated your message to: `{updatedText}`");
+    MessageActivity reply = MessageActivity.CreateBuilder().WithText($"I saw that you updated your message to: `{updatedText}`").Build();
     await context.SendActivityAsync(reply, cancellationToken);
 });
 
@@ -336,7 +319,7 @@ teamsApp.OnMessageReaction(async (context, cancellationToken) =>
     TeamsAttachment reactionsCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ReactionsCard(reactionsAdded, reactionsRemoved))
             .Build();
-    MessageActivity reply = new([reactionsCard]);
+    MessageActivity reply = MessageActivity.CreateBuilder().AddAttachment(reactionsCard).Build();
 
     await context.SendActivityAsync(reply, cancellationToken);
 });
@@ -353,8 +336,8 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
 {
     string? feedbackValue = context.Activity.Value?.Action?.Data?["feedback"]?.ToString();
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithAttachment(TeamsAttachment.CreateBuilder()
+    MessageActivity reply = MessageActivity.CreateBuilder()
+        .AddAttachment(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
             .Build()
         )
@@ -391,8 +374,7 @@ teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
     string? name = data?["userName"]?.ToString();
     string? comment = data?["userComment"]?.ToString();
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivity reply = MessageActivity.CreateBuilder()
         .WithText($"**Task module submitted!**\n- Name: {name ?? "(empty)"}\n- Comment: {comment ?? "(empty)"}")
         .Build();
 

@@ -11,6 +11,7 @@ using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -203,26 +204,16 @@ public class TeamsBotApplication : BotApplication
         Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
 
-        TeamsActivityBuilder builder = new TeamsActivityBuilder()
-            .WithType(TeamsActivityTypes.Message)
-            .WithServiceUrl(resolvedUrl)
-            .WithChannelId("msteams")
-            .WithConversation(new Conversation { Id = conversationId })
-            .WithText(text);
+        MessageActivity activity = MessageActivity.CreateBuilder()
+            .WithText(text)
+            .Build();
 
-        if (agenticIdentity is not null)
-        {
-            builder.WithFrom(new ChannelAccount
-            {
-                AgenticAppId = agenticIdentity.AgenticAppId,
-                AgenticUserId = agenticIdentity.AgenticUserId,
-                AgenticAppBlueprintId = agenticIdentity.AgenticAppBlueprintId,
-            });
-        }
-
-        TeamsActivity activity = builder.Build();
-
-        return SendActivityAsync(activity, cancellationToken: cancellationToken);
+        return ConversationClient.SendActivityAsync(
+            conversationId,
+            activity,
+            resolvedUrl,
+            requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>

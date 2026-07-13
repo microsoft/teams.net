@@ -208,8 +208,7 @@ public sealed class TeamsStreamingWriter
         StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
-        TeamsActivity activity = new TeamsActivityBuilder(final)
-            .WithConversationReference(_reference)
+        MessageActivity activity = new MessageActivityBuilder(final)
             .AddEntity(streamInfo)
             .Build();
 
@@ -218,7 +217,7 @@ public sealed class TeamsStreamingWriter
 
         try
         {
-            await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -255,7 +254,7 @@ public sealed class TeamsStreamingWriter
     {
         try
         {
-            return await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await _client.SendActivityAsync(_conversationId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -341,19 +340,18 @@ public sealed class TeamsStreamingWriter
             props.Remove("streamSequence");
         }
 
-        TeamsActivity activity = new TeamsActivityBuilder(final)
-            .WithConversationReference(_reference)
+        TeamsActivity activity = new MessageActivityBuilder(final)
             .Build();
 
         if (_streamId != null)
         {
             _logger.LogDebug("Updating original streamed message in place after timeout (streamId '{StreamId}').", _streamId);
-            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
             // No streamed message exists yet; send the buffered content as a normal message.
-            await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -371,16 +369,11 @@ public sealed class TeamsStreamingWriter
         _lastChunkSent = DateTime.MinValue;
     }
 
-    private TeamsActivity BuildActivity(string text, string streamType)
+    private StreamingActivity BuildActivity(string text, string streamType)
     {
-        StreamingActivity streaming = new(text);
-        streaming.StreamInfo.StreamType = streamType;
-        streaming.StreamInfo.StreamSequence = _sequence;
-        if (_streamId != null)
-            streaming.StreamInfo.StreamId = _streamId;
-
-        return new TeamsActivityBuilder(streaming)
-            .WithConversationReference(_reference)
+        return StreamingActivity.CreateBuilder()
+            .WithText(text)
+            .WithStreamInfo(streamType, _streamId, _sequence)
             .Build();
     }
 }

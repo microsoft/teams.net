@@ -213,10 +213,8 @@ public class OAuthFlow
                 .WithContent(oauthCardJson)
                 .Build();
 
-            TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
-                .WithConversationReference(context.Activity)
-                .WithRecipient(context.Activity.From, false)
-                .WithAttachment(attachment)
+            MessageActivity oauthActivity = MessageActivity.CreateBuilder()
+                .AddAttachment(attachment)
                 .Build();
 
             await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);

@@ -12,7 +12,7 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_CreatesEntityWithClaim()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
           .AddCitation(1, new CitationAppearance
           {
               Name = "Test Document",
@@ -36,7 +36,7 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_MultipleCitations_AccumulateOnSameEntity()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
           .AddCitation(1, new CitationAppearance
           {
               Name = "Document One",
@@ -65,7 +65,7 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_SetsAdditionalType()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddAIGenerated()
             .Build();
 
@@ -82,7 +82,7 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_CalledTwice_DoesNotDuplicate()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddAIGenerated()
             .AddAIGenerated()
             .Build();
@@ -97,7 +97,7 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_ThenAddCitation_PreservesAILabel()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
           .AddAIGenerated()
           .AddCitation(1, new CitationAppearance
           {
@@ -121,7 +121,7 @@ public class CitationEntityTests
     [Fact]
     public void AddFeedback_SetsFeedbackLoopEnabled()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddFeedback()
             .Build();
 
@@ -132,7 +132,7 @@ public class CitationEntityTests
     [Fact]
     public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddFeedback(FeedbackTypes.Custom)
             .Build();
 
@@ -145,7 +145,7 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_WithAllAppearanceFields_SetsCorrectly()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
           .AddCitation(1, new CitationAppearance
           {
               Name = "Full Document",
@@ -180,7 +180,7 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_RoundTrip_Serialization()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
           .AddAIGenerated()
           .AddCitation(1, new CitationAppearance
           {
@@ -209,7 +209,7 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_Rebase_SurvivesRoundTrip()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
           .AddAIGenerated()
           .AddCitation(1, new CitationAppearance
           {

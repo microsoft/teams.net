@@ -17,19 +17,19 @@ public class MeetingStartValue
 
     /// <summary>The meeting's type.</summary>
     [JsonPropertyName("MeetingType")]
-    public string? MeetingType { get; set; } = string.Empty;
+    public string? MeetingType { get; internal set; } = string.Empty;
 
     /// <summary>The URL used to join the meeting.</summary>
     [JsonPropertyName("JoinUrl")]
-    public Uri? JoinUrl { get; set; }
+    public Uri? JoinUrl { get; internal set; }
 
     /// <summary>The title of the meeting.</summary>
     [JsonPropertyName("Title")]
-    public string? Title { get; set; } = string.Empty;
+    public string? Title { get; internal set; } = string.Empty;
 
     /// <summary>Timestamp for meeting start, in UTC.</summary>
     [JsonPropertyName("StartTime")]
-    public string? StartTime { get; set; }
+    public string? StartTime { get; internal set; }
 }
 
 /// <summary>
@@ -43,19 +43,19 @@ public class MeetingEndValue
 
     /// <summary>The meeting's type.</summary>
     [JsonPropertyName("MeetingType")]
-    public string? MeetingType { get; set; }
+    public string? MeetingType { get; internal set; }
 
     /// <summary>The URL used to join the meeting.</summary>
     [JsonPropertyName("JoinUrl")]
-    public Uri? JoinUrl { get; set; }
+    public Uri? JoinUrl { get; internal set; }
 
     /// <summary>The title of the meeting.</summary>
     [JsonPropertyName("Title")]
-    public string? Title { get; set; }
+    public string? Title { get; internal set; }
 
     /// <summary>Timestamp for meeting end, in UTC.</summary>
     [JsonPropertyName("EndTime")]
-    public string? EndTime { get; set; }
+    public string? EndTime { get; internal set; }
 }
 
 /// <summary>
@@ -65,7 +65,7 @@ public class MeetingParticipantJoinValue
 {
     /// <summary>The list of participants who joined.</summary>
     [JsonPropertyName("members")]
-    public IList<MeetingParticipantMember> Members { get; set; } = [];
+    public IList<MeetingParticipantMember> Members { get; internal set; } = [];
 }
 
 /// <summary>
@@ -75,7 +75,7 @@ public class MeetingParticipantLeaveValue
 {
     /// <summary>The list of participants who left.</summary>
     [JsonPropertyName("members")]
-    public IList<MeetingParticipantMember> Members { get; set; } = [];
+    public IList<MeetingParticipantMember> Members { get; internal set; } = [];
 }
 
 /// <summary>
@@ -85,11 +85,11 @@ public class MeetingParticipantMember
 {
     /// <summary>The participant's account.</summary>
     [JsonPropertyName("user")]
-    public TeamsChannelAccount User { get; set; } = new();
+    public TeamsChannelAccount User { get; internal set; } = new();
 
     /// <summary>The participant's meeting info.</summary>
     [JsonPropertyName("meeting")]
-    public MeetingParticipantInfo Meeting { get; set; } = new();
+    public MeetingParticipantInfo Meeting { get; internal set; } = new();
 }
 
 /// <summary>
@@ -99,9 +99,9 @@ public class MeetingParticipantInfo
 {
     /// <summary>Whether the user is currently in the meeting.</summary>
     [JsonPropertyName("inMeeting")]
-    public bool InMeeting { get; set; }
+    public bool InMeeting { get; internal set; }
 
     /// <summary>The participant's role in the meeting.</summary>
     [JsonPropertyName("role")]
-    public string? Role { get; set; }
+    public string? Role { get; internal set; }
 }

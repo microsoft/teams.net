@@ -40,12 +40,8 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 
     CoreActivity typing = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Typing)
-        .WithServiceUrl(activity.ServiceUrl!)
-        .WithChannelId(activity.ChannelId!)
-        .WithConversation(activity.Conversation!)
-        .WithFrom(activity.Recipient)
         .Build();
-    await botApp.SendActivityAsync(typing, cancellationToken: cancellationToken);
+    await botApp.ConversationClient.SendActivityAsync(activity.Conversation!.Id!, typing, activity.ServiceUrl!, cancellationToken: cancellationToken);
 
     AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken: timer.Token);
 
@@ -53,14 +49,10 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
-        .WithServiceUrl(activity.ServiceUrl!)
-        .WithChannelId(activity.ChannelId!)
-        .WithConversation(activity.Conversation!)
-        .WithFrom(activity.Recipient)
         .WithProperty("text", m1!.Text)
         .Build();
 
-    SendActivityResponse? res = await botApp.SendActivityAsync(replyActivity, cancellationToken: cancellationToken);
+    SendActivityResponse? res = await botApp.ConversationClient.SendActivityAsync(activity.Conversation!.Id!, replyActivity, activity.ServiceUrl!, cancellationToken: cancellationToken);
 
     Console.WriteLine("SENT >>> => " + res?.Id);
 };

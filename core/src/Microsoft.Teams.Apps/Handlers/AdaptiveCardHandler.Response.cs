@@ -30,21 +30,21 @@ public class AdaptiveCardResponse
     /// HTTP status code for the response.
     /// </summary>
     [JsonPropertyName("statusCode")]
-    public int StatusCode { get; set; } = 200;
+    public int StatusCode { get; internal set; } = 200;
 
     /// <summary>
     /// Type of response. See <see cref="AdaptiveCardResponseTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Type { get; set; }
+    public string? Type { get; internal set; }
 
     /// <summary>
     /// Value for the response. Can be a string message or card content.
     /// </summary>
     [JsonPropertyName("value")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Value { get; set; }
+    public object? Value { get; internal set; }
 
     /// <summary>
     /// Creates a new builder for AdaptiveCardResponse.

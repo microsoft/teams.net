@@ -41,38 +41,6 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Sets the service URL.
-    /// </summary>
-    /// <param name="serviceUrl">The service URL.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithServiceUrl(Uri? serviceUrl)
-    {
-        _activity.ServiceUrl = serviceUrl;
-        return (TBuilder)this;
-    }
-    /// <summary>
-    /// Sets the service URL from a string.
-    /// </summary>
-    /// <param name="serviceUrlString">The service URL as a string.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithServiceUrl(string serviceUrlString)
-    {
-        _activity.ServiceUrl = new Uri(serviceUrlString);
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the channel ID.
-    /// </summary>
-    /// <param name="channelId">The channel ID.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithChannelId(string? channelId)
-    {
-        _activity.ChannelId = channelId;
-        return (TBuilder)this;
-    }
-
-    /// <summary>
     /// Sets the activity type.
     /// </summary>
     /// <param name="type">The activity type.</param>
@@ -80,39 +48,6 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     public TBuilder WithType(string type)
     {
         _activity.Type = type;
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the conversation information.
-    /// </summary>
-    /// <param name="conversation">The conversation information.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithConversation(Conversation conversation)
-    {
-        _activity.Conversation = conversation;
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the sender account information.
-    /// </summary>
-    /// <param name="from">The sender account.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithFrom(ChannelAccount? from)
-    {
-        _activity.From = from;
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the recipient account information.
-    /// </summary>
-    /// <param name="recipient">The recipient account.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithRecipient(ChannelAccount? recipient)
-    {
-        _activity.Recipient = recipient;
         return (TBuilder)this;
     }
 

@@ -15,26 +15,26 @@ public class FileConsentValue
     /// The type of file consent activity. Typically "fileUpload".
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public string? Type { get; internal set; }
 
     /// <summary>
     /// The action the user took. Possible values: 'accept', 'decline'.
     /// </summary>
     [JsonPropertyName("action")]
-    public string? Action { get; set; }
+    public string? Action { get; internal set; }
 
     /// <summary>
     /// The context associated with the action.
     /// </summary>
     [JsonPropertyName("context")]
-    public object? Context { get; set; }
+    public object? Context { get; internal set; }
 
     /// <summary>
     /// If the user accepted the file,
     /// contains information about the file to be uploaded.
     /// </summary>
     [JsonPropertyName("uploadInfo")]
-    public FileUploadInfo? UploadInfo { get; set; }
+    public FileUploadInfo? UploadInfo { get; internal set; }
 }
 
 /// <summary>
@@ -46,29 +46,29 @@ public class FileUploadInfo
     /// Name of the file.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public string? Name { get; internal set; }
 
     /// <summary>
     /// URL to upload file content.
     /// </summary>
     [JsonPropertyName("uploadUrl")]
-    public Uri? UploadUrl { get; set; }
+    public Uri? UploadUrl { get; internal set; }
 
     /// <summary>
     /// URL to file content after upload.
     /// </summary>
     [JsonPropertyName("contentUrl")]
-    public Uri? ContentUrl { get; set; }
+    public Uri? ContentUrl { get; internal set; }
 
     /// <summary>
     /// Unique ID for the file.
     /// </summary>
     [JsonPropertyName("uniqueId")]
-    public string? UniqueId { get; set; }
+    public string? UniqueId { get; internal set; }
 
     /// <summary>
     /// Type of the file.
     /// </summary>
     [JsonPropertyName("fileType")]
-    public string? FileType { get; set; }
+    public string? FileType { get; internal set; }
 }

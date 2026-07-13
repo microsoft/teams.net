@@ -23,10 +23,11 @@ public class TeamsActivityTests
     public void DownCastTeamsActivity_To_CoreActivity_FromBuilder()
     {
 
-        TeamsActivity teamsActivity = TeamsActivity
+        TeamsActivity teamsActivity = MessageActivity
             .CreateBuilder()
-            .WithConversation(new Conversation() { Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856" })
+            .WithText("hi")
             .Build();
+        teamsActivity.Conversation = new TeamsConversation() { Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856" };
 
         static void AssertCid(CoreActivity a)
         {
@@ -78,10 +79,8 @@ public class TeamsActivityTests
     [Fact]
     public void Serialize_TeamsActivity_WithEntities()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
-              .WithType(ActivityType.Message)
+        TeamsActivity activity = MessageActivity.CreateBuilder()
               .WithText("Hello World")
-              .WithChannelId("msteams")
               .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
           .Build();
 
@@ -134,10 +133,10 @@ public class TeamsActivityTests
             }
             """;
 
-        TeamsActivity teamsActivity = TeamsActivity.CreateBuilder().Build();
+        TeamsActivity teamsActivity = MessageActivity.CreateBuilder().Build();
         Assert.NotNull(teamsActivity);
         string json = teamsActivity.ToJson();
-        Assert.Equal(minActivityJson, json);
+        Assert.Equal(minActivityJson.Replace("\r\n", "\n"), json.Replace("\r\n", "\n"));
     }
 
     [Fact]

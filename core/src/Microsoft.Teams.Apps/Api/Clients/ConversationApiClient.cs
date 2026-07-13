@@ -17,6 +17,7 @@ public class ConversationApiClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
+    private readonly AgenticIdentity? _agenticIdentity;
 
     /// <summary>
     /// Client for activity operations.
@@ -33,20 +34,23 @@ public class ConversationApiClient
     /// </summary>
     public ReactionClient Reactions { get; }
 
-    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client)
+    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client, AgenticIdentity? agenticIdentity = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
-        Activities = new ActivityClient(serviceUrl, client);
-        Members = new MemberClient(serviceUrl, client);
-        Reactions = new ReactionClient(serviceUrl, client);
+        _agenticIdentity = agenticIdentity;
+        Activities = new ActivityClient(serviceUrl, client, agenticIdentity);
+        Members = new MemberClient(serviceUrl, client, agenticIdentity);
+        Reactions = new ReactionClient(serviceUrl, client, agenticIdentity);
     }
 
     /// <summary>
     /// Create a new conversation.
     /// </summary>
-    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
+
+    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
 }

@@ -49,7 +49,7 @@ public class TeamsActivity : CoreActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public TeamsActivity()
+    internal TeamsActivity()
     {
         Type = TeamsActivityTypes.Message;
     }
@@ -80,7 +80,7 @@ public class TeamsActivity : CoreActivity
     public new TeamsChannelAccount? From
     {
         get => base.From as TeamsChannelAccount ?? TeamsChannelAccount.FromChannelAccount(base.From);
-        set => base.From = value;
+        internal set => base.From = value;
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class TeamsActivity : CoreActivity
     public new TeamsChannelAccount? Recipient
     {
         get => base.Recipient as TeamsChannelAccount ?? TeamsChannelAccount.FromChannelAccount(base.Recipient);
-        set => base.Recipient = value;
+        internal set => base.Recipient = value;
     }
 
     /// <summary>
@@ -102,62 +102,48 @@ public class TeamsActivity : CoreActivity
     public new TeamsConversation? Conversation
     {
         get => base.Conversation as TeamsConversation ?? TeamsConversation.FromConversation(base.Conversation);
-        set => base.Conversation = value!;
+        internal set => base.Conversation = value!;
     }
 
     /// <summary>
-    /// Gets or sets the Teams-specific channel data associated with this activity.
+    /// Gets the Teams-specific channel data associated with this activity.
     /// </summary>
     [JsonPropertyName("channelData")]
-    public TeamsChannelData? ChannelData { get; set; }
+    public TeamsChannelData? ChannelData { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the entities specific to Teams.
+    /// Gets the entities specific to Teams.
     /// </summary>
     [JsonPropertyName("entities")]
-    public EntityList? Entities { get; set; }
+    public EntityList? Entities { get; internal set; }
 
     /// <summary>
     /// UTC timestamp of when the activity was sent.
     /// </summary>
     [JsonPropertyName("timestamp")]
-    public string? Timestamp { get; set; }
+    public string? Timestamp { get; internal set; }
 
     /// <summary>
     /// Local timestamp of when the activity was sent, including timezone offset.
     /// </summary>
     [JsonPropertyName("localTimestamp")]
-    public string? LocalTimestamp { get; set; }
+    public string? LocalTimestamp { get; internal set; }
 
     /// <summary>
     /// Locale of the activity set by the client (e.g., "en-US").
     /// </summary>
     [JsonPropertyName("locale")]
-    public string? Locale { get; set; }
+    public string? Locale { get; internal set; }
 
     /// <summary>
     /// Local timezone of the client (e.g., "America/Los_Angeles").
     /// </summary>
     [JsonPropertyName("localTimezone")]
-    public string? LocalTimezone { get; set; }
+    public string? LocalTimezone { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the suggested actions for the message.
+    /// Gets the suggested actions for the message.
     /// </summary>
     [JsonPropertyName("suggestedActions")]
-    public SuggestedActions? SuggestedActions { get; set; }
-
-    /// <summary>
-    /// Creates a new TeamsActivityBuilder instance for building a TeamsActivity with a fluent API.
-    /// </summary>
-    /// <returns>A new TeamsActivityBuilder instance.</returns>
-    public static new TeamsActivityBuilder CreateBuilder() => new();
-
-    /// <summary>
-    /// Creates a new TeamsActivityBuilder instance initialized with the specified TeamsActivity.
-    /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
-    public static TeamsActivityBuilder CreateBuilder(TeamsActivity activity) => new(activity);
-
+    public SuggestedActions? SuggestedActions { get; internal set; }
 }

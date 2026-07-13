@@ -237,15 +237,12 @@ namespace Microsoft.Teams.Apps.BotBuilder
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
-            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
-            {
-                coreActivity.ServiceUrl = new Uri(ServiceUrl);
-            }
+            Uri serviceUrl = coreActivity.ServiceUrl
+                ?? new Uri(ServiceUrl!);
 
             coreActivity.ReplyToId = activityId;
-            coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, coreActivity, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -308,14 +305,10 @@ namespace Microsoft.Teams.Apps.BotBuilder
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
-            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
-            {
-                coreActivity.ServiceUrl = new Uri(ServiceUrl);
-            }
+            Uri serviceUrl = coreActivity.ServiceUrl
+                ?? new Uri(ServiceUrl!);
 
-            coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
-
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, coreActivity, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -347,16 +340,14 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
-            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for updating activities
-            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
-            {
-                coreActivity.ServiceUrl = new Uri(ServiceUrl);
-            }
+            Uri serviceUrl = coreActivity.ServiceUrl
+                ?? new Uri(ServiceUrl!);
 
             UpdateActivityResponse response = await _client.UpdateActivityAsync(
                 conversationId,
                 activityId,
                 coreActivity,
+                serviceUrl,
                 requestContext: RequestContext,
                 customHeaders: convertedHeaders,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

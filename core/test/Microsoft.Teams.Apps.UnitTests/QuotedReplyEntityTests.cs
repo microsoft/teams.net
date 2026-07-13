@@ -231,8 +231,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void AddQuote_AddsEntityAndPlaceholder()
     {
-        MessageActivity activity = new("existing text");
-        activity.AddQuote("msg-1");
+        MessageActivity activity = MessageActivity.CreateBuilder().WithText("existing text").AddQuote("msg-1").Build();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -245,8 +244,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void AddQuote_WithResponse_AppendsResponseText()
     {
-        MessageActivity activity = new();
-        activity.AddQuote("msg-1", "my response");
+        MessageActivity activity = MessageActivity.CreateBuilder().AddQuote("msg-1", "my response").Build();
 
         Assert.Equal("<quoted messageId=\"msg-1\"/> my response", activity.Text);
     }
@@ -254,9 +252,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void AddQuote_MultiQuoteInterleaved()
     {
-        MessageActivity activity = new();
-        activity.AddQuote("msg-1", "response to first");
-        activity.AddQuote("msg-2", "response to second");
+        MessageActivity activity = MessageActivity.CreateBuilder().AddQuote("msg-1", "response to first").AddQuote("msg-2", "response to second").Build();
 
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/> response to first<quoted messageId=\"msg-2\"/> response to second",
@@ -267,9 +263,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void AddQuote_GroupedQuotes()
     {
-        MessageActivity activity = new();
-        activity.AddQuote("msg-1");
-        activity.AddQuote("msg-2", "response to both");
+        MessageActivity activity = MessageActivity.CreateBuilder().AddQuote("msg-1").AddQuote("msg-2", "response to both").Build();
 
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/><quoted messageId=\"msg-2\"/> response to both",
@@ -279,8 +273,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void AddQuote_EmptyActivity()
     {
-        MessageActivity activity = new();
-        activity.AddQuote("msg-1");
+        MessageActivity activity = MessageActivity.CreateBuilder().AddQuote("msg-1").Build();
 
         Assert.Equal("<quoted messageId=\"msg-1\"/>", activity.Text);
         Assert.Single(activity.Entities!);
@@ -291,7 +284,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void Builder_WithQuote_AddsEntityAndPlaceholder()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddQuote("msg-1")
             .Build();
 
@@ -300,26 +293,25 @@ public class QuotedReplyEntityTests
         Assert.IsType<QuotedReplyEntity>(activity.Entities[0]);
 
         // Check text via Properties (builder stores text there)
-        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        string? text = activity.Text;
         Assert.Equal("<quoted messageId=\"msg-1\"/>", text?.ToString());
     }
 
     [Fact]
     public void Builder_WithQuote_WithResponse()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddQuote("msg-1", "my response")
             .Build();
 
-        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        string? text = activity.Text;
         Assert.Equal("<quoted messageId=\"msg-1\"/> my response", text?.ToString());
     }
 
     [Fact]
     public void AddQuote_ToJson_ContainsQuotedReplyData()
     {
-        MessageActivity activity = new("hello");
-        activity.AddQuote("msg-123", "my response");
+        MessageActivity activity = MessageActivity.CreateBuilder().WithText("hello").AddQuote("msg-123", "my response").Build();
 
         string json = activity.ToJson();
         Assert.Contains("\"quotedReply\"", json);
@@ -332,8 +324,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void PrependQuote_EmptyText_SetsPlaceholderOnly()
     {
-        MessageActivity activity = new();
-        activity.PrependQuote("msg-1");
+        MessageActivity activity = MessageActivity.CreateBuilder().PrependQuote("msg-1").Build();
 
         Assert.Equal("<quoted messageId=\"msg-1\"/>", activity.Text);
         Assert.Single(activity.Entities!);
@@ -342,8 +333,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void PrependQuote_NonEmptyText_PrependsPlaceholderWithSpace()
     {
-        MessageActivity activity = new("hello world");
-        activity.PrependQuote("msg-1");
+        MessageActivity activity = MessageActivity.CreateBuilder().WithText("hello world").PrependQuote("msg-1").Build();
 
         Assert.Equal("<quoted messageId=\"msg-1\"/> hello world", activity.Text);
     }
@@ -351,8 +341,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void PrependQuote_TrimsExistingText()
     {
-        MessageActivity activity = new("   hello   ");
-        activity.PrependQuote("msg-1");
+        MessageActivity activity = MessageActivity.CreateBuilder().WithText("   hello   ").PrependQuote("msg-1").Build();
 
         Assert.Equal("<quoted messageId=\"msg-1\"/> hello", activity.Text);
     }
@@ -360,12 +349,13 @@ public class QuotedReplyEntityTests
     [Fact]
     public void PrependQuote_InsertsEntityAtIndexZero()
     {
-        MessageActivity activity = new("existing");
-        activity.Entities = [new ClientInfoEntity { Locale = "en-us" }];
+        MessageActivity activity = MessageActivity.CreateBuilder()
+            .WithText("existing")
+            .WithEntities([new ClientInfoEntity { Locale = "en-us" }])
+            .PrependQuote("msg-1")
+            .Build();
 
-        activity.PrependQuote("msg-1");
-
-        Assert.Equal(2, activity.Entities.Count);
+        Assert.Equal(2, activity.Entities!.Count);
         Assert.IsType<QuotedReplyEntity>(activity.Entities[0]);
         Assert.IsType<ClientInfoEntity>(activity.Entities[1]);
         Assert.Equal("msg-1", ((QuotedReplyEntity)activity.Entities[0]).QuotedReply?.MessageId);
@@ -376,8 +366,7 @@ public class QuotedReplyEntityTests
     [Fact]
     public void AddQuote_EscapesSpecialCharsInPlaceholder()
     {
-        MessageActivity activity = new();
-        activity.AddQuote("msg<\"&>1");
+        MessageActivity activity = MessageActivity.CreateBuilder().AddQuote("msg<\"&>1").Build();
 
         // Placeholder uses XML-escaped attribute value; entity carries raw id
         Assert.Equal("<quoted messageId=\"msg&lt;&quot;&amp;&gt;1\"/>", activity.Text);
@@ -388,18 +377,18 @@ public class QuotedReplyEntityTests
     [Fact]
     public void Builder_WithQuote_EscapesSpecialCharsInPlaceholder()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddQuote("a\"b")
             .Build();
 
-        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        string? text = activity.Text;
         Assert.Equal("<quoted messageId=\"a&quot;b\"/>", text?.ToString());
     }
 
     [Fact]
     public void Builder_WithQuote_MultipleQuotes()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .AddQuote("msg-1", "first response")
             .AddQuote("msg-2", "second response")
             .Build();
@@ -407,7 +396,7 @@ public class QuotedReplyEntityTests
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities.Count);
 
-        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        string? text = activity.Text;
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/> first response<quoted messageId=\"msg-2\"/> second response",
             text?.ToString());

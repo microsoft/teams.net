@@ -23,13 +23,10 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         CancellationToken cancellationToken = default)
     {
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
-        TeamsActivity notifyActivity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityTypes.Message)
-            .WithServiceUrl(state.ServiceUrl)
-            .WithConversation(new Conversation(conversationId))
+        MessageActivity notifyActivity = MessageActivity.CreateBuilder()
             .WithText(message)
             .Build();
-        await app.SendActivityAsync(notifyActivity, cancellationToken);
+        await app.ConversationClient.SendActivityAsync(conversationId, notifyActivity, state.ServiceUrl, cancellationToken: cancellationToken);
         return new NotifyResult(Notified: true, UserId: userId);
     }
 
@@ -45,15 +42,12 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
 
         // Record the pending ask before sending, so a fast reply is never lost.
         state.PendingAsks[requestId] = new PendingAsk(userId);
-        TeamsActivity askActivity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityTypes.Message)
-            .WithServiceUrl(state.ServiceUrl)
-            .WithConversation(new Conversation(conversationId))
+        MessageActivity askActivity = MessageActivity.CreateBuilder()
             .WithAdaptiveCardAttachment(Cards.AskCard(requestId, question))
             .Build();
         try
         {
-            await app.SendActivityAsync(askActivity, cancellationToken);
+            await app.ConversationClient.SendActivityAsync(conversationId, askActivity, state.ServiceUrl, cancellationToken: cancellationToken);
         }
         catch
         {
@@ -129,17 +123,14 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         string approvalId = Guid.NewGuid().ToString();
 
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityTypes.Message)
-            .WithServiceUrl(state.ServiceUrl)
-            .WithConversation(new Conversation(conversationId))
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .WithAdaptiveCardAttachment(Cards.ApprovalCard(approvalId, title, description))
             .Build();
 
         state.Approvals[approvalId] = ApprovalStatus.Pending;
         try
         {
-            await app.SendActivityAsync(activity, cancellationToken);
+            await app.ConversationClient.SendActivityAsync(conversationId, activity, state.ServiceUrl, cancellationToken: cancellationToken);
         }
         catch
         {

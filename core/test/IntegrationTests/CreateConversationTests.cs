@@ -84,13 +84,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(response.Id, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created 1:1 conversation {response.Id} and sent activity {sent.Id}");
     }
@@ -188,13 +185,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] Group message at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(response.Id, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created group {response.Id} and sent activity {sent.Id}");
     }
@@ -243,7 +237,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -263,12 +257,11 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
         Assert.NotNull(response?.Id);
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithProperty("text", $"[ApiClient] 1:1 via Activities.Create at `{DateTime.UtcNow:s}`")
             .Build();
 
@@ -306,7 +299,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             ChannelData = new { tenant = new { id = _f.TenantId } }
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -332,7 +325,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -354,14 +347,13 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
         Assert.NotNull(response?.Id);
         Assert.NotNull(response.ActivityId);
 
         // Reply to the thread
         CoreActivity reply = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithProperty("text", $"[ApiClient] Thread reply at `{DateTime.UtcNow:s}`")
             .Build();
 

@@ -14,33 +14,37 @@ public class MeetingClient
 {
     private readonly BotHttpClient _http;
     private readonly string _serviceUrl;
+    private readonly AgenticIdentity? _agenticIdentity;
 
-    internal MeetingClient(string serviceUrl, BotHttpClient http)
+    internal MeetingClient(string serviceUrl, BotHttpClient http, AgenticIdentity? agenticIdentity = null)
     {
         _serviceUrl = serviceUrl.TrimEnd('/');
         _http = http;
+        _agenticIdentity = agenticIdentity;
     }
 
     /// <summary>
     /// Get a meeting by its ID.
     /// </summary>
-    public async Task<Meeting?> GetByIdAsync(string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public async Task<Meeting?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(id)}";
-        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Get a participant in a meeting.
     /// </summary>
-    public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}";
-        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
+        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
     }
 
-    private static BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
-        agenticIdentity is null ? null : new() { RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity) };
+    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
+
+    private BotRequestOptions? CreateRequestOptions() =>
+        AgenticContext is { } context ? new() { RequestContext = context } : null;
 }
 
 /// <summary>

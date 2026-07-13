@@ -28,14 +28,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task SendActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithConversation(new(_f.ConversationId))
+            .WithType(ActivityType.Message)
             .WithProperty("text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
@@ -47,26 +44,20 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task UpdateActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithConversation(new(_f.ConversationId))
+            .WithType(ActivityType.Message)
             .WithProperty("text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         Assert.NotNull(sent?.Id);
 
         CoreActivity updated = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithConversation(new(_f.ConversationId))
+            .WithType(ActivityType.Message)
             .WithProperty("text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`")
             .Build();
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
-            _f.ConversationId, sent.Id, updated, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, updated, _f.ServiceUrl, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
         Assert.NotNull(res?.Id);
         _output.WriteLine($"Updated activity: {res.Id}");
@@ -77,14 +68,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task DeleteActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithConversation(new(_f.ConversationId))
+            .WithType(ActivityType.Message)
             .WithProperty("text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         Assert.NotNull(sent?.Id);
 
         await Task.Delay(2000);
@@ -152,14 +140,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         Skip.If(_f.IsCanary, "Reactions API returns 404 on canary — service limitation");
 
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithServiceUrl(_f.ServiceUrl)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithConversation(new(_f.ConversationId))
+            .WithType(ActivityType.Message)
             .WithProperty("text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         Assert.NotNull(sent?.Id);
 
         await _f.ConversationClient.AddReactionAsync(

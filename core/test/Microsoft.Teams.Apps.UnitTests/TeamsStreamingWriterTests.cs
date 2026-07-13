@@ -167,8 +167,10 @@ public class TeamsStreamingWriterTests
 
         await writer.AppendResponseAsync("streamed text");
 
-        MessageActivity final = new("explicit text");
-        final.AddFeedback(FeedbackTypes.Custom);
+        MessageActivity final = MessageActivity.CreateBuilder()
+            .WithText("explicit text")
+            .AddFeedback(FeedbackTypes.Custom)
+            .Build();
 
         await writer.FinalizeResponseAsync(final);
 
@@ -192,8 +194,9 @@ public class TeamsStreamingWriterTests
         await writer.AppendResponseAsync("world");
 
         // No Text set on the activity — writer should fill in the accumulated text.
-        MessageActivity final = new();
-        final.AddFeedback(FeedbackTypes.Default);
+        MessageActivity final = MessageActivity.CreateBuilder()
+            .AddFeedback(FeedbackTypes.Default)
+            .Build();
 
         await writer.FinalizeResponseAsync(final);
 
@@ -213,8 +216,10 @@ public class TeamsStreamingWriterTests
             .WithContent(new JsonObject { ["type"] = "AdaptiveCard", ["version"] = "1.5" })
             .Build();
 
-        MessageActivity final = new() { Text = "" };
-        final.AddAttachment(attachment);
+        MessageActivity final = MessageActivity.CreateBuilder()
+            .WithText("")
+            .AddAttachment(attachment)
+            .Build();
 
         await writer.FinalizeResponseAsync(final);
 

@@ -25,25 +25,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(new MessageActivity("response text"));
-
-        Assert.NotNull(captured.Value);
-        TeamsActivity teamsActivity = (TeamsActivity)captured.Value!;
-        TargetedMessageInfoEntity? entity = teamsActivity.Entities?.OfType<TargetedMessageInfoEntity>().SingleOrDefault();
-        Assert.NotNull(entity);
-        Assert.Equal("1772129782775", entity.MessageId);
-    }
-
-    [Fact]
-    public async Task SendActivityAsync_StringOverload_AutoPopulatesTargetedMessageInfo_WhenInboundIsTargeted()
-    {
-        TestHarness harness = CreateHarness();
-        CaptureSlot captured = SetupCapture(harness);
-
-        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
-        Context<MessageActivity> ctx = new(harness.App, inbound);
-
-        await ctx.SendActivityAsync("plain text response");
+        await ctx.SendActivityAsync(new MessageActivity("response text"), targeted: true);
 
         Assert.NotNull(captured.Value);
         TeamsActivity teamsActivity = (TeamsActivity)captured.Value!;
@@ -95,8 +77,10 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivity outbound = new("response");
-        outbound.AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" });
+        MessageActivity outbound = MessageActivity.CreateBuilder()
+            .WithText("response")
+            .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
+            .Build();
 
         await ctx.SendActivityAsync(outbound);
 
@@ -120,7 +104,7 @@ public class PromptPreviewTests
         outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => ctx.SendActivityAsync(outbound));
+            () => ctx.SendActivityAsync(outbound, targeted: true));
         Assert.Contains("personal", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -189,12 +173,14 @@ public class PromptPreviewTests
         CaptureSlot slot = new();
         harness.MockConversationClient
             .Setup(c => c.SendActivityAsync(
+                It.IsAny<string>(),
                 It.IsAny<CoreActivity>(),
+                It.IsAny<Uri>(),
                 It.IsAny<BotRequestContext?>(),
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<CoreActivity, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
-                (activity, _, _, _) => slot.Value = activity)
+            .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (_, activity, _, _, _, _) => slot.Value = activity)
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
         return slot;
     }

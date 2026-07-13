@@ -151,7 +151,9 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient.Setup(c => c.SendActivityAsync(
+                    It.IsAny<string>(),
                     It.IsAny<CoreActivity>(),
+                    It.IsAny<Uri>(),
                     It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
@@ -178,7 +180,9 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(
-                    It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
+                    It.Is<string>(id => id == "turn-conversation-123"),
+                    It.IsAny<CoreActivity>(),
+                    It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
                     It.Is<BotRequestContext?>(c => c != null && c.BotAppId == "bot-123"),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
@@ -194,6 +198,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<CoreActivity>(),
+                    It.IsAny<Uri>(),
                     It.IsAny<bool>(),
                     It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
@@ -223,7 +228,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 c => c.UpdateActivityAsync(
                     "conversation-123",
                     "activity-123",
-                    It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
+                    It.IsAny<CoreActivity>(),
+                    It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
                     It.IsAny<bool>(),
                     It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
@@ -247,7 +253,9 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 .Returns(Task.CompletedTask);
 
             mock.Setup(c => c.SendActivityAsync(
+                    It.IsAny<string>(),
                     It.IsAny<CoreActivity>(),
+                    It.IsAny<Uri>(),
                     It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))

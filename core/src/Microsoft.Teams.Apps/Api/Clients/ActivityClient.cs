@@ -18,12 +18,16 @@ public class ActivityClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
+    private readonly AgenticIdentity? _agenticIdentity;
 
-    internal ActivityClient(Uri serviceUrl, CoreConversationClient client)
+    internal ActivityClient(Uri serviceUrl, CoreConversationClient client, AgenticIdentity? agenticIdentity = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
+        _agenticIdentity = agenticIdentity;
     }
+
+    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
 
     /// <summary>
     /// Create a new activity in a conversation.
@@ -31,9 +35,7 @@ public class ActivityClient
     public Task<SendActivityResponse?> CreateAsync(string conversationId, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        activity.ServiceUrl ??= _serviceUrl;
-        activity.Conversation ??= new Conversation(conversationId);
-        return _client.SendActivityAsync(activity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -42,8 +44,7 @@ public class ActivityClient
     public Task<UpdateActivityResponse> UpdateAsync(string conversationId, string id, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateActivityAsync(conversationId, id, activity, requestContext: BotRequestContext.FromActivity(activity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.UpdateActivityAsync(conversationId, id, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -53,17 +54,15 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
-        activity.ServiceUrl ??= _serviceUrl;
-        activity.Conversation ??= new Conversation(conversationId);
-        return _client.SendActivityAsync(activity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Delete an activity from a conversation.
     /// </summary>
-    public Task DeleteAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -74,14 +73,12 @@ public class ActivityClient
     public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        activity.ServiceUrl ??= _serviceUrl;
-        activity.Conversation ??= new Conversation(conversationId);
         // Ensure recipient is marked as targeted
         if (activity.Recipient is not null)
         {
             activity.Recipient.IsTargeted = true;
         }
-        return _client.SendActivityAsync(activity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -91,15 +88,14 @@ public class ActivityClient
     public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, CoreActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, requestContext: BotRequestContext.FromActivity(activity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Delete a targeted activity from a conversation.
     /// </summary>
-    public Task DeleteTargetedAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public Task DeleteTargetedAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

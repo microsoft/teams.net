@@ -26,7 +26,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     if (quote.ValidatedMessageReference == true) info += "\n(validated)";
 
     await context.SendActivityAsync(
-        new MessageActivity($"You sent a message with a quoted reply:\n\n{info}") { TextFormat = TextFormats.Markdown },
+        MessageActivity.CreateBuilder().WithText($"You sent a message with a quoted reply:\n\n{info}", TextFormats.Markdown).Build(),
         cancellationToken);
 });
 
@@ -52,8 +52,7 @@ teamsApp.OnMessage("(?i)^test add$", async (context, cancellationToken) =>
     SendActivityResponse? sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
     if (sent?.Id != null)
     {
-        TeamsActivity msg = TeamsActivity.CreateBuilder()
-            .WithType("message")
+        MessageActivity msg = MessageActivity.CreateBuilder()
             .AddQuote(sent.Id, "Done! Left my comments on the PR.")
             .Build();
         await context.SendActivityAsync(msg, cancellationToken);
@@ -69,8 +68,7 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
 
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
-        TeamsActivity msg = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityTypes.Message)
+        MessageActivity msg = MessageActivity.CreateBuilder()
             .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
             .AddQuote(sentB.Id, "Looks great, approved!")
             .AddQuote(sentC.Id)
@@ -83,15 +81,16 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync(
-        new MessageActivity(
+        MessageActivity.CreateBuilder()
+            .WithText(
             "**Quoting Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test reply` - Reply() auto-quotes your message\n" +
             "- `test quote` - Quote() quotes a previously sent message\n" +
             "- `test add` - AddQuote() extension with response\n" +
             "- `test multi` - Multi-quote with mixed responses\n" +
-            "Quote any message to me to see the parsed metadata!")
-        { TextFormat = TextFormats.Markdown },
+            "Quote any message to me to see the parsed metadata!", TextFormats.Markdown)
+            .Build(),
         cancellationToken);
 });
 

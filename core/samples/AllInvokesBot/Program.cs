@@ -27,7 +27,7 @@ bot.OnMessage(async (context, cancellationToken) =>
         .WithAdaptiveCard(card)
         .Build();
 
-    await context.SendActivityAsync(new MessageActivity([attachment]), cancellationToken);
+    await context.SendActivityAsync(MessageActivity.CreateBuilder().AddAttachment(attachment).Build(), cancellationToken);
 });
 
 // ==================== ADAPTIVE CARD ACTION ====================
@@ -49,7 +49,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         TeamsAttachment fileConsentCardResponse = TeamsAttachment.CreateBuilder()
             .WithContent(fileConsentCard).WithContentType(AttachmentContentTypes.FileConsentCard)
             .WithName("file_consent.json").Build();
-        await context.SendActivityAsync(new MessageActivity([fileConsentCardResponse]), cancellationToken);
+        await context.SendActivityAsync(MessageActivity.CreateBuilder().AddAttachment(fileConsentCardResponse).Build(), cancellationToken);
 
         return AdaptiveCardResponse.CreateMessageResponse("File Consent requested!");
     }
@@ -58,7 +58,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
 
     JsonObject adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
-    await context.SendActivityAsync(new MessageActivity([adaptiveActionCardResponse]), cancellationToken);
+    await context.SendActivityAsync(MessageActivity.CreateBuilder().AddAttachment(adaptiveActionCardResponse).Build(), cancellationToken);
 
     return AdaptiveCardResponse.CreateMessageResponse("Action submitted!");
 });
@@ -136,7 +136,7 @@ bot.OnFileConsent(async (context, cancellationToken) =>
                         .WithContentUrl(contentUrl != null ? new Uri(contentUrl) : null)
                         .WithContent(fileInfoContent).Build();
 
-                    await context.SendActivityAsync(new MessageActivity([fileUploadResponse]), cancellationToken);
+                    await context.SendActivityAsync(MessageActivity.CreateBuilder().AddAttachment(fileUploadResponse).Build(), cancellationToken);
                 }
                 else
                 {
