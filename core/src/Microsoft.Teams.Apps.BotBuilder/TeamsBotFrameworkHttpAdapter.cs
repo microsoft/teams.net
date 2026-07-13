@@ -65,12 +65,14 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
         TurnContext? turnContext = null;
         _activityCallback.Value = async (activity, ct) =>
         {
+            BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(activity);
             turnContext = new(this, activity.ToBotFrameworkActivity());
-            turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(
+                new CompatUserTokenClient(_teamsBotApplication.UserTokenClient) { RequestContext = requestContext });
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient)
             {
                 ServiceUrl = activity.ServiceUrl?.ToString(),
-                RequestContext = BotRequestContext.FromInboundActivity(activity)
+                RequestContext = requestContext
             });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             //turnContext.TurnState.Add<Microsoft.Teams.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
@@ -127,8 +129,14 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
         ArgumentNullException.ThrowIfNull(callback);
 
         using TurnContext turnContext = new(this, reference.GetContinuationActivity());
-        turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
-        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl, RequestContext = BotRequestContext.FromBotAppId(botId) }));
+        BotRequestContext? requestContext = BotRequestContext.FromBotAppId(botId);
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(
+            new CompatUserTokenClient(_teamsBotApplication.UserTokenClient) { RequestContext = requestContext });
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient)
+        {
+            ServiceUrl = reference.ServiceUrl,
+            RequestContext = requestContext
+        }));
         await RunPipelineAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
     }
 }
