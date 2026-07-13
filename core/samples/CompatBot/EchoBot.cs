@@ -80,15 +80,12 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         incomingFrom!.IsTargeted = true;
 #pragma warning restore ExperimentalTeamsTargeted
         CoreActivity tm = CoreActivity.CreateBuilder()
-            .WithConversation(incomingCoreActivity.Conversation!)
             .WithProperty("text", "Hello TM !")
-            .WithRecipient(incomingFrom)
-            .WithFrom(incomingRecipient)
-            //.WithServiceUrl(activity.ServiceUrl!)
-            .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+        Uri serviceUrl = new("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/");
+
+        await teamsBotApp.ConversationClient.SendActivityAsync(incomingCoreActivity.Conversation!.Id!, tm, serviceUrl, cancellationToken: cancellationToken);
 
         ResourceResponse res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
