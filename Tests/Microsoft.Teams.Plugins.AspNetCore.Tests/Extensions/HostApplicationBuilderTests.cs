@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -52,12 +54,15 @@ public class HostApplicationBuilderTests
         builder.AddTeams();
         var services = builder.Build().Services;
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
+        var authorizationService = services.GetRequiredService<IAuthorizationService>();
         var pluginOptions = services.GetRequiredService<AspNetCorePluginOptions>();
 
         var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
+        var result = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), null, policy!);
 
         Assert.NotNull(policy);
         Assert.True(policy.Requirements.OfType<AssertionRequirement>().Any());
+        Assert.False(result.Succeeded);
         Assert.False(pluginOptions.DangerouslyAllowUnauthenticatedRequests);
     }
 
@@ -73,13 +78,16 @@ public class HostApplicationBuilderTests
         builder.AddTeams(new AspNetCorePluginOptions { DangerouslyAllowUnauthenticatedRequests = true });
         var services = builder.Build().Services;
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
+        var authorizationService = services.GetRequiredService<IAuthorizationService>();
         var pluginOptions = services.GetRequiredService<AspNetCorePluginOptions>();
 
         var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
+        var result = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), null, policy!);
 
         // Should allow all requests
         Assert.NotNull(policy);
         Assert.True(policy.Requirements.OfType<AssertionRequirement>().Any());
+        Assert.True(result.Succeeded);
         Assert.True(pluginOptions.DangerouslyAllowUnauthenticatedRequests);
     }
 
@@ -96,12 +104,15 @@ public class HostApplicationBuilderTests
         builder.AddTeams();
         var services = builder.Build().Services;
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
+        var authorizationService = services.GetRequiredService<IAuthorizationService>();
         var pluginOptions = services.GetRequiredService<AspNetCorePluginOptions>();
 
         var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
+        var result = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), null, policy!);
 
         Assert.NotNull(policy);
         Assert.True(policy.Requirements.OfType<AssertionRequirement>().Any());
+        Assert.True(result.Succeeded);
         Assert.True(pluginOptions.DangerouslyAllowUnauthenticatedRequests);
     }
 
@@ -119,12 +130,15 @@ public class HostApplicationBuilderTests
 #pragma warning restore CS0618
         var services = builder.Build().Services;
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
+        var authorizationService = services.GetRequiredService<IAuthorizationService>();
         var pluginOptions = services.GetRequiredService<AspNetCorePluginOptions>();
 
         var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
+        var result = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), null, policy!);
 
         Assert.NotNull(policy);
         Assert.True(policy.Requirements.OfType<AssertionRequirement>().Any());
+        Assert.True(result.Succeeded);
         Assert.True(pluginOptions.DangerouslyAllowUnauthenticatedRequests);
     }
 

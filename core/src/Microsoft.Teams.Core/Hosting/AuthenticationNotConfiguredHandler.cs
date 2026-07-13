@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Teams.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,12 +15,6 @@ internal sealed class AuthenticationNotConfiguredHandler(
     ILoggerFactory logger,
     UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
-    private static readonly Action<ILogger, Exception?> _logAuthenticationNotConfigured =
-        LoggerMessage.Define(
-            LogLevel.Warning,
-            new EventId(1, "AuthenticationNotConfigured"),
-            "Authentication is not configured. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.");
-
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         return Task.FromResult(AuthenticateResult.Fail("Authentication not configured"));
@@ -27,7 +22,7 @@ internal sealed class AuthenticationNotConfiguredHandler(
 
     protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
     {
-        _logAuthenticationNotConfigured(Logger, null);
+        Logger.AuthenticationNotConfigured(Scheme.Name);
 
         await Results.Problem(
             statusCode: StatusCodes.Status401Unauthorized,

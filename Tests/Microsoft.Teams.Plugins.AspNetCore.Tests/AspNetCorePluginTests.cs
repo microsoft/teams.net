@@ -191,6 +191,52 @@ public class AspNetCorePluginTests
     }
 
     [Fact]
+    public async Task Test_Do_Http_MissingAuthorizationHeader_ReturnsUnauthorized()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Remove("Authorization");
+
+        var result = await plugin.Do(ctx);
+
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_InvalidAuthorizationHeader_ReturnsUnauthorized()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Authorization = "Bearer not-a-jwt";
+
+        var result = await plugin.Do(ctx);
+
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
     public void Test_ExtractToken_ReturnsToken()
     {
         var plugin = CreatePlugin();

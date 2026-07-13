@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
@@ -185,7 +186,29 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             var request = httpContext.Request;
             var options = httpContext.RequestServices?.GetService(typeof(AspNetCorePluginOptions)) as AspNetCorePluginOptions;
             var dangerouslyAllowUnauthenticatedRequests = options?.DangerouslyAllowUnauthenticatedRequests == true;
-            var token = dangerouslyAllowUnauthenticatedRequests ? null : ExtractToken(request);
+            JsonWebToken? token = null;
+            if (!dangerouslyAllowUnauthenticatedRequests)
+            {
+                try
+                {
+                    token = ExtractToken(request);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Logger.Warn("Rejecting request: missing Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+                catch (ArgumentException)
+                {
+                    Logger.Warn("Rejecting request: invalid Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+                catch (SecurityTokenException)
+                {
+                    Logger.Warn("Rejecting request: invalid Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+            }
             var activity = await ParseActivity(request).ConfigureAwait(false);
 
             if (activity is null)

@@ -145,26 +145,11 @@ public class BotConfigTests
     }
 
     [Fact]
-    public void Resolve_DangerouslyAllowUnauthenticatedRequests_FallsBackToTeamsSection()
+    public void Resolve_DangerouslyAllowUnauthenticatedRequests_IgnoresTeamsSection()
     {
         ServiceCollection services = BuildServices(new Dictionary<string, string?>
         {
             ["AzureAd:ClientId"] = "client-id",
-            ["Teams:DangerouslyAllowUnauthenticatedRequests"] = "true",
-        });
-
-        BotConfig config = BotConfig.Resolve(services);
-
-        Assert.True(config.DangerouslyAllowUnauthenticatedRequests);
-    }
-
-    [Fact]
-    public void Resolve_DangerouslyAllowUnauthenticatedRequests_ConfiguredSectionOverridesTeamsSection()
-    {
-        ServiceCollection services = BuildServices(new Dictionary<string, string?>
-        {
-            ["AzureAd:ClientId"] = "client-id",
-            ["AzureAd:DangerouslyAllowUnauthenticatedRequests"] = "false",
             ["Teams:DangerouslyAllowUnauthenticatedRequests"] = "true",
         });
 

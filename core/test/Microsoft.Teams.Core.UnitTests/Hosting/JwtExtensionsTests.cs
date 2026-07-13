@@ -196,6 +196,35 @@ public class JwtExtensionsTests
     }
 
     [Fact]
+    public async Task AddBotAuthentication_ManualOverload_DangerouslyAllowUnauthenticatedRequests_AuthenticatesWithoutAuthorizationHeader()
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = ClientId,
+                ["AzureAd:TenantId"] = Tenant,
+                ["AzureAd:DangerouslyAllowUnauthenticatedRequests"] = "true",
+            })
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddBotAuthentication(ClientId, Tenant);
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        DefaultHttpContext httpContext = new()
+        {
+            RequestServices = serviceProvider
+        };
+
+        AuthenticateResult result = await httpContext.AuthenticateAsync("AzureAd");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("BypassAuth", result.Principal?.Identity?.AuthenticationType);
+    }
+
+    [Fact]
     public async Task AddBotAuthorization_DangerouslyAllowUnauthenticatedRequests_AuthenticatesWithoutAuthorizationHeader()
     {
         IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -239,6 +268,9 @@ public class JwtExtensionsTests
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging(builder => builder.AddProvider(loggerProvider));
         services.AddBotAuthorization();
+        Assert.Contains(
+            "Authentication is not configured for scheme 'AzureAd'. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.",
+            loggerProvider.Messages);
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
         await using MemoryStream responseBody = new();
@@ -262,7 +294,7 @@ public class JwtExtensionsTests
         Assert.Equal(StatusCodes.Status401Unauthorized, problem.RootElement.GetProperty("status").GetInt32());
         Assert.False(problem.RootElement.TryGetProperty("detail", out _));
         Assert.Contains(
-            "Authentication is not configured. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.",
+            "Authentication is not configured for scheme 'AzureAd'. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.",
             loggerProvider.Messages);
     }
 

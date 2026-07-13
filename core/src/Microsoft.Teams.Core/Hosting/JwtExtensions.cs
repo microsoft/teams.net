@@ -79,7 +79,12 @@ namespace Microsoft.Teams.Core.Hosting
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            if (string.IsNullOrWhiteSpace(clientId))
+            BotConfig? botConfig = ResolveBotConfig(builder.Services, schemeName);
+            if (botConfig?.DangerouslyAllowUnauthenticatedRequests == true)
+            {
+                builder.AddBypassAuthentication(schemeName, logger);
+            }
+            else if (string.IsNullOrWhiteSpace(clientId))
             {
                 builder.AddAuthenticationNotConfigured(schemeName);
             }
@@ -206,7 +211,7 @@ namespace Microsoft.Teams.Core.Hosting
 
         /// <summary>
         /// Overload that accepts an already-resolved <see cref="BotConfig"/> to avoid a redundant
-        /// <see cref="BotConfig.Resolve"/> call during internal registration paths.
+        /// BotConfig resolution call during internal registration paths.
         /// </summary>
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, BotConfig botConfig, ILogger? logger = null)
         {
@@ -228,7 +233,7 @@ namespace Microsoft.Teams.Core.Hosting
             }
             else if (string.IsNullOrWhiteSpace(botConfig.ClientId))
             {
-                builder.AddAuthenticationNotConfigured(botConfig.SectionName);
+                builder.AddAuthenticationNotConfiguredScheme(botConfig.SectionName);
             }
             else
             {
@@ -238,7 +243,20 @@ namespace Microsoft.Teams.Core.Hosting
             return builder;
         }
 
+        private static BotConfig? ResolveBotConfig(IServiceCollection services, string sectionName)
+        {
+            return services.Any(d => d.ServiceType == typeof(IConfiguration))
+                ? BotConfig.Resolve(services, sectionName, log: false)
+                : null;
+        }
+
         private static AuthenticationBuilder AddAuthenticationNotConfigured(this AuthenticationBuilder builder, string schemeName)
+        {
+            AddBotApplicationExtensions.LogFromServices(builder.Services, l => l.AuthenticationNotConfigured(schemeName));
+            return builder.AddAuthenticationNotConfiguredScheme(schemeName);
+        }
+
+        private static AuthenticationBuilder AddAuthenticationNotConfiguredScheme(this AuthenticationBuilder builder, string schemeName)
         {
             builder.AddScheme<AuthenticationSchemeOptions, AuthenticationNotConfiguredHandler>(schemeName, _ => { });
             return builder;
@@ -252,9 +270,9 @@ namespace Microsoft.Teams.Core.Hosting
             string botOidcUrl = BotConfig.DefaultOpenIdMetadataUrl;
             string entraInstance = BotConfig.DefaultEntraInstance;
             string botTokenIssuer = BotConfig.DefaultBotTokenIssuer;
-            if (builder.Services.Any(d => d.ServiceType == typeof(IConfiguration)))
+            BotConfig? botConfig = ResolveBotConfig(builder.Services, schemeName);
+            if (botConfig is not null)
             {
-                BotConfig botConfig = BotConfig.Resolve(builder.Services, schemeName);
                 botOidcUrl = botConfig.OpenIdMetadataUrl;
                 entraInstance = botConfig.EntraInstance;
                 botTokenIssuer = botConfig.BotTokenIssuer;
