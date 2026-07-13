@@ -28,7 +28,10 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task SendActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+            .WithType(ActivityType.Message)
+
+
+
             .WithProperty("text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`")
             .Build();
 
@@ -41,25 +44,31 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
 
     [Fact(Timeout = 5000)]
     [Trait("Category", "Activities")]
-    public async Task UpdateActivity()
+            .WithType(ActivityType.Message)
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+            .WithType(ActivityType.Message)
+
+
+
             .WithProperty("text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`")
-            .Build();
+            .WithType(ActivityType.Message)
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
         Assert.NotNull(sent?.Id);
 
         CoreActivity updated = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+            .WithType(ActivityType.Message)
+
+
+
             .WithProperty("text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`")
             .Build();
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
             _f.ConversationId, sent.Id, updated, _f.ServiceUrl, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
 
-        Assert.NotNull(res?.Id);
+            .WithType(ActivityType.Message)
         _output.WriteLine($"Updated activity: {res.Id}");
     }
 
@@ -68,7 +77,10 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task DeleteActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+            .WithType(ActivityType.Message)
+
+
+
             .WithProperty("text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`")
             .Build();
 
@@ -128,7 +140,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
 
         foreach (ChannelAccount m in result.Members.Take(5))
         {
-            _output.WriteLine($"Member: {m.Id} — {m.Name}");
+            .WithType(ActivityType.Message)
         }
     }
 
@@ -140,7 +152,10 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         Skip.If(_f.IsCanary, "Reactions API returns 404 on canary — service limitation");
 
         CoreActivity activity = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+            .WithType(ActivityType.Message)
+
+
+
             .WithProperty("text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`")
             .Build();
 
