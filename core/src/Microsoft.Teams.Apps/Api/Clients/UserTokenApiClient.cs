@@ -25,7 +25,7 @@ public class UserTokenApiClient
     /// </summary>
     public Task<GetTokenResult?> GetAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
     {
-        return _client.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken);
+        return _client.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class UserTokenApiClient
     /// </summary>
     public async Task<IDictionary<string, GetTokenResult>?> GetAadAsync(string userId, string connectionName, string channelId, IList<string>? resourceUrls = null, CancellationToken cancellationToken = default)
     {
-        return await _client.GetAadTokensAsync(userId, connectionName, channelId, resourceUrls?.ToArray(), cancellationToken).ConfigureAwait(false);
+        return await _client.GetAadTokensAsync(userId, connectionName, channelId, resourceUrls?.ToArray(), cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ public class UserTokenApiClient
     /// </summary>
     public async Task<IList<GetTokenStatusResult>?> GetStatusAsync(string userId, string channelId, string? includeFilter = null, CancellationToken cancellationToken = default)
     {
-        return await _client.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken).ConfigureAwait(false);
+        return await _client.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class UserTokenApiClient
     /// </summary>
     public Task SignOutAsync(string userId, string connectionName, string channelId, CancellationToken cancellationToken = default)
     {
-        return _client.SignOutUserAsync(userId, connectionName, channelId, cancellationToken);
+        return _client.SignOutUserAsync(userId, connectionName, channelId, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public class UserTokenApiClient
     /// </summary>
     public async Task<GetTokenResult?> ExchangeAsync(string userId, string connectionName, string channelId, string exchangeToken, CancellationToken cancellationToken = default)
     {
-        return await _client.ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, cancellationToken).ConfigureAwait(false);
+        return await _client.ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public class UserTokenApiClient
     /// </summary>
     public Task<string?> GetSignInUrlAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
     {
-        return _client.GetSignInUrlAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken);
+        return _client.GetSignInUrlAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -73,6 +73,6 @@ public class UserTokenApiClient
     /// </summary>
     public Task<GetSignInResourceResult> GetSignInResourceAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
     {
-        return _client.GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken);
+        return _client.GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken: cancellationToken);
     }
 }

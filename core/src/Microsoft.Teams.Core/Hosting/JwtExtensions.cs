@@ -310,7 +310,7 @@ namespace Microsoft.Teams.Core.Hosting
                     RequireSignedTokens = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidAudiences = [audience, $"api://{audience}"],
+                    ValidAudiences = [audience, $"api://{audience}", $"api://botid-{audience}"],
                     IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId, entraInstance, botTokenIssuer),
                     IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {

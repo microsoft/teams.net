@@ -206,6 +206,44 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
+        public async Task UpdateActivityWithHttpMessagesAsync_PassesRequestContext()
+        {
+            // Arrange
+            Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
+            BotRequestContext requestContext = new() { BotAppId = "bot-app-id" };
+            CompatConversations compatConversations = new(mockConversationClient.Object)
+            {
+                ServiceUrl = TestServiceUrl,
+                RequestContext = requestContext
+            };
+
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Id = TestActivityId,
+                Text = "Updated message",
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = TestConversationId }
+            };
+
+            mockConversationClient
+                .Setup(c => c.UpdateActivityAsync(
+                    TestConversationId,
+                    TestActivityId,
+                    It.IsAny<CoreActivity>(),
+                    It.IsAny<bool>(),
+                    It.Is<BotRequestContext?>(c => ReferenceEquals(c, requestContext)),
+                    It.IsAny<Dictionary<string, string>?>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new UpdateActivityResponse { Id = TestActivityId });
+
+            // Act
+            await compatConversations.UpdateActivityWithHttpMessagesAsync(TestConversationId, TestActivityId, activity);
+
+            // Assert
+            mockConversationClient.VerifyAll();
+        }
+
+        [Fact]
         public async Task UpdateActivityWithHttpMessagesAsync_DoesNotOverrideServiceUrl_WhenActivityServiceUrlIsSet()
         {
             // Arrange

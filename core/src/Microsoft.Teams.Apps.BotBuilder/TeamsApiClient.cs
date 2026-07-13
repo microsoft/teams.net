@@ -45,10 +45,10 @@ public static class TeamsApiClient
             ?? throw new InvalidOperationException("ServiceUrl is required.");
     }
 
-    private static AgenticIdentity? GetIdentity(ITurnContext turnContext)
+    private static BotRequestContext? GetRequestContext(ITurnContext turnContext)
     {
         CoreActivity coreActivity = turnContext.Activity.FromBotFrameworkActivity();
-        return AgenticIdentity.FromAccount(coreActivity.Recipient);
+        return BotRequestContext.FromInboundActivity(coreActivity);
     }
 
     #endregion
@@ -87,10 +87,10 @@ public static class TeamsApiClient
 
             ConversationClient client = GetConversationClient(turnContext);
             Uri serviceUrl = new(GetServiceUrl(turnContext));
-            AgenticIdentity? identity = GetIdentity(turnContext);
+            BotRequestContext? requestContext = GetRequestContext(turnContext);
 
             Core.Schema.ChannelAccount result = await client.GetConversationMemberAsync<Core.Schema.ChannelAccount>(
-                conversationId, userId, serviceUrl, BotRequestContext.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+                conversationId, userId, serviceUrl, requestContext, null, cancellationToken).ConfigureAwait(false);
 
             return result.ToCompatTeamsChannelAccount();
         }
@@ -121,10 +121,10 @@ public static class TeamsApiClient
 
             ConversationClient client = GetConversationClient(turnContext);
             Uri serviceUrl = new(GetServiceUrl(turnContext));
-            AgenticIdentity? identity = GetIdentity(turnContext);
+            BotRequestContext? requestContext = GetRequestContext(turnContext);
 
             IList<Core.Schema.ChannelAccount> members = await client.GetConversationMembersAsync(
-                conversationId, serviceUrl, BotRequestContext.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+                conversationId, serviceUrl, requestContext, null, cancellationToken).ConfigureAwait(false);
 
             return members.Select(m => m.ToCompatTeamsChannelAccount());
         }
@@ -158,10 +158,10 @@ public static class TeamsApiClient
 
             ConversationClient client = GetConversationClient(turnContext);
             Uri serviceUrl = new(GetServiceUrl(turnContext));
-            AgenticIdentity? identity = GetIdentity(turnContext);
+            BotRequestContext? requestContext = GetRequestContext(turnContext);
 
             Core.PagedMembersResult pagedMembers = await client.GetConversationPagedMembersAsync(
-                conversationId, serviceUrl, pageSize, continuationToken, BotRequestContext.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+                conversationId, serviceUrl, pageSize, continuationToken, requestContext, null, cancellationToken).ConfigureAwait(false);
 
             return pagedMembers.ToCompatTeamsPagedMembersResult();
         }
@@ -192,10 +192,10 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? identity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         Core.Schema.ChannelAccount result = await client.GetConversationMemberAsync<Core.Schema.ChannelAccount>(
-            t, userId, serviceUrl, BotRequestContext.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+            t, userId, serviceUrl, requestContext, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamsChannelAccount();
     }
@@ -220,10 +220,10 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? identity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         IList<Core.Schema.ChannelAccount> members = await client.GetConversationMembersAsync(
-            t, serviceUrl, BotRequestContext.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+            t, serviceUrl, requestContext, null, cancellationToken).ConfigureAwait(false);
 
         return members.Select(m => m.ToCompatTeamsChannelAccount());
     }
@@ -251,10 +251,10 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? identity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         Core.PagedMembersResult pagedMembers = await client.GetConversationPagedMembersAsync(
-            t, serviceUrl, pageSize, continuationToken, BotRequestContext.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+            t, serviceUrl, pageSize, continuationToken, requestContext, null, cancellationToken).ConfigureAwait(false);
 
         return pagedMembers.ToCompatTeamsPagedMembersResult();
     }
@@ -280,7 +280,7 @@ public static class TeamsApiClient
             ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
 
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         ConversationClient client = GetConversationClient(turnContext);
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}";
@@ -289,7 +289,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            CreateRequestOptions(agenticIdentity, "fetching meeting info", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "fetching meeting info", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -319,7 +319,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(participantId)}?tenantId={Uri.EscapeDataString(tenantId)}";
 
@@ -328,7 +328,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            CreateRequestOptions(agenticIdentity, "fetching meeting participant", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "fetching meeting participant", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -353,7 +353,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/notification";
         string body = JsonConvert.SerializeObject(notification);
@@ -362,7 +362,7 @@ public static class TeamsApiClient
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(agenticIdentity, "sending meeting notification", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "sending meeting notification", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -387,7 +387,7 @@ public static class TeamsApiClient
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? identity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/teams/{Uri.EscapeDataString(t)}";
 
@@ -397,7 +397,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            new BotRequestOptions { RequestContext = BotRequestContext.FromAgenticIdentity(identity) },
+            new BotRequestOptions { RequestContext = requestContext },
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -419,7 +419,7 @@ public static class TeamsApiClient
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? identity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/teams/{Uri.EscapeDataString(t)}/conversations";
 
@@ -429,7 +429,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            new BotRequestOptions { RequestContext = BotRequestContext.FromAgenticIdentity(identity) },
+            new BotRequestOptions { RequestContext = requestContext },
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -461,7 +461,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/users/";
         SendMessageToUsersRequest request = new()
@@ -476,7 +476,7 @@ public static class TeamsApiClient
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(agenticIdentity, "sending message to list of users", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "sending message to list of users", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -503,7 +503,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/channels/";
         SendMessageToUsersRequest request = new()
         {
@@ -518,7 +518,7 @@ public static class TeamsApiClient
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(agenticIdentity, "sending message to list of channels", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "sending message to list of channels", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -545,7 +545,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
         if (activity is not Activity teamActivity)
             throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
         CoreActivity coreActivity = teamActivity.FromBotFrameworkActivity();
@@ -564,7 +564,7 @@ public static class TeamsApiClient
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(agenticIdentity, "sending message to all users in team", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "sending message to all users in team", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -588,7 +588,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
         if (activity is not Activity tenantActivity)
             throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
         CoreActivity coreActivity = tenantActivity.FromBotFrameworkActivity();
@@ -606,7 +606,7 @@ public static class TeamsApiClient
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(agenticIdentity, "sending message to all users in tenant", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "sending message to all users in tenant", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -684,7 +684,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/{Uri.EscapeDataString(operationId)}";
 
 
@@ -692,7 +692,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            CreateRequestOptions(agenticIdentity, "getting operation state", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "getting operation state", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -715,7 +715,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/failedentries/{Uri.EscapeDataString(operationId)}";
 
@@ -728,7 +728,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            CreateRequestOptions(agenticIdentity, "getting paged failed entries", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "getting paged failed entries", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -749,7 +749,7 @@ public static class TeamsApiClient
 
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity? agenticIdentity = GetIdentity(turnContext);
+        BotRequestContext? requestContext = GetRequestContext(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/{Uri.EscapeDataString(operationId)}";
 
@@ -757,17 +757,17 @@ public static class TeamsApiClient
             HttpMethod.Delete,
             url,
             body: null,
-            CreateRequestOptions(agenticIdentity, "cancelling operation", DefaultCustomHeaders),
+            CreateRequestOptions(requestContext, "cancelling operation", DefaultCustomHeaders),
             cancellationToken).ConfigureAwait(false);
     }
 
     #endregion
 
 
-    private static BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
+    private static BotRequestOptions CreateRequestOptions(BotRequestContext? requestContext, string operationDescription, CustomHeaders? customHeaders) =>
         new()
         {
-            RequestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity),
+            RequestContext = requestContext,
             OperationDescription = operationDescription,
             CustomHeaders = customHeaders
         };

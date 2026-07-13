@@ -82,6 +82,9 @@ public class TeamsBotAdapter(
     {
         ArgumentNullException.ThrowIfNull(activities);
         ArgumentNullException.ThrowIfNull(turnContext);
+        Activity inboundActivity = turnContext.Activity
+            ?? throw new InvalidOperationException("Turn context activity is required to send activities.");
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(inboundActivity.FromBotFrameworkActivity());
 
         ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[activities.Length];
 
@@ -103,15 +106,18 @@ public class TeamsBotAdapter(
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Ensure ServiceUrl is set from turn context if not already present
-            if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
+            if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(inboundActivity.ServiceUrl))
             {
-                coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
+                coreActivity.ServiceUrl = new Uri(inboundActivity.ServiceUrl);
             }
 
             coreActivity.Conversation ??= new Microsoft.Teams.Core.Schema.Conversation(
-                turnContext.Activity.Conversation?.Id
+                inboundActivity.Conversation?.Id
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
+                coreActivity,
+                requestContext,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.SendActivitiesResponse(resp?.Id);
 

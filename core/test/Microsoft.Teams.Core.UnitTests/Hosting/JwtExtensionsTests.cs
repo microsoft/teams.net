@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Teams.Core.Hosting;
@@ -337,5 +339,22 @@ public class JwtExtensionsTests
         public void Dispose()
         {
         }
+    }
+
+    [Fact]
+    public void AddBotAuthentication_ConfiguresExpectedInboundAudiences()
+    {
+        ServiceCollection services = new();
+        services.AddLogging();
+        services.AddBotAuthentication(ClientId, Tenant);
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        JwtBearerOptions options = provider
+            .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(BotConfig.DefaultSectionName);
+
+        Assert.Equal(
+            [ClientId, $"api://{ClientId}", $"api://botid-{ClientId}"],
+            options.TokenValidationParameters.ValidAudiences);
     }
 }
