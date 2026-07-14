@@ -122,11 +122,12 @@ namespace Microsoft.Teams.Apps.BotBuilder
         public async Task<HttpOperationResponse<IList<Microsoft.Bot.Schema.ChannelAccount>>> GetActivityMembersWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
             IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetActivityMembersAsync(
                 conversationId,
                 activityId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -238,7 +239,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
             Uri serviceUrl = coreActivity.ServiceUrl
-                ?? new Uri(ServiceUrl!);
+                ?? new Uri(ServiceUrl ?? throw new InvalidOperationException("ServiceUrl is not set."));
 
             CoreActivityInput input = CoreActivityInput.FromActivity(coreActivity);
             input.ReplyToId = activityId;
@@ -307,7 +308,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
             Uri serviceUrl = coreActivity.ServiceUrl
-                ?? new Uri(ServiceUrl!);
+                ?? new Uri(ServiceUrl ?? throw new InvalidOperationException("ServiceUrl is not set."));
 
             SendActivityResponse? response = await _client.SendActivityAsync(conversationId, CoreActivityInput.FromActivity(coreActivity), serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -342,7 +343,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             Uri serviceUrl = coreActivity.ServiceUrl
-                ?? new Uri(ServiceUrl!);
+                ?? new Uri(ServiceUrl ?? throw new InvalidOperationException("ServiceUrl is not set."));
 
             UpdateActivityResponse response = await _client.UpdateActivityAsync(
                 conversationId,

@@ -54,6 +54,7 @@ public sealed class TeamsStreamingWriter
     private readonly ConversationClient _client;
     private readonly TeamsActivity _reference;
     private readonly string _conversationId;
+    private readonly Uri _serviceUrl;
     private readonly ILogger _logger;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
@@ -80,6 +81,7 @@ public sealed class TeamsStreamingWriter
         _client = client;
         _reference = reference;
         _conversationId = reference.Conversation?.Id ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(reference));
+        _serviceUrl = reference.ServiceUrl ?? throw new ArgumentException("Activity must have a ServiceUrl.", nameof(reference));
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -217,7 +219,7 @@ public sealed class TeamsStreamingWriter
 
         try
         {
-            await _client.SendActivityAsync(_conversationId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -254,7 +256,7 @@ public sealed class TeamsStreamingWriter
     {
         try
         {
-            return await _client.SendActivityAsync(_conversationId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -346,12 +348,12 @@ public sealed class TeamsStreamingWriter
         if (_streamId != null)
         {
             _logger.LogDebug("Updating original streamed message in place after timeout (streamId '{StreamId}').", _streamId);
-            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
             // No streamed message exists yet; send the buffered content as a normal message.
-            await _client.SendActivityAsync(_conversationId, activity, _reference.ServiceUrl!, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 
