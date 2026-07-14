@@ -10,9 +10,7 @@ internal sealed class UnauthenticatedToken(string? serviceUrl) : IToken
     public string? AppId => null;
     public string? AppDisplayName => null;
     public string? TenantId => null;
-    public string ServiceUrl { get; } = string.IsNullOrEmpty(serviceUrl)
-        ? "https://smba.trafficmanager.net/teams/"
-        : serviceUrl.EndsWith('/') ? serviceUrl : $"{serviceUrl}/";
+    public string ServiceUrl { get; } = serviceUrl ?? string.Empty;
     public CallerType From => CallerType.Azure;
     public string FromId => "urn:botframework:azure";
     public DateTime? Expiration => null;

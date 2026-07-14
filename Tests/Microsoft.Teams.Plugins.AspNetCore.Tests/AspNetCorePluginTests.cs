@@ -190,6 +190,37 @@ public class AspNetCorePluginTests
         Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
     }
 
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("https://smba.trafficmanager.net/teams", "https://smba.trafficmanager.net/teams")]
+    public async Task Test_Do_Http_DangerouslyAllowUnauthenticatedRequests_UsesActivityServiceUrlAsTokenServiceUrl(string? activityServiceUrl, string expectedTokenServiceUrl)
+    {
+        var activity = CreateMessageActivity(activityServiceUrl);
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        string? tokenServiceUrl = null;
+
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            if (name == "activity")
+            {
+                var activityEvent = Assert.IsType<ActivityEvent>(payload);
+                tokenServiceUrl = activityEvent.Token.ServiceUrl;
+                return Task.FromResult<object?>(coreResponse);
+            }
+
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateUnauthenticatedRequestsAllowedHttpContext(activity);
+
+        var result = await plugin.Do(ctx);
+
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
+        Assert.Equal(expectedTokenServiceUrl, tokenServiceUrl);
+    }
+
     [Fact]
     public async Task Test_Do_Http_MissingAuthorizationHeader_ReturnsUnauthorized()
     {
