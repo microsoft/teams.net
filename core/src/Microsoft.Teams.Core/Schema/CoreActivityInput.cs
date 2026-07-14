@@ -80,6 +80,14 @@ public class CoreActivityInput
     public static CoreActivityInputBuilder CreateBuilder() => new();
 
     /// <summary>
+    /// Deserializes an outbound <see cref="CoreActivityInput"/> from a JSON string.
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize. Cannot be null.</param>
+    /// <returns>The deserialized <see cref="CoreActivityInput"/>.</returns>
+    public static CoreActivityInput FromJsonString(string json)
+        => JsonSerializer.Deserialize(json, CoreActivityJsonContext.Default.CoreActivityInput)!;
+
+    /// <summary>
     /// Creates an outbound <see cref="CoreActivityInput"/> from a full (inbound-shaped) <see cref="CoreActivity"/>.
     /// Copies the activity type, id, and content (extension properties). Body-level identity and transport
     /// routing (from, recipient, conversation, service url) are supplied explicitly to the API clients and

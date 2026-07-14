@@ -58,7 +58,14 @@ public static class ActivitySchemaMapper
     /// <param name="activity">The Bot Framework activity to convert.</param>
     /// <returns>The equivalent outbound activity input.</returns>
     public static CoreActivityInput FromBotFrameworkActivityInput(this Activity activity)
-        => CoreActivityInput.FromActivity(activity.FromBotFrameworkActivity());
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        StringBuilder sb = new();
+        using StringWriter stringWriter = new(sb);
+        using JsonTextWriter json = new(stringWriter);
+        BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
+        return CoreActivityInput.FromJsonString(sb.ToString());
+    }
 
 
     /// <summary>
