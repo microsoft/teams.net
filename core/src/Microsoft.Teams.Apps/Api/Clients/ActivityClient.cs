@@ -122,18 +122,6 @@ public class ActivityClient
     }
 
     /// <summary>
-    /// Create a new targeted activity in a conversation.
-    /// Targeted activities are only visible to the specified recipient.
-    /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
-    [Obsolete(ObsoleteInboundMessage)]
-    public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        return SendCoreAsync(conversationId, CoreActivityInput.FromActivity(activity), isTargeted: true, additionalHeaders, cancellationToken);
-    }
-
-    /// <summary>
     /// Update an existing targeted activity in a conversation.
     /// </summary>
     [Experimental("ExperimentalTeamsTargeted")]
@@ -141,17 +129,6 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         return UpdateTargetedCoreAsync(conversationId, id, activity, additionalHeaders, cancellationToken);
-    }
-
-    /// <summary>
-    /// Update an existing targeted activity in a conversation.
-    /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
-    [Obsolete(ObsoleteInboundMessage)]
-    public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        return UpdateTargetedCoreAsync(conversationId, id, CoreActivityInput.FromActivity(activity), additionalHeaders, cancellationToken);
     }
 
     /// <summary>

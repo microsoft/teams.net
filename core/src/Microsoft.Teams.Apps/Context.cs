@@ -304,7 +304,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         string conversationId = Activity.Conversation?.Id
             ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
 
-        if (!targeted)
+        bool hasTargetedEntity = activity.Entities?.Any(e => e is TargetedMessageInfoEntity) ?? false;
+        if (!targeted && !hasTargetedEntity)
         {
             return Api.Conversations.Activities.CreateAsync(conversationId, activity, cancellationToken: cancellationToken);
         }
@@ -315,7 +316,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
                 "Targeted messages are not supported in personal (1:1) chats.");
         }
 
-        if (activity.Type == TeamsActivityTypes.Message && Activity.Id is not null)
+        if (!hasTargetedEntity && activity.Type == TeamsActivityTypes.Message && Activity.Id is not null)
         {
             TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
