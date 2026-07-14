@@ -13,13 +13,15 @@ WebApplication webApp = webAppBuilder.Build();
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 // Send a targeted message (visible only to the inbound sender).
-// Send content, then mark targeted with `targeted: true` on the send call.
+// Use WithRecipient(account, isTargeted: true) on the builder to stamp the targeted recipient;
+// the send path detects the targeted recipient and routes it as a targeted message.
 teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
 {
     MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("👋 Only you can see this targeted message.")
+        .WithRecipient(context.Activity.From!, isTargeted: true)
         .Build();
-    await context.SendActivityAsync(reply, targeted: true, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 // Targeted reply to the inbound message: same wire format as send, but goes through
@@ -28,8 +30,9 @@ teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 {
     MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("🔒 Targeted reply visible only to you.")
+        .WithRecipient(context.Activity.From!, isTargeted: true)
         .Build();
-    await context.ReplyAsync(reply, targeted: true, cancellationToken);
+    await context.ReplyAsync(reply, cancellationToken);
 });
 
 // Send → Update a targeted message after 3 seconds.
@@ -39,9 +42,10 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
 
     MessageActivityInput initial = MessageActivityInput.CreateBuilder()
         .WithText("📝 This targeted message will be updated in 3 seconds…")
+        .WithRecipient(context.Activity.From!, isTargeted: true)
         .Build();
 
-    SendActivityResponse? response = await context.SendActivityAsync(initial, targeted: true, cancellationToken);
+    SendActivityResponse? response = await context.SendAsync(initial, cancellationToken);
 
     if (response?.Id is null) return;
 
@@ -68,9 +72,10 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
 
     MessageActivityInput initial = MessageActivityInput.CreateBuilder()
         .WithText("🗑️ This targeted message will be deleted in 3 seconds…")
+        .WithRecipient(context.Activity.From!, isTargeted: true)
         .Build();
 
-    SendActivityResponse? response = await context.SendActivityAsync(initial, targeted: true, cancellationToken);
+    SendActivityResponse? response = await context.SendAsync(initial, cancellationToken);
 
     if (response?.Id is null) return;
 
@@ -95,7 +100,7 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^test inbound$", async (context, cancellationToken) =>
 {
     bool wasTargeted = context.Activity.Recipient?.IsTargeted == true;
-    await context.SendActivityAsync(
+    await context.SendAsync(
         wasTargeted
             ? "✅ Your message was delivered to me as a targeted message."
             : "ℹ️ Your message was delivered to me as a regular (broadcast) message.",
@@ -105,7 +110,7 @@ teamsApp.OnMessage("(?i)^test inbound$", async (context, cancellationToken) =>
 // Help
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync(
+    await context.SendAsync(
         MessageActivityInput.CreateBuilder()
             .WithText(
             "**Targeted Messages Test Bot**\n\n" +

@@ -96,9 +96,9 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl),
-                RequestContext,
-                ConvertHeaders(customHeaders),
-                cancellationToken).ConfigureAwait(false);
+                requestContext: RequestContext,
+                customHeaders: ConvertHeaders(customHeaders),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             return new HttpOperationResponse
             {
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -233,16 +233,14 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
         public async Task<HttpOperationResponse<ResourceResponse>> ReplyToActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
-
-            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
-            Uri serviceUrl = coreActivity.ServiceUrl
-                ?? new Uri(ServiceUrl ?? throw new InvalidOperationException("ServiceUrl is not set."));
-
-            CoreActivityInput input = CoreActivityInput.FromActivity(coreActivity);
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
             input.ReplyToId = activityId;
+
+            // Prefer the activity's own service url; fall back to the adapter's.
+            Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
 
             SendActivityResponse? response = await _client.SendActivityAsync(conversationId, input, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -302,15 +300,15 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> SendToConversationWithHttpMessagesAsync(string conversationId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
-            Uri serviceUrl = coreActivity.ServiceUrl
-                ?? new Uri(ServiceUrl ?? throw new InvalidOperationException("ServiceUrl is not set."));
+            // Prefer the activity's own service url; fall back to the adapter's.
+            Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, CoreActivityInput.FromActivity(coreActivity), serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, input, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -338,17 +336,18 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> UpdateActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-            Uri serviceUrl = coreActivity.ServiceUrl
-                ?? new Uri(ServiceUrl ?? throw new InvalidOperationException("ServiceUrl is not set."));
+            // Prefer the activity's own service url; fall back to the adapter's.
+            Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
 
             UpdateActivityResponse response = await _client.UpdateActivityAsync(
                 conversationId,
                 activityId,
-                CoreActivityInput.FromActivity(coreActivity),
+                input,
                 serviceUrl,
                 requestContext: RequestContext,
                 customHeaders: convertedHeaders,

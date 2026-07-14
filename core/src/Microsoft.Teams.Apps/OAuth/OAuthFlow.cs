@@ -217,7 +217,7 @@ public class OAuthFlow
                 .AddAttachment(attachment)
                 .Build();
 
-            await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
+            await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 
             // Track that this user has a pending sign-in for this flow.
             // Use user state when available (distributed); fall back to in-memory otherwise.

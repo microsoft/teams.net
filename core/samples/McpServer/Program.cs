@@ -42,7 +42,7 @@ bot.OnMessage(async (context, cancellationToken) =>
     logger.LogInformation(
         "Received message from user {UserId} in conversation {ConversationId}. Replies to asks now arrive via adaptive card actions.",
         userId, conversationId);
-    await context.SendActivityAsync("Hi! I'll let you know if I need anything.", cancellationToken);
+    await context.SendAsync("Hi! I'll let you know if I need anything.", cancellationToken);
 });
 
 

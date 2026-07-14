@@ -25,7 +25,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText("response text").Build(), targeted: true);
+        await ctx.SendAsync(MessageActivityInput.CreateBuilder().WithText("response text").WithRecipient(inbound.From!, isTargeted: true).Build());
 
         Assert.NotNull(captured.Value);
         TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
@@ -45,7 +45,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync("hello");
+        await ctx.SendAsync("hello");
 
         Assert.NotNull(captured.Value);
     }
@@ -59,7 +59,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText("hello").Build());
+        await ctx.SendAsync(MessageActivityInput.CreateBuilder().WithText("hello").Build());
 
         Assert.NotNull(captured.Value);
         TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
@@ -77,10 +77,11 @@ public class PromptPreviewTests
 
         MessageActivityInput outbound = MessageActivityInput.CreateBuilder()
             .WithText("response")
+            .WithRecipient(inbound.From!, isTargeted: true)
             .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
             .Build();
 
-        await ctx.SendActivityAsync(outbound, targeted: true);
+        await ctx.SendAsync(outbound);
 
         Assert.NotNull(captured.Value);
         TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
@@ -98,10 +99,10 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("secret").Build();
+        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("secret").WithRecipient(inbound.From!, isTargeted: true).Build();
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => ctx.SendActivityAsync(outbound, targeted: true));
+            () => ctx.SendAsync(outbound));
         Assert.Contains("personal", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -114,7 +115,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText("hi").Build());
+        await ctx.SendAsync(MessageActivityInput.CreateBuilder().WithText("hi").Build());
 
         Assert.NotNull(captured.Value);
     }
@@ -128,9 +129,9 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("only you can see this").Build();
+        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("only you can see this").WithRecipient(inbound.From!, isTargeted: true).Build();
 
-        await ctx.SendActivityAsync(outbound, targeted: true);
+        await ctx.SendAsync(outbound);
 
         Assert.NotNull(captured.Value);
     }

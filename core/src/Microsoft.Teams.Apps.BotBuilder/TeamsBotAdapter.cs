@@ -63,9 +63,9 @@ public class TeamsBotAdapter(
             conversationId,
             activityId,
             serviceUrl,
-            BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
+            requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             customHeaders: null,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

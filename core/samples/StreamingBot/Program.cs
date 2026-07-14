@@ -97,7 +97,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
 
 teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync("You submitted an action with name and value:" + context.Activity.Value?.ActionName + " - " + context.Activity.Value?.ActionValue, cancellationToken);
+    await context.SendAsync("You submitted an action with name and value:" + context.Activity.Value?.ActionName + " - " + context.Activity.Value?.ActionValue, cancellationToken);
 
     return new InvokeResponse(200);
 });

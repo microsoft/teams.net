@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
@@ -48,6 +50,34 @@ public abstract class CoreActivityInputBuilder<TActivity, TBuilder>
     public TBuilder WithType(string type)
     {
         _activity.Type = type;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the recipient account for the activity.
+    /// </summary>
+    /// <param name="account">The recipient account.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TBuilder WithRecipient(ChannelAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        _activity.Recipient = account;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the recipient account for the activity and marks whether the recipient is targeted
+    /// (for example, a targeted message visible only to that recipient).
+    /// </summary>
+    /// <param name="account">The recipient account.</param>
+    /// <param name="isTargeted">Whether the recipient is targeted.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public TBuilder WithRecipient(ChannelAccount account, bool isTargeted)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        account.IsTargeted = isTargeted ? true : null;
+        _activity.Recipient = account;
         return (TBuilder)this;
     }
 

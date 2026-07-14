@@ -36,6 +36,12 @@ public class CoreActivityInput
     [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
 
     /// <summary>
+    /// Gets or sets the recipient account for this activity. Populated when the send targets a
+    /// specific recipient (for example, a targeted message visible only to the inbound sender).
+    /// </summary>
+    [JsonPropertyName("recipient")] public ChannelAccount? Recipient { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];

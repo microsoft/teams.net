@@ -46,3 +46,50 @@ public class StreamingActivityInput : TeamsActivityInput
     /// <returns>A new <see cref="StreamingActivityInputBuilder"/> instance.</returns>
     public static new StreamingActivityInputBuilder CreateBuilder() => new();
 }
+
+/// <summary>
+/// Provides a fluent API for building outbound <see cref="StreamingActivityInput"/> instances.
+/// </summary>
+public class StreamingActivityInputBuilder : TeamsActivityInputBuilder<StreamingActivityInput, StreamingActivityInputBuilder>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingActivityInputBuilder"/> class.
+    /// </summary>
+    public StreamingActivityInputBuilder() : base(new StreamingActivityInput())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StreamingActivityInputBuilder"/> class with an existing activity.
+    /// </summary>
+    /// <param name="activity">The activity to build upon.</param>
+    public StreamingActivityInputBuilder(StreamingActivityInput activity) : base(activity)
+    {
+    }
+
+    /// <summary>
+    /// Sets the accumulated text content of the streaming chunk.
+    /// </summary>
+    public StreamingActivityInputBuilder WithText(string text)
+    {
+        _activity.Text = text;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the stream metadata for this chunk (writes channel data and adds a <see cref="StreamInfoEntity"/>).
+    /// </summary>
+    /// <param name="streamType">The stream type. See <see cref="StreamTypes"/>.</param>
+    /// <param name="streamId">Optional stream identifier.</param>
+    /// <param name="streamSequence">Optional monotonically increasing sequence number.</param>
+    public StreamingActivityInputBuilder WithStreamInfo(string streamType, string? streamId = null, int? streamSequence = null)
+    {
+        _activity.StreamInfo = StreamInfoEntityExtensions.AddToActivity(_activity, streamType, streamId, streamSequence);
+        return this;
+    }
+
+    /// <summary>
+    /// Builds and returns the configured <see cref="StreamingActivityInput"/> instance.
+    /// </summary>
+    public override StreamingActivityInput Build() => _activity;
+}

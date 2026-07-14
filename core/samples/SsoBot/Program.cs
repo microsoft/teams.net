@@ -59,7 +59,7 @@ OAuthFlow auth = bot.GetOAuthFlow("sso");
 
 auth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
-    await context.SendActivityAsync("You're now signed in! Try `profile` or `calendar`.", ct);
+    await context.SendAsync("You're now signed in! Try `profile` or `calendar`.", ct);
 });
 
 auth.OnSignInFailure(async (context, failure, ct) =>
@@ -67,7 +67,7 @@ auth.OnSignInFailure(async (context, failure, ct) =>
     string message = failure is not null
         ? $"Sign-in failed: {failure.Code} — {failure.Message}"
         : "Sign-in failed. Please try again.";
-    await context.SendActivityAsync(message, ct);
+    await context.SendAsync(message, ct);
 });
 
 // ==================== MESSAGE HANDLERS ====================
@@ -78,7 +78,7 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
     string? token = await auth.SignInAsync(context, ct);
     if (token is not null)
     {
-        await context.SendActivityAsync("You're already signed in.", ct);
+        await context.SendAsync("You're already signed in.", ct);
     }
     // else: OAuthCard sent, SSO flow in progress -- OnSignInComplete will fire
 });
@@ -96,11 +96,11 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
     {
         string json = await http.GetStringAsync("https://graph.microsoft.com/v1.0/me", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText($" ## Graph Me \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
+        await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($" ## Graph Me \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
     }
     catch (HttpRequestException ex)
     {
-        await context.SendActivityAsync($"Graph call failed: {ex.Message}", ct);
+        await context.SendAsync($"Graph call failed: {ex.Message}", ct);
     }
 });
 
@@ -117,24 +117,24 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
         string json = await http.GetStringAsync(
             "https://graph.microsoft.com/v1.0/me/events?$top=3&$select=subject,start,end&$orderby=start/dateTime", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText($" ## Graph Calendar \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
+        await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($" ## Graph Calendar \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
     }
     catch (HttpRequestException ex)
     {
-        await context.SendActivityAsync($"Graph call failed: {ex.Message}", ct);
+        await context.SendAsync($"Graph call failed: {ex.Message}", ct);
     }
 });
 
 bot.OnMessage("(?i)^logout$", async (context, ct) =>
 {
     await auth.SignOutAsync(context, ct);
-    await context.SendActivityAsync("Signed out.", ct);
+    await context.SendAsync("Signed out.", ct);
 });
 
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
     bool signedIn = await auth.IsSignedInAsync(context, ct);
-    await context.SendActivityAsync(signedIn ? "Signed in." : "Not signed in.", ct);
+    await context.SendAsync(signedIn ? "Signed in." : "Not signed in.", ct);
 });
 
 bot.OnMessage("(?i)^help$", async (context, ct) =>
@@ -151,7 +151,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         - `help` - Show this message
         """;
 
-    await context.SendActivityAsync(
+    await context.SendAsync(
         MessageActivityInput.CreateBuilder().WithText(helpText, TextFormats.Markdown).Build(), ct);
 });
 
@@ -159,7 +159,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
 
 bot.OnInstall(async (context, ct) =>
 {
-    await context.SendActivityAsync(
+    await context.SendAsync(
         MessageActivityInput.CreateBuilder()
             .WithText("Welcome to **SSO Bot**! Type `help` to see available commands.", TextFormats.Markdown)
             .Build(), ct);

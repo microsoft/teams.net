@@ -158,6 +158,39 @@ public class ConversationClientTests
     }
 
     [Fact]
+    public async Task SendActivityAsync_WithTargetedRecipient_AppendsQueryString()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":\"activity123\"}")
+            });
+
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
+
+        // The recipient carries IsTargeted; routing must target even though isTargeted is not passed.
+        CoreActivityInput activity = CoreActivityInput.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithRecipient(new ChannelAccount { Id = "user-1", IsTargeted = true })
+            .Build();
+
+        await conversationClient.SendActivityAsync("conv123", activity, new Uri("https://test.service.url/"));
+
+        Assert.NotNull(capturedRequest);
+        Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
+    }
+
+    [Fact]
     public async Task UpdateActivityAsync_WithIsTargeted_AppendsQueryString()
     {
         HttpRequestMessage? capturedRequest = null;
@@ -244,71 +277,6 @@ public class ConversationClientTests
         };
 
         await conversationClient.DeleteActivityAsync("conv123", activity, isTargeted: true);
-
-        Assert.NotNull(capturedRequest);
-        Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
-        Assert.Equal(HttpMethod.Delete, capturedRequest.Method);
-    }
-
-    [Fact]
-    public async Task UpdateTargetedActivityAsync_AppendsQueryStringWithoutRecipient()
-    {
-        HttpRequestMessage? capturedRequest = null;
-        string? capturedBody = null;
-        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
-        mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>(async (req, ct) =>
-            {
-                capturedRequest = req;
-                capturedBody = req.Content != null ? await req.Content.ReadAsStringAsync(ct) : null;
-            })
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{\"id\":\"activity123\"}")
-            });
-
-        HttpClient httpClient = new(mockHttpMessageHandler.Object);
-        ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
-
-        await conversationClient.UpdateTargetedActivityAsync("conv123", "activity123", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(), new Uri("https://test.service.url/"));
-
-        Assert.NotNull(capturedRequest);
-        Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
-        Assert.Equal(HttpMethod.Put, capturedRequest.Method);
-        Assert.NotNull(capturedBody);
-        Assert.DoesNotContain("isTargeted", capturedBody);
-    }
-
-    [Fact]
-    public async Task DeleteTargetedActivityAsync_AppendsQueryString()
-    {
-        HttpRequestMessage? capturedRequest = null;
-        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
-        mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK
-            });
-
-        HttpClient httpClient = new(mockHttpMessageHandler.Object);
-        ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
-
-        await conversationClient.DeleteTargetedActivityAsync(
-            "conv123",
-            "activity123",
-            new Uri("https://test.service.url/"));
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());

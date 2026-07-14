@@ -57,7 +57,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
 
-        if (isTargeted)
+#pragma warning disable ExperimentalTeamsTargeted
+        bool targeted = isTargeted || activity.Recipient?.IsTargeted == true;
+#pragma warning restore ExperimentalTeamsTargeted
+
+        if (targeted)
         {
             url += url.Contains('?', StringComparison.Ordinal) ? "&isTargetedActivity=true" : "?isTargetedActivity=true";
         }
@@ -167,6 +171,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
+    [Obsolete("Use UpdateActivityAsync with an explicit conversationId, activityId, serviceUrl, and isTargeted: true instead.")]
     public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivityInput activity, Uri serviceUrl, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
@@ -220,22 +225,9 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
+    [Obsolete("Use DeleteActivityAsync with an explicit conversationId, activityId, serviceUrl, and isTargeted: true instead.")]
     public virtual Task DeleteTargetedActivityAsync(string conversationId, string activityId, Uri serviceUrl, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
         => DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: true, requestContext, customHeaders, cancellationToken);
-
-    /// <summary>
-    /// Deletes an existing activity from a conversation.
-    /// </summary>
-    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
-    /// <param name="activityId">The ID of the activity to delete. Cannot be null or whitespace.</param>
-    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
-    /// <param name="requestContext">Optional per-request properties (see <see cref="Http.BotRequestContext"/>) to stamp onto the request's options.</param>
-    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public virtual Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
-        => DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: false, requestContext, customHeaders, cancellationToken);
 
     /// <summary>
     /// Deletes an existing activity from a conversation.
@@ -249,7 +241,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public virtual async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, bool isTargeted, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -300,6 +292,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
+    [Obsolete("Pass the conversationId, activityId, and serviceUrl explicitly via DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, ...) instead of deriving them from a CoreActivity.")]
     public virtual async Task DeleteActivityAsync(string conversationId, CoreActivity activity, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);

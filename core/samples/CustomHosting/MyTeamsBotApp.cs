@@ -18,7 +18,7 @@ public class MyTeamsBotApp : TeamsBotApplication
     {
         this.OnMessage(async (ctx, ct) =>
         {
-            await ctx.SendActivityAsync("Hello from MyTeamsBotApp!", ct);
+            await ctx.SendAsync("Hello from MyTeamsBotApp!", ct);
         });
     }
 }

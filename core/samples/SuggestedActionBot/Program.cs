@@ -29,7 +29,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         })
         .Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 // Handle the resulting suggestedActions/submit invoke when the user clicks a chip.
@@ -40,7 +40,7 @@ teamsApp.OnSuggestedActionSubmit(async (context, cancellationToken) =>
         : "<none>";
 
     logger.LogInformation("[SUGGESTED_ACTION_SUBMIT] value={Value}", serializedValue);
-    await context.SendActivityAsync(
+    await context.SendAsync(
         MessageActivityInput.CreateBuilder().WithText($"Got suggestedActions/submit with value: {serializedValue}").Build(),
         cancellationToken);
 

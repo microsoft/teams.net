@@ -18,7 +18,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 public class ActivityClient
 {
     private const string ObsoleteInboundMessage =
-        "Sending an inbound TeamsActivity (read-model) is obsolete. Use the overload that accepts a TeamsActivityInput built via MessageActivityInput.CreateBuilder()/StreamingActivityInput.CreateBuilder().";
+        "Sending an inbound TeamsActivity (read-model) is obsolete. Use the overload that accepts a TeamsActivityInput built via MessageActivityInput.CreateBuilder().";
 
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
@@ -36,11 +36,8 @@ public class ActivityClient
     private Task<SendActivityResponse?> SendCoreAsync(string conversationId, CoreActivityInput activity, bool isTargeted, Dictionary<string, string>? additionalHeaders, CancellationToken cancellationToken)
         => _client.SendActivityAsync(conversationId, activity, _serviceUrl, isTargeted: isTargeted, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
 
-    private Task<UpdateActivityResponse> UpdateCoreAsync(string conversationId, string id, CoreActivityInput activity, Dictionary<string, string>? additionalHeaders, CancellationToken cancellationToken)
-        => _client.UpdateActivityAsync(conversationId, id, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    private Task<UpdateActivityResponse> UpdateTargetedCoreAsync(string conversationId, string id, CoreActivityInput activity, Dictionary<string, string>? additionalHeaders, CancellationToken cancellationToken)
-        => _client.UpdateTargetedActivityAsync(conversationId, id, activity, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+    private Task<UpdateActivityResponse> UpdateCoreAsync(string conversationId, string id, CoreActivityInput activity, bool isTargeted, Dictionary<string, string>? additionalHeaders, CancellationToken cancellationToken)
+        => _client.UpdateActivityAsync(conversationId, id, activity, _serviceUrl, isTargeted, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
 
     /// <summary>
     /// Create a new activity in a conversation.
@@ -67,7 +64,7 @@ public class ActivityClient
     public Task<UpdateActivityResponse> UpdateAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return UpdateCoreAsync(conversationId, id, activity, additionalHeaders, cancellationToken);
+        return UpdateCoreAsync(conversationId, id, activity, isTargeted: false, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
@@ -77,7 +74,7 @@ public class ActivityClient
     public Task<UpdateActivityResponse> UpdateAsync(string conversationId, string id, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return UpdateCoreAsync(conversationId, id, CoreActivityInput.FromActivity(activity), additionalHeaders, cancellationToken);
+        return UpdateCoreAsync(conversationId, id, CoreActivityInput.FromActivity(activity), isTargeted: false, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
@@ -107,7 +104,7 @@ public class ActivityClient
     /// </summary>
     public Task DeleteAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -128,7 +125,7 @@ public class ActivityClient
     public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return UpdateTargetedCoreAsync(conversationId, id, activity, additionalHeaders, cancellationToken);
+        return UpdateCoreAsync(conversationId, id, activity, isTargeted: true, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
@@ -136,6 +133,6 @@ public class ActivityClient
     /// </summary>
     public Task DeleteTargetedAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, isTargeted: true,  requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

@@ -37,11 +37,11 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     }
 
     // ============================================
-    // context.SendActivityAsync() — reactive send to same conversation
+    // context.SendAsync() — reactive send to same conversation
     // ============================================
     if (text.Contains("test send"))
     {
-        await context.SendActivityAsync("This is a reactive send (same conversation as the inbound).", cancellationToken);
+        await context.SendAsync("This is a reactive send (same conversation as the inbound).", cancellationToken);
         return;
     }
 
@@ -74,7 +74,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
             "**Threading Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test reply` - context.ReplyAsync() reactive in-thread reply\n" +
-            "- `test send` - context.SendActivityAsync() send to the same conversation\n" +
+            "- `test send` - context.SendAsync() send to the same conversation\n" +
             "- `test proactive` - teamsApp.ReplyAsync() proactive threaded reply\n" +
             "- `test manual` - ToThreadedConversationId() + teamsApp.SendAsync() for advanced control", TextFormats.Markdown)
             .Build();
@@ -82,7 +82,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         return;
     }
 
-    await context.SendActivityAsync("Say \"help\" for available commands.", cancellationToken);
+    await context.SendAsync("Say \"help\" for available commands.", cancellationToken);
 });
 
 webApp.Run();
