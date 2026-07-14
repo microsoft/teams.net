@@ -17,7 +17,7 @@ public class Worker(ConversationClient conversationClient, ILogger<Worker> logge
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                CoreActivity proactiveMessage = CoreActivity.CreateBuilder()
+                CoreActivityInput proactiveMessage = CoreActivityInput.CreateBuilder()
                     .Build();
                 proactiveMessage.Properties["text"] = $"Proactive hello at {DateTimeOffset.Now}";
                 SendActivityResponse? aid = await conversationClient.SendActivityAsync(ConversationId, proactiveMessage, new Uri(ServiceUrl), cancellationToken: stoppingToken);

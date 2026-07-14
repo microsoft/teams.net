@@ -79,7 +79,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 #pragma warning disable ExperimentalTeamsTargeted
         incomingFrom!.IsTargeted = true;
 #pragma warning restore ExperimentalTeamsTargeted
-        CoreActivity tm = CoreActivity.CreateBuilder()
+        CoreActivityInput tm = CoreActivityInput.CreateBuilder()
             .WithProperty("text", "Hello TM !")
             .Build();
 

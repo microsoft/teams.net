@@ -25,10 +25,10 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(new MessageActivity("response text"), targeted: true);
+        await ctx.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText("response text").Build(), targeted: true);
 
         Assert.NotNull(captured.Value);
-        TeamsActivity teamsActivity = (TeamsActivity)captured.Value!;
+        TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
         TargetedMessageInfoEntity? entity = teamsActivity.Entities?.OfType<TargetedMessageInfoEntity>().SingleOrDefault();
         Assert.NotNull(entity);
         Assert.Equal("1772129782775", entity.MessageId);
@@ -37,10 +37,8 @@ public class PromptPreviewTests
     [Fact]
     public async Task SendActivityAsync_StringOverload_Succeeds_InPersonalChat()
     {
-        // The string overload constructs a MessageActivity with no recipient, so IsTargeted is
-        // never set and the 1:1 guard cannot fire. This test pins that behavior: plain string
-        // sends from a personal chat go through without throwing, even though the typed overload
-        // would throw if a caller explicitly built a targeted MessageActivity.
+        // The string overload constructs a non-targeted message, so the 1:1 guard cannot fire.
+        // This test pins that behavior: plain string sends from a personal chat go through.
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
@@ -53,7 +51,7 @@ public class PromptPreviewTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_DoesNotAddTargetedMessageInfo_WhenInboundNotTargeted()
+    public async Task SendActivityAsync_DoesNotAddTargetedMessageInfo_WhenNotTargeted()
     {
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
@@ -61,10 +59,10 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(new MessageActivity("hello"));
+        await ctx.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText("hello").Build());
 
         Assert.NotNull(captured.Value);
-        TeamsActivity teamsActivity = (TeamsActivity)captured.Value!;
+        TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
         Assert.Null(teamsActivity.Entities?.OfType<TargetedMessageInfoEntity>().SingleOrDefault());
     }
 
@@ -77,15 +75,15 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivity outbound = MessageActivity.CreateBuilder()
+        MessageActivityInput outbound = MessageActivityInput.CreateBuilder()
             .WithText("response")
             .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
             .Build();
 
-        await ctx.SendActivityAsync(outbound);
+        await ctx.SendActivityAsync(outbound, targeted: true);
 
         Assert.NotNull(captured.Value);
-        TeamsActivity teamsActivity = (TeamsActivity)captured.Value!;
+        TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
         List<TargetedMessageInfoEntity> entities = teamsActivity.Entities!.OfType<TargetedMessageInfoEntity>().ToList();
         Assert.Single(entities);
         Assert.Equal("9999", entities[0].MessageId);
@@ -100,8 +98,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivity outbound = new("secret");
-        outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
+        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("secret").Build();
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => ctx.SendActivityAsync(outbound, targeted: true));
@@ -117,7 +114,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendActivityAsync(new MessageActivity("hi"));
+        await ctx.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText("hi").Build());
 
         Assert.NotNull(captured.Value);
     }
@@ -131,10 +128,9 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivity outbound = new("only you can see this");
-        outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
+        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("only you can see this").Build();
 
-        await ctx.SendActivityAsync(outbound);
+        await ctx.SendActivityAsync(outbound, targeted: true);
 
         Assert.NotNull(captured.Value);
     }
@@ -143,7 +139,7 @@ public class PromptPreviewTests
 
     private sealed class CaptureSlot
     {
-        public CoreActivity? Value { get; set; }
+        public CoreActivityInput? Value { get; set; }
     }
 
     private static MessageActivity BuildInbound(bool targetedInbound, string inboundId, string convType)
@@ -174,13 +170,14 @@ public class PromptPreviewTests
         harness.MockConversationClient
             .Setup(c => c.SendActivityAsync(
                 It.IsAny<string>(),
-                It.IsAny<CoreActivity>(),
+                It.IsAny<CoreActivityInput>(),
                 It.IsAny<Uri>(),
+                It.IsAny<bool>(),
                 It.IsAny<BotRequestContext?>(),
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
-                (_, activity, _, _, _, _) => slot.Value = activity)
+            .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (_, activity, _, _, _, _, _) => slot.Value = activity)
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
         return slot;
     }

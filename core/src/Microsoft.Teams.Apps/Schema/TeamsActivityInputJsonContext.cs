@@ -8,17 +8,16 @@ using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
-/// Json source generator context for Teams activity types.
+/// Json source generator context for outbound Teams activity input types.
 /// </summary>
 [JsonSourceGenerationOptions(
     WriteIndented = true,
     IncludeFields = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(CoreActivity))]
-[JsonSerializable(typeof(TeamsActivity))]
-[JsonSerializable(typeof(MessageActivity))]
-[JsonSerializable(typeof(StreamingActivity))]
+[JsonSerializable(typeof(TeamsActivityInput))]
+[JsonSerializable(typeof(MessageActivityInput))]
+[JsonSerializable(typeof(StreamingActivityInput))]
 [JsonSerializable(typeof(Entity))]
 [JsonSerializable(typeof(EntityList))]
 [JsonSerializable(typeof(MentionEntity))]
@@ -38,7 +37,7 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonSerializable(typeof(CitationAppearance))]
 [JsonSerializable(typeof(SuggestedActions))]
 [JsonSerializable(typeof(SuggestedAction))]
-[JsonSerializable(typeof(TeamsChannelData))]
+[JsonSerializable(typeof(TeamsOutboundChannelData))]
 [JsonSerializable(typeof(ChannelAccount))]
 [JsonSerializable(typeof(TeamsChannelAccount))]
 [JsonSerializable(typeof(TeamsConversation))]
@@ -53,6 +52,6 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonSerializable(typeof(System.Boolean))]
 [JsonSerializable(typeof(System.Int64))]
 [JsonSerializable(typeof(System.Double))]
-public partial class TeamsActivityJsonContext : JsonSerializerContext
+public partial class TeamsActivityInputJsonContext : JsonSerializerContext
 {
 }

@@ -17,7 +17,7 @@ ILogger logger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogg
 // Reply to any user message with two Action.Submit suggested-action chips.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    MessageActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("Approve or reject the request:")
         .WithSuggestedActions(new SuggestedActions()
         {
@@ -41,7 +41,7 @@ teamsApp.OnSuggestedActionSubmit(async (context, cancellationToken) =>
 
     logger.LogInformation("[SUGGESTED_ACTION_SUBMIT] value={Value}", serializedValue);
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder().WithText($"Got suggestedActions/submit with value: {serializedValue}").Build(),
+        MessageActivityInput.CreateBuilder().WithText($"Got suggestedActions/submit with value: {serializedValue}").Build(),
         cancellationToken);
 
     return new InvokeResponse(200);

@@ -165,10 +165,9 @@ public class BotApplicationTests
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
         BotApplication botApp = new(conversationClient, userTokenClient, logger);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-        };
+        CoreActivityInput activity = CoreActivityInput.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .Build();
         SendActivityResponse? result = await botApp.SendActivityAsync("conv123", activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(result);

@@ -25,31 +25,24 @@ public static class StreamInfoEntityExtensions
     /// <summary>
     /// Internal helper to add stream info to an activity for both streaming and final flow.
     /// </summary>
-    internal static StreamInfoEntity AddToActivity(TeamsActivity activity, string streamType, string? streamId = null, int? streamSequence = null)
+    internal static StreamInfoEntity AddToActivity(TeamsActivityInput activity, string streamType, string? streamId = null, int? streamSequence = null)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(streamType);
 
-        activity.ChannelData ??= new TeamsChannelData();
+        activity.ChannelData ??= new TeamsOutboundChannelData();
 
         string? resolvedStreamId = streamId;
         if (string.IsNullOrWhiteSpace(resolvedStreamId))
         {
-            if (activity.ChannelData.Properties.TryGetValue("streamId", out object? existingStreamId) && existingStreamId is not null)
-            {
-                resolvedStreamId = existingStreamId.ToString();
-            }
-            else
-            {
-                resolvedStreamId = activity.Id;
-            }
+            resolvedStreamId = activity.ChannelData.StreamId ?? activity.Id;
         }
 
-        activity.ChannelData.Properties["streamId"] = resolvedStreamId;
-        activity.ChannelData.Properties["streamType"] = streamType;
+        activity.ChannelData.StreamId = resolvedStreamId;
+        activity.ChannelData.StreamType = streamType;
         if (streamSequence.HasValue)
         {
-            activity.ChannelData.Properties["streamSequence"] = streamSequence.Value;
+            activity.ChannelData.StreamSequence = streamSequence.Value;
         }
 
         activity.Entities ??= [];

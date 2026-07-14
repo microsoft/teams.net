@@ -34,8 +34,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             Uri? capturedServiceUrl = null;
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
-                .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, _, url, _, _, _) => capturedServiceUrl = url)
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, _, url, _, _, _, _) => capturedServiceUrl = url)
                 .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
 
             // Act
@@ -45,7 +45,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedServiceUrl);
             Assert.Equal(TestServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
             mockConversationClient.Verify(
-                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
+                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -67,10 +67,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ServiceUrl = activityServiceUrl
             };
 
-            CoreActivity? capturedActivity = null;
+            CoreActivityInput? capturedActivity = null;
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
-                .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, act, _, _, _, _) => capturedActivity = act)
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, act, _, _, _, _, _) => capturedActivity = act)
                 .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
 
             // Act
@@ -78,10 +78,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             // Assert
             Assert.NotNull(capturedActivity);
-            Assert.NotNull(capturedActivity.ServiceUrl);
-            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.ServiceUrl.ToString().TrimEnd('/'));
+            Assert.True(capturedActivity.Properties.ContainsKey("serviceUrl"));
+            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.Properties["serviceUrl"]!.ToString()!.TrimEnd('/'));
             mockConversationClient.Verify(
-                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
+                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -101,11 +101,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Text = "Test reply"
             };
 
-            CoreActivity? capturedActivity = null;
+            CoreActivityInput? capturedActivity = null;
             Uri? capturedServiceUrl = null;
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
-                .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, act, url, _, _, _) => { capturedActivity = act; capturedServiceUrl = url; })
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, act, url, _, _, _, _) => { capturedActivity = act; capturedServiceUrl = url; })
                 .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
 
             // Act
@@ -115,9 +115,9 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedActivity);
             Assert.NotNull(capturedServiceUrl);
             Assert.Equal(TestServiceUrl.TrimEnd('/'), capturedServiceUrl.ToString().TrimEnd('/'));
-            Assert.Equal(TestActivityId, capturedActivity.ReplyToId);
+            Assert.Equal(TestActivityId, capturedActivity.Properties["replyToId"]!.ToString());
             mockConversationClient.Verify(
-                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
+                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -139,10 +139,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ServiceUrl = activityServiceUrl
             };
 
-            CoreActivity? capturedActivity = null;
+            CoreActivityInput? capturedActivity = null;
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
-                .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, act, _, _, _, _) => capturedActivity = act)
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, act, _, _, _, _, _) => capturedActivity = act)
                 .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
 
             // Act
@@ -150,10 +150,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             // Assert
             Assert.NotNull(capturedActivity);
-            Assert.NotNull(capturedActivity.ServiceUrl);
-            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.ServiceUrl.ToString().TrimEnd('/'));
+            Assert.True(capturedActivity.Properties.ContainsKey("serviceUrl"));
+            Assert.Equal(activityServiceUrl.TrimEnd('/'), capturedActivity.Properties["serviceUrl"]!.ToString()!.TrimEnd('/'));
             mockConversationClient.Verify(
-                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
+                c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -173,19 +173,19 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Text = "Updated message"
             };
 
-            CoreActivity? capturedActivity = null;
+            CoreActivityInput? capturedActivity = null;
             Uri? capturedServiceUrl = null;
             mockConversationClient
                 .Setup(c => c.UpdateActivityAsync(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<CoreActivityInput>(),
                     It.IsAny<Uri>(),
                     It.IsAny<bool>(),
                     It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<string, string, CoreActivity, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, _, act, url, _, _, _, _) => { capturedActivity = act; capturedServiceUrl = url; })
+                .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, _, act, url, _, _, _, _) => { capturedActivity = act; capturedServiceUrl = url; })
                 .ReturnsAsync(new UpdateActivityResponse { Id = TestActivityId });
 
             // Act
@@ -199,7 +199,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 c => c.UpdateActivityAsync(
                     TestConversationId,
                     TestActivityId,
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<CoreActivityInput>(),
                     It.IsAny<Uri>(),
                     It.IsAny<bool>(),
                     It.IsAny<BotRequestContext?>(),
@@ -232,7 +232,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 .Setup(c => c.UpdateActivityAsync(
                     TestConversationId,
                     TestActivityId,
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<CoreActivityInput>(),
                     It.IsAny<Uri>(),
                     It.IsAny<bool>(),
                     It.Is<BotRequestContext?>(c => ReferenceEquals(c, requestContext)),
@@ -265,19 +265,19 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ServiceUrl = activityServiceUrl
             };
 
-            CoreActivity? capturedActivity = null;
+            CoreActivityInput? capturedActivity = null;
             Uri? capturedServiceUrl = null;
             mockConversationClient
                 .Setup(c => c.UpdateActivityAsync(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<CoreActivityInput>(),
                     It.IsAny<Uri>(),
                     It.IsAny<bool>(),
                     It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<string, string, CoreActivity, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, _, act, url, _, _, _, _) => { capturedActivity = act; capturedServiceUrl = url; })
+                .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, _, act, url, _, _, _, _) => { capturedActivity = act; capturedServiceUrl = url; })
                 .ReturnsAsync(new UpdateActivityResponse { Id = TestActivityId });
 
             // Act
@@ -291,7 +291,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 c => c.UpdateActivityAsync(
                     TestConversationId,
                     TestActivityId,
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<CoreActivityInput>(),
                     It.IsAny<Uri>(),
                     It.IsAny<bool>(),
                     It.IsAny<BotRequestContext?>(),
@@ -318,8 +318,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             string? capturedConversationId = null;
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
-                .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((id, _, _, _, _, _) => capturedConversationId = id)
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((id, _, _, _, _, _, _) => capturedConversationId = id)
                 .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
 
             // Act
@@ -345,11 +345,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Text = "Test reply"
             };
 
-            CoreActivity? capturedActivity = null;
+            CoreActivityInput? capturedActivity = null;
             string? capturedConversationId = null;
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
-                .Callback<string, CoreActivity, Uri, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((id, act, _, _, _, _) => { capturedConversationId = id; capturedActivity = act; })
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((id, act, _, _, _, _, _) => { capturedConversationId = id; capturedActivity = act; })
                 .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
 
             // Act
@@ -357,7 +357,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             // Assert
             Assert.NotNull(capturedActivity);
-            Assert.Equal("parent-activity-id", capturedActivity.ReplyToId);
+            Assert.Equal("parent-activity-id", capturedActivity.Properties["replyToId"]!.ToString());
             Assert.Equal(TestConversationId, capturedConversationId);
         }
 
@@ -371,7 +371,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((SendActivityResponse?)null); // Simulate 202 Accepted with no body
 
             CompatConversations compatConversations = new(mockConversationClient.Object)
@@ -404,7 +404,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient
-                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivity>(), It.IsAny<Uri>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((SendActivityResponse?)null); // Simulate 202 Accepted with no body
 
             CompatConversations compatConversations = new(mockConversationClient.Object)

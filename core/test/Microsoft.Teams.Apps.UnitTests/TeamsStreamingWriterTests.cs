@@ -167,7 +167,7 @@ public class TeamsStreamingWriterTests
 
         await writer.AppendResponseAsync("streamed text");
 
-        MessageActivity final = MessageActivity.CreateBuilder()
+        MessageActivityInput final = MessageActivityInput.CreateBuilder()
             .WithText("explicit text")
             .AddFeedback(FeedbackTypes.Custom)
             .Build();
@@ -194,7 +194,7 @@ public class TeamsStreamingWriterTests
         await writer.AppendResponseAsync("world");
 
         // No Text set on the activity — writer should fill in the accumulated text.
-        MessageActivity final = MessageActivity.CreateBuilder()
+        MessageActivityInput final = MessageActivityInput.CreateBuilder()
             .AddFeedback(FeedbackTypes.Default)
             .Build();
 
@@ -216,7 +216,7 @@ public class TeamsStreamingWriterTests
             .WithContent(new JsonObject { ["type"] = "AdaptiveCard", ["version"] = "1.5" })
             .Build();
 
-        MessageActivity final = MessageActivity.CreateBuilder()
+        MessageActivityInput final = MessageActivityInput.CreateBuilder()
             .WithText("")
             .AddAttachment(attachment)
             .Build();
@@ -233,7 +233,7 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, _) = CreateWriter();
 
-        MessageActivity final = new();
+        MessageActivityInput final = MessageActivityInput.CreateBuilder().Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync(final));
     }

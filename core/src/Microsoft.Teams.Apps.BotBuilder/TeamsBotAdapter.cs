@@ -112,9 +112,9 @@ public class TeamsBotAdapter(
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities.");
             SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
                 conversationId,
-                coreActivity,
+                CoreActivityInput.FromActivity(coreActivity),
                 serviceUrl,
-                requestContext,
+                requestContext: requestContext,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.SendActivitiesResponse(resp?.Id);
@@ -147,7 +147,7 @@ public class TeamsBotAdapter(
         UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
             activity.Conversation.Id,
             activity.Id,
-            coreActivity,
+            CoreActivityInput.FromActivity(coreActivity),
             serviceUrl,
             requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             cancellationToken: cancellationToken).ConfigureAwait(false);

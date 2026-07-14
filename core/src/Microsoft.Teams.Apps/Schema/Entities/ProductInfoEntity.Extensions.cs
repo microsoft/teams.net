@@ -25,7 +25,7 @@ public static class ProductInfoEntityExtensions
     /// <summary>
     /// Internal helper to add product info to an activity.
     /// </summary>
-    internal static ProductInfoEntity AddToActivity(TeamsActivity activity, string? id)
+    internal static ProductInfoEntity AddToActivity(TeamsActivityInput activity, string? id)
     {
         ArgumentNullException.ThrowIfNull(activity);
 

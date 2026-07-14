@@ -41,14 +41,6 @@ public static class TeamsActivityTypes
     /// Represents a conversation update activity.
     /// </summary>
     public const string ConversationUpdate = "conversationUpdate";
-
-    /*
-    /// <summary>
-    /// Represents an end of conversation activity.
-    /// </summary>
-    public const string EndOfConversation = "endOfConversation";
-    */
-
     /// <summary>
     /// Represents an installation update activity.
     /// </summary>
@@ -64,19 +56,6 @@ public static class TeamsActivityTypes
     /// </summary>
     public const string Event = "event";
 
-    //TODO : review command activity
-    /*
-    /// <summary>
-    /// Represents a command activity.
-    /// </summary>
-    public const string Command = "command";
-
-    /// <summary>
-    /// Represents a command result activity.
-    /// </summary>
-    public const string CommandResult = "commandResult";
-    */
-
     /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
     /// </summary>
@@ -87,18 +66,8 @@ public static class TeamsActivityTypes
         [MessageUpdate] = MessageUpdateActivity.FromActivity,
         [MessageDelete] = MessageDeleteActivity.FromActivity,
         [ConversationUpdate] = ConversationUpdateActivity.FromActivity,
-        //[TeamsActivityTypes.EndOfConversation] = EndOfConversationActivity.FromActivity,
         [InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [Invoke] = InvokeActivity.FromActivity,
         [Event] = EventActivity.FromActivity
-    };
-
-    /// <summary>
-    /// Registry of serializers keyed by concrete activity type, mirroring <see cref="ActivityDeserializerMap"/>.
-    /// </summary>
-    internal static readonly Dictionary<Type, Func<TeamsActivity, string>> ActivitySerializerMap = new()
-    {
-        [typeof(MessageActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
-        [typeof(StreamingActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.StreamingActivity),
     };
 }

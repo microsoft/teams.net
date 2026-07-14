@@ -96,7 +96,7 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
     {
         string json = await http.GetStringAsync("https://graph.microsoft.com/v1.0/me", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(MessageActivity.CreateBuilder().WithText($" ## Graph Me \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
+        await context.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText($" ## Graph Me \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
     }
     catch (HttpRequestException ex)
     {
@@ -117,7 +117,7 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
         string json = await http.GetStringAsync(
             "https://graph.microsoft.com/v1.0/me/events?$top=3&$select=subject,start,end&$orderby=start/dateTime", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(MessageActivity.CreateBuilder().WithText($" ## Graph Calendar \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
+        await context.SendActivityAsync(MessageActivityInput.CreateBuilder().WithText($" ## Graph Calendar \n ```json\n{indentedJson}\n```", TextFormats.Markdown).Build(), ct);
     }
     catch (HttpRequestException ex)
     {
@@ -152,7 +152,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         """;
 
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder().WithText(helpText, TextFormats.Markdown).Build(), ct);
+        MessageActivityInput.CreateBuilder().WithText(helpText, TextFormats.Markdown).Build(), ct);
 });
 
 // ==================== INSTALL HANDLER ====================
@@ -160,7 +160,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
 bot.OnInstall(async (context, ct) =>
 {
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder()
+        MessageActivityInput.CreateBuilder()
             .WithText("Welcome to **SSO Bot**! Type `help` to see available commands.", TextFormats.Markdown)
             .Build(), ct);
 });

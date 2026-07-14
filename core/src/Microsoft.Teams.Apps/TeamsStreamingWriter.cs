@@ -180,7 +180,7 @@ public sealed class TeamsStreamingWriter
     /// <exception cref="InvalidOperationException">
     /// Thrown if the final activity has neither text nor attachments.
     /// </exception>
-    public async Task FinalizeResponseAsync(MessageActivity? final = null, CancellationToken cancellationToken = default)
+    public async Task FinalizeResponseAsync(MessageActivityInput? final = null, CancellationToken cancellationToken = default)
     {
         // Finalizing is idempotent until the next append/informative reopens the stream.
         if (_finalized)
@@ -189,7 +189,7 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        final ??= new MessageActivity();
+        final ??= new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
 
         if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
@@ -208,7 +208,7 @@ public sealed class TeamsStreamingWriter
         StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
-        MessageActivity activity = new MessageActivityBuilder(final)
+        MessageActivityInput activity = new MessageActivityInputBuilder(final)
             .AddEntity(streamInfo)
             .Build();
 
@@ -250,7 +250,7 @@ public sealed class TeamsStreamingWriter
     /// (<see cref="StreamNotAllowedException"/>, <see cref="TerminalStreamException"/>) and
     /// non-streaming errors propagate.
     /// </summary>
-    private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivity activity, CancellationToken cancellationToken)
+    private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
     {
         try
         {
@@ -329,18 +329,18 @@ public sealed class TeamsStreamingWriter
     /// send routes through the update path (reusing the streamId) instead of creating a
     /// duplicate streamed chunk.
     /// </summary>
-    private async Task SendFinalInPlaceAsync(MessageActivity final, CancellationToken cancellationToken)
+    private async Task SendFinalInPlaceAsync(MessageActivityInput final, CancellationToken cancellationToken)
     {
         // Drop streaming markers so Teams treats this as a normal message edit.
         final.Entities?.RemoveAll(e => e is StreamInfoEntity);
-        if (final.ChannelData?.Properties is { } props)
+        if (final.ChannelData is { } channelData)
         {
-            props.Remove("streamId");
-            props.Remove("streamType");
-            props.Remove("streamSequence");
+            channelData.StreamId = null;
+            channelData.StreamType = null;
+            channelData.StreamSequence = null;
         }
 
-        TeamsActivity activity = new MessageActivityBuilder(final)
+        MessageActivityInput activity = new MessageActivityInputBuilder(final)
             .Build();
 
         if (_streamId != null)
@@ -369,9 +369,9 @@ public sealed class TeamsStreamingWriter
         _lastChunkSent = DateTime.MinValue;
     }
 
-    private StreamingActivity BuildActivity(string text, string streamType)
+    private StreamingActivityInput BuildActivity(string text, string streamType)
     {
-        return StreamingActivity.CreateBuilder()
+        return StreamingActivityInput.CreateBuilder()
             .WithText(text)
             .WithStreamInfo(streamType, _streamId, _sequence)
             .Build();

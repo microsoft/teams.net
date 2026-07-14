@@ -28,7 +28,8 @@ public class MessageActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    internal MessageActivity() : base(TeamsActivityTypes.Message)
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    public MessageActivity() : base(TeamsActivityTypes.Message)
     {
     }
 
@@ -36,7 +37,8 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text">The text content of the message.</param>
-    internal MessageActivity(string text) : base(TeamsActivityTypes.Message)
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    public MessageActivity(string text) : base(TeamsActivityTypes.Message)
     {
         Text = text;
     }
@@ -46,7 +48,8 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="attachments">The list of attachments for the message.</param>
-    internal MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityTypes.Message)
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityTypes.Message)
     {
         Attachments = attachments;
     }
@@ -110,12 +113,6 @@ public class MessageActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; internal set; }
-
-    /// <summary>
-    /// Creates a new <see cref="MessageActivityBuilder"/> to construct a message activity.
-    /// </summary>
-    /// <returns>A new <see cref="MessageActivityBuilder"/> instance.</returns>
-    public static new MessageActivityBuilder CreateBuilder() => new();
 
 }
 

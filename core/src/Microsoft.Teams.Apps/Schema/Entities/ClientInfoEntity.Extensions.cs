@@ -25,7 +25,7 @@ public static class ClientInfoEntityExtensions
     /// <summary>
     /// Internal helper to add client info to an activity.
     /// </summary>
-    internal static ClientInfoEntity AddToActivity(TeamsActivity activity, string? platform, string? country, string? timezone, string? locale)
+    internal static ClientInfoEntity AddToActivity(TeamsActivityInput activity, string? platform, string? country, string? timezone, string? locale)
     {
         ArgumentNullException.ThrowIfNull(activity);
 

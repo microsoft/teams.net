@@ -69,7 +69,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("help"))
     {
-        MessageActivity helpMessage = MessageActivity.CreateBuilder()
+        MessageActivityInput helpMessage = MessageActivityInput.CreateBuilder()
             .WithText(
             "**Threading Test Bot**\n\n" +
             "**Commands:**\n" +

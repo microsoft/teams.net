@@ -242,7 +242,7 @@ public static class ActivitySchemaMapper
             Bot = parameters.Bot?.FromCompatChannelAccount(),
             Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
             TopicName = parameters.TopicName,
-            Activity = parameters.Activity?.FromBotFrameworkActivity(),
+            Activity = parameters.Activity is null ? null : CoreActivityInput.FromActivity(parameters.Activity.FromBotFrameworkActivity()),
             ChannelData = parameters.ChannelData,
             TenantId = parameters.TenantId,
         };

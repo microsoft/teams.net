@@ -44,28 +44,18 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
     /// <param name="activity">The activity to send. Cannot be null.</param>
     /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="isTargeted">When true, the activity is sent as a targeted (personal) message.</param>
     /// <param name="requestContext">Optional per-request properties (see <see cref="Http.BotRequestContext"/>) used as a fallback; values derived from the activity take precedence.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
-    public virtual async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivity activity, Uri serviceUrl, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivityInput activity, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
 
-#pragma warning disable ExperimentalTeamsTargeted
-        bool isTargeted = activity.Recipient?.IsTargeted == true;
-#pragma warning restore ExperimentalTeamsTargeted
-
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
-
-        if (activity.ChannelId == "agents")
-        {
-            logger.TruncatingConversationId();
-            string convId = "acf"; //conversationId.Length > 100 ? conversationId[..100] : conversationId;
-            url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
-        }
 
         if (isTargeted)
         {
@@ -89,7 +79,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
                 HttpMethod.Post,
                 url,
                 body,
-                CreateRequestOptions(BotRequestContext.Merge(requestContext, BotRequestContext.FromActivity(activity)), "sending activity", customHeaders),
+                CreateRequestOptions(requestContext, "sending activity", customHeaders),
                 cancellationToken).ConfigureAwait(false);
             span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
             Telemetry.OutboundCalls.Add(1, opTag);
@@ -116,7 +106,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public virtual async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivityInput activity, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -177,7 +167,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivity activity, Uri serviceUrl, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivityInput activity, Uri serviceUrl, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -454,7 +444,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(parameters);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        BotRequestContext? properties = BotRequestContext.Merge(requestContext, BotRequestContext.FromActivity(parameters.Activity));
+        BotRequestContext? properties = requestContext;
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
 

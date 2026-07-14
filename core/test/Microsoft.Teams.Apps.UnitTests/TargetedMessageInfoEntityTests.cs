@@ -59,11 +59,11 @@ public class TargetedMessageInfoEntityTests
         // exist and this test would fail to compile / run — preventing a silent Native AOT regression.
         TargetedMessageInfoEntity entity = new() { MessageId = "1772129782775" };
 
-        string json = JsonSerializer.Serialize(entity, TeamsActivityJsonContext.Default.TargetedMessageInfoEntity);
+        string json = JsonSerializer.Serialize(entity, TeamsActivityInputJsonContext.Default.TargetedMessageInfoEntity);
         Assert.Contains("\"messageId\"", json);
         Assert.Contains("1772129782775", json);
 
-        TargetedMessageInfoEntity? roundTripped = JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TargetedMessageInfoEntity);
+        TargetedMessageInfoEntity? roundTripped = JsonSerializer.Deserialize(json, TeamsActivityInputJsonContext.Default.TargetedMessageInfoEntity);
         Assert.NotNull(roundTripped);
         Assert.Equal("targetedMessageInfo", roundTripped.Type);
         Assert.Equal("1772129782775", roundTripped.MessageId);
@@ -72,12 +72,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_AddsEntity()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("test")
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
-        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
+        TargetedMessageInfoEntity? entity = activity.Entities?.OfType<TargetedMessageInfoEntity>().FirstOrDefault();
         Assert.NotNull(entity);
         Assert.Equal("msg-123", entity.MessageId);
     }
@@ -85,7 +85,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_DoesNotDuplicate_WhenConcreteEntityExists()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("test")
             .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
             .WithTargetedMessageInfo("msg-123")
@@ -99,7 +99,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_DoesNotDuplicate_WhenGenericEntityWithMatchingType()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("test")
             .AddEntity(new Entity("targetedMessageInfo"))
             .WithTargetedMessageInfo("msg-123")
@@ -112,7 +112,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsQuotedReplyEntities()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("test")
             .AddEntity(new Entity("quotedReply"))
             .WithTargetedMessageInfo("msg-123")
@@ -125,7 +125,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsAllQuotedReplyEntities_WhenMultiplePresent()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("test")
             .AddEntity(new Entity("quotedReply"))
             .AddEntity(new Entity("quotedReply"))
@@ -141,7 +141,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsQuotedPlaceholderFromText()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -153,7 +153,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsAllQuotedPlaceholders_NotJustMatchingMessageId()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .AddQuote("msg-1", "first")
             .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
@@ -170,12 +170,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_OnMessageActivity_AutoPopulatesEntity()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
-        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
+        TargetedMessageInfoEntity? entity = activity.Entities?.OfType<TargetedMessageInfoEntity>().FirstOrDefault();
         Assert.NotNull(entity);
         Assert.Equal("msg-123", entity.MessageId);
     }
@@ -183,7 +183,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_LeavesTextUnchanged_WhenNoPlaceholder()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("plain response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -195,7 +195,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_NullText_DoesNotThrow()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
@@ -205,7 +205,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_ToJson_ContainsMessageId()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("hello")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -221,11 +221,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_AddsEntity()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
-        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
+        TargetedMessageInfoEntity? entity = activity.Entities?.OfType<TargetedMessageInfoEntity>().FirstOrDefault();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -237,14 +237,14 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_ThrowsOnWhitespaceMessageId()
     {
         Assert.Throws<ArgumentException>(() =>
-            MessageActivity.CreateBuilder()
+            MessageActivityInput.CreateBuilder()
                 .WithTargetedMessageInfo("   "));
     }
 
     [Fact]
     public void Builder_WithTargetedMessageInfo_IsIdempotent()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithTargetedMessageInfo("msg-123")
             .WithTargetedMessageInfo("msg-999")
             .Build();
@@ -257,7 +257,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsQuotedReplyEntities()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .AddQuote("msg-1", "old reply")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -268,7 +268,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsPlaceholderFromText()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -279,7 +279,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_ToJson_ContainsMessageId()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText("hello")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -293,7 +293,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsEscapedPlaceholder()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .AddQuote("a\"b", "response")
             .WithTargetedMessageInfo("a\"b")
             .Build();
@@ -306,7 +306,7 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsAllPlaceholders_NotJustMatchingMessageId()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .AddQuote("msg-1", "first")
             .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
@@ -320,11 +320,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_OnFreshBuilder()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
-        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
+        TargetedMessageInfoEntity? entity = activity.Entities?.OfType<TargetedMessageInfoEntity>().FirstOrDefault();
 
         Assert.Single(activity.Entities!);
         Assert.NotNull(entity);

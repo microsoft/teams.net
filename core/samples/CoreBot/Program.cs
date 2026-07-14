@@ -16,7 +16,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string replyText = $"CoreBot running on SDK `{BotApplication.Version}`.";
     ArgumentNullException.ThrowIfNull(activity.Conversation);
-    CoreActivity replyActivity = CoreActivity.CreateBuilder()
+    CoreActivityInput replyActivity = CoreActivityInput.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithProperty("text", replyText)
         .Build();

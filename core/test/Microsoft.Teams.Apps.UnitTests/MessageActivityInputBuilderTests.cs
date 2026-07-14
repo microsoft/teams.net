@@ -7,31 +7,28 @@ using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
-public class MessageActivityBuilderTests
+public class MessageActivityInputBuilderTests
 {
-    private readonly MessageActivityBuilder builder;
-    private readonly MessageActivityBuilder messageBuilder;
-    public MessageActivityBuilderTests()
+    private readonly MessageActivityInputBuilder builder;
+    private readonly MessageActivityInputBuilder messageBuilder;
+    public MessageActivityInputBuilderTests()
     {
-        builder = MessageActivity.CreateBuilder();
-        messageBuilder = MessageActivity.CreateBuilder();
+        builder = MessageActivityInput.CreateBuilder();
+        messageBuilder = MessageActivityInput.CreateBuilder();
     }
 
     [Fact]
     public void Constructor_DefaultConstructor_CreatesNewActivity()
     {
-        MessageActivity activity = MessageActivity.CreateBuilder().Build();
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder().Build();
 
         Assert.NotNull(activity);
-        Assert.Null(activity.From);
-        Assert.Null(activity.Recipient);
-        Assert.Null(activity.Conversation);
     }
 
     [Fact]
     public void WithId_SetsActivityId()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithId("test-activity-id")
             .Build();
 
@@ -41,7 +38,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void Build_DefaultsToMessageType()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .Build();
 
         Assert.Equal(TeamsActivityTypes.Message, activity.Type);
@@ -50,7 +47,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void WithText_SetsTextContent()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("Hello, World!")
             .Build();
 
@@ -82,20 +79,20 @@ public class MessageActivityBuilderTests
     [Fact]
     public void WithChannelData_SetsChannelData()
     {
-        TeamsChannelData channelData = new()
+        TeamsOutboundChannelData channelData = new()
         {
-            TeamsChannelId = "19:channel-id@thread.tacv2",
-            TeamsTeamId = "19:team-id@thread.tacv2"
+            FeedbackLoopEnabled = true,
+            StreamId = "stream-123"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("hi")
             .Build();
         activity.ChannelData = channelData;
 
         Assert.NotNull(activity.ChannelData);
-        Assert.Equal("19:channel-id@thread.tacv2", activity.ChannelData?.TeamsChannelId);
-        Assert.Equal("19:team-id@thread.tacv2", activity.ChannelData?.TeamsTeamId);
+        Assert.True(activity.ChannelData?.FeedbackLoopEnabled);
+        Assert.Equal("stream-123", activity.ChannelData?.StreamId);
     }
 
     [Fact]
@@ -110,7 +107,7 @@ public class MessageActivityBuilderTests
             }
         ];
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithEntities(entities)
             .Build();
 
@@ -130,7 +127,7 @@ public class MessageActivityBuilderTests
             }
         ];
 
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .WithAttachments(attachments)
             .Build();
 
@@ -149,7 +146,7 @@ public class MessageActivityBuilderTests
             Name = "single"
         };
 
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .AddAttachment(attachment)
             .Build();
 
@@ -167,7 +164,7 @@ public class MessageActivityBuilderTests
             Country = "US"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddEntity(entity)
             .Build();
 
@@ -179,7 +176,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddEntity_MultipleEntities_AddsAllToCollection()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
             .AddEntity(new ProductInfoEntity { Id = "product-123" })
             .Build();
@@ -191,7 +188,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddClientInfo_AddsClientInfoEntity()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
             .Build();
 
@@ -206,7 +203,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddProductInfo_AddsProductInfoEntity()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddProductInfo("product-123")
             .Build();
 
@@ -218,7 +215,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddFeedback(FeedbackTypes.Custom)
             .Build();
 
@@ -237,7 +234,7 @@ public class MessageActivityBuilderTests
             Name = "test.html"
         };
 
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .AddAttachment(attachment)
             .Build();
 
@@ -249,7 +246,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddAttachment_MultipleAttachments_AddsAllToCollection()
     {
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
             .AddAttachment(new TeamsAttachment { ContentType = "application/json" })
             .Build();
@@ -263,7 +260,7 @@ public class MessageActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard", version = "1.2" };
 
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .AddAdaptiveCardAttachment(adaptiveCard)
             .Build();
 
@@ -278,7 +275,7 @@ public class MessageActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard" };
 
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
             .Build();
 
@@ -308,7 +305,7 @@ public class MessageActivityBuilderTests
             Name = "John Doe"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("said hello")
             .AddMention(account)
             .Build();
@@ -333,7 +330,7 @@ public class MessageActivityBuilderTests
             Name = "John Doe"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("replied")
             .AddMention(account, "CustomName")
             .Build();
@@ -354,7 +351,7 @@ public class MessageActivityBuilderTests
             Name = "John Doe"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("original text")
             .AddMention(account, addText: false)
             .Build();
@@ -370,7 +367,7 @@ public class MessageActivityBuilderTests
         ChannelAccount account1 = new() { Id = "user-1", Name = "User One" };
         ChannelAccount account2 = new() { Id = "user-2", Name = "User Two" };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("message")
             .AddMention(account1)
             .AddMention(account2)
@@ -384,7 +381,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void FluentAPI_CompleteActivity_BuildsCorrectly()
     {
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .WithId("activity-123")
             .WithText("Test message")
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
@@ -410,9 +407,9 @@ public class MessageActivityBuilderTests
     public void FluentAPI_MethodChaining_ReturnsBuilderInstance()
     {
 
-        MessageActivityBuilder result1 = builder.WithId("id");
-        MessageActivityBuilder result2 = builder.WithText("text");
-        MessageActivityBuilder result3 = builder.AddText("!");
+        MessageActivityInputBuilder result1 = builder.WithId("id");
+        MessageActivityInputBuilder result2 = builder.WithText("text");
+        MessageActivityInputBuilder result3 = builder.AddText("!");
 
         Assert.Same(builder, result1);
         Assert.Same(builder, result2);
@@ -425,8 +422,8 @@ public class MessageActivityBuilderTests
         builder
             .WithId("test-id");
 
-        MessageActivity activity1 = builder.Build();
-        MessageActivity activity2 = builder.Build();
+        MessageActivityInput activity1 = builder.Build();
+        MessageActivityInput activity2 = builder.Build();
 
         Assert.Same(activity1, activity2);
     }
@@ -434,7 +431,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void Builder_ModifyingExistingActivity_PreservesOriginalData()
     {
-        MessageActivity modified = MessageActivity.CreateBuilder()
+        MessageActivityInput modified = MessageActivityInput.CreateBuilder()
             .WithId("original-id")
             .WithText("modified text")
             .Build();
@@ -453,7 +450,7 @@ public class MessageActivityBuilderTests
             Name = "Test User"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddMention(account)
             .Build();
 
@@ -465,7 +462,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void WithChannelData_NullValue_SetsToNull()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .Build();
 
         Assert.Null(activity.ChannelData);
@@ -474,14 +471,14 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddEntity_NullEntitiesCollection_InitializesCollection()
     {
-        MessageActivity activity = builder.Build();
+        MessageActivityInput activity = builder.Build();
 
         Assert.Null(activity.Entities);
 
         ClientInfoEntity entity = new() { Locale = "en-US" };
         builder.AddEntity(entity);
 
-        MessageActivity result = builder.Build();
+        MessageActivityInput result = builder.Build();
         Assert.NotNull(result.Entities);
         Assert.Single(result.Entities);
     }
@@ -489,14 +486,14 @@ public class MessageActivityBuilderTests
     [Fact]
     public void AddAttachment_NullAttachmentsCollection_InitializesCollection()
     {
-        MessageActivity activity = (MessageActivity)messageBuilder.Build();
+        MessageActivityInput activity = messageBuilder.Build();
 
         Assert.Null(activity.Attachments);
 
         TeamsAttachment attachment = new() { ContentType = "text/html" };
         messageBuilder.AddAttachment(attachment);
 
-        MessageActivity result = (MessageActivity)messageBuilder.Build();
+        MessageActivityInput result = messageBuilder.Build();
         Assert.NotNull(result.Attachments);
         Assert.Single(result.Attachments);
     }
@@ -510,7 +507,7 @@ public class MessageActivityBuilderTests
             Name = "User"
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .AddMention(account)
             .Build();
 
@@ -520,7 +517,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void WithEntities_WithNullValue_SetsToNull()
     {
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithEntities([new ClientInfoEntity()])
             .WithEntities(null!)
             .Build();
@@ -531,7 +528,7 @@ public class MessageActivityBuilderTests
     [Fact]
     public void WithAttachments_WithNullValue_SetsToNull()
     {
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .WithAttachments([new()])
             .WithAttachments(null!)
             .Build();
@@ -548,7 +545,7 @@ public class MessageActivityBuilderTests
             Name = null
         };
 
-        MessageActivity activity = builder
+        MessageActivityInput activity = builder
             .WithText("message")
             .AddMention(account)
             .Build();
@@ -564,11 +561,11 @@ public class MessageActivityBuilderTests
         builder
             .AddEntity(new ClientInfoEntity { Locale = "en-US" });
 
-        MessageActivity activity1 = builder.Build();
+        MessageActivityInput activity1 = builder.Build();
         Assert.NotNull(activity1.Entities);
 
         builder.AddEntity(new ProductInfoEntity { Id = "prod-1" });
-        MessageActivity activity2 = builder.Build();
+        MessageActivityInput activity2 = builder.Build();
 
         Assert.Same(activity1, activity2);
         Assert.NotNull(activity2.Entities);
@@ -578,13 +575,13 @@ public class MessageActivityBuilderTests
     [Fact]
     public void IntegrationTest_CreateComplexActivity()
     {
-        TeamsChannelData channelData = new()
+        TeamsOutboundChannelData channelData = new()
         {
-            TeamsChannelId = "19:channel@thread.tacv2",
-            TeamsTeamId = "19:team@thread.tacv2"
+            FeedbackLoopEnabled = true,
+            StreamId = "19:channel@thread.tacv2"
         };
 
-        MessageActivity activity = (MessageActivity)messageBuilder
+        MessageActivityInput activity = messageBuilder
             .WithId("msg-001")
             .WithText("Please review this document")
             .AddEntity(new ClientInfoEntity
@@ -616,7 +613,7 @@ public class MessageActivityBuilderTests
         }
         Assert.Equal("<at>Manager</at> Please review this document", text);
         Assert.NotNull(activity.ChannelData);
-        Assert.Equal("19:channel@thread.tacv2", activity.ChannelData?.TeamsChannelId);
+        Assert.Equal("19:channel@thread.tacv2", activity.ChannelData?.StreamId);
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities?.Count); // ClientInfo + Mention
         Assert.NotNull(activity.Attachments);

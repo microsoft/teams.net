@@ -242,7 +242,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             coreActivity.ReplyToId = activityId;
 
-            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, coreActivity, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, CoreActivityInput.FromActivity(coreActivity), serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -308,7 +308,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             Uri serviceUrl = coreActivity.ServiceUrl
                 ?? new Uri(ServiceUrl!);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, coreActivity, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, CoreActivityInput.FromActivity(coreActivity), serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -346,7 +346,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
             UpdateActivityResponse response = await _client.UpdateActivityAsync(
                 conversationId,
                 activityId,
-                coreActivity,
+                CoreActivityInput.FromActivity(coreActivity),
                 serviceUrl,
                 requestContext: RequestContext,
                 customHeaders: convertedHeaders,

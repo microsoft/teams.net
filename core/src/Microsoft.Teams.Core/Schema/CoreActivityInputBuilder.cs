@@ -4,13 +4,13 @@
 namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
-/// Provides a fluent API for building CoreActivity instances.
+/// Provides a fluent API for building outbound <see cref="CoreActivityInput"/> instances.
 /// </summary>
 /// <typeparam name="TActivity">The type of activity being built.</typeparam>
 /// <typeparam name="TBuilder">The type of the builder (for fluent method chaining).</typeparam>
-public abstract class CoreActivityBuilder<TActivity, TBuilder>
-    where TActivity : CoreActivity
-    where TBuilder : CoreActivityBuilder<TActivity, TBuilder>
+public abstract class CoreActivityInputBuilder<TActivity, TBuilder>
+    where TActivity : CoreActivityInput
+    where TBuilder : CoreActivityInputBuilder<TActivity, TBuilder>
 {
     /// <summary>
     /// The activity being built.
@@ -20,10 +20,10 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
 #pragma warning restore CA1051 // Do not declare visible instance fields
 
     /// <summary>
-    /// Initializes a new instance of the CoreActivityBuilder class.
+    /// Initializes a new instance of the builder.
     /// </summary>
     /// <param name="activity">The activity to build upon.</param>
-    protected CoreActivityBuilder(TActivity activity)
+    protected CoreActivityInputBuilder(TActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         _activity = activity;
@@ -71,30 +71,30 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
 }
 
 /// <summary>
-/// Provides a fluent API for building CoreActivity instances.
+/// Provides a fluent API for building outbound <see cref="CoreActivityInput"/> instances.
 /// </summary>
-public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivityBuilder>
+public class CoreActivityInputBuilder : CoreActivityInputBuilder<CoreActivityInput, CoreActivityInputBuilder>
 {
     /// <summary>
-    /// Initializes a new instance of the CoreActivityBuilder class.
+    /// Initializes a new instance of the <see cref="CoreActivityInputBuilder"/> class.
     /// </summary>
-    internal CoreActivityBuilder() : base(new CoreActivity())
+    internal CoreActivityInputBuilder() : base(new CoreActivityInput())
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the CoreActivityBuilder class with an existing activity.
+    /// Initializes a new instance of the <see cref="CoreActivityInputBuilder"/> class with an existing activity.
     /// </summary>
     /// <param name="activity">The activity to build upon.</param>
-    internal CoreActivityBuilder(CoreActivity activity) : base(activity)
+    internal CoreActivityInputBuilder(CoreActivityInput activity) : base(activity)
     {
     }
 
     /// <summary>
-    /// Builds and returns the configured CoreActivity instance.
+    /// Builds and returns the configured <see cref="CoreActivityInput"/> instance.
     /// </summary>
-    /// <returns>The configured CoreActivity.</returns>
-    public override CoreActivity Build()
+    /// <returns>The configured <see cref="CoreActivityInput"/>.</returns>
+    public override CoreActivityInput Build()
     {
         return _activity;
     }

@@ -16,7 +16,7 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 // Send content, then mark targeted with `targeted: true` on the send call.
 teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
 {
-    MessageActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("👋 Only you can see this targeted message.")
         .Build();
     await context.SendActivityAsync(reply, targeted: true, cancellationToken);
@@ -26,7 +26,7 @@ teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
 // Context.Reply which prepends a quoted reference to the inbound message.
 teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 {
-    TeamsActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("🔒 Targeted reply visible only to you.")
         .Build();
     await context.ReplyAsync(reply, targeted: true, cancellationToken);
@@ -37,7 +37,7 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
 {
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
 
-    TeamsActivity initial = MessageActivity.CreateBuilder()
+    MessageActivityInput initial = MessageActivityInput.CreateBuilder()
         .WithText("📝 This targeted message will be updated in 3 seconds…")
         .Build();
 
@@ -51,7 +51,7 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
         await Task.Delay(3000);
         try
         {
-            MessageActivity updated = MessageActivity.CreateBuilder().WithText($"✏️ Updated at {DateTime.UtcNow:HH:mm:ss}").Build();
+            MessageActivityInput updated = MessageActivityInput.CreateBuilder().WithText($"✏️ Updated at {DateTime.UtcNow:HH:mm:ss}").Build();
             await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
@@ -66,7 +66,7 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
 {
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
 
-    MessageActivity initial = MessageActivity.CreateBuilder()
+    MessageActivityInput initial = MessageActivityInput.CreateBuilder()
         .WithText("🗑️ This targeted message will be deleted in 3 seconds…")
         .Build();
 
@@ -106,7 +106,7 @@ teamsApp.OnMessage("(?i)^test inbound$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder()
+        MessageActivityInput.CreateBuilder()
             .WithText(
             "**Targeted Messages Test Bot**\n\n" +
             "**Commands:**\n" +

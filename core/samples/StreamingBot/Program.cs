@@ -86,7 +86,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         })
         .Build();
 
-    MessageActivity final = MessageActivity.CreateBuilder()
+    MessageActivityInput final = MessageActivityInput.CreateBuilder()
         .AddAttachment(card)
         .AddEntity(citation)
         .AddFeedback(FeedbackTypes.Default)
@@ -133,7 +133,7 @@ static async Task RunMultiStreamDemoAsync(TeamsStreamingWriter writer, Cancellat
 
     // A null Text lets the writer fill in the accumulated streamed text; the attachment
     // rides along on the final message.
-    MessageActivity stream1Final = MessageActivity.CreateBuilder().AddAttachment(CreateSimpleCard()).Build();
+    MessageActivityInput stream1Final = MessageActivityInput.CreateBuilder().AddAttachment(CreateSimpleCard()).Build();
     await writer.FinalizeResponseAsync(stream1Final, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);

@@ -33,7 +33,7 @@ namespace Microsoft.Teams.Core;
 /// {
 ///     await bot.SendActivityAsync(
 ///         activity.Conversation.Id!,
-///         CoreActivity.CreateBuilder()
+///         CoreActivityInput.CreateBuilder()
 ///             .WithType(ActivityType.Message)
 ///             .WithProperty("text", "Hello!")
 ///             .Build(),
@@ -62,7 +62,7 @@ namespace Microsoft.Teams.Core;
 ///             // Echo the user's message back
 ///             await SendActivityAsync(
 ///                 activity.Conversation.Id!,
-///                 CoreActivity.CreateBuilder()
+///                 CoreActivityInput.CreateBuilder()
 ///                     .WithType(ActivityType.Message)
 ///                     .WithProperty("text", $"You said: {activity.Properties["text"]}")
 ///                     .Build(),
@@ -151,7 +151,7 @@ public class BotApplication
     ///     {
     ///         await bot.SendActivityAsync(
     ///             activity.Conversation.Id!,
-    ///             CoreActivity.CreateBuilder()
+    ///             CoreActivityInput.CreateBuilder()
     ///                 .WithType(ActivityType.Message)
     ///                 .WithProperty("text", "Received your message!")
     ///                 .Build(),
@@ -291,7 +291,7 @@ public class BotApplication
     /// activity itself only needs to carry content.
     /// <example>
     /// <code>
-    /// var reply = CoreActivity.CreateBuilder()
+    /// var reply = CoreActivityInput.CreateBuilder()
     ///     .WithType(ActivityType.Message)
     ///     .WithProperty("text", "Hello from the bot!")
     ///     .Build();
@@ -308,7 +308,7 @@ public class BotApplication
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="SendActivityResponse"/> with the ID of the sent activity, or null.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="activity"/> is null or the conversation client has not been initialized.</exception>
-    public async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivity activity, Uri serviceUrl, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivityInput activity, Uri serviceUrl, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");

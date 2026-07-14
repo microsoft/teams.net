@@ -30,15 +30,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _api = _f.ScopedApiClient;
     }
 
-    private static CoreActivity CreateMessageActivity(string text) =>
-        CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithProperty("text", text)
+    private static MessageActivityInput CreateMessageActivity(string text) =>
+        MessageActivityInput.CreateBuilder()
+            .WithText(text)
             .Build();
 
-    private static CoreActivity CreateMessageActivity(string text, ChannelAccount recipient)
+    private static MessageActivityInput CreateMessageActivity(string text, ChannelAccount recipient)
     {
-        CoreActivity activity = CreateMessageActivity(text);
+        MessageActivityInput activity = CreateMessageActivity(text);
         return activity;
     }
 
@@ -48,7 +47,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_CreateAsync()
     {
-        CoreActivity activity = CreateMessageActivity($"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`");
+        MessageActivityInput activity = CreateMessageActivity($"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
 
@@ -61,12 +60,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_UpdateAsync()
     {
-        CoreActivity original = CreateMessageActivity($"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`");
+        MessageActivityInput original = CreateMessageActivity($"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
 
-        CoreActivity updated = CreateMessageActivity($"[ApiClient.Activities.Update] Updated at `{DateTime.UtcNow:s}`");
+        MessageActivityInput updated = CreateMessageActivity($"[ApiClient.Activities.Update] Updated at `{DateTime.UtcNow:s}`");
 
         UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateAsync(
             _f.ConversationId, sent.Id, updated);
@@ -79,12 +78,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_ReplyAsync()
     {
-        CoreActivity original = CreateMessageActivity($"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`");
+        MessageActivityInput original = CreateMessageActivity($"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
 
-        CoreActivity reply = CreateMessageActivity($"[ApiClient.Activities.Reply] Reply at `{DateTime.UtcNow:s}`");
+        MessageActivityInput reply = CreateMessageActivity($"[ApiClient.Activities.Reply] Reply at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? res = await _api.Conversations.Activities.ReplyAsync(
             _f.ConversationId, sent.Id, reply);
@@ -97,7 +96,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_DeleteAsync()
     {
-        CoreActivity activity = CreateMessageActivity($"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`");
+        MessageActivityInput activity = CreateMessageActivity($"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
@@ -118,7 +117,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     {
         Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
 
-        CoreActivity activity = CreateMessageActivity(
+        MessageActivityInput activity = CreateMessageActivity(
             $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`",
             new ChannelAccount { Id = _f.MemberMri1 });
 
@@ -134,14 +133,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     public async Task Activities_UpdateTargetedAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
-        CoreActivity original = CreateMessageActivity(
+        MessageActivityInput original = CreateMessageActivity(
             $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`",
             new ChannelAccount { Id = _f.MemberMri1 });
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
 
-        CoreActivity updated = CreateMessageActivity($"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`");
+        MessageActivityInput updated = CreateMessageActivity($"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`");
 
         UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateTargetedAsync(
             _f.ConversationId, sent.Id, updated);
@@ -155,7 +154,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     public async Task Activities_DeleteTargetedAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
-        CoreActivity activity = CreateMessageActivity(
+        MessageActivityInput activity = CreateMessageActivity(
             $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`",
             new ChannelAccount { Id = _f.MemberMri1 });
 
@@ -244,7 +243,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         Skip.If(_f.AgenticIdentity is not null, "Reactions API returns 404 with agentic identity — service limitation");
         Skip.If(_f.IsCanary, "Reactions API returns 404 on canary — service limitation");
 
-        CoreActivity activity = CreateMessageActivity($"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`");
+        MessageActivityInput activity = CreateMessageActivity($"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);

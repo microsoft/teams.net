@@ -26,7 +26,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     if (quote.ValidatedMessageReference == true) info += "\n(validated)";
 
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder().WithText($"You sent a message with a quoted reply:\n\n{info}", TextFormats.Markdown).Build(),
+        MessageActivityInput.CreateBuilder().WithText($"You sent a message with a quoted reply:\n\n{info}", TextFormats.Markdown).Build(),
         cancellationToken);
 });
 
@@ -52,7 +52,7 @@ teamsApp.OnMessage("(?i)^test add$", async (context, cancellationToken) =>
     SendActivityResponse? sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
     if (sent?.Id != null)
     {
-        MessageActivity msg = MessageActivity.CreateBuilder()
+        MessageActivityInput msg = MessageActivityInput.CreateBuilder()
             .AddQuote(sent.Id, "Done! Left my comments on the PR.")
             .Build();
         await context.SendActivityAsync(msg, cancellationToken);
@@ -68,7 +68,7 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
 
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
-        MessageActivity msg = MessageActivity.CreateBuilder()
+        MessageActivityInput msg = MessageActivityInput.CreateBuilder()
             .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
             .AddQuote(sentB.Id, "Looks great, approved!")
             .AddQuote(sentC.Id)
@@ -81,7 +81,7 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder()
+        MessageActivityInput.CreateBuilder()
             .WithText(
             "**Quoting Test Bot**\n\n" +
             "**Commands:**\n" +

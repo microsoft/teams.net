@@ -27,7 +27,9 @@ public class MessageUpdateActivity : MessageActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
+#pragma warning disable CS0618 // Inbound subclass legitimately uses the base parameterless ctor.
     internal MessageUpdateActivity() : base()
+#pragma warning restore CS0618
     {
         Type = TeamsActivityTypes.MessageUpdate;
     }

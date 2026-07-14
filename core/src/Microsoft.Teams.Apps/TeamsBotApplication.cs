@@ -204,7 +204,7 @@ public class TeamsBotApplication : BotApplication
         Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
 
-        MessageActivity activity = MessageActivity.CreateBuilder()
+        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
             .WithText(text)
             .Build();
 

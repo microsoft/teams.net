@@ -213,7 +213,7 @@ public class OAuthFlow
                 .WithContent(oauthCardJson)
                 .Build();
 
-            MessageActivity oauthActivity = MessageActivity.CreateBuilder()
+            MessageActivityInput oauthActivity = MessageActivityInput.CreateBuilder()
                 .AddAttachment(attachment)
                 .Build();
 

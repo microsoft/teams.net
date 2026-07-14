@@ -38,7 +38,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     CancellationTokenSource timer = CancellationTokenSource.CreateLinkedTokenSource(
         cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token);
 
-    CoreActivity typing = CoreActivity.CreateBuilder()
+    CoreActivityInput typing = CoreActivityInput.CreateBuilder()
         .WithType(ActivityType.Typing)
         .Build();
     await botApp.ConversationClient.SendActivityAsync(activity.Conversation!.Id!, typing, activity.ServiceUrl!, cancellationToken: cancellationToken);
@@ -47,7 +47,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 
     ChatMessage? m1 = agentResponse.Messages.FirstOrDefault();
     Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
-    CoreActivity replyActivity = CoreActivity.CreateBuilder()
+    CoreActivityInput replyActivity = CoreActivityInput.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithProperty("text", m1!.Text)
         .Build();

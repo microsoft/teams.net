@@ -39,7 +39,7 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
     {
         if (!_hasSentWelcomeMessage)
         {
-            MessageActivity welcomeActivity = MessageActivity.CreateBuilder()
+            MessageActivityInput welcomeActivity = MessageActivityInput.CreateBuilder()
                 .WithText(WelcomeMessage, TextFormats.Markdown)
                 .Build();
 

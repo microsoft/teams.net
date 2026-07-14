@@ -27,12 +27,12 @@ teamsApp.UseMiddleware(new WelcomeMessageMiddleware());
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync(
-        MessageActivity.CreateBuilder()
+        MessageActivityInput.CreateBuilder()
             .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
             .Build(), cancellationToken);
 
 
-    MessageActivity helpActivity = MessageActivity.CreateBuilder()
+    MessageActivityInput helpActivity = MessageActivityInput.CreateBuilder()
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
         {
@@ -56,7 +56,7 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 
     string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
-    TeamsActivity ta = MessageActivity.CreateBuilder()
+    MessageActivityInput ta = MessageActivityInput.CreateBuilder()
         .WithText(replyText)
         .AddMention(context.Activity.From)
         .Build();
@@ -66,7 +66,7 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 // Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
 teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
 {
-    MessageActivity extendedMarkdownMessage = MessageActivity.CreateBuilder()
+    MessageActivityInput extendedMarkdownMessage = MessageActivityInput.CreateBuilder()
         .WithText("""
 # Extended Markdown Demo
 
@@ -87,7 +87,7 @@ $$E = mc^2$$
 // Markdown handler: matches "markdown" (case-insensitive)
 teamsApp.OnMessage("(?i)markdown", async (context, cancellationToken) =>
 {
-    MessageActivity markdownMessage = MessageActivity.CreateBuilder()
+    MessageActivityInput markdownMessage = MessageActivityInput.CreateBuilder()
         .WithText("""
 # Markdown Examples
 
@@ -127,9 +127,9 @@ public class Example
 // Citation handler: matches "citation" (case-insensitive)
 teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
 {
-    MessageActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("Here is a response with citations [1] [2].")
-        .WithProperty("textFormat", TextFormats.Markdown)
+        .WithTextFormat(TextFormats.Markdown)
         .AddCitation(1, new CitationAppearance()
         {
             Name = "Teams SDK Documentation",
@@ -159,7 +159,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
     // Send a targeted message visible only to the sender
-    MessageActivity targeted = MessageActivity.CreateBuilder()
+    MessageActivityInput targeted = MessageActivityInput.CreateBuilder()
         .WithText("This is a targeted message only you can see!")
         .Build();
 
@@ -168,7 +168,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
-    MessageActivity updated = MessageActivity.CreateBuilder()
+    MessageActivityInput updated = MessageActivityInput.CreateBuilder()
         .WithText("This targeted message was updated!")
         .Build();
 
@@ -195,7 +195,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
-    MessageActivity tmMsgToReact = MessageActivity.CreateBuilder()
+    MessageActivityInput tmMsgToReact = MessageActivityInput.CreateBuilder()
         .WithText("I'm going to add and remove reactions to this message.")
         .Build();
 
@@ -235,7 +235,7 @@ teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
             .Build();
-    MessageActivity feedbackActivity = MessageActivity.CreateBuilder().AddAttachment(feedbackCard).Build();
+    MessageActivityInput feedbackActivity = MessageActivityInput.CreateBuilder().AddAttachment(feedbackCard).Build();
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
 
@@ -247,7 +247,7 @@ teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
             .Build();
-    MessageActivity feedbackActivity = MessageActivity.CreateBuilder().AddAttachment(feedbackCard).Build();
+    MessageActivityInput feedbackActivity = MessageActivityInput.CreateBuilder().AddAttachment(feedbackCard).Build();
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
 
@@ -257,7 +257,7 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
     TeamsAttachment taskCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.TaskModuleLauncherCard)
             .Build();
-    MessageActivity taskActivity = MessageActivity.CreateBuilder().AddAttachment(taskCard).Build();
+    MessageActivityInput taskActivity = MessageActivityInput.CreateBuilder().AddAttachment(taskCard).Build();
     await context.SendActivityAsync(taskActivity, cancellationToken);
 });
 
@@ -273,7 +273,7 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
         ]
     };
 
-    TeamsActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("Here are some suggested actions for you:")
         .WithSuggestedActions(suggestedActions)
         .Build();
@@ -307,7 +307,7 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
 teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
 {
     string updatedText = context.Activity.Text ?? "<no text>";
-    MessageActivity reply = MessageActivity.CreateBuilder().WithText($"I saw that you updated your message to: `{updatedText}`").Build();
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder().WithText($"I saw that you updated your message to: `{updatedText}`").Build();
     await context.SendActivityAsync(reply, cancellationToken);
 });
 
@@ -319,7 +319,7 @@ teamsApp.OnMessageReaction(async (context, cancellationToken) =>
     TeamsAttachment reactionsCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ReactionsCard(reactionsAdded, reactionsRemoved))
             .Build();
-    MessageActivity reply = MessageActivity.CreateBuilder().AddAttachment(reactionsCard).Build();
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder().AddAttachment(reactionsCard).Build();
 
     await context.SendActivityAsync(reply, cancellationToken);
 });
@@ -336,7 +336,7 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
 {
     string? feedbackValue = context.Activity.Value?.Action?.Data?["feedback"]?.ToString();
 
-    MessageActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .AddAttachment(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
             .Build()
@@ -374,7 +374,7 @@ teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
     string? name = data?["userName"]?.ToString();
     string? comment = data?["userComment"]?.ToString();
 
-    MessageActivity reply = MessageActivity.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText($"**Task module submitted!**\n- Name: {name ?? "(empty)"}\n- Comment: {comment ?? "(empty)"}")
         .Build();
 

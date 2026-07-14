@@ -87,7 +87,7 @@ public class MessageExtensionAction
     /// </summary>
     // TODO : this needs to be activity type or something else - format is type, attachments[]
     [JsonPropertyName("botActivityPreview")]
-    public IList<TeamsActivity>? BotActivityPreview { get; set; }
+    public IList<TeamsActivityInput>? BotActivityPreview { get; set; }
 
     /// <summary>
     /// Data included with the submit action.
