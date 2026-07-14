@@ -30,6 +30,12 @@ public class CoreActivityInput
     [JsonPropertyName("id")] public string? Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the id of the activity this activity is a reply to. When set, the send is
+    /// threaded under the referenced activity.
+    /// </summary>
+    [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
@@ -69,9 +75,9 @@ public class CoreActivityInput
 
     /// <summary>
     /// Creates an outbound <see cref="CoreActivityInput"/> from a full (inbound-shaped) <see cref="CoreActivity"/>.
-    /// Copies the activity content (extension properties) and body-level identity fields, which are
-    /// carried through the outbound extension data. Transport routing (service url, conversation)
-    /// is supplied explicitly to the API clients and is not part of the serialized body.
+    /// Copies the activity type, id, and content (extension properties). Body-level identity and transport
+    /// routing (from, recipient, conversation, service url) are supplied explicitly to the API clients and
+    /// are not carried through this conversion.
     /// </summary>
     /// <param name="activity">The source activity. Cannot be null.</param>
     /// <returns>A new <see cref="CoreActivityInput"/> carrying the activity's serializable content.</returns>
@@ -84,13 +90,6 @@ public class CoreActivityInput
         {
             input.Properties[kv.Key] = kv.Value;
         }
-
-        if (activity.ChannelId is not null) input.Properties["channelId"] = activity.ChannelId;
-        if (activity.ReplyToId is not null) input.Properties["replyToId"] = activity.ReplyToId;
-        if (activity.From is not null) input.Properties["from"] = activity.From;
-        if (activity.Recipient is not null) input.Properties["recipient"] = activity.Recipient;
-        if (activity.Conversation is not null) input.Properties["conversation"] = activity.Conversation;
-        if (activity.ServiceUrl is not null) input.Properties["serviceUrl"] = activity.ServiceUrl.ToString();
 
         return input;
     }

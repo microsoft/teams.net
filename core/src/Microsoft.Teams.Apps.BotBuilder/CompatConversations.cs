@@ -240,9 +240,10 @@ namespace Microsoft.Teams.Apps.BotBuilder
             Uri serviceUrl = coreActivity.ServiceUrl
                 ?? new Uri(ServiceUrl!);
 
-            coreActivity.ReplyToId = activityId;
+            CoreActivityInput input = CoreActivityInput.FromActivity(coreActivity);
+            input.ReplyToId = activityId;
 
-            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, CoreActivityInput.FromActivity(coreActivity), serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, input, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {

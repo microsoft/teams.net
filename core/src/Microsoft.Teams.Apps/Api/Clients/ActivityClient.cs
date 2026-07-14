@@ -86,7 +86,7 @@ public class ActivityClient
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        activity.Properties["replyToId"] = id;
+        activity.ReplyToId = id;
         return SendCoreAsync(conversationId, activity, isTargeted: false, additionalHeaders, cancellationToken);
     }
 
@@ -98,7 +98,7 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         CoreActivityInput input = CoreActivityInput.FromActivity(activity);
-        input.Properties["replyToId"] = id;
+        input.ReplyToId = id;
         return SendCoreAsync(conversationId, input, isTargeted: false, additionalHeaders, cancellationToken);
     }
 
