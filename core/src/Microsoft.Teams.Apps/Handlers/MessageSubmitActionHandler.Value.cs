@@ -22,7 +22,7 @@ public class SubmitActionValue
     /// The data submitted with the action.
     /// </summary>
     [JsonPropertyName("actionValue")]
-    public JsonNode? ActionValue { get; set; }
+    public JsonNode? ActionValue { get; internal set; }
 }
 
 /// <summary>
@@ -37,12 +37,12 @@ public class MessageSubmitFeedbackValue
     /// The reaction the user clicked. Typically <c>"like"</c> or <c>"dislike"</c>.
     /// </summary>
     [JsonPropertyName("reaction")]
-    public string? Reaction { get; set; }
+    public string? Reaction { get; internal set; }
 
     /// <summary>
     /// The user's response, as a JSON-encoded string containing the form input values
     /// (e.g. <c>{"feedbackText":"..."}</c>). Parse with <c>JsonDocument.Parse</c> to read individual fields.
     /// </summary>
     [JsonPropertyName("feedback")]
-    public string? Feedback { get; set; }
+    public string? Feedback { get; internal set; }
 }

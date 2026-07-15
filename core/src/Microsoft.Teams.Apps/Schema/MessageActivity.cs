@@ -28,6 +28,7 @@ public class MessageActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
     public MessageActivity() : base(TeamsActivityTypes.Message)
     {
     }
@@ -36,6 +37,7 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text">The text content of the message.</param>
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
     public MessageActivity(string text) : base(TeamsActivityTypes.Message)
     {
         Text = text;
@@ -46,6 +48,7 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="attachments">The list of attachments for the message.</param>
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
     public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityTypes.Message)
     {
         Attachments = attachments;
@@ -65,16 +68,16 @@ public class MessageActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Gets or sets the attachments for the message.
+    /// Gets the attachments for the message.
     /// </summary>
     [JsonPropertyName("attachments")]
-    public IList<TeamsAttachment>? Attachments { get; set; }
+    public IList<TeamsAttachment>? Attachments { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the text content of the message.
+    /// Gets the text content of the message.
     /// </summary>
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public string? Text { get; internal set; }
 
     /// <summary>
     /// Gets the message text with the bot (recipient) @mention removed and trimmed.
@@ -100,16 +103,16 @@ public class MessageActivity : TeamsActivity
         }
     }
     /// <summary>
-    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values (plain, markdown, xml, extendedmarkdown).
+    /// Gets the text format. See <see cref="TextFormats"/> for common values (plain, markdown, xml, extendedmarkdown).
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; set; }
+    public string? TextFormat { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the attachment layout.
+    /// Gets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
+    public string? AttachmentLayout { get; internal set; }
 
 }
 

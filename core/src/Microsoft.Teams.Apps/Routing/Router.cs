@@ -95,7 +95,10 @@ internal sealed class Router
         foreach (RouteBase route in matchingRoutes)
         {
             _logger.LogInformation("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
-            _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
+            }
 
             (string handlerType, string dispatch) = GetHandlerTags(route.Name);
             TagList handlerTags = new()
@@ -173,7 +176,10 @@ internal sealed class Router
         }
 
         _logger.LogInformation("Dispatching invoke activity with name '{Name}' to route '{Route}'.", name, matchingRoutes[0].Name);
-        _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
+        }
 
         (string handlerType, string dispatch) = GetHandlerTags(matchingRoutes[0].Name);
         TagList handlerTags = new()

@@ -39,13 +39,11 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
     {
         if (!_hasSentWelcomeMessage)
         {
-            TeamsActivity welcomeActivity = TeamsActivity.CreateBuilder()
-                .WithType("message")
+            MessageActivityInput welcomeActivity = MessageActivityInput.CreateBuilder()
                 .WithText(WelcomeMessage, TextFormats.Markdown)
-                .WithConversationReference(TeamsActivity.FromActivity(activity))
                 .Build();
 
-            await botApplication.SendActivityAsync(welcomeActivity, cancellationToken: cancellationToken);
+            await botApplication.ConversationClient.SendActivityAsync(activity.Conversation!.Id!, welcomeActivity, activity.ServiceUrl!, cancellationToken: cancellationToken);
 
             _hasSentWelcomeMessage = true;
         }

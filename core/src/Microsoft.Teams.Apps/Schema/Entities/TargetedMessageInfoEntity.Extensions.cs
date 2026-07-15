@@ -35,7 +35,7 @@ public static class TargetedMessageInfoEntityExtensions
     /// Adds targeted message info entity to a message and strips quote placeholders.
     /// Removes any existing quotedReply entities and their corresponding placeholder text.
     /// </summary>
-    internal static void AddToActivity(TeamsActivity activity, string messageId)
+    internal static void AddToActivity(TeamsActivityInput activity, string messageId)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -52,7 +52,7 @@ public static class TargetedMessageInfoEntityExtensions
             }
         }
 
-        if (activity is MessageActivity message && message.Text is not null)
+        if (activity is MessageActivityInput message && message.Text is not null)
         {
             message.Text = QuotedPlaceholderRegex.Replace(message.Text, string.Empty).Trim();
         }

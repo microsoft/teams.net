@@ -16,7 +16,7 @@ public class MessageFetchTaskInvokeValue
     /// The data payload containing action name and value.
     /// </summary>
     [JsonPropertyName("data")]
-    public MessageFetchTaskData? Data { get; set; }
+    public MessageFetchTaskData? Data { get; internal set; }
 }
 
 /// <summary>
@@ -28,13 +28,13 @@ public class MessageFetchTaskData
     /// The name of the action.
     /// </summary>
     [JsonPropertyName("actionName")]
-    public string? ActionName { get; set; }
+    public string? ActionName { get; internal set; }
 
     /// <summary>
     /// Contains the user's reaction.
     /// </summary>
     [JsonPropertyName("actionValue")]
-    public MessageFetchTaskActionValue? ActionValue { get; set; }
+    public MessageFetchTaskActionValue? ActionValue { get; internal set; }
 }
 
 /// <summary>
@@ -46,5 +46,5 @@ public class MessageFetchTaskActionValue
     /// The feedback button the user clicked. Either "like" or "dislike".
     /// </summary>
     [JsonPropertyName("reaction")]
-    public string? Reaction { get; set; }
+    public string? Reaction { get; internal set; }
 }

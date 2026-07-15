@@ -29,13 +29,13 @@ public class InvokeActivity : TeamsActivity
     /// Gets or sets the name of the operation. See <see cref="InvokeNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public string? Name { get; internal set; }
 
     /// <summary>
     /// Gets or sets the value payload of the invoke activity.
     /// </summary>
     [JsonPropertyName("value")]
-    public JsonNode? Value { get; set; }
+    public JsonNode? Value { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class.

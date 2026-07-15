@@ -91,7 +91,7 @@ public class ComposeExtension
     /// </summary>
     //TODO : this needs to be activity type or something else - format is type, attachments[]
     [JsonPropertyName("activityPreview")]
-    public TeamsActivity? ActivityPreview { get; set; }
+    public TeamsActivityInput? ActivityPreview { get; set; }
 
     /// <summary>
     /// Suggested actions for config type.
@@ -121,7 +121,7 @@ public class MessageExtensionResponseBuilder
     private string? _type;
     private string? _attachmentLayout;
     private TeamsAttachment[]? _attachments;
-    private TeamsActivity? _activityPreview;
+    private TeamsActivityInput? _activityPreview;
     private SuggestedAction[]? _suggestedActions;
     private string? _text;
 
@@ -155,7 +155,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets the activity preview for bot message preview type.
     /// </summary>
-    public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivity activityPreview)
+    public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivityInput activityPreview)
     {
         _activityPreview = activityPreview;
         return this;

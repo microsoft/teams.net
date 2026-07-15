@@ -88,24 +88,26 @@ internal class ExtAIBotApp : TeamsBotApplication
 
         IList<Entity> entities = result.Citations.BuildEntities(result.FullText);
 
-        MessageActivity final = new();
+        MessageActivityInputBuilder finalBuilder = MessageActivityInput.CreateBuilder();
 
         if (result.PendingCards.Count > 0)
         {
             // Card-only reply (e.g. clarification). No text and no feedback — the card IS the question.
-            final.Text = "";
-            final.AddAttachment([.. result.PendingCards.Select(c =>
-                TeamsAttachment.CreateBuilder().WithAdaptiveCard(c).Build())]);
+            finalBuilder.WithText("")
+                .AddAttachment([.. result.PendingCards.Select(c =>
+                    TeamsAttachment.CreateBuilder().WithAdaptiveCard(c).Build())]);
         }
         else
         {
-            final.AddFeedback(FeedbackTypes.Custom);
+            finalBuilder.AddFeedback(FeedbackTypes.Custom);
         }
 
-        foreach (Entity entity in entities) final.AddEntity(entity);
+        foreach (Entity entity in entities) finalBuilder.AddEntity(entity);
 
         if (result.FollowUpActions.Count > 0)
-            final.WithSuggestedActions(new SuggestedActions().AddActions([.. result.FollowUpActions]));
+            finalBuilder.WithSuggestedActions(new SuggestedActions().AddActions([.. result.FollowUpActions]));
+
+        MessageActivityInput final = finalBuilder.Build();
 
         await writer.FinalizeResponseAsync(final, cancellationToken);
     }

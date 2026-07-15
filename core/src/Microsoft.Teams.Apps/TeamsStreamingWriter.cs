@@ -54,6 +54,7 @@ public sealed class TeamsStreamingWriter
     private readonly ConversationClient _client;
     private readonly TeamsActivity _reference;
     private readonly string _conversationId;
+    private readonly Uri _serviceUrl;
     private readonly ILogger _logger;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
@@ -80,6 +81,7 @@ public sealed class TeamsStreamingWriter
         _client = client;
         _reference = reference;
         _conversationId = reference.Conversation?.Id ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(reference));
+        _serviceUrl = reference.ServiceUrl ?? throw new ArgumentException("Activity must have a ServiceUrl.", nameof(reference));
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -180,7 +182,7 @@ public sealed class TeamsStreamingWriter
     /// <exception cref="InvalidOperationException">
     /// Thrown if the final activity has neither text nor attachments.
     /// </exception>
-    public async Task FinalizeResponseAsync(MessageActivity? final = null, CancellationToken cancellationToken = default)
+    public async Task FinalizeResponseAsync(MessageActivityInput? final = null, CancellationToken cancellationToken = default)
     {
         // Finalizing is idempotent until the next append/informative reopens the stream.
         if (_finalized)
@@ -189,7 +191,7 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        final ??= new MessageActivity();
+        final ??= new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
 
         if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
@@ -208,8 +210,7 @@ public sealed class TeamsStreamingWriter
         StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
-        TeamsActivity activity = new TeamsActivityBuilder(final)
-            .WithConversationReference(_reference)
+        MessageActivityInput activity = new MessageActivityInputBuilder(final)
             .AddEntity(streamInfo)
             .Build();
 
@@ -218,7 +219,7 @@ public sealed class TeamsStreamingWriter
 
         try
         {
-            await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -251,11 +252,11 @@ public sealed class TeamsStreamingWriter
     /// (<see cref="StreamNotAllowedException"/>, <see cref="TerminalStreamException"/>) and
     /// non-streaming errors propagate.
     /// </summary>
-    private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivity activity, CancellationToken cancellationToken)
+    private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
     {
         try
         {
-            return await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -330,30 +331,29 @@ public sealed class TeamsStreamingWriter
     /// send routes through the update path (reusing the streamId) instead of creating a
     /// duplicate streamed chunk.
     /// </summary>
-    private async Task SendFinalInPlaceAsync(MessageActivity final, CancellationToken cancellationToken)
+    private async Task SendFinalInPlaceAsync(MessageActivityInput final, CancellationToken cancellationToken)
     {
         // Drop streaming markers so Teams treats this as a normal message edit.
         final.Entities?.RemoveAll(e => e is StreamInfoEntity);
-        if (final.ChannelData?.Properties is { } props)
+        if (final.ChannelData is { } channelData)
         {
-            props.Remove("streamId");
-            props.Remove("streamType");
-            props.Remove("streamSequence");
+            channelData.StreamId = null;
+            channelData.StreamType = null;
+            channelData.StreamSequence = null;
         }
 
-        TeamsActivity activity = new TeamsActivityBuilder(final)
-            .WithConversationReference(_reference)
+        MessageActivityInput activity = new MessageActivityInputBuilder(final)
             .Build();
 
         if (_streamId != null)
         {
             _logger.LogDebug("Updating original streamed message in place after timeout (streamId '{StreamId}').", _streamId);
-            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
             // No streamed message exists yet; send the buffered content as a normal message.
-            await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -371,16 +371,11 @@ public sealed class TeamsStreamingWriter
         _lastChunkSent = DateTime.MinValue;
     }
 
-    private TeamsActivity BuildActivity(string text, string streamType)
+    private StreamingActivityInput BuildActivity(string text, string streamType)
     {
-        StreamingActivity streaming = new(text);
-        streaming.StreamInfo.StreamType = streamType;
-        streaming.StreamInfo.StreamSequence = _sequence;
-        if (_streamId != null)
-            streaming.StreamInfo.StreamId = _streamId;
-
-        return new TeamsActivityBuilder(streaming)
-            .WithConversationReference(_reference)
+        return StreamingActivityInput.CreateBuilder()
+            .WithText(text)
+            .WithStreamInfo(streamType, _streamId, _sequence)
             .Build();
     }
 }

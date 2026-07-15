@@ -16,16 +16,12 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string replyText = $"CoreBot running on SDK `{BotApplication.Version}`.";
     ArgumentNullException.ThrowIfNull(activity.Conversation);
-    CoreActivity replyActivity = CoreActivity.CreateBuilder()
+    CoreActivityInput replyActivity = CoreActivityInput.CreateBuilder()
         .WithType(ActivityType.Message)
-        .WithChannelId(activity.ChannelId)
-        .WithServiceUrl(activity.ServiceUrl)
-        .WithConversation(activity.Conversation)
-        .WithFrom(activity.Recipient)
         .WithProperty("text", replyText)
         .Build();
 
-    await botApp.SendActivityAsync(replyActivity, cancellationToken: cancellationToken);
+    await botApp.ConversationClient.SendActivityAsync(activity.Conversation.Id!, replyActivity, activity.ServiceUrl!, cancellationToken: cancellationToken);
 };
 
 webApp.Run();

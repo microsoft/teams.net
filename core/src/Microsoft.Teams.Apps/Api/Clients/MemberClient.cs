@@ -19,20 +19,24 @@ public class MemberClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
+    private readonly AgenticIdentity? _agenticIdentity;
 
-    internal MemberClient(Uri serviceUrl, CoreConversationClient client)
+    internal MemberClient(Uri serviceUrl, CoreConversationClient client, AgenticIdentity? agenticIdentity = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
+        _agenticIdentity = agenticIdentity;
     }
+
+    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
 
     /// <summary>
     /// Get all members of a conversation.
     /// </summary>
     [Obsolete("Use GetPagedAsync instead.")]
-    public async Task<IList<TeamsChannelAccount?>> GetAsync(string conversationId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<IList<TeamsChannelAccount?>> GetAsync(string conversationId, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        IList<ChannelAccount> members = await _client.GetConversationMembersAsync(conversationId, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+        IList<ChannelAccount> members = await _client.GetConversationMembersAsync(conversationId, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
         return [.. members.Select(m => TeamsChannelAccount.FromChannelAccount(m))];
     }
 
@@ -43,7 +47,6 @@ public class MemberClient
         string conversationId,
         int pageSize = 50,
         string? continuationToken = null,
-        AgenticIdentity? agenticIdentity = null,
         Dictionary<string, string>? additionalHeaders = null,
         CancellationToken cancellationToken = default)
     {
@@ -52,7 +55,7 @@ public class MemberClient
             _serviceUrl,
             pageSize,
             continuationToken,
-            requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
+            requestContext: AgenticContext,
             customHeaders: additionalHeaders,
             cancellationToken: cancellationToken).ConfigureAwait(false);
         PagedTeamsMembersResult result = new();
@@ -79,7 +82,6 @@ public class MemberClient
     public async IAsyncEnumerable<TeamsChannelAccount> GetAllAsync(
         string conversationId,
         int pageSize = 50,
-        AgenticIdentity? agenticIdentity = null,
         Dictionary<string, string>? additionalHeaders = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -90,7 +92,6 @@ public class MemberClient
                 conversationId,
                 pageSize,
                 continuationToken,
-                agenticIdentity,
                 additionalHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -109,17 +110,17 @@ public class MemberClient
     /// <summary>
     /// Get a specific member of a conversation by ID.
     /// </summary>
-    public Task<T> GetByIdAsync<T>(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default) where T : ChannelAccount
+    public Task<T> GetByIdAsync<T>(string conversationId, string memberId, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default) where T : ChannelAccount
     {
-        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Get a specific member of a conversation by ID.
     /// </summary>
-    public async Task<TeamsChannelAccount?> GetByIdAsync(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<TeamsChannelAccount?> GetByIdAsync(string conversationId, string memberId, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        ChannelAccount member = await GetByIdAsync<ChannelAccount>(conversationId, memberId, agenticIdentity, additionalHeaders, cancellationToken).ConfigureAwait(false);
+        ChannelAccount member = await GetByIdAsync<ChannelAccount>(conversationId, memberId, additionalHeaders, cancellationToken).ConfigureAwait(false);
         return TeamsChannelAccount.FromChannelAccount(member);
     }
 }

@@ -19,11 +19,11 @@ bot.OnMessage(async (ctx, ct) =>
     var clock = Stopwatch.StartNew();
     var text = ctx.Activity.Text;
     var replyText = $"Echo: {text}";
-    await ctx.SendActivityAsync(replyText, ct);
+    await ctx.SendAsync(replyText, ct);
 
     var diagnosticInfo = $"sdk version: {TeamsBotApplication.Version} os: {Environment.OSVersion}";
     diagnosticInfo += $" reply latency: {clock.Elapsed.TotalMilliseconds}ms";
-    await ctx.SendActivityAsync(diagnosticInfo, ct);
+    await ctx.SendAsync(diagnosticInfo, ct);
 });
 
 app.Run();

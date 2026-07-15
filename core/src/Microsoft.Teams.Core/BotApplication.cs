@@ -32,12 +32,12 @@ namespace Microsoft.Teams.Core;
 /// bot.OnActivity = async (activity, ct) =>
 /// {
 ///     await bot.SendActivityAsync(
-///         CoreActivity.CreateBuilder()
+///         activity.Conversation.Id!,
+///         CoreActivityInput.CreateBuilder()
 ///             .WithType(ActivityType.Message)
-///             .WithConversation(activity.Conversation)
-///             .WithServiceUrl(activity.ServiceUrl)
 ///             .WithProperty("text", "Hello!")
 ///             .Build(),
+///         activity.ServiceUrl!,
 ///         ct);
 /// };
 ///
@@ -61,12 +61,12 @@ namespace Microsoft.Teams.Core;
 ///         {
 ///             // Echo the user's message back
 ///             await SendActivityAsync(
-///                 CoreActivity.CreateBuilder()
+///                 activity.Conversation.Id!,
+///                 CoreActivityInput.CreateBuilder()
 ///                     .WithType(ActivityType.Message)
-///                     .WithConversation(activity.Conversation)
-///                     .WithServiceUrl(activity.ServiceUrl)
 ///                     .WithProperty("text", $"You said: {activity.Properties["text"]}")
 ///                     .Build(),
+///                 activity.ServiceUrl!,
 ///                 ct);
 ///         }
 ///     }
@@ -150,12 +150,12 @@ public class BotApplication
     ///     if (activity.Type == ActivityType.Message)
     ///     {
     ///         await bot.SendActivityAsync(
-    ///             CoreActivity.CreateBuilder()
+    ///             activity.Conversation.Id!,
+    ///             CoreActivityInput.CreateBuilder()
     ///                 .WithType(ActivityType.Message)
-    ///                 .WithConversation(activity.Conversation)
-    ///                 .WithServiceUrl(activity.ServiceUrl)
     ///                 .WithProperty("text", "Received your message!")
     ///                 .Build(),
+    ///             activity.ServiceUrl!,
     ///             ct);
     ///     }
     /// };
@@ -286,32 +286,42 @@ public class BotApplication
     /// Sends the specified activity to the conversation asynchronously.
     /// </summary>
     /// <remarks>
-    /// This is a convenience wrapper around <see cref="ConversationClient.SendActivityAsync"/>. The activity
-    /// must have its <see cref="CoreActivity.Conversation"/> and <see cref="CoreActivity.ServiceUrl"/> properties set.
+    /// This is a convenience wrapper around <c>ConversationClient.SendActivityAsync</c>. Routing is
+    /// passed explicitly via <paramref name="conversationId"/> and <paramref name="serviceUrl"/>; the
+    /// activity itself only needs to carry content.
     /// <example>
     /// <code>
-    /// var reply = CoreActivity.CreateBuilder()
+    /// var reply = CoreActivityInput.CreateBuilder()
     ///     .WithType(ActivityType.Message)
-    ///     .WithConversation(incomingActivity.Conversation)
-    ///     .WithServiceUrl(incomingActivity.ServiceUrl)
     ///     .WithProperty("text", "Hello from the bot!")
     ///     .Build();
     ///
-    /// SendActivityResponse? response = await bot.SendActivityAsync(reply, cancellationToken);
+    /// SendActivityResponse? response = await bot.SendActivityAsync(
+    ///     incomingActivity.Conversation.Id!, reply, incomingActivity.ServiceUrl!, cancellationToken);
     /// string? sentId = response?.Id;
     /// </code>
     /// </example>
     /// </remarks>
-    /// <param name="activity">The activity to send. Cannot be null. Must have <see cref="CoreActivity.Conversation"/> and <see cref="CoreActivity.ServiceUrl"/> set.</param>
+    /// <param name="conversationId">The id of the conversation to send the activity to.</param>
+    /// <param name="activity">The activity to send. Cannot be null.</param>
+    /// <param name="serviceUrl">The service url to send the activity to.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for user-delegated token acquisition.</param>
+    /// <param name="isTargeted">Optional flag indicating whether the activity is a targeted message (visible only to the recipient).</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="SendActivityResponse"/> with the ID of the sent activity, or null.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="activity"/> is null or the conversation client has not been initialized.</exception>
-    public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivityInput activity, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
 
-        return await _conversationClient.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await _conversationClient.SendActivityAsync(
+            conversationId,
+            activity,
+            serviceUrl,
+            isTargeted: isTargeted,
+            requestContext: Http.BotRequestContext.FromAgenticIdentity(agenticIdentity),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

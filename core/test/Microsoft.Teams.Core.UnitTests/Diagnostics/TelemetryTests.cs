@@ -109,12 +109,7 @@ public class TelemetryTests
 
         ConversationClient client = new(new HttpClient(handler.Object));
 
-        SendActivityResponse? response = await client.SendActivityAsync(new CoreActivity
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://smba.example/"),
-            Conversation = new("conv-1"),
-        });
+        SendActivityResponse? response = await client.SendActivityAsync("conv-1", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(), new Uri("https://smba.example/"));
 
         Assert.NotNull(response);
         Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "conversation_client");
@@ -139,12 +134,7 @@ public class TelemetryTests
 
         ConversationClient client = new(new HttpClient(handler.Object));
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => client.SendActivityAsync(new CoreActivity
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://smba.example/"),
-            Conversation = new("conv-1"),
-        }));
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.SendActivityAsync("conv-1", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(), new Uri("https://smba.example/")));
 
         Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "conversation_client");
         Assert.Equal(ActivityStatusCode.Error, span.Status);

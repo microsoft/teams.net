@@ -42,7 +42,7 @@ teamsApp.OnMessage(async (context, ct) =>
 
     string reply = await agent.RunAsync(convId, identity, text, ct);
     if (!string.IsNullOrWhiteSpace(reply))
-        await context.SendActivityAsync(reply, ct);
+        await context.SendAsync(reply, ct);
 });
 
 static string Required(string? value, string field) =>

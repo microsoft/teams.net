@@ -26,15 +26,13 @@ teamsApp.UseMiddleware(new WelcomeMessageMiddleware());
 // Help handler: matches "help" (case-insensitive)
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync(
-        new MessageActivity(WelcomeMessageMiddleware.WelcomeMessage)
-        {
-            TextFormat = TextFormats.Markdown
-        }, cancellationToken);
+    await context.SendAsync(
+        MessageActivityInput.CreateBuilder()
+            .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
+            .Build(), cancellationToken);
 
 
-    TeamsActivity helpActivity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput helpActivity = MessageActivityInput.CreateBuilder()
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
         {
@@ -46,7 +44,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         })
         .Build();
 
-    await context.SendActivityAsync(helpActivity, cancellationToken);
+    await context.SendAsync(helpActivity, cancellationToken);
 });
 
 // Pattern-based handler: matches "hello" (case-insensitive)
@@ -54,22 +52,22 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 {
     ArgumentNullException.ThrowIfNull(context.Activity.From);
 
-    await context.SendTypingActivityAsync(cancellationToken);
+    await context.TypingAsync(cancellationToken);
 
     string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
-    TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput ta = MessageActivityInput.CreateBuilder()
         .WithText(replyText)
         .AddMention(context.Activity.From)
         .Build();
-    await context.SendActivityAsync(ta, cancellationToken);
+    await context.SendAsync(ta, cancellationToken);
 });
 
 // Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
 teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
 {
-    MessageActivity extendedMarkdownMessage = new("""
+    MessageActivityInput extendedMarkdownMessage = MessageActivityInput.CreateBuilder()
+        .WithText("""
 # Extended Markdown Demo
 
 ## Table
@@ -80,18 +78,17 @@ teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) 
 
 ## Math
 $$E = mc^2$$
-""")
-    {
-        TextFormat = TextFormats.ExtendedMarkdown
-    };
+""", TextFormats.ExtendedMarkdown)
+        .Build();
 
-    await context.SendActivityAsync(extendedMarkdownMessage, cancellationToken);
+    await context.SendAsync(extendedMarkdownMessage, cancellationToken);
 });
 
 // Markdown handler: matches "markdown" (case-insensitive)
 teamsApp.OnMessage("(?i)markdown", async (context, cancellationToken) =>
 {
-    MessageActivity markdownMessage = new("""
+    MessageActivityInput markdownMessage = MessageActivityInput.CreateBuilder()
+        .WithText("""
 # Markdown Examples
 
 Here are some **markdown** formatting examples:
@@ -121,21 +118,18 @@ public class Example
 ## Quotes
 > This is a blockquote
 > It can span multiple lines
-""")
-    {
-        TextFormat = TextFormats.Markdown
-    };
+""", TextFormats.Markdown)
+        .Build();
 
-    await context.SendActivityAsync(markdownMessage, cancellationToken);
+    await context.SendAsync(markdownMessage, cancellationToken);
 });
 
 // Citation handler: matches "citation" (case-insensitive)
 teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
 {
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("Here is a response with citations [1] [2].")
-        .WithProperty("textFormat", TextFormats.Markdown)
+        .WithTextFormat(TextFormats.Markdown)
         .AddCitation(1, new CitationAppearance()
         {
             Name = "Teams SDK Documentation",
@@ -153,7 +147,7 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
         .AddFeedback()
         .Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 // Targeted message handler: matches "targeted" (case-insensitive)
@@ -165,21 +159,18 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
     // Send a targeted message visible only to the sender
-    TeamsActivity targeted = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput targeted = MessageActivityInput.CreateBuilder()
         .WithText("This is a targeted message only you can see!")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
 
-    SendActivityResponse? sendResponse = await context.SendActivityAsync(targeted, cancellationToken);
+    SendActivityResponse? sendResponse = await context.SendAsync(targeted, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
     // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
-    TeamsActivity updated = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput updated = MessageActivityInput.CreateBuilder()
         .WithText("This targeted message was updated!")
-        .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
     await context.Api.Conversations.Activities.UpdateTargetedAsync(
@@ -205,14 +196,11 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
-    TeamsActivity tmMsgToReact = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput tmMsgToReact = MessageActivityInput.CreateBuilder()
         .WithText("I'm going to add and remove reactions to this message.")
-        .WithRecipient(context.Activity.From, false)
-        .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
-    SendActivityResponse? response = await context.SendActivityAsync(tmMsgToReact, cancellationToken);
+    SendActivityResponse? response = await context.SendAsync(tmMsgToReact, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
@@ -221,7 +209,6 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context.Activity.Conversation.Id,
         response!.Id!,
         "1f44b_wavinghand-tone4",
-        context.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
@@ -231,7 +218,6 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
-        context?.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
@@ -241,7 +227,6 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
-        context?.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 });
 
@@ -251,20 +236,20 @@ teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
             .Build();
-    MessageActivity feedbackActivity = new([feedbackCard]);
-    await context.SendActivityAsync(feedbackActivity, cancellationToken);
+    MessageActivityInput feedbackActivity = MessageActivityInput.CreateBuilder().AddAttachment(feedbackCard).Build();
+    await context.SendAsync(feedbackActivity, cancellationToken);
 });
 
 // Feedback handler: matches "feedback" (case-insensitive) - sends a feedback card and shows the response via OnAdaptiveCardAction
 teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync("Please fill out the feedback form below:", cancellationToken);
+    await context.SendAsync("Please fill out the feedback form below:", cancellationToken);
 
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
             .Build();
-    MessageActivity feedbackActivity = new([feedbackCard]);
-    await context.SendActivityAsync(feedbackActivity, cancellationToken);
+    MessageActivityInput feedbackActivity = MessageActivityInput.CreateBuilder().AddAttachment(feedbackCard).Build();
+    await context.SendAsync(feedbackActivity, cancellationToken);
 });
 
 // Task handler: matches "task" (case-insensitive) - sends a card that opens a task module
@@ -273,8 +258,8 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
     TeamsAttachment taskCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.TaskModuleLauncherCard)
             .Build();
-    MessageActivity taskActivity = new([taskCard]);
-    await context.SendActivityAsync(taskActivity, cancellationToken);
+    MessageActivityInput taskActivity = MessageActivityInput.CreateBuilder().AddAttachment(taskCard).Build();
+    await context.SendAsync(taskActivity, cancellationToken);
 });
 
 teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
@@ -289,13 +274,12 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
         ]
     };
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText("Here are some suggested actions for you:")
         .WithSuggestedActions(suggestedActions)
         .Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 // Regex-based handler: matches commands starting with "/"
@@ -315,7 +299,7 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
             _ => $"Unknown command: /{command}. Type /help for available commands."
         };
 
-        await context.SendActivityAsync(response, cancellationToken);
+        await context.SendAsync(response, cancellationToken);
     }
 });
 
@@ -324,8 +308,8 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
 teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
 {
     string updatedText = context.Activity.Text ?? "<no text>";
-    MessageActivity reply = new($"I saw that you updated your message to: `{updatedText}`");
-    await context.SendActivityAsync(reply, cancellationToken);
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder().WithText($"I saw that you updated your message to: `{updatedText}`").Build();
+    await context.SendAsync(reply, cancellationToken);
 });
 
 teamsApp.OnMessageReaction(async (context, cancellationToken) =>
@@ -336,14 +320,14 @@ teamsApp.OnMessageReaction(async (context, cancellationToken) =>
     TeamsAttachment reactionsCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ReactionsCard(reactionsAdded, reactionsRemoved))
             .Build();
-    MessageActivity reply = new([reactionsCard]);
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder().AddAttachment(reactionsCard).Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 teamsApp.OnMessageDelete(async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync("I saw that message you deleted", cancellationToken);
+    await context.SendAsync("I saw that message you deleted", cancellationToken);
 });
 
 // ==================== INVOKE HANDLERS ====================
@@ -353,14 +337,14 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
 {
     string? feedbackValue = context.Activity.Value?.Action?.Data?["feedback"]?.ToString();
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithAttachment(TeamsAttachment.CreateBuilder()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
+        .AddAttachment(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
             .Build()
         )
         .Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 
     return AdaptiveCardResponse.CreateMessageResponse("Feedback received!");
 });
@@ -391,12 +375,11 @@ teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
     string? name = data?["userName"]?.ToString();
     string? comment = data?["userComment"]?.ToString();
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
         .WithText($"**Task module submitted!**\n- Name: {name ?? "(empty)"}\n- Comment: {comment ?? "(empty)"}")
         .Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 
     return TaskModuleResponse.CreateBuilder()
         .WithType(TaskModuleResponseTypes.Message)
@@ -409,7 +392,7 @@ teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
 teamsApp.OnEvent(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[Event] Name: {context.Activity.Name}");
-    await context.SendActivityAsync($"Received event: `{context.Activity.Name}`", cancellationToken);
+    await context.SendAsync($"Received event: `{context.Activity.Name}`", cancellationToken);
 });
 
 // ==================== CONVERSATION UPDATE HANDLERS ====================
@@ -419,7 +402,7 @@ teamsApp.OnMembersAdded(async (context, cancellationToken) =>
     Console.WriteLine($"[MembersAdded] {context.Activity.MembersAdded?.Count ?? 0} member(s) added");
 
     string memberNames = string.Join(", ", context.Activity.MembersAdded?.Select(m => m.Name ?? m.Id) ?? []);
-    await context.SendActivityAsync($"Welcome! Members added: {memberNames}", cancellationToken);
+    await context.SendAsync($"Welcome! Members added: {memberNames}", cancellationToken);
 });
 
 teamsApp.OnMembersRemoved(async (context, cancellationToken) =>
@@ -427,7 +410,7 @@ teamsApp.OnMembersRemoved(async (context, cancellationToken) =>
     Console.WriteLine($"[MembersRemoved] {context.Activity.MembersRemoved?.Count ?? 0} member(s) removed");
 
     string memberNames = string.Join(", ", context.Activity.MembersRemoved?.Select(m => m.Name ?? m.Id) ?? []);
-    await context.SendActivityAsync($"Goodbye! Members removed: {memberNames}", cancellationToken);
+    await context.SendAsync($"Goodbye! Members removed: {memberNames}", cancellationToken);
 });
 
 // ==================== INSTALL UPDATE HANDLERS ====================
@@ -439,14 +422,14 @@ teamsApp.OnInstallUpdate(async (context, cancellationToken) =>
 
     if (context.Activity.Action != InstallUpdateActions.Remove)
     {
-        await context.SendActivityAsync($"Installation update: {action}", cancellationToken);
+        await context.SendAsync($"Installation update: {action}", cancellationToken);
     }
 });
 
 teamsApp.OnInstall(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[InstallAdd] Bot was installed");
-    await context.SendActivityAsync("Thanks for installing me! I'm ready to help.", cancellationToken);
+    await context.SendAsync("Thanks for installing me! I'm ready to help.", cancellationToken);
 });
 
 teamsApp.OnUnInstall((context, cancellationToken) =>
@@ -459,7 +442,7 @@ teamsApp.OnUnInstall((context, cancellationToken) =>
 teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 {
     string actionData = JsonSerializer.Serialize(context.Activity.Value);
-    await context.SendActivityAsync($"Received submit action with data: {actionData}", cancellationToken);
+    await context.SendAsync($"Received submit action with data: {actionData}", cancellationToken);
     return new InvokeResponse(200, "Submit Action Received");
 });
 

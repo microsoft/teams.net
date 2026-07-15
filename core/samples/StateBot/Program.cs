@@ -24,10 +24,10 @@ teamsApp.OnMessage(async (ctx, ct) =>
     int counter = ctx.State.ConversationState.Get<int>("counter");
     counter++;
     ctx.State.ConversationState.Set("counter", counter);
-    await ctx.SendActivityAsync($"Message #{counter} in this conversation.", ct);
+    await ctx.SendAsync($"Message #{counter} in this conversation.", ct);
 
     UserPrefs up = ctx.State.UserState?.Get<UserPrefs>() ?? new UserPrefs();
-    await ctx.SendActivityAsync($"Your name is {up.UserName} and your favorite color is {up.FavoriteColor}.", ct);
+    await ctx.SendAsync($"Your name is {up.UserName} and your favorite color is {up.FavoriteColor}.", ct);
 
     up.UserName = "User" + counter;
     up.FavoriteColor = Colors[counter % Colors.Length];

@@ -213,13 +213,12 @@ public class OAuthFlow
                 .WithContent(oauthCardJson)
                 .Build();
 
-            TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
-                .WithConversationReference(context.Activity)
-                .WithRecipient(context.Activity.From, false)
-                .WithAttachment(attachment)
+            MessageActivityInput oauthActivity = MessageActivityInput.CreateBuilder()
+                .AddAttachment(attachment)
+                .WithRecipient(context.Activity.From!, false) // dont remove, required for sso flow
                 .Build();
 
-            await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
+            await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 
             // Track that this user has a pending sign-in for this flow.
             // Use user state when available (distributed); fall back to in-memory otherwise.

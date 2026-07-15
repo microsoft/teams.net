@@ -17,19 +17,19 @@ ILogger logger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogg
 // Reply to any user message with two Action.Submit suggested-action chips.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    MessageActivity reply = new("Approve or reject the request:")
-    {
-        SuggestedActions = new SuggestedActions()
+    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
+        .WithText("Approve or reject the request:")
+        .WithSuggestedActions(new SuggestedActions()
         {
             To = [context.Activity.From?.Id!],
             Actions = [
                 new SuggestedAction(ActionTypes.Submit, "Approve", new { vote = "approve" }),
                 new SuggestedAction(ActionTypes.Submit, "Reject", new { vote = "reject" }),
             ]
-        }
-    };
+        })
+        .Build();
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 // Handle the resulting suggestedActions/submit invoke when the user clicks a chip.
@@ -40,8 +40,8 @@ teamsApp.OnSuggestedActionSubmit(async (context, cancellationToken) =>
         : "<none>";
 
     logger.LogInformation("[SUGGESTED_ACTION_SUBMIT] value={Value}", serializedValue);
-    await context.SendActivityAsync(
-        new MessageActivity($"Got suggestedActions/submit with value: {serializedValue}"),
+    await context.SendAsync(
+        MessageActivityInput.CreateBuilder().WithText($"Got suggestedActions/submit with value: {serializedValue}").Build(),
         cancellationToken);
 
     return new InvokeResponse(200);

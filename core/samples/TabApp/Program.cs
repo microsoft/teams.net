@@ -78,13 +78,10 @@ app.MapPost("/functions/post-to-chat", async (
         conversationId = cached!;
     }
 
-    TeamsActivity activity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput activity = MessageActivityInput.CreateBuilder()
         .WithText("Hello from the tab!")
-        .WithServiceUrl(serviceUrl)
-        .WithConversation(new TeamsConversation { Id = conversationId! })
         .Build();
-    await conversations.SendActivityAsync(activity, cancellationToken: ct);
+    await conversations.SendActivityAsync(conversationId!, activity, serviceUrl, cancellationToken: ct);
 
     return Results.Json(new PostToChatResult(Ok: true));
 }).RequireAuthorization();

@@ -169,7 +169,7 @@ public class ObservabilityBotApp : TeamsBotApplication
             // Record output on the top-level invoke_agent span before it closes.
             invokeScope.RecordOutputMessages([responseText]);
 
-            TeamsActivityBuilder builder = TeamsActivity.CreateBuilder()
+            MessageActivityInputBuilder builder = MessageActivityInput.CreateBuilder()
                 .WithText(responseText, TextFormats.Markdown)
                 .AddMention(context.Activity?.From!)
                 .AddAIGenerated();

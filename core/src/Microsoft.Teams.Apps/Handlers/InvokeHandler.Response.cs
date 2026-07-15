@@ -22,14 +22,14 @@ public class InvokeResponse(int status, object? body = null)
     /// Status code of the response.
     /// </summary>
     [JsonPropertyName("status")]
-    public int Status { get; set; } = status;
+    public int Status { get; internal set; } = status;
 
     /// <summary>
     /// Gets or sets the response body.
     /// </summary>
     [JsonPropertyName("value")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Body { get; set; } = body;
+    public object? Body { get; internal set; } = body;
 
     /// <summary>
     /// Creates a successful (200) invoke response with the specified body.

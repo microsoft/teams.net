@@ -23,47 +23,47 @@ app.OnChannelCreated(async (context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelCreated] Channel '{channelName}' was created");
-    await context.SendActivityAsync($"New channel created: {channelName}", cancellationToken);
+    await context.SendAsync($"New channel created: {channelName}", cancellationToken);
 });
 
 app.OnChannelDeleted(async (context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelDeleted] Channel '{channelName}' was deleted");
-    await context.SendActivityAsync($"Channel deleted: {channelName}", cancellationToken);
+    await context.SendAsync($"Channel deleted: {channelName}", cancellationToken);
 });
 
 app.OnChannelRenamed(async (context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelRenamed] Channel renamed to '{channelName}'");
-    await context.SendActivityAsync($"Channel renamed to: {channelName}", cancellationToken);
+    await context.SendAsync($"Channel renamed to: {channelName}", cancellationToken);
 });
 
 app.OnChannelMemberAdded(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[ChannelMemberAdded] Member added to channel");
-    await context.SendActivityAsync("A member was added to the channel", cancellationToken);
+    await context.SendAsync("A member was added to the channel", cancellationToken);
 });
 
 app.OnChannelMemberRemoved(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[ChannelMemberRemoved] Member removed from channel");
-    await context.SendActivityAsync("A member was removed from the channel", cancellationToken);
+    await context.SendAsync("A member was removed from the channel", cancellationToken);
 });
 
 app.OnChannelShared(async (context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelShared] Channel '{channelName}' was shared");
-    await context.SendActivityAsync($"Channel shared: {channelName}", cancellationToken);
+    await context.SendAsync($"Channel shared: {channelName}", cancellationToken);
 });
 
 app.OnChannelUnshared(async (context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelUnshared] Channel '{channelName}' was unshared");
-    await context.SendActivityAsync($"Channel unshared: {channelName}", cancellationToken);
+    await context.SendAsync($"Channel unshared: {channelName}", cancellationToken);
 });
 
 /*
@@ -72,7 +72,7 @@ app.OnChannelRestored(async (context, cancellationToken) =>
 {
     var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelRestored] Channel '{channelName}' was restored");
-    await context.SendActivityAsync($"Channel restored: {channelName}", cancellationToken);
+    await context.SendAsync($"Channel restored: {channelName}", cancellationToken);
 });
 */
 
@@ -81,13 +81,13 @@ app.OnChannelRestored(async (context, cancellationToken) =>
 app.OnTeamMemberAdded(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[TeamMemberAdded] Member added to team");
-    await context.SendActivityAsync("A member was added to the team", cancellationToken);
+    await context.SendAsync("A member was added to the team", cancellationToken);
 });
 
 app.OnTeamMemberRemoved(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[TeamMemberRemoved] Member removed from team");
-    await context.SendActivityAsync("A member was removed from the team", cancellationToken);
+    await context.SendAsync("A member was removed from the team", cancellationToken);
 });
 
 app.OnTeamArchived((context, cancellationToken) =>
@@ -108,14 +108,14 @@ app.OnTeamRenamed(async (context, cancellationToken) =>
 {
     string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamRenamed] Team renamed to '{teamName}'");
-    await context.SendActivityAsync($"Team renamed to: {teamName}", cancellationToken);
+    await context.SendAsync($"Team renamed to: {teamName}", cancellationToken);
 });
 
 app.OnTeamUnarchived(async (context, cancellationToken) =>
 {
     string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamUnarchived] Team '{teamName}' was unarchived");
-    await context.SendActivityAsync($"Team unarchived: {teamName}", cancellationToken);
+    await context.SendAsync($"Team unarchived: {teamName}", cancellationToken);
 });
 /*
 // how to test ?
@@ -131,7 +131,7 @@ app.OnTeamRestored(async (context, cancellationToken) =>
 {
     var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamRestored] Team '{teamName}' was restored");
-    await context.SendActivityAsync($"Team restored: {teamName}", cancellationToken);
+    await context.SendAsync($"Team restored: {teamName}", cancellationToken);
 });
 */
 

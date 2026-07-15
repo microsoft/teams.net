@@ -86,16 +86,18 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         })
         .Build();
 
-    MessageActivity final = new MessageActivity().AddAttachment(card);
-    final.AddEntity(citation);
-    final.AddFeedback(FeedbackTypes.Default);
+    MessageActivityInput final = MessageActivityInput.CreateBuilder()
+        .AddAttachment(card)
+        .AddEntity(citation)
+        .AddFeedback(FeedbackTypes.Default)
+        .Build();
 
     await writer.FinalizeResponseAsync(final, cancellationToken);
 });
 
 teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync("You submitted an action with name and value:" + context.Activity.Value?.ActionName + " - " + context.Activity.Value?.ActionValue, cancellationToken);
+    await context.SendAsync("You submitted an action with name and value:" + context.Activity.Value?.ActionName + " - " + context.Activity.Value?.ActionValue, cancellationToken);
 
     return new InvokeResponse(200);
 });
@@ -131,8 +133,7 @@ static async Task RunMultiStreamDemoAsync(TeamsStreamingWriter writer, Cancellat
 
     // A null Text lets the writer fill in the accumulated streamed text; the attachment
     // rides along on the final message.
-    MessageActivity stream1Final = new();
-    stream1Final.AddAttachment(CreateSimpleCard());
+    MessageActivityInput stream1Final = MessageActivityInput.CreateBuilder().AddAttachment(CreateSimpleCard()).Build();
     await writer.FinalizeResponseAsync(stream1Final, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
