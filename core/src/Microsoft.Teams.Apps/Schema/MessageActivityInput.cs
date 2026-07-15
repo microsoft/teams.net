@@ -289,6 +289,22 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     }
 
     /// <summary>
+    /// Sets the recipient account for the activity and marks whether the recipient is targeted
+    /// (for example, a targeted message visible only to that recipient).
+    /// </summary>
+    /// <param name="account">The recipient account.</param>
+    /// <param name="isTargeted">Whether the recipient is targeted.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public MessageActivityInputBuilder WithRecipient(TeamsChannelAccount account, bool isTargeted)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        account.IsTargeted = isTargeted ? true : null;
+        _activity.Recipient = account;
+        return this;
+    }
+
+    /// <summary>
     /// Builds and returns the configured <see cref="MessageActivityInput"/> instance.
     /// </summary>
     public override MessageActivityInput Build() => _activity;

@@ -233,11 +233,14 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
         public async Task<HttpOperationResponse<ResourceResponse>> ReplyToActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivityInput input = activity.FromBotFrameworkActivityInput();
             input.ReplyToId = activityId;
+
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            StampConversation(input, conversationId);
 
             // Prefer the activity's own service url; fall back to the adapter's.
             Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
@@ -300,10 +303,13 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> SendToConversationWithHttpMessagesAsync(string conversationId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            StampConversation(input, conversationId);
 
             // Prefer the activity's own service url; fall back to the adapter's.
             Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
@@ -336,10 +342,13 @@ namespace Microsoft.Teams.Apps.BotBuilder
         /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> UpdateActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            StampConversation(input, conversationId);
 
             // Prefer the activity's own service url; fall back to the adapter's.
             Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
@@ -396,6 +405,19 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 Body = resourceResponse,
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
             };
+        }
+
+        /// <summary>
+        /// Stamps the conversation onto the outbound activity's property bag for backward compatibility.
+        /// <see cref="CoreActivityInput"/> does not expose a Conversation field, so the value is carried
+        /// through extension data and serialized as <c>"conversation": { "id": ... }</c> on the wire.
+        /// </summary>
+        private static void StampConversation(CoreActivityInput input, string conversationId)
+        {
+            if (!string.IsNullOrWhiteSpace(conversationId))
+            {
+                input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+            }
         }
 
         private static Dictionary<string, string>? ConvertHeaders(Dictionary<string, List<string>>? customHeaders)

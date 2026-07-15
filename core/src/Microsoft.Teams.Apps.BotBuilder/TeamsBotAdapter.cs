@@ -110,6 +110,11 @@ public class TeamsBotAdapter(
 
             string conversationId = inboundActivity.Conversation?.Id
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities.");
+
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+
             SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
                 conversationId,
                 input,
@@ -144,8 +149,16 @@ public class TeamsBotAdapter(
         string serviceUrl = activity.ServiceUrl
             ?? turnContext.Activity.ServiceUrl ?? throw new InvalidOperationException("Service URL is required to send activities.");
 
+        // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+        // the property bag using the authoritative conversation id for downstream consumers.
+        string conversationId = activity.Conversation.Id;
+        if (!string.IsNullOrWhiteSpace(conversationId))
+        {
+            input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+        }
+
         UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
-            activity.Conversation.Id,
+            conversationId,
             activity.Id,
             input,
             new Uri(serviceUrl),

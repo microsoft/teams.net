@@ -66,22 +66,6 @@ public abstract class CoreActivityInputBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Sets the recipient account for the activity and marks whether the recipient is targeted
-    /// (for example, a targeted message visible only to that recipient).
-    /// </summary>
-    /// <param name="account">The recipient account.</param>
-    /// <param name="isTargeted">Whether the recipient is targeted.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    [Experimental("ExperimentalTeamsTargeted")]
-    public TBuilder WithRecipient(ChannelAccount account, bool isTargeted)
-    {
-        ArgumentNullException.ThrowIfNull(account);
-        account.IsTargeted = isTargeted ? true : null;
-        _activity.Recipient = account;
-        return (TBuilder)this;
-    }
-
-    /// <summary>
     /// Adds or updates a property in the activity's Properties dictionary.
     /// </summary>
     /// <param name="name">Name of the property.</param>

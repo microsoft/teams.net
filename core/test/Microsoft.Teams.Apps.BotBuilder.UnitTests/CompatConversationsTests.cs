@@ -50,6 +50,39 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
+        public async Task SendToConversationWithHttpMessagesAsync_StampsConversationIntoPropertyBag_ForBackwardCompat()
+        {
+            // Arrange
+            Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
+            CompatConversations compatConversations = new(mockConversationClient.Object)
+            {
+                ServiceUrl = TestServiceUrl
+            };
+
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Text = "Test message"
+            };
+
+            CoreActivityInput? capturedActivity = null;
+            mockConversationClient
+                .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>((_, a, _, _, _, _, _) => capturedActivity = a)
+                .ReturnsAsync(new SendActivityResponse { Id = TestActivityId });
+
+            // Act
+            await compatConversations.SendToConversationWithHttpMessagesAsync(TestConversationId, activity);
+
+            // Assert - conversation is carried through the property bag since CoreActivityInput has no Conversation field
+            Assert.NotNull(capturedActivity);
+            Assert.True(capturedActivity.Properties.TryGetValue("conversation", out object? conversationValue));
+            Conversation conversation = Assert.IsType<Conversation>(conversationValue);
+            Assert.Equal(TestConversationId, conversation.Id);
+            Assert.Contains($"\"id\": \"{TestConversationId}\"", capturedActivity.ToJson());
+        }
+
+        [Fact]
         public async Task SendToConversationWithHttpMessagesAsync_DoesNotOverrideServiceUrl_WhenActivityServiceUrlIsSet()
         {
             // Arrange

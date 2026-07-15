@@ -229,6 +229,7 @@ public class TeamsBotApplication : BotApplication
             conversationId,
             activity,
             resolvedUrl,
+            isTargeted: activity.Recipient?.IsTargeted ?? false,
             agenticIdentity: agenticIdentity,
             cancellationToken: cancellationToken);
     }

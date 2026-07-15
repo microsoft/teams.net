@@ -158,39 +158,6 @@ public class ConversationClientTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_WithTargetedRecipient_AppendsQueryString()
-    {
-        HttpRequestMessage? capturedRequest = null;
-        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
-        mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{\"id\":\"activity123\"}")
-            });
-
-        HttpClient httpClient = new(mockHttpMessageHandler.Object);
-        ConversationClient conversationClient = new(httpClient);
-
-        // The recipient carries IsTargeted; routing must target even though isTargeted is not passed.
-        CoreActivityInput activity = CoreActivityInput.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithRecipient(new ChannelAccount { Id = "user-1", IsTargeted = true })
-            .Build();
-
-        await conversationClient.SendActivityAsync("conv123", activity, new Uri("https://test.service.url/"));
-
-        Assert.NotNull(capturedRequest);
-        Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
-    }
-
-    [Fact]
     public async Task UpdateActivityAsync_WithIsTargeted_AppendsQueryString()
     {
         HttpRequestMessage? capturedRequest = null;
