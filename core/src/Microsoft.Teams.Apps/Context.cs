@@ -349,15 +349,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A list of token status results for all configured connections.</returns>
-    [Obsolete("Use the OAuthFlow directly: TeamsBotApplication.GetOAuthFlow(connectionName).GetConnectionStatusAsync(context, ...).")]
     public Task<IList<GetTokenStatusResult>> GetConnectionStatusAsync(CancellationToken cancellationToken = default)
     {
         OAuthFlowRegistry registry = TeamsBotApplication.OAuthRegistry
             ?? throw new InvalidOperationException("No OAuthFlow registered. Call AddOAuthFlow(connectionName) on the TeamsBotApplication first.");
 
         // Use any flow -- GetConnectionStatusAsync returns all connections regardless
-        OAuthFlow flow = registry.ResolveSingle()
-            ?? registry.GetAllFlows().First();
+        OAuthFlow flow = registry.GetAllFlows().First();
 
         return flow.GetConnectionStatusAsync(this, cancellationToken);
     }
