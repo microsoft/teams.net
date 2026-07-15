@@ -107,3 +107,5 @@ cd Web && npm install && npm run build
 # Run the bot
 dotnet run
 ```
+
+> **Microsoft-managed devices:** direct access to `registry.npmjs.org` is blocked, so `npm install` may fail. Your machine should already default to the Central Feed Services (CFS) proxy; if not, follow the setup instructions at [aka.ms/CFS](https://aka.ms/CFS). External contributors are unaffected.
