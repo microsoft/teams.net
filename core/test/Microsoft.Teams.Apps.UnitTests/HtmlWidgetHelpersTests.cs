@@ -149,7 +149,7 @@ public class HtmlWidgetHelpersTests
         {
             Name = "line1\nline2\rline3"
         });
-        var scriptMatch = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>", System.Text.RegularExpressions.RegexOptions.Singleline);
+        var scriptMatch = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>", System.Text.RegularExpressions.RegexOptions.Singleline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         Assert.True(scriptMatch.Success);
         var scriptContent = scriptMatch.Groups[1].Value;
         Assert.DoesNotContain("\n", scriptContent);
@@ -747,7 +747,7 @@ public class HtmlWidgetHelpersTests
         };
         var result = HtmlWidgetHelpers.InjectWidgetProtocol("<body><h1>Hello</h1></body>", opts);
 
-        var match = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>");
+        var match = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>", System.Text.RegularExpressions.RegexOptions.Singleline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         Assert.True(match.Success);
         await VerifyXunit.Verifier.Verify(match.Groups[1].Value);
     }
