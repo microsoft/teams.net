@@ -69,8 +69,7 @@ public class TeamsBotApplication : BotApplication
     /// <remarks>
     /// This property provides a structured API for accessing Teams operations through a hierarchy:
     /// <list type="bullet">
-    /// <item><c>Api.Conversations.Activities</c> - Activity operations (send, update, delete)</item>
-    /// <item><c>Api.Conversations.Members</c> - Member operations (get, delete)</item>
+    /// <item><c>Api.Conversations</c> - Conversation operations, including activities, members, and reactions</item>
     /// <item><c>Api.UserToken</c> - User token operations (OAuth SSO, sign-in resources)</item>
     /// <item><c>Api.Teams</c> - Team operations (get details, channels)</item>
     /// <item><c>Api.Meetings</c> - Meeting operations (get info, participant, notifications)</item>

@@ -141,7 +141,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
 
         TeamsActivityInput typing = new(TeamsActivityTypes.Typing);
-        return Api.Conversations.Activities.CreateAsync(conversationId, typing, cancellationToken: cancellationToken);
+        return Api.Conversations.CreateActivityAsync(conversationId, typing, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -278,11 +278,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
         if (!isTargeted)
         {
-            return Api.Conversations.Activities.CreateAsync(conversationId, activity, cancellationToken: cancellationToken);
+            return Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
         }
 
 #pragma warning disable ExperimentalTeamsTargeted
-        return Api.Conversations.Activities.CreateTargetedAsync(conversationId, activity, cancellationToken: cancellationToken);
+        return Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
 #pragma warning restore ExperimentalTeamsTargeted
     }
 

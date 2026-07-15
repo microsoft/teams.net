@@ -307,7 +307,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
-        IList<Microsoft.Teams.Apps.Schema.TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<Microsoft.Teams.Apps.Schema.TeamsChannelAccount?> members = await api.Conversations.GetMembersAsync(_f.ConversationId);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;

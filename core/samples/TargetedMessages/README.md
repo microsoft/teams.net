@@ -24,8 +24,8 @@ Slash commands arrive at the bot as regular `MessageActivity` events with `Activ
 |---------|----------|
 | `test send` | Send a targeted message via `Context.SendActivityAsync` with `WithRecipient(account, isTargeted: true)` |
 | `test reply` | Reply with a targeted message via `Context.Reply` |
-| `test update` | Send a targeted message, then update it after 3 seconds via `Api.Conversations.Activities.UpdateTargetedAsync` |
-| `test delete` | Send a targeted message, then delete it after 3 seconds via `Api.Conversations.Activities.DeleteTargetedAsync` |
+| `test update` | Send a targeted message, then update it after 3 seconds via `Api.Conversations.UpdateTargetedActivityAsync` |
+| `test delete` | Send a targeted message, then delete it after 3 seconds via `Api.Conversations.DeleteTargetedActivityAsync` |
 | `test inbound` | Read `Context.Activity.Recipient?.IsTargeted` and report whether the inbound message was targeted at the bot |
 | `help` | List available commands |
 

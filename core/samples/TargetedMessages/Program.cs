@@ -56,7 +56,7 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
         try
         {
             MessageActivityInput updated = MessageActivityInput.CreateBuilder().WithText($"✏️ Updated at {DateTime.UtcNow:HH:mm:ss}").Build();
-            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken: cancellationToken);
+            await context.Api.Conversations.UpdateTargetedActivityAsync(conversationId, messageId, updated, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -85,7 +85,7 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
         await Task.Delay(3000);
         try
         {
-            await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId, cancellationToken: cancellationToken);
+            await context.Api.Conversations.DeleteTargetedActivityAsync(conversationId, messageId, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
