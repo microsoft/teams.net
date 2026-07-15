@@ -89,8 +89,8 @@ public class CoreActivityInput
 
     /// <summary>
     /// Creates an outbound <see cref="CoreActivityInput"/> from a full (inbound-shaped) <see cref="CoreActivity"/>.
-    /// Copies the activity type, id, and content (extension properties). Body-level identity and transport
-    /// routing (from, recipient, conversation, service url) are supplied explicitly to the API clients and
+    /// Copies the activity type, id, recipient, and content (extension properties). Transport routing
+    /// (conversation, service url) and the sender (from) are supplied explicitly to the API clients and
     /// are not carried through this conversion.
     /// </summary>
     /// <param name="activity">The source activity. Cannot be null.</param>
@@ -99,7 +99,7 @@ public class CoreActivityInput
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        CoreActivityInput input = new(activity.Type) { Id = activity.Id };
+        CoreActivityInput input = new(activity.Type) { Id = activity.Id , Recipient = activity.Recipient };
         foreach (KeyValuePair<string, object?> kv in activity.Properties)
         {
             input.Properties[kv.Key] = kv.Value;
