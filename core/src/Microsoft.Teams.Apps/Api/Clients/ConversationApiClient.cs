@@ -19,9 +19,6 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// </summary>
 public class ConversationApiClient
 {
-    private const string ObsoleteInboundMessage =
-        "Sending an inbound TeamsActivity (read-model) is obsolete. Use the overload that accepts a TeamsActivityInput built via MessageActivityInput.CreateBuilder().";
-
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
     private readonly AgenticIdentity? _agenticIdentity;
@@ -84,32 +81,12 @@ public class ConversationApiClient
     }
 
     /// <summary>
-    /// Create a new activity in a conversation.
-    /// </summary>
-    [Obsolete(ObsoleteInboundMessage)]
-    public Task<SendActivityResponse?> CreateActivityAsync(string conversationId, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        return SendCoreAsync(conversationId, CoreActivityInput.FromActivity(activity), isTargeted: false, additionalHeaders, cancellationToken);
-    }
-
-    /// <summary>
     /// Update an existing activity in a conversation.
     /// </summary>
     public Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         return UpdateCoreAsync(conversationId, id, activity, isTargeted: false, additionalHeaders, cancellationToken);
-    }
-
-    /// <summary>
-    /// Update an existing activity in a conversation.
-    /// </summary>
-    [Obsolete(ObsoleteInboundMessage)]
-    public Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string id, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        return UpdateCoreAsync(conversationId, id, CoreActivityInput.FromActivity(activity), isTargeted: false, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
@@ -120,18 +97,6 @@ public class ConversationApiClient
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
         return SendCoreAsync(conversationId, activity, isTargeted: false, additionalHeaders, cancellationToken);
-    }
-
-    /// <summary>
-    /// Reply to an existing activity in a conversation.
-    /// </summary>
-    [Obsolete(ObsoleteInboundMessage)]
-    public Task<SendActivityResponse?> ReplyToActivityAsync(string conversationId, string id, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        CoreActivityInput input = CoreActivityInput.FromActivity(activity);
-        input.ReplyToId = id;
-        return SendCoreAsync(conversationId, input, isTargeted: false, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
