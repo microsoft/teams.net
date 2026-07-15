@@ -57,11 +57,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
 
-#pragma warning disable ExperimentalTeamsTargeted
-        bool targeted = isTargeted || activity.Recipient?.IsTargeted == true;
-#pragma warning restore ExperimentalTeamsTargeted
-
-        if (targeted)
+        if (isTargeted)
         {
             url += url.Contains('?', StringComparison.Ordinal) ? "&isTargetedActivity=true" : "?isTargetedActivity=true";
         }

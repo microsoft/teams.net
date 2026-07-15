@@ -215,6 +215,7 @@ public class OAuthFlow
 
             MessageActivityInput oauthActivity = MessageActivityInput.CreateBuilder()
                 .AddAttachment(attachment)
+                .WithRecipient(context.Activity.From!, false) // dont remove, required for sso flow
                 .Build();
 
             await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
