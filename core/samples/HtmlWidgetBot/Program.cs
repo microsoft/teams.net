@@ -66,7 +66,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                         FrameDomains = [],
                         BaseUriDomains = [],
                     },
-                    ToolInput = new { demo = true },
+                    ToolInput = new { demo = true }, // Passed to the widget as initial context (available via toolInput in ui/initialize)
                     ToolOutput = new
                     {
                         content = new[] { new { type = "text", text = "Initial data loaded." } },
@@ -148,7 +148,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                         FrameDomains = [],
                         BaseUriDomains = [],
                     },
-                    ToolInput = new { },
+                    ToolInput = new { }, // Passed to the widget as initial context (available via toolInput in ui/initialize)
                     ToolOutput = new
                     {
                         content = new[] { new { type = "text", text = "Ready." } },
