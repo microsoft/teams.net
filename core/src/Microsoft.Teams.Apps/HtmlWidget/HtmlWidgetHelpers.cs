@@ -248,14 +248,12 @@ public static class HtmlWidgetHelpers
     /// </summary>
     /// <param name="payload">The widget payload to include in the message.</param>
     /// <param name="options">Optional text to include before/after the widget block.</param>
-    /// <returns>A MessageActivity with TextFormat set to "extendedmarkdown".</returns>
-    public static MessageActivity BuildHtmlWidgetMessage(HtmlWidgetPayload payload, HtmlWidgetMarkdownOptions? options = null)
+    /// <returns>A MessageActivityInput with TextFormat set to "extendedmarkdown".</returns>
+    public static MessageActivityInput BuildHtmlWidgetMessage(HtmlWidgetPayload payload, HtmlWidgetMarkdownOptions? options = null)
     {
-        return new MessageActivity
-        {
-            Text = BuildHtmlWidgetMarkdown(payload, options),
-            TextFormat = TextFormats.ExtendedMarkdown,
-        };
+        return MessageActivityInput.CreateBuilder()
+            .WithText(BuildHtmlWidgetMarkdown(payload, options), TextFormats.ExtendedMarkdown)
+            .Build();
     }
 
     /// <summary>

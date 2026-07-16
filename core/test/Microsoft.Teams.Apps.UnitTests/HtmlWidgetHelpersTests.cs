@@ -413,6 +413,81 @@ public class HtmlWidgetHelpersTests
     }
 
     [Fact]
+    public void TextContent_SerializesTypeAndText()
+    {
+        var content = new McpUiCallToolResultContent { Type = "text", Text = "hi" };
+        var json = JsonSerializer.Serialize(content);
+        Assert.Contains("\"type\":\"text\"", json);
+        Assert.Contains("\"text\":\"hi\"", json);
+        Assert.DoesNotContain("\"data\"", json);
+        Assert.DoesNotContain("\"resource\"", json);
+    }
+
+    [Fact]
+    public void ImageContent_SerializesDataAndMimeType()
+    {
+        var content = new McpUiCallToolResultContent
+        {
+            Type = "image",
+            Data = "iVBORw0KGgo=",
+            MimeType = "image/png"
+        };
+        var json = JsonSerializer.Serialize(content);
+        Assert.Contains("\"type\":\"image\"", json);
+        Assert.Contains("\"data\":\"iVBORw0KGgo=\"", json);
+        Assert.Contains("\"mimeType\":\"image/png\"", json);
+        Assert.DoesNotContain("\"text\"", json);
+    }
+
+    [Fact]
+    public void AudioContent_SerializesDataAndMimeType()
+    {
+        var content = new McpUiCallToolResultContent
+        {
+            Type = "audio",
+            Data = "UklGRg==",
+            MimeType = "audio/wav"
+        };
+        var json = JsonSerializer.Serialize(content);
+        Assert.Contains("\"type\":\"audio\"", json);
+        Assert.Contains("\"data\":\"UklGRg==\"", json);
+        Assert.Contains("\"mimeType\":\"audio/wav\"", json);
+    }
+
+    [Fact]
+    public void ResourceContent_SerializesNestedResource()
+    {
+        var content = new McpUiCallToolResultContent
+        {
+            Type = "resource",
+            Resource = new McpUiResource { Uri = "widget://data", MimeType = "application/json", Text = "{}" }
+        };
+        var json = JsonSerializer.Serialize(content);
+        Assert.Contains("\"type\":\"resource\"", json);
+        Assert.Contains("\"resource\":{", json);
+        Assert.Contains("\"uri\":\"widget://data\"", json);
+        Assert.Contains("\"mimeType\":\"application/json\"", json);
+        Assert.DoesNotContain("\"blob\"", json);
+    }
+
+    [Fact]
+    public void ContentTypes_RoundTripThroughDeserialization()
+    {
+        var image = new McpUiCallToolResultContent
+        {
+            Type = "image",
+            Data = "abc",
+            MimeType = "image/jpeg"
+        };
+        var json = JsonSerializer.Serialize(image);
+        var parsed = JsonSerializer.Deserialize<McpUiCallToolResultContent>(json);
+        Assert.NotNull(parsed);
+        Assert.Equal("image", parsed!.Type);
+        Assert.Equal("abc", parsed.Data);
+        Assert.Equal("image/jpeg", parsed.MimeType);
+    }
+
+    [Fact]
     public void BuildHtmlWidgetMarkdown_DoesNotMutateProtocolOptions()
     {
         var protoOpts = new InjectWidgetProtocolOptions { Version = "2.0.0", Notifications = ["tool-result"] };
