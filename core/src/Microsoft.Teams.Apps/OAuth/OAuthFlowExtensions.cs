@@ -100,38 +100,22 @@ public static class OAuthFlowExtensions
             {
                 InvokeActivity<SignInFailureValue> typedActivity = new(ctx.Activity);
                 SignInFailureValue failureValue = typedActivity.Value ?? new SignInFailureValue();
-                string? userId = ctx.Activity.From?.Id;
 
-                // signin/failure doesn't carry a connection name.
-                // Pick the most recently initiated flow to avoid firing duplicate
-                // failure callbacks when multiple flows have pending sign-ins.
-                // Fall back to all flows only when no flow reports a pending sign-in
-                // (e.g., multi-instance deployment without distributed state).
-                IEnumerable<OAuthFlow> allFlows = registry.GetAllFlows();
-                OAuthFlow? mostRecent = null;
-                DateTimeOffset mostRecentTs = DateTimeOffset.MinValue;
+                // signin/failure carries no connection name. Since Teams only emits it for
+                // silent SSO attempts, ask the registry which connection had a pending SSO sign-in
+                // and attribute the failure there — this avoids firing the failure callback on
+                // a non-SSO connection (e.g., a GitHub flow) that merely signed in more recently.
+                OAuthFlow? target = registry.ResolvePendingSsoFlow(ctx);
 
-                if (userId is not null)
+                if (target is not null)
                 {
-                    foreach (OAuthFlow f in allFlows)
-                    {
-                        DateTimeOffset? ts = f.GetPendingSignInTimestamp(ctx);
-                        if (ts is not null && ts.Value > mostRecentTs)
-                        {
-                            mostRecent = f;
-                            mostRecentTs = ts.Value;
-                        }
-                    }
-                }
-
-                if (mostRecent is not null)
-                {
-                    await mostRecent.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    await target.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    // No pending flow found — fall back to notifying all flows.
-                    foreach (OAuthFlow flow in allFlows)
+                    // No SSO-pending connection could be resolved (e.g., no distributed state).
+                    // Fall back to notifying every flow rather than dropping the failure.
+                    foreach (OAuthFlow flow in registry.GetAllFlows())
                     {
                         await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
                     }
@@ -251,6 +235,33 @@ internal sealed class OAuthFlowRegistry
     internal IEnumerable<OAuthFlow> GetAllFlows() => _flows.Values;
 
     /// <summary>
+    /// Resolve the flow that currently has a pending silent-SSO sign-in for the user in the
+    /// given turn, or <c>null</c> if none. When multiple flows have a pending SSO sign-in, the
+    /// most recently initiated one is returned.
+    /// </summary>
+    /// <remarks>
+    /// Used to attribute connection-less <c>signin/failure</c> invokes — which Teams only emits
+    /// for silent SSO attempts — to the connection that actually offered SSO, instead of guessing
+    /// across all flows (which could fire the failure callback on a non-SSO connection).
+    /// </remarks>
+    internal OAuthFlow? ResolvePendingSsoFlow<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        OAuthFlow? resolved = null;
+        DateTimeOffset mostRecent = DateTimeOffset.MinValue;
+        foreach (OAuthFlow flow in _flows.Values)
+        {
+            DateTimeOffset? ts = flow.GetPendingSsoSignInTimestamp(context);
+            if (ts is not null && ts.Value > mostRecent)
+            {
+                resolved = flow;
+                mostRecent = ts.Value;
+            }
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
     /// Resolve when there's no connection name in the payload (e.g., verifyState).
     /// Returns the single registered flow, or null if zero or multiple flows exist.
     /// </summary>
@@ -259,30 +270,6 @@ internal sealed class OAuthFlowRegistry
         if (_flows.Count == 1)
         {
             return _flows.Values.First();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Like <see cref="ResolveSingle"/> but when multiple flows are registered,
-    /// returns the first one and logs a warning instead of returning null.
-    /// Used by <c>Context.IsSignedIn</c> for backwards compatibility.
-    /// </summary>
-    internal OAuthFlow? ResolveSingleWithWarning()
-    {
-        if (_flows.Count == 1)
-        {
-            return _flows.Values.First();
-        }
-
-        if (_flows.Count > 1)
-        {
-            OAuthFlow first = _flows.Values.First();
-            System.Diagnostics.Trace.TraceWarning(
-                $"IsSignedIn: multiple OAuthFlow connections registered. " +
-                $"Checking '{first.ConnectionName}' only. Use IsSignedInAsync(connectionName) for explicit control.");
-            return first;
         }
 
         return null;

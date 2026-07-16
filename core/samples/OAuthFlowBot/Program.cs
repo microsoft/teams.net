@@ -126,7 +126,7 @@ bot.OnMessage("(?i)^login github$", async (context, ct) =>
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
     // GetConnectionStatusAsync returns ALL connections -- no names needed
-    IList<GetTokenStatusResult> statuses = await graphAuth.GetConnectionStatusAsync(context, ct);
+    IList<GetTokenStatusResult> statuses = await context.GetConnectionStatusAsync(ct);
     IEnumerable<string> lines = statuses.Select(s =>
         $"- **{s.ConnectionName}** ({s.ServiceProviderDisplayName}): " +
         $"{(s.HasToken == true ? "✅ connected" : "❌ not connected")}");

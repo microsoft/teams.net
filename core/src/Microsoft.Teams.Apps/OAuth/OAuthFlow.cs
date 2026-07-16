@@ -52,6 +52,11 @@ public class OAuthFlow
     // When UseState() is configured, user state is used instead (works across instances).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSignIns = new();
 
+    // In-memory fallback for SSO-capable pending sign-ins (i.e., a card with a non-null
+    // TokenExchangeResource was sent). Only these flows are candidates for signin/failure,
+    // which Teams only emits for silent SSO token-exchange attempts.
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSsoSignIns = new();
+
     internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
     {
         _app = app;
@@ -193,6 +198,13 @@ public class OAuthFlow
                 .GetSignInResourceAsync(state, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
+            // SSO (silent token exchange) can't complete silently in a channel context, so omit the
+            // TokenExchangeResource there. Teams then goes straight to the interactive OAuth sign-in
+            // button instead of attempting (and failing) a silent SSO exchange first.
+            string? conversationType = context.Activity.Conversation?.ConversationType;
+            bool isChannel = conversationType == ConversationTypes.Channel;
+            bool isChannelOrGroup = isChannel || conversationType == ConversationTypes.GroupChat;
+
             OAuthCard oauthCard = new()
             {
                 Text = options.OAuthCardText,
@@ -201,7 +213,7 @@ public class OAuthFlow
                 [
                     new SuggestedAction(ActionTypes.SignIn, options.SignInButtonText, signInResource.SignInLink)
                 ],
-                TokenExchangeResource = signInResource.TokenExchangeResource,
+                TokenExchangeResource = isChannel ? null : signInResource.TokenExchangeResource,
                 TokenPostResource = signInResource.TokenPostResource
             };
 
@@ -215,14 +227,17 @@ public class OAuthFlow
 
             MessageActivityInput oauthActivity = MessageActivityInput.CreateBuilder()
                 .AddAttachment(attachment)
-                .WithRecipient(context.Activity.From!, false) // dont remove, required for sso flow
+                .WithRecipient(context.Activity.From!, isChannelOrGroup) // dont remove, required for sso flow
                 .Build();
 
             await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 
+            // Whether this card actually offered silent SSO (a token-exchange resource was included).
+            bool ssoOffered = oauthCard.TokenExchangeResource is not null;
+
             // Track that this user has a pending sign-in for this flow.
             // Use user state when available (distributed); fall back to in-memory otherwise.
-            SetPendingSignIn(context, userId);
+            SetPendingSignIn(context, userId, ssoOffered);
 
             span?.AddEvent(new ActivityEvent(AppsTelemetry.OAuthEvents.CardSent));
             result = AppsTelemetry.OAuthResults.CardSent;
@@ -608,6 +623,25 @@ public class OAuthFlow
     }
 
     /// <summary>
+    /// Returns the timestamp when this flow initiated a pending sign-in that actually offered
+    /// silent SSO (an OAuth card with a non-null TokenExchangeResource), or <c>null</c> if none.
+    /// Used to attribute <c>signin/failure</c> — which Teams only emits for SSO attempts — to
+    /// the correct connection, avoiding firing the failure callback on non-SSO flows.
+    /// </summary>
+    internal DateTimeOffset? GetPendingSsoSignInTimestamp<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        string ssoPendingKey = $"__oauth:pending:sso:{_connectionName}";
+        if (context.HasState && context.State.UserState is not null)
+        {
+            DateTimeOffset ts = context.State.UserState.Get<DateTimeOffset>(ssoPendingKey);
+            return ts != default ? ts : null;
+        }
+
+        string userId = context.Activity.From?.Id ?? string.Empty;
+        return _pendingSsoSignIns.TryGetValue(userId, out DateTimeOffset timestamp) ? timestamp : null;
+    }
+
+    /// <summary>
     /// Handles the signin/failure invoke activity sent by the Teams client when SSO fails client-side.
     /// </summary>
     internal async Task<InvokeResponse> HandleSignInFailureAsync(Context<InvokeActivity> context, SignInFailureValue failureValue, CancellationToken cancellationToken)
@@ -696,16 +730,26 @@ public class OAuthFlow
     /// Record that this user has a pending sign-in for this flow.
     /// Uses user state when available (distributed); falls back to in-memory.
     /// </summary>
-    private void SetPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
+    private void SetPendingSignIn<TActivity>(Context<TActivity> context, string userId, bool ssoOffered) where TActivity : TeamsActivity
     {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         string pendingKey = $"__oauth:pending:{_connectionName}";
+        string ssoPendingKey = $"__oauth:pending:sso:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
-            context.State.UserState.Set(pendingKey, DateTimeOffset.UtcNow);
+            context.State.UserState.Set(pendingKey, now);
+            if (ssoOffered)
+            {
+                context.State.UserState.Set(ssoPendingKey, now);
+            }
         }
         else
         {
-            _pendingSignIns[userId] = DateTimeOffset.UtcNow;
+            _pendingSignIns[userId] = now;
+            if (ssoOffered)
+            {
+                _pendingSsoSignIns[userId] = now;
+            }
         }
     }
 
@@ -716,12 +760,15 @@ public class OAuthFlow
     private void ClearPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
     {
         string pendingKey = $"__oauth:pending:{_connectionName}";
+        string ssoPendingKey = $"__oauth:pending:sso:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
             context.State.UserState.Remove(pendingKey);
+            context.State.UserState.Remove(ssoPendingKey);
         }
 
         _pendingSignIns.TryRemove(userId, out _);
+        _pendingSsoSignIns.TryRemove(userId, out _);
     }
 
     private void CleanupExpiredEntries()
@@ -739,6 +786,13 @@ public class OAuthFlow
             if (kvp.Value < cutoff)
             {
                 _pendingSignIns.TryRemove(kvp.Key, out _);
+            }
+        }
+        foreach (KeyValuePair<string, DateTimeOffset> kvp in _pendingSsoSignIns)
+        {
+            if (kvp.Value < cutoff)
+            {
+                _pendingSsoSignIns.TryRemove(kvp.Key, out _);
             }
         }
     }
