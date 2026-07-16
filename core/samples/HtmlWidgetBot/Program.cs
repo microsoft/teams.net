@@ -36,7 +36,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                         Before = "Here is a simple static widget:",
                         After = "No callbacks needed for static content.",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -65,7 +65,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "Here is a widget with callTool support (click Refresh):",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -83,7 +83,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "This widget tests the onMessage (messageBack) callback:",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -101,7 +101,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "This widget will request fullscreen mode:",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -130,7 +130,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "This widget has multiple tools to test dispatch:",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -147,7 +147,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "Widget with ui/open-link support (click a button to open a URL):",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -164,7 +164,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "Widget with ui/update-model-context support:",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -181,7 +181,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = "Widget that inspects hostContext from ui/initialize:",
                     });
-                await context.SendActivityAsync(message, cancellationToken);
+                await context.SendAsync(message, cancellationToken);
                 break;
             }
 
@@ -225,35 +225,39 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Before = $"**Validation found {warnings.Count} warning(s):**\n\n{warningText}\n\nPolicy was corrected before sending:",
                     });
-                await context.SendActivityAsync(
-                    new MessageActivity(markdown) { TextFormat = TextFormats.ExtendedMarkdown },
+                await context.SendAsync(
+                    MessageActivityInput.CreateBuilder()
+                        .WithText(markdown, TextFormats.ExtendedMarkdown)
+                        .Build(),
                     cancellationToken);
                 break;
             }
 
         case "/help":
             {
-                await context.SendActivityAsync(
-                    new MessageActivity(
-                        "**HTML Widget Test Commands:**\n\n" +
-                        "- `/simple` - Static widget (no callbacks)\n" +
-                        "- `/calltool` - Widget with onCallTool\n" +
-                        "- `/messageback` - Widget with onMessage\n" +
-                        "- `/fullscreen` - Widget requesting fullscreen\n" +
-                        "- `/multi` - Widget with multiple tools\n" +
-                        "- `/openlink` - Widget with ui/open-link\n" +
-                        "- `/context` - Widget with ui/update-model-context\n" +
-                        "- `/hostcontext` - Inspect hostContext from initialize\n" +
-                        "- `/validate` - Security policy validation demo\n" +
-                        "- `/help` - This message")
-                    { TextFormat = TextFormats.Markdown },
+                await context.SendAsync(
+                    MessageActivityInput.CreateBuilder()
+                        .WithText(
+                            "**HTML Widget Test Commands:**\n\n" +
+                            "- `/simple` - Static widget (no callbacks)\n" +
+                            "- `/calltool` - Widget with onCallTool\n" +
+                            "- `/messageback` - Widget with onMessage\n" +
+                            "- `/fullscreen` - Widget requesting fullscreen\n" +
+                            "- `/multi` - Widget with multiple tools\n" +
+                            "- `/openlink` - Widget with ui/open-link\n" +
+                            "- `/context` - Widget with ui/update-model-context\n" +
+                            "- `/hostcontext` - Inspect hostContext from initialize\n" +
+                            "- `/validate` - Security policy validation demo\n" +
+                            "- `/help` - This message",
+                            TextFormats.Markdown)
+                        .Build(),
                     cancellationToken);
                 break;
             }
 
         default:
             {
-                await context.SendActivityAsync(
+                await context.SendAsync(
                     "Send `/help` for available widget test commands.",
                     cancellationToken);
 

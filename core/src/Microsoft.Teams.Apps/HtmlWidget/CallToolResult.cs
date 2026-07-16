@@ -7,23 +7,85 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Teams.Apps.HtmlWidget;
 
 /// <summary>
+/// An embedded resource referenced by a "resource" content item.
+/// </summary>
+[Experimental("ExperimentalTeamsHtmlWidget")]
+public class McpUiResource
+{
+    /// <summary>
+    /// The URI of the resource.
+    /// </summary>
+    [JsonPropertyName("uri")]
+    [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "MCP resource URIs may use custom schemes (e.g. ui://) that System.Uri does not model")]
+    public string Uri { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The MIME type of the resource.
+    /// </summary>
+    [JsonPropertyName("mimeType")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType { get; set; }
+
+    /// <summary>
+    /// The text contents of the resource, when it is text-based.
+    /// </summary>
+    [JsonPropertyName("text")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// The base64-encoded contents of the resource, when it is binary.
+    /// </summary>
+    [JsonPropertyName("blob")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Blob { get; set; }
+}
+
+/// <summary>
 /// A content item in an MCP UI call tool result.
+/// The populated fields depend on <see cref="Type"/>: "text" uses <see cref="Text"/>;
+/// "image" and "audio" use <see cref="Data"/> and <see cref="MimeType"/>;
+/// "resource" uses <see cref="Resource"/>.
+/// Teams currently only renders "text" content; the other types are defined
+/// by the MCP spec for forward compatibility.
 /// </summary>
 [Experimental("ExperimentalTeamsHtmlWidget")]
 public class McpUiCallToolResultContent
 {
     /// <summary>
     /// The type of content. MCP defines: "text", "image", "audio", "resource".
-    /// Teams currently only renders "text" content.
     /// </summary>
     [JsonPropertyName("type")]
     public string Type { get; set; } = "text";
 
     /// <summary>
-    /// The text content.
+    /// The text content, when <see cref="Type"/> is "text".
     /// </summary>
     [JsonPropertyName("text")]
-    public string Text { get; set; } = string.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// The base64-encoded data, when <see cref="Type"/> is "image" or "audio".
+    /// </summary>
+    [JsonPropertyName("data")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Data { get; set; }
+
+    /// <summary>
+    /// The MIME type of the data, when <see cref="Type"/> is "image" or "audio"
+    /// (e.g. "image/png", "audio/wav").
+    /// </summary>
+    [JsonPropertyName("mimeType")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType { get; set; }
+
+    /// <summary>
+    /// The embedded resource, when <see cref="Type"/> is "resource".
+    /// </summary>
+    [JsonPropertyName("resource")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public McpUiResource? Resource { get; set; }
 }
 
 /// <summary>
