@@ -29,12 +29,9 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
 
     private bool IsCanary => _f.ServiceUrl.ToString().Contains("canary", StringComparison.OrdinalIgnoreCase);
 
-    private CoreActivity CreateWidgetActivity(string markdown) =>
-        CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
-            .WithProperty("text", markdown)
-            .WithProperty("textFormat", TextFormats.ExtendedMarkdown)
+    private static MessageActivityInput CreateWidgetActivity(string markdown) =>
+        MessageActivityInput.CreateBuilder()
+            .WithText(markdown, TextFormats.ExtendedMarkdown)
             .Build();
 
     [SkippableFact(Timeout = 5000)]
@@ -60,7 +57,7 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
             },
             new HtmlWidgetMarkdownOptions { Before = "[.NET Integration] HTML widget send test" });
 
-        CoreActivity activity = CreateWidgetActivity(markdown);
+        MessageActivityInput activity = CreateWidgetActivity(markdown);
         SendActivityResponse? res = await _f.ScopedApiClient.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
 
         Assert.NotNull(res);
@@ -94,10 +91,10 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
                     structuredContent = new { key = "value" },
                     isError = false,
                 }),
-                Permissions = new HtmlWidgetPermissions { ClipboardWrite = new() },
+                Permissions = new HtmlWidgetPermissions { ClipboardWrite = new Dictionary<string, object>() },
             });
 
-        CoreActivity activity = CreateWidgetActivity(markdown);
+        MessageActivityInput activity = CreateWidgetActivity(markdown);
         SendActivityResponse? res = await _f.ScopedApiClient.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
 
         Assert.NotNull(res);
@@ -119,7 +116,7 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
             },
             new HtmlWidgetMarkdownOptions { Before = "[.NET Integration] Widget update test - original" });
 
-        CoreActivity activity = CreateWidgetActivity(markdown);
+        MessageActivityInput activity = CreateWidgetActivity(markdown);
         SendActivityResponse? sent = await _f.ScopedApiClient.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
 
@@ -132,7 +129,7 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
             },
             new HtmlWidgetMarkdownOptions { Before = "[.NET Integration] Widget update test - updated" });
 
-        CoreActivity updatedActivity = CreateWidgetActivity(updatedMarkdown);
+        MessageActivityInput updatedActivity = CreateWidgetActivity(updatedMarkdown);
         UpdateActivityResponse? res = await _f.ScopedApiClient.Conversations.Activities.UpdateAsync(
             _f.ConversationId, sent.Id, updatedActivity);
 
@@ -153,13 +150,13 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
                 Domain = "https://teams.microsoft.com",
             });
 
-        CoreActivity activity = CreateWidgetActivity(markdown);
+        MessageActivityInput activity = CreateWidgetActivity(markdown);
         SendActivityResponse? sent = await _f.ScopedApiClient.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
 
         await Task.Delay(2000);
 
-        await _f.ScopedApiClient.Conversations.Activities.DeleteAsync(_f.ConversationId, sent.Id, _f.AgenticIdentity);
+        await _f.ScopedApiClient.Conversations.Activities.DeleteAsync(_f.ConversationId, sent.Id);
         _output.WriteLine($"Deleted widget activity: {sent.Id}");
     }
 }
