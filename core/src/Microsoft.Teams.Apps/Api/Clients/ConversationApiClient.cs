@@ -8,7 +8,6 @@ using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
-using CoreActivityInput = Microsoft.Teams.Core.Schema.CoreActivityInput;
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 
 namespace Microsoft.Teams.Apps.Api.Clients;
@@ -65,19 +64,13 @@ public class ConversationApiClient
 
     #region Activity Methods
 
-    private Task<SendActivityResponse?> SendCoreAsync(string conversationId, CoreActivityInput activity, bool isTargeted, Dictionary<string, string>? additionalHeaders, CancellationToken cancellationToken)
-        => _client.SendActivityAsync(conversationId, activity, _serviceUrl, isTargeted: isTargeted, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
-    private Task<UpdateActivityResponse> UpdateCoreAsync(string conversationId, string id, CoreActivityInput activity, bool isTargeted, Dictionary<string, string>? additionalHeaders, CancellationToken cancellationToken)
-        => _client.UpdateActivityAsync(conversationId, id, activity, _serviceUrl, isTargeted, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
-
     /// <summary>
     /// Create a new activity in a conversation.
     /// </summary>
     public Task<SendActivityResponse?> CreateActivityAsync(string conversationId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return SendCoreAsync(conversationId, activity, isTargeted: false, additionalHeaders, cancellationToken);
+        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -86,7 +79,7 @@ public class ConversationApiClient
     public Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return UpdateCoreAsync(conversationId, id, activity, isTargeted: false, additionalHeaders, cancellationToken);
+        return _client.UpdateActivityAsync(conversationId, id, activity, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -96,7 +89,7 @@ public class ConversationApiClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
-        return SendCoreAsync(conversationId, activity, isTargeted: false, additionalHeaders, cancellationToken);
+        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -115,7 +108,7 @@ public class ConversationApiClient
     public Task<SendActivityResponse?> CreateTargetedActivityAsync(string conversationId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return SendCoreAsync(conversationId, activity, isTargeted: true, additionalHeaders, cancellationToken);
+        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, isTargeted: true, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -125,7 +118,7 @@ public class ConversationApiClient
     public Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return UpdateCoreAsync(conversationId, id, activity, isTargeted: true, additionalHeaders, cancellationToken);
+        return _client.UpdateActivityAsync(conversationId, id, activity, _serviceUrl, isTargeted: true, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
