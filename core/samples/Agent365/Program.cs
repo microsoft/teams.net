@@ -13,12 +13,10 @@ WebApplication webApp = webAppBuilder.Build();
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 ILogger logger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Agent365");
 
-teamsApp.OnAgentLifecycle(async (context, cancellationToken) =>
+teamsApp.OnAgentLifecycle((context, _) =>
 {
     LogLifecycleEnvelope(context.Activity, "all", logger);
-    await context.SendAsync(
-        $"Received Agent 365 lifecycle event `{context.Activity.ValueType}`.",
-        cancellationToken);
+    return Task.CompletedTask;
 });
 
 teamsApp.OnAgenticUserIdentityCreated((context, _) =>
