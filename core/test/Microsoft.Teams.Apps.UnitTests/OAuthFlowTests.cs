@@ -451,6 +451,45 @@ public class OAuthFlowTests
         Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
+    // ==================== Channel omits TokenExchangeResource (SSO), personal keeps it ====================
+
+    [Fact]
+    public async Task SignInAsync_InChannel_OmitsTokenExchangeResourceForOAuthFallback()
+    {
+        TestHarness harness = CreateHarness(GraphConnection);
+
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GraphConnection);
+        SetupGetSignInResource(harness.MockUserTokenClient);
+        CoreActivityInput? sent = null;
+        SetupSendActivityCapture(harness, a => sent = a);
+
+        Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId, ConversationTypes.Channel);
+        await harness.GraphFlow!.SignInAsync(ctx);
+
+        Assert.NotNull(sent);
+        // SSO can't complete silently in a channel, so the card must not carry a token exchange resource.
+        Assert.DoesNotContain("tokenExchangeResource", sent.ToJson());
+        // The interactive sign-in button (OAuth fallback) is still present.
+        Assert.Contains("signin", sent.ToJson(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SignInAsync_InPersonalChat_IncludesTokenExchangeResourceForSso()
+    {
+        TestHarness harness = CreateHarness(GraphConnection);
+
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GraphConnection);
+        SetupGetSignInResource(harness.MockUserTokenClient);
+        CoreActivityInput? sent = null;
+        SetupSendActivityCapture(harness, a => sent = a);
+
+        Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId, ConversationTypes.Personal);
+        await harness.GraphFlow!.SignInAsync(ctx);
+
+        Assert.NotNull(sent);
+        Assert.Contains("tokenExchangeResource", sent.ToJson());
+    }
+
     // ==================== Helpers ====================
 
     private sealed class TestHarness
@@ -507,14 +546,14 @@ public class OAuthFlowTests
             NullLogger<UserTokenClient>.Instance);
     }
 
-    private static Context<MessageActivity> CreateMessageContext(TestHarness harness, string userId)
+    private static Context<MessageActivity> CreateMessageContext(TestHarness harness, string userId, string? conversationType = null)
     {
         MessageActivity activity = new("hello")
         {
             ChannelId = TestChannelId,
             From = new TeamsChannelAccount { Id = userId },
             Recipient = new TeamsChannelAccount { Id = "bot-id" },
-            Conversation = new TeamsConversation { Id = "conv-1" },
+            Conversation = new TeamsConversation { Id = "conv-1", ConversationType = conversationType },
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
         };
 
@@ -556,6 +595,14 @@ public class OAuthFlowTests
     {
         harness.MockConversationClient
             .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SendActivityResponse { Id = "activity-1" });
+    }
+
+    private static void SetupSendActivityCapture(TestHarness harness, Action<CoreActivityInput> capture)
+    {
+        harness.MockConversationClient
+            .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>, CancellationToken>((_, activity, _, _, _, _, _) => capture(activity))
             .ReturnsAsync(new SendActivityResponse { Id = "activity-1" });
     }
 }
