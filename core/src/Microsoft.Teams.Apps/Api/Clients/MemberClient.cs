@@ -15,6 +15,7 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// Client for managing conversation members.
 /// Delegates to the core <see cref="CoreConversationClient"/>.
 /// </summary>
+[Obsolete("Use the member methods on ConversationApiClient directly instead.")]
 public class MemberClient
 {
     private readonly CoreConversationClient _client;
