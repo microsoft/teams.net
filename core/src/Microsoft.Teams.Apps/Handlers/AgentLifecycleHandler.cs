@@ -110,7 +110,6 @@ public static class AgentLifecycleExtensions
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserIdentityCreated,
-            AgentLifecycleEventValueTypes.AgenticUserIdentityCreated,
             activity => new AgentLifecycleEventActivity<AgenticUserIdentityCreatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -125,7 +124,6 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated,
             AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated,
             activity => new AgentLifecycleEventActivity<AgenticUserIdentityUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
@@ -142,7 +140,6 @@ public static class AgentLifecycleExtensions
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserManagerUpdated,
-            AgentLifecycleEventValueTypes.AgenticUserManagerUpdated,
             activity => new AgentLifecycleEventActivity<AgenticUserManagerUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -157,7 +154,6 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserEnabled,
             AgentLifecycleEventValueTypes.AgenticUserEnabled,
             activity => new AgentLifecycleEventActivity<AgenticUserEnabledValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
@@ -174,7 +170,6 @@ public static class AgentLifecycleExtensions
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserDisabled,
-            AgentLifecycleEventValueTypes.AgenticUserDisabled,
             activity => new AgentLifecycleEventActivity<AgenticUserDisabledValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -189,7 +184,6 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserDeleted,
             AgentLifecycleEventValueTypes.AgenticUserDeleted,
             activity => new AgentLifecycleEventActivity<AgenticUserDeletedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
@@ -206,7 +200,6 @@ public static class AgentLifecycleExtensions
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserUndeleted,
-            AgentLifecycleEventValueTypes.AgenticUserUndeleted,
             activity => new AgentLifecycleEventActivity<AgenticUserUndeletedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -222,9 +215,17 @@ public static class AgentLifecycleExtensions
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated,
-            AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated,
             activity => new AgentLifecycleEventActivity<AgenticUserWorkloadOnboardingUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
+    }
+
+    private static TeamsBotApplication RegisterAgentLifecycleRoute<TActivity>(
+        this TeamsBotApplication app,
+        string valueType,
+        Func<EventActivity, TActivity> createActivity,
+        Func<Context<TActivity>, CancellationToken, Task> handler) where TActivity : AgentLifecycleEventActivity
+    {
+        return app.RegisterAgentLifecycleRoute(valueType, valueType, createActivity, handler);
     }
 
     private static TeamsBotApplication RegisterAgentLifecycleRoute<TActivity>(
