@@ -20,7 +20,7 @@ public delegate Task AgentLifecycleHandler(Context<AgentLifecycleEventActivity> 
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserIdentityCreatedHandler(Context<AgenticUserIdentityCreatedActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserIdentityCreatedHandler(Context<AgentLifecycleEventActivity<AgenticUserIdentityCreatedValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user identity updated lifecycle event activities.
@@ -28,7 +28,7 @@ public delegate Task AgenticUserIdentityCreatedHandler(Context<AgenticUserIdenti
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserIdentityUpdatedHandler(Context<AgenticUserIdentityUpdatedActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserIdentityUpdatedHandler(Context<AgentLifecycleEventActivity<AgenticUserIdentityUpdatedValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user manager updated lifecycle event activities.
@@ -36,7 +36,7 @@ public delegate Task AgenticUserIdentityUpdatedHandler(Context<AgenticUserIdenti
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserManagerUpdatedHandler(Context<AgenticUserManagerUpdatedActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserManagerUpdatedHandler(Context<AgentLifecycleEventActivity<AgenticUserManagerUpdatedValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user enabled lifecycle event activities.
@@ -44,7 +44,7 @@ public delegate Task AgenticUserManagerUpdatedHandler(Context<AgenticUserManager
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserEnabledHandler(Context<AgenticUserEnabledActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserEnabledHandler(Context<AgentLifecycleEventActivity<AgenticUserEnabledValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user disabled lifecycle event activities.
@@ -52,7 +52,7 @@ public delegate Task AgenticUserEnabledHandler(Context<AgenticUserEnabledActivit
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserDisabledHandler(Context<AgenticUserDisabledActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserDisabledHandler(Context<AgentLifecycleEventActivity<AgenticUserDisabledValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user deleted lifecycle event activities.
@@ -60,7 +60,7 @@ public delegate Task AgenticUserDisabledHandler(Context<AgenticUserDisabledActiv
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserDeletedHandler(Context<AgenticUserDeletedActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserDeletedHandler(Context<AgentLifecycleEventActivity<AgenticUserDeletedValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user undeleted lifecycle event activities.
@@ -68,7 +68,7 @@ public delegate Task AgenticUserDeletedHandler(Context<AgenticUserDeletedActivit
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserUndeletedHandler(Context<AgenticUserUndeletedActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserUndeletedHandler(Context<AgentLifecycleEventActivity<AgenticUserUndeletedValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for handling agentic user workload onboarding updated lifecycle event activities.
@@ -76,7 +76,7 @@ public delegate Task AgenticUserUndeletedHandler(Context<AgenticUserUndeletedAct
 /// <param name="context">The context for the lifecycle event activity.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task representing the asynchronous operation.</returns>
-public delegate Task AgenticUserWorkloadOnboardingUpdatedHandler(Context<AgenticUserWorkloadOnboardingUpdatedActivity> context, CancellationToken cancellationToken = default);
+public delegate Task AgenticUserWorkloadOnboardingUpdatedHandler(Context<AgentLifecycleEventActivity<AgenticUserWorkloadOnboardingUpdatedValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Extension methods for registering Agent 365 lifecycle event activity handlers.
@@ -95,7 +95,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             EventNames.AgentLifecycle,
             valueType: null,
-            AgentLifecycleEventActivity.FromEventActivity,
+            activity => new AgentLifecycleEventActivity(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -111,7 +111,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserIdentityCreated,
             AgentLifecycleEventValueTypes.AgenticUserIdentityCreated,
-            activity => new AgenticUserIdentityCreatedActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserIdentityCreatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -127,7 +127,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated,
             AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated,
-            activity => new AgenticUserIdentityUpdatedActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserIdentityUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -143,7 +143,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserManagerUpdated,
             AgentLifecycleEventValueTypes.AgenticUserManagerUpdated,
-            activity => new AgenticUserManagerUpdatedActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserManagerUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -159,7 +159,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserEnabled,
             AgentLifecycleEventValueTypes.AgenticUserEnabled,
-            activity => new AgenticUserEnabledActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserEnabledValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -175,7 +175,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserDisabled,
             AgentLifecycleEventValueTypes.AgenticUserDisabled,
-            activity => new AgenticUserDisabledActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserDisabledValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -191,7 +191,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserDeleted,
             AgentLifecycleEventValueTypes.AgenticUserDeleted,
-            activity => new AgenticUserDeletedActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserDeletedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -207,7 +207,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserUndeleted,
             AgentLifecycleEventValueTypes.AgenticUserUndeleted,
-            activity => new AgenticUserUndeletedActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserUndeletedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
@@ -223,7 +223,7 @@ public static class AgentLifecycleExtensions
         return app.RegisterAgentLifecycleRoute(
             AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated,
             AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated,
-            activity => new AgenticUserWorkloadOnboardingUpdatedActivity(activity),
+            activity => new AgentLifecycleEventActivity<AgenticUserWorkloadOnboardingUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 

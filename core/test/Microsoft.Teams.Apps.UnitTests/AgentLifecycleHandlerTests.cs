@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,29 +25,27 @@ public class AgentLifecycleHandlerTests
 
     public static TheoryData<string, Type> VariantTypes => new()
     {
-        { AgentLifecycleEventValueTypes.AgenticUserIdentityCreated, typeof(AgenticUserIdentityCreatedActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated, typeof(AgenticUserIdentityUpdatedActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserManagerUpdated, typeof(AgenticUserManagerUpdatedActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserEnabled, typeof(AgenticUserEnabledActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserDisabled, typeof(AgenticUserDisabledActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserDeleted, typeof(AgenticUserDeletedActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserUndeleted, typeof(AgenticUserUndeletedActivity) },
-        { AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated, typeof(AgenticUserWorkloadOnboardingUpdatedActivity) },
+        { AgentLifecycleEventValueTypes.AgenticUserIdentityCreated, typeof(AgentLifecycleEventActivity<AgenticUserIdentityCreatedValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated, typeof(AgentLifecycleEventActivity<AgenticUserIdentityUpdatedValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserManagerUpdated, typeof(AgentLifecycleEventActivity<AgenticUserManagerUpdatedValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserEnabled, typeof(AgentLifecycleEventActivity<AgenticUserEnabledValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserDisabled, typeof(AgentLifecycleEventActivity<AgenticUserDisabledValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserDeleted, typeof(AgentLifecycleEventActivity<AgenticUserDeletedValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserUndeleted, typeof(AgentLifecycleEventActivity<AgenticUserUndeletedValue>) },
+        { AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated, typeof(AgentLifecycleEventActivity<AgenticUserWorkloadOnboardingUpdatedValue>) },
     };
 
     [Theory]
     [MemberData(nameof(VariantTypes))]
-    public void FromActivity_DiscriminatesAgentLifecycleVariants(string valueType, Type expectedType)
+    public void FromActivity_ParsesAgentLifecycleEventEnvelope(string valueType, Type _)
     {
         TeamsActivity activity = ParseLifecycleActivity(valueType);
 
-        Assert.Equal(expectedType, activity.GetType());
-
-        EventActivity eventActivity = Assert.IsAssignableFrom<EventActivity>(activity);
+        EventActivity eventActivity = Assert.IsType<EventActivity>(activity);
         Assert.Equal(TeamsActivityTypes.Event, eventActivity.Type);
         Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
         Assert.Equal(valueType, eventActivity.ValueType);
-        AssertLifecycleValue(activity, valueType);
+        Assert.NotNull(eventActivity.Value);
     }
 
     [Fact]
@@ -56,28 +53,10 @@ public class AgentLifecycleHandlerTests
     {
         TeamsActivity activity = ParseLifecycleActivity("UnknownLifecycleValueType", CommonValue("unknownLifecycleEvent"));
 
-        AgentLifecycleEventActivity lifecycleActivity = Assert.IsType<AgentLifecycleEventActivity>(activity);
-        Assert.Equal(EventNames.AgentLifecycle, lifecycleActivity.Name);
-        Assert.Equal("UnknownLifecycleValueType", lifecycleActivity.ValueType);
-        Assert.NotNull(lifecycleActivity.Value);
-    }
-
-    [Fact]
-    public void ToJson_PreservesAgentLifecycleEnvelope()
-    {
-        AgenticUserManagerUpdatedActivity activity = Assert.IsType<AgenticUserManagerUpdatedActivity>(
-            ParseLifecycleActivity(AgentLifecycleEventValueTypes.AgenticUserManagerUpdated));
-
-        string json = activity.ToJson();
-        using JsonDocument document = JsonDocument.Parse(json);
-        JsonElement root = document.RootElement;
-        Assert.Equal(1, CountOccurrences(json, "\"valueType\""));
-        Assert.Equal(1, CountOccurrences(json, "\"valueType\""));
-        Assert.Equal(TeamsActivityTypes.Event, root.GetProperty("type").GetString());
-        Assert.Equal(EventNames.AgentLifecycle, root.GetProperty("name").GetString());
-        Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserManagerUpdated, root.GetProperty("valueType").GetString());
-        Assert.Equal(AgenticAppInstanceId, root.GetProperty("value").GetProperty("agenticAppInstanceId").GetString());
-        Assert.Equal(ManagerId, root.GetProperty("value").GetProperty("manager").GetProperty("managerId").GetString());
+        EventActivity eventActivity = Assert.IsType<EventActivity>(activity);
+        Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
+        Assert.Equal("UnknownLifecycleValueType", eventActivity.ValueType);
+        Assert.NotNull(eventActivity.Value);
     }
 
     [Fact]
@@ -89,7 +68,7 @@ public class AgentLifecycleHandlerTests
         app.OnEvent((ctx, _) =>
         {
             called = true;
-            Assert.IsType<AgenticUserEnabledActivity>(ctx.Activity);
+            Assert.IsType<EventActivity>(ctx.Activity);
             Assert.Equal(EventNames.AgentLifecycle, ctx.Activity.Name);
             Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserEnabled, ctx.Activity.ValueType);
             return Task.CompletedTask;
@@ -113,8 +92,8 @@ public class AgentLifecycleHandlerTests
         {
             lifecycleHandlerCalls++;
             Assert.Same(state, ctx.State);
+            Assert.Equal(typeof(AgentLifecycleEventActivity), ctx.Activity.GetType());
             Assert.Equal(valueType, ctx.Activity.ValueType);
-            Assert.Equal(expectedType, AgentLifecycleEventActivity.FromEventActivity(ctx.Activity).GetType());
             return Task.CompletedTask;
         });
 
@@ -241,64 +220,6 @@ public class AgentLifecycleHandlerTests
         Assert.Equal(valueType, context.Activity.ValueType);
     }
 
-    private static void AssertLifecycleValue(TeamsActivity activity, string valueType)
-    {
-        switch (valueType)
-        {
-            case AgentLifecycleEventValueTypes.AgenticUserIdentityCreated:
-                AgenticUserIdentityCreatedActivity created = Assert.IsType<AgenticUserIdentityCreatedActivity>(activity);
-                Assert.Equal(AgentLifecycleEventTypes.AgenticUserIdentityCreated, created.Value?.EventType);
-                Assert.Equal(AgenticUserId, created.Value?.AgenticUserId);
-                Assert.Equal(ManagerId, created.Value?.Manager?.UserId);
-                Assert.Equal("manager@example.test", created.Value?.Manager?.Email);
-                Assert.Equal(1, created.Value?.ExpirationDateTime?.Year);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated:
-                AgenticUserIdentityUpdatedActivity updated = Assert.IsType<AgenticUserIdentityUpdatedActivity>(activity);
-                Assert.Equal("Mail", updated.Value?.UpdatedProperty.PropertyName);
-                Assert.Equal("newinstance4@teamssdk.onmicrosoft.com", updated.Value?.UpdatedProperty.PropertyValue);
-                Assert.Equal(4, updated.Value?.Version);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserManagerUpdated:
-                AgenticUserManagerUpdatedActivity managerUpdated = Assert.IsType<AgenticUserManagerUpdatedActivity>(activity);
-                Assert.Equal(ManagerId, managerUpdated.Value?.Manager?.ManagerId);
-                Assert.Equal(6, managerUpdated.Value?.Version);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserEnabled:
-                AgenticUserEnabledActivity enabled = Assert.IsType<AgenticUserEnabledActivity>(activity);
-                Assert.Equal(AgentLifecycleEventTypes.AgenticUserEnabled, enabled.Value?.EventType);
-                Assert.Equal(6, enabled.Value?.Version);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserDisabled:
-                AgenticUserDisabledActivity disabled = Assert.IsType<AgenticUserDisabledActivity>(activity);
-                Assert.Equal(AgentLifecycleEventTypes.AgenticUserDisabled, disabled.Value?.EventType);
-                Assert.Equal(7, disabled.Value?.Version);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserDeleted:
-                AgenticUserDeletedActivity deleted = Assert.IsType<AgenticUserDeletedActivity>(activity);
-                Assert.Equal("UserSoftDelete", deleted.Value?.DeletionReason);
-                Assert.Equal(8, deleted.Value?.Version);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserUndeleted:
-                AgenticUserUndeletedActivity undeleted = Assert.IsType<AgenticUserUndeletedActivity>(activity);
-                Assert.Equal(AgentLifecycleEventTypes.AgenticUserUndeleted, undeleted.Value?.EventType);
-                Assert.Equal(9, undeleted.Value?.Version);
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated:
-                AgenticUserWorkloadOnboardingUpdatedActivity workload = Assert.IsType<AgenticUserWorkloadOnboardingUpdatedActivity>(activity);
-                Assert.Equal("Teams", workload.Value?.WorkloadName);
-                Assert.Equal("succeeded", workload.Value?.WorkloadOnboardingState);
-                break;
-        }
-    }
-
     private static Task DispatchAsync(TeamsBotApplication app, string valueType, TurnStateContainer? state = null)
     {
         EventActivity activity = Assert.IsAssignableFrom<EventActivity>(ParseLifecycleActivity(valueType));
@@ -414,19 +335,6 @@ public class AgentLifecycleHandlerTests
               "eventType": "{{eventType}}"{{separator}}
             }
             """;
-    }
-
-    private static int CountOccurrences(string value, string match)
-    {
-        int count = 0;
-        int index = 0;
-        while ((index = value.IndexOf(match, index, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            index += match.Length;
-        }
-
-        return count;
     }
 
     private static TurnStateContainer CreateState()

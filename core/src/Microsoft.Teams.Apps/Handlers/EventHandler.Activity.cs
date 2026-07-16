@@ -20,10 +20,7 @@ public class EventActivity : TeamsActivity
     public static new EventActivity FromActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        EventActivity eventActivity = new(activity);
-        return eventActivity.Name == EventNames.AgentLifecycle
-            ? AgentLifecycleEventActivity.FromEventActivity(eventActivity)
-            : eventActivity;
+        return new EventActivity(activity);
     }
 
     /// <summary>
@@ -43,9 +40,6 @@ public class EventActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("value")]
     public JsonNode? Value { get; internal set; }
-
-    /// <inheritdoc/>
-    public override string ToJson() => CoreActivity.ToJson(this);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
