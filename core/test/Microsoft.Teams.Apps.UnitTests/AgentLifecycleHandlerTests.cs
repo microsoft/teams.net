@@ -44,7 +44,7 @@ public class AgentLifecycleHandlerTests
         EventActivity eventActivity = Assert.IsType<EventActivity>(activity);
         Assert.Equal(TeamsActivityTypes.Event, eventActivity.Type);
         Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
-        Assert.Equal(valueType, eventActivity.ValueType);
+        Assert.Equal(valueType, eventActivity.Properties.Get<string>("valueType"));
         Assert.NotNull(eventActivity.Value);
     }
 
@@ -55,7 +55,7 @@ public class AgentLifecycleHandlerTests
 
         EventActivity eventActivity = Assert.IsType<EventActivity>(activity);
         Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
-        Assert.Equal("UnknownLifecycleValueType", eventActivity.ValueType);
+        Assert.Equal("UnknownLifecycleValueType", eventActivity.Properties.Get<string>("valueType"));
         Assert.NotNull(eventActivity.Value);
     }
 
@@ -70,7 +70,7 @@ public class AgentLifecycleHandlerTests
             called = true;
             Assert.IsType<EventActivity>(ctx.Activity);
             Assert.Equal(EventNames.AgentLifecycle, ctx.Activity.Name);
-            Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserEnabled, ctx.Activity.ValueType);
+            Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserEnabled, ctx.Activity.Properties.Get<string>("valueType"));
             return Task.CompletedTask;
         });
 
@@ -94,6 +94,7 @@ public class AgentLifecycleHandlerTests
             Assert.Same(state, ctx.State);
             Assert.Equal(typeof(AgentLifecycleEventActivity), ctx.Activity.GetType());
             Assert.Equal(valueType, ctx.Activity.ValueType);
+            Assert.False(ctx.Activity.Properties.ContainsKey("valueType"));
             return Task.CompletedTask;
         });
 
@@ -218,6 +219,7 @@ public class AgentLifecycleHandlerTests
         Assert.Equal(expectedType, context.Activity.GetType());
         Assert.Equal(EventNames.AgentLifecycle, context.Activity.Name);
         Assert.Equal(valueType, context.Activity.ValueType);
+        Assert.False(context.Activity.Properties.ContainsKey("valueType"));
     }
 
     private static Task DispatchAsync(TeamsBotApplication app, string valueType, TurnStateContainer? state = null)

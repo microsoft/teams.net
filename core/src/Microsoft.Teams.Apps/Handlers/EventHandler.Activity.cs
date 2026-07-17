@@ -30,12 +30,6 @@ public class EventActivity : TeamsActivity
     public string? Name { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the value payload type for event activities that carry typed variants.
-    /// </summary>
-    [JsonPropertyName("valueType")]
-    public string? ValueType { get; set; }
-
-    /// <summary>
     /// Gets or sets the value payload of the event activity.
     /// </summary>
     [JsonPropertyName("value")]
@@ -57,13 +51,11 @@ public class EventActivity : TeamsActivity
         if (activity is EventActivity evt)
         {
             Name = evt.Name;
-            ValueType = evt.ValueType;
             Value = evt.Value;
             return;
         }
 
         Name = Properties.Extract<string>("name");
-        ValueType = Properties.Extract<string>("valueType");
         Value = Properties.Extract<JsonNode>("value");
     }
 }

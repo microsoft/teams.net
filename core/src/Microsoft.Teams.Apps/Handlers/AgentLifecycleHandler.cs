@@ -249,7 +249,7 @@ public static class AgentLifecycleExtensions
             Name = routeName,
             Selector = activity =>
                 activity.Name == EventNames.AgentLifecycle
-                && (valueType is null || activity.ValueType == valueType),
+                && (valueType is null || activity.Properties.Get<string>("valueType") == valueType),
             Handler = async (ctx, cancellationToken) =>
             {
                 TActivity typedActivity = createActivity(ctx.Activity);

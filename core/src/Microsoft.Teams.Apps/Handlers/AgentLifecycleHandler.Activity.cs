@@ -12,6 +12,12 @@ namespace Microsoft.Teams.Apps.Handlers;
 public class AgentLifecycleEventActivity : EventActivity
 {
     /// <summary>
+    /// Gets or sets the lifecycle value payload type.
+    /// </summary>
+    [JsonPropertyName("valueType")]
+    public string? ValueType { get; internal set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AgentLifecycleEventActivity"/> class.
     /// </summary>
     [JsonConstructor]
@@ -27,6 +33,11 @@ public class AgentLifecycleEventActivity : EventActivity
     internal AgentLifecycleEventActivity(EventActivity activity) : base(activity)
     {
         Name ??= EventNames.AgentLifecycle;
+        ValueType = Properties.Extract<string>("valueType");
+        if (ValueType is null && activity is AgentLifecycleEventActivity lifecycleActivity)
+        {
+            ValueType = lifecycleActivity.ValueType;
+        }
     }
 }
 
