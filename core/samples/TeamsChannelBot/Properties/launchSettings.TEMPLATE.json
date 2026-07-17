@@ -1,11 +1,11 @@
 {
   "profiles": {
-    "ConversationSample": {
+    "TeamsChannelBot": {
       "commandName": "Project",
       "launchBrowser": false,
       "applicationUrl": "http://localhost:3978",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Local",
+        "ASPNETCORE_ENVIRONMENT": "Development",
         "AzureAD__Instance": "https://login.microsoftonline.com/",
         "AzureAD__TenantId": "",
         "AzureAD__ClientId": "",

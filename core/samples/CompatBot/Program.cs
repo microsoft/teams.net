@@ -47,6 +47,6 @@ app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string 
                 MessageFactory.Text($"Proactive.  <br/> SDK `{BotApplication.Version}` at {DateTime.Now:T}"), ct);
         },
         ct);
-}).RequireAuthorization();
+});
 
 app.Run();
