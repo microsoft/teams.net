@@ -12,8 +12,7 @@
 - Rich text responses (`Markdown`, `ExtendedMarkdown`), mentions, typing indicators.
 - Citation + feedback entities in responses.
 - Adaptive Card feedback submission via `OnAdaptiveCardAction`.
-- Reaction add/remove APIs via `context.Api.Conversations.*ReactionAsync`.
-- Generic invoke/event handling (`OnEvent`, `OnMessageSubmitAction`).
+- Generic invoke/event handling (`OnEvent`).
 
 ## Commands / Flows
 

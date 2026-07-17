@@ -150,49 +150,6 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
     await context.SendAsync(reply, cancellationToken);
 });
 
-
-// Reactions handler: matches "react" (case-insensitive) - adds and removes bot reactions on a message
-teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
-{
-    ArgumentNullException.ThrowIfNull(context);
-    ArgumentNullException.ThrowIfNull(context.Activity);
-    ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
-    ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
-
-    MessageActivityInput tmMsgToReact = MessageActivityInput.CreateBuilder()
-        .WithText("I'm going to add and remove reactions to this message.")
-        .Build();
-
-    SendActivityResponse? response = await context.SendAsync(tmMsgToReact, cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-
-    // Add a waving hand reaction
-    await context.Api.Conversations.AddReactionAsync(
-        context.Activity.Conversation.Id,
-        response!.Id!,
-        "1f44b_wavinghand-tone4",
-        cancellationToken: cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-
-    // Add a beaming face reaction
-    await context.Api.Conversations.AddReactionAsync(
-        context?.Activity?.Conversation?.Id!,
-        response.Id!,
-        "1f601_beamingfacewithsmilingeyes",
-        cancellationToken: cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-    ArgumentNullException.ThrowIfNull(context);
-    // Remove the beaming face reaction
-    await context.Api.Conversations.DeleteReactionAsync(
-        context?.Activity?.Conversation?.Id!,
-        response.Id!,
-        "1f601_beamingfacewithsmilingeyes",
-        cancellationToken: cancellationToken);
-});
-
 // Feedback handler: matches "feedback" (case-insensitive) - sends a feedback card and shows the response via OnAdaptiveCardAction
 teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
 {
