@@ -9,7 +9,15 @@ Demonstrates handling `ConversationUpdate` channel and team events in a Teams bo
 
 ---
 
-## Manifest
+## What it shows
+
+- Channel lifecycle events (`channelCreated`, `channelDeleted`, `channelRenamed`).
+- Channel membership/share events in shared channels.
+- Team lifecycle and membership events (`teamMemberAdded`, `teamArchived`, etc.).
+
+---
+
+## Manifest (relevant part)
 
 For adding a bot to a shared channel, add `"supportsChannelFeatures": "tier1"` to the root in your `manifest.json`:
 
@@ -42,14 +50,11 @@ For adding a bot to a shared channel, add `"supportsChannelFeatures": "tier1"` t
 | `teamArchived` |**Archive team** |
 | `teamUnarchived` | **Restore team** |
 | `teamRenamed` | **Manage team → Settings** → edit team name |
-| `teamDeleted` | **Delete team |
+| `teamDeleted` | **Delete team** |
 ---
 
 ## Running the Sample
 
-1. Build and run:
-   ```bash
-   dotnet run --project samples/TeamsChannelBot/TeamsChannelBot.csproj
-   ```
-
----
+~~~bash
+dotnet run --project samples/TeamsChannelBot/TeamsChannelBot.csproj
+~~~

@@ -150,96 +150,6 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
     await context.SendAsync(reply, cancellationToken);
 });
 
-// Targeted message handler: matches "targeted" (case-insensitive)
-// Demonstrates send, update, and delete of a targeted message using Recipient.IsTargeted
-teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
-{
-    ArgumentNullException.ThrowIfNull(context.Activity.From);
-    ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
-    ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
-
-    // Send a targeted message visible only to the sender
-    MessageActivityInput targeted = MessageActivityInput.CreateBuilder()
-        .WithText("This is a targeted message only you can see!")
-        .WithRecipient(context.Activity.From, isTargeted: true)
-        .Build();
-
-    SendActivityResponse? sendResponse = await context.SendAsync(targeted, cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-
-    // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
-    MessageActivityInput updated = MessageActivityInput.CreateBuilder()
-        .WithText("This targeted message was updated!")
-        .Build();
-
-    await context.Api.Conversations.UpdateTargetedActivityAsync(
-        context.Activity.Conversation.Id!,
-        sendResponse!.Id!,
-        updated,
-        cancellationToken: cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-
-    // Delete the targeted message
-    await context.Api.Conversations.DeleteTargetedActivityAsync(
-        context.Activity.Conversation.Id!,
-        sendResponse.Id!,
-        cancellationToken: cancellationToken);
-});
-
-// Reactions handler: matches "react" (case-insensitive) - adds and removes bot reactions on a message
-teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
-{
-    ArgumentNullException.ThrowIfNull(context);
-    ArgumentNullException.ThrowIfNull(context.Activity);
-    ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
-    ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
-
-    MessageActivityInput tmMsgToReact = MessageActivityInput.CreateBuilder()
-        .WithText("I'm going to add and remove reactions to this message.")
-        .Build();
-
-    SendActivityResponse? response = await context.SendAsync(tmMsgToReact, cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-
-    // Add a waving hand reaction
-    await context.Api.Conversations.AddReactionAsync(
-        context.Activity.Conversation.Id,
-        response!.Id!,
-        "1f44b_wavinghand-tone4",
-        cancellationToken: cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-
-    // Add a beaming face reaction
-    await context.Api.Conversations.AddReactionAsync(
-        context?.Activity?.Conversation?.Id!,
-        response.Id!,
-        "1f601_beamingfacewithsmilingeyes",
-        cancellationToken: cancellationToken);
-
-    await Task.Delay(2000, cancellationToken);
-    ArgumentNullException.ThrowIfNull(context);
-    // Remove the beaming face reaction
-    await context.Api.Conversations.DeleteReactionAsync(
-        context?.Activity?.Conversation?.Id!,
-        response.Id!,
-        "1f601_beamingfacewithsmilingeyes",
-        cancellationToken: cancellationToken);
-});
-
-// Card handler: matches "card" (case-insensitive) - sends an adaptive card with a feedback form
-teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
-{
-    TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
-            .Build();
-    MessageActivityInput feedbackActivity = MessageActivityInput.CreateBuilder().AddAttachment(feedbackCard).Build();
-    await context.SendAsync(feedbackActivity, cancellationToken);
-});
-
 // Feedback handler: matches "feedback" (case-insensitive) - sends a feedback card and shows the response via OnAdaptiveCardAction
 teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
 {
@@ -252,35 +162,6 @@ teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
     await context.SendAsync(feedbackActivity, cancellationToken);
 });
 
-// Task handler: matches "task" (case-insensitive) - sends a card that opens a task module
-teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
-{
-    TeamsAttachment taskCard = TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(Cards.TaskModuleLauncherCard)
-            .Build();
-    MessageActivityInput taskActivity = MessageActivityInput.CreateBuilder().AddAttachment(taskCard).Build();
-    await context.SendAsync(taskActivity, cancellationToken);
-});
-
-teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
-{
-    SuggestedActions suggestedActions = new()
-    {
-        To = [context.Activity.From?.Id!],
-        Actions = [
-            new SuggestedAction(ActionTypes.IMBack, "Option 1", "You chose option 1"),
-            new SuggestedAction(ActionTypes.IMBack, "Option 2", "You chose option 2"),
-            new SuggestedAction(ActionTypes.IMBack, "Option 3", "You chose option 3")
-        ]
-    };
-
-    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
-        .WithText("Here are some suggested actions for you:")
-        .WithSuggestedActions(suggestedActions)
-        .Build();
-
-    await context.SendAsync(reply, cancellationToken);
-});
 
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
@@ -303,32 +184,6 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
     }
 });
 
-// ==================== MESSAGE LIFECYCLE ====================
-
-teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
-{
-    string updatedText = context.Activity.Text ?? "<no text>";
-    MessageActivityInput reply = MessageActivityInput.CreateBuilder().WithText($"I saw that you updated your message to: `{updatedText}`").Build();
-    await context.SendAsync(reply, cancellationToken);
-});
-
-teamsApp.OnMessageReaction(async (context, cancellationToken) =>
-{
-    string reactionsAdded = string.Join(", ", context.Activity.ReactionsAdded?.Select(r => r.Type) ?? []);
-    string reactionsRemoved = string.Join(", ", context.Activity.ReactionsRemoved?.Select(r => r.Type) ?? []);
-
-    TeamsAttachment reactionsCard = TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(Cards.ReactionsCard(reactionsAdded, reactionsRemoved))
-            .Build();
-    MessageActivityInput reply = MessageActivityInput.CreateBuilder().AddAttachment(reactionsCard).Build();
-
-    await context.SendAsync(reply, cancellationToken);
-});
-
-teamsApp.OnMessageDelete(async (context, cancellationToken) =>
-{
-    await context.SendAsync("I saw that message you deleted", cancellationToken);
-});
 
 // ==================== INVOKE HANDLERS ====================
 
@@ -348,102 +203,12 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
 
     return AdaptiveCardResponse.CreateMessageResponse("Feedback received!");
 });
-
-// Task module fetch: returns an Adaptive Card dialog
-teamsApp.OnTaskFetch(async (context, cancellationToken) =>
-{
-    await Task.CompletedTask;
-
-    return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseTypes.Continue)
-        .WithTitle("Task Module Demo")
-        .WithHeight(TaskModuleSizes.Medium)
-        .WithWidth(TaskModuleSizes.Medium)
-        .WithCard(TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(Cards.TaskModuleFormCard)
-            .Build())
-        .Build();
-});
-
-// Task module submit: processes the task module form submission
-teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
-{
-    JsonNode? data = context.Activity.Value?.Data is System.Text.Json.JsonElement je
-        ? JsonNode.Parse(je.GetRawText())
-        : null;
-
-    string? name = data?["userName"]?.ToString();
-    string? comment = data?["userComment"]?.ToString();
-
-    MessageActivityInput reply = MessageActivityInput.CreateBuilder()
-        .WithText($"**Task module submitted!**\n- Name: {name ?? "(empty)"}\n- Comment: {comment ?? "(empty)"}")
-        .Build();
-
-    await context.SendAsync(reply, cancellationToken);
-
-    return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseTypes.Message)
-        .WithMessage($"Thanks {name ?? "there"}! Your response was recorded.")
-        .Build();
-});
-
 // ==================== EVENT HANDLERS ====================
 
 teamsApp.OnEvent(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[Event] Name: {context.Activity.Name}");
     await context.SendAsync($"Received event: `{context.Activity.Name}`", cancellationToken);
-});
-
-// ==================== CONVERSATION UPDATE HANDLERS ====================
-
-teamsApp.OnMembersAdded(async (context, cancellationToken) =>
-{
-    Console.WriteLine($"[MembersAdded] {context.Activity.MembersAdded?.Count ?? 0} member(s) added");
-
-    string memberNames = string.Join(", ", context.Activity.MembersAdded?.Select(m => m.Name ?? m.Id) ?? []);
-    await context.SendAsync($"Welcome! Members added: {memberNames}", cancellationToken);
-});
-
-teamsApp.OnMembersRemoved(async (context, cancellationToken) =>
-{
-    Console.WriteLine($"[MembersRemoved] {context.Activity.MembersRemoved?.Count ?? 0} member(s) removed");
-
-    string memberNames = string.Join(", ", context.Activity.MembersRemoved?.Select(m => m.Name ?? m.Id) ?? []);
-    await context.SendAsync($"Goodbye! Members removed: {memberNames}", cancellationToken);
-});
-
-// ==================== INSTALL UPDATE HANDLERS ====================
-
-teamsApp.OnInstallUpdate(async (context, cancellationToken) =>
-{
-    string action = context.Activity.Action ?? "unknown";
-    Console.WriteLine($"[InstallUpdate] Installation action: {action}");
-
-    if (context.Activity.Action != InstallUpdateActions.Remove)
-    {
-        await context.SendAsync($"Installation update: {action}", cancellationToken);
-    }
-});
-
-teamsApp.OnInstall(async (context, cancellationToken) =>
-{
-    Console.WriteLine($"[InstallAdd] Bot was installed");
-    await context.SendAsync("Thanks for installing me! I'm ready to help.", cancellationToken);
-});
-
-teamsApp.OnUnInstall((context, cancellationToken) =>
-{
-    Console.WriteLine($"[InstallRemove] Bot was uninstalled");
-    return Task.CompletedTask;
-});
-
-// TODO: This do not trigger from the TimeOffCard submission, need to investigate if it's an issue with the card or the handler
-teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
-{
-    string actionData = JsonSerializer.Serialize(context.Activity.Value);
-    await context.SendAsync($"Received submit action with data: {actionData}", cancellationToken);
-    return new InvokeResponse(200, "Submit Action Received");
 });
 
 webApp.Run();

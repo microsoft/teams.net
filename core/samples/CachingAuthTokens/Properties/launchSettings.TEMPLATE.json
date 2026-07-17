@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "CachingAuthTokens": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureAd__Instance": "https://login.microsoftonline.com/",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "ConnectionStrings__Redis": ""
+      }
+    }
+  }
+}

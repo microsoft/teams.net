@@ -1,10 +1,8 @@
 {
   "profiles": {
-    "ElCanario": {
+    "ObservabilityBot": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:3978",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "AzureAd__TenantId": "",
@@ -14,8 +12,10 @@
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "",
         "AZURE_OPENAI_ENDPOINT": "",
         "AZURE_OPENAI_KEY": "",
-        "AZURE_OPENAI_DEPLOYMENT": "gpt-5.4-mini"
-      }
+        "AZURE_OPENAI_DEPLOYMENT": "",
+        "AzureAd__Instance": "https://login.microsoftonline.com/"
+      },
+      "applicationUrl": "http://localhost:3978"
     }
   }
 }

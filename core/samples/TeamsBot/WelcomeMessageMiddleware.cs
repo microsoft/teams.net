@@ -15,24 +15,15 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
 
 **Messages**
 - `hello` - Greeting
-- `extended` - Extended markdown demo (tables, math)
+- `extendedMarkdown` - Extended markdown demo (tables, math)
 - `markdown` - Markdown formatting demo
 - `citation` - AI citations with feedback
-- `targeted` - Targeted message lifecycle(send, update, delete)
-- `react` - Bot reactions(add, remove)
-- `card` - Send an Adaptive Card with a feedback form
 - `feedback` - Feedback form with Adaptive Card action round-trip
-- `task` - Open a task module dialog
-- `suggested` - Suggested actions
 
-** Commands**
+**Commands**
 - `/help` - Available slash commands
 - `/about` - About this bot
 - `/time` - Current server time
-
-** Lifecycle** *(automatic)*
-- Message edits, deletes, and reactions are detected
-- Member join/leave and install/uninstall events are handled
 """;
 
     public async Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)

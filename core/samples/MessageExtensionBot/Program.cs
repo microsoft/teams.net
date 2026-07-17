@@ -178,29 +178,6 @@ bot.OnQueryLink(async (context, cancellationToken) =>
         .Build();
 });
 
-// ==================== MESSAGE EXTENSION ANON QUERY LINK ====================
-//TODO : difficult to test, app must be published to catalog
-bot.OnAnonQueryLink(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnAnonQueryLink");
-
-    MessageExtensionQueryLink? anonQueryLink = context.Activity.Value;
-    if (anonQueryLink != null)
-    {
-        Console.WriteLine($"  URL: '{anonQueryLink.Url}'");
-    }
-
-    object card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url?.ToString());
-    TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-        .WithContent(card).WithContentType(AttachmentContentTypes.ThumbnailCard).Build();
-
-    return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseTypes.Result)
-        .WithAttachmentLayout(TeamsAttachmentLayouts.List)
-        .WithAttachments(attachment)
-        .Build();
-});
-
 
 // ==================== MESSAGE EXTENSION QUERY SETTING URL ====================
 bot.OnQuerySettingUrl(async (context, cancellationToken) =>

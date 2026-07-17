@@ -1,14 +1,116 @@
-# MessageExtensionBot Testing Guide
+# MessageExtensionBot
 
 A sample bot demonstrating Teams message extension handlers.
 
+## Prerequisites
+
+- Bot registered and installed in Teams.
+- Manifest package created from the inline manifest plus `color.png` / `outline.png`.
+
 ## Setup
 
-1. Configure bot credentials in `appsettings.json` or environment variables
-2. Run the bot: `dotnet run`
-3. Upload `manifest.json` to Teams
+1. Configure bot credentials in `Properties/launchSettings.TEMPLATE.json` (or environment variables).
+2. Run the bot: `dotnet run`.
+3. Sideload the Teams app package.
 
-## Testing Handlers
+## Manifest (inline)
+
+```json
+{
+  "staticTabs": [
+    {
+      "entityId": "conversations",
+      "scopes": [
+        "personal"
+      ]
+    },
+    {
+      "entityId": "about",
+      "scopes": [
+        "personal"
+      ]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "YOUR_BOT_ID",
+      "scopes": [
+        "personal",
+        "team",
+        "groupChat"
+      ],
+      "isNotificationOnly": false,
+      "supportsCalling": false,
+      "supportsVideo": false,
+      "supportsFiles": false
+    }
+  ],
+  "composeExtensions": [
+    {
+      "botId": "YOUR_BOT_ID",
+      "commands": [
+        {
+          "id": "searchQuery",
+          "type": "query",
+          "title": "searchQuery",
+          "description": "Enter search text",
+          "initialRun": true,
+          "fetchTask": false,
+          "context": [
+            "commandBox",
+            "compose",
+            "message"
+          ],
+          "parameters": [
+            {
+              "name": "searchText",
+              "title": "searchText",
+              "description": "Enter search text",
+              "inputType": "text"
+            }
+          ]
+        },
+        {
+          "id": "createAction",
+          "type": "action",
+          "title": "createAction",
+          "description": "Create a new item",
+          "initialRun": true,
+          "fetchTask": true,
+          "context": [
+            "commandBox",
+            "compose",
+            "message"
+          ],
+          "parameters": [
+            {
+              "name": "createAction",
+              "title": "createAction",
+              "description": "Create a new item",
+              "inputType": "text"
+            }
+          ]
+        }
+      ],
+      "canUpdateConfiguration": true,
+      "messageHandlers": [
+        {
+          "type": "link",
+          "value": {
+            "domains": [
+              "*.example.com",
+              "*.microsoft.com"
+            ],
+            "supportsAnonymizedPayloads": true
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+## What it shows
 
 ### OnQuery (Search)
 **Manifest:** `composeExtensions.commands` with `type: "query"`
@@ -53,3 +155,8 @@ A sample bot demonstrating Teams message extension handlers.
 1. Right-click message extension icon
 2. Select Settings
 3. Verify settings URL opens (microsoft.com)
+## Running the Sample
+
+~~~bash
+dotnet run --project samples/MessageExtensionBot/MessageExtensionBot.csproj
+~~~
