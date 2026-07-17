@@ -1,0 +1,135 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
+
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
+
+// Inbound quoted replies — fires on every message, echoes metadata when a quote is present.
+teamsApp.OnMessage(async (context, cancellationToken) =>
+{
+    QuotedReplyData? quote = context.Activity.GetQuotedMessages().FirstOrDefault()?.QuotedReply;
+    if (quote == null) return;
+
+    string info = $"Quoted message ID: {quote.MessageId}";
+    if (quote.SenderName != null) info += $"\nFrom: {quote.SenderName}";
+    if (quote.Preview != null) info += $"\nPreview: \"{quote.Preview}\"";
+    if (quote.IsReplyDeleted == true) info += "\n(deleted)";
+    if (quote.ValidatedMessageReference == true) info += "\n(validated)";
+
+    await context.SendAsync(
+        MessageActivityInput.CreateBuilder().WithText($"You sent a message with a quoted reply:\n\n{info}", TextFormats.Markdown).Build(),
+        cancellationToken);
+});
+
+// ReplyAsync() — auto-quotes the inbound message
+teamsApp.OnMessage("(?i)^quote reply$", async (context, cancellationToken) =>
+{
+    await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
+});
+
+// QuoteAsync() — quote a previously sent message by ID
+teamsApp.OnMessage("(?i)^quote message$", async (context, cancellationToken) =>
+{
+    SendActivityResponse? sent = await context.SendAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
+    if (sent?.Id != null)
+    {
+        await context.QuoteAsync(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
+    }
+});
+
+// AddQuote() builder method — fluent API
+teamsApp.OnMessage("(?i)^quote add$", async (context, cancellationToken) =>
+{
+    SendActivityResponse? sent = await context.SendAsync("Please review the latest PR before end of day.", cancellationToken);
+    if (sent?.Id != null)
+    {
+        MessageActivityInput msg = MessageActivityInput.CreateBuilder()
+            .AddQuote(sent.Id, "Done! Left my comments on the PR.")
+            .Build();
+        await context.SendAsync(msg, cancellationToken);
+    }
+});
+
+// Multi-quote with mixed responses
+teamsApp.OnMessage("(?i)^quote batch$", async (context, cancellationToken) =>
+{
+    SendActivityResponse? sentA = await context.SendAsync("We need to update the API docs before launch.", cancellationToken);
+    SendActivityResponse? sentB = await context.SendAsync("The design mockups are ready for review.", cancellationToken);
+    SendActivityResponse? sentC = await context.SendAsync("CI pipeline is green on main.", cancellationToken);
+
+    if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
+    {
+        MessageActivityInput msg = MessageActivityInput.CreateBuilder()
+            .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
+            .AddQuote(sentB.Id, "Looks great, approved!")
+            .AddQuote(sentC.Id)
+            .Build();
+        await context.SendAsync(msg, cancellationToken);
+    }
+});
+
+// Threading commands — reactive and proactive threading in channels
+teamsApp.OnMessage("(?i)^thread send$", async (context, cancellationToken) =>
+{
+    await context.SendAsync("This is a reactive send to the same conversation.", cancellationToken);
+});
+
+teamsApp.OnMessage("(?i)^thread reply$", async (context, cancellationToken) =>
+{
+    string conversationId = context.Activity.Conversation!.Id;
+    string messageId = context.Activity.Id!;
+    string[] threadParts = conversationId.Split(";messageid=");
+    string threadRootId = threadParts.Length > 1 ? threadParts[1] : messageId;
+
+    await teamsApp.ReplyAsync(
+        conversationId,
+        threadRootId,
+        "This is a threaded reply using teamsApp.ReplyAsync().",
+        cancellationToken: cancellationToken);
+});
+
+teamsApp.OnMessage("(?i)^thread manual$", async (context, cancellationToken) =>
+{
+    string conversationId = context.Activity.Conversation!.Id;
+    string messageId = context.Activity.Id!;
+    string[] threadParts = conversationId.Split(";messageid=");
+    string threadRootId = threadParts.Length > 1 ? threadParts[1] : messageId;
+
+    string threadId = ConversationExtensions.ToThreadedConversationId(conversationId, threadRootId);
+    await teamsApp.SendAsync(
+        threadId,
+        "This was sent using ToThreadedConversationId() + teamsApp.SendAsync() for manual control.",
+        cancellationToken: cancellationToken);
+});
+
+// Help
+teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
+{
+    await context.SendAsync(
+        MessageActivityInput.CreateBuilder()
+            .WithText(
+            "**QuotingAndThreadingBot**\n\n" +
+            "**Commands:**\n" +
+            "- `quote reply` - auto-quote the inbound message\n" +
+            "- `quote message` - send a message, then quote it by ID\n" +
+            "- `quote add` - use the `AddQuote()` builder helper\n" +
+            "- `quote batch` - send multiple quotes in one reply\n" +
+            "- `thread send` - send a normal message to the conversation\n" +
+            "- `thread reply` - send a threaded reply using `teamsApp.ReplyAsync()`\n" +
+            "- `thread manual` - manually build a threaded conversation id and send to it\n" +
+            "Quote any message to me to see the parsed metadata!", TextFormats.Markdown)
+            .Build(),
+        cancellationToken);
+});
+
+webApp.Run();

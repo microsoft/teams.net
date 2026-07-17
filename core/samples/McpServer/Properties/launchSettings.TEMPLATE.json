@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "McpServer": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureAD__Instance": "https://login.microsoftonline.com/",
+        "AzureAD__TenantId": "",
+        "AzureAD__ClientId": "",
+        "AzureAD__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": ""
+      },
+      "applicationUrl": "http://localhost:3978"
+    }
+  }
+}

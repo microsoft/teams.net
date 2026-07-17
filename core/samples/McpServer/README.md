@@ -4,6 +4,12 @@ A Teams bot that doubles as an MCP server, exposing human-in-the-loop tools that
 let an MCP client (an agent, an IDE, etc.) reach a real user through Teams and
 wait for them to reply or approve.
 
+## What it shows
+
+- Human-in-the-loop tools (`ask`, `wait_for_reply`, `request_approval`) exposed through MCP.
+- Teams messaging from MCP calls (`notify`) and user lookup (`find_user` via Graph).
+- Async wait/poll patterns for replies and approvals.
+
 ## Tools
 
 | Tool               | Description                                                                          | Parameters                          |
@@ -19,26 +25,16 @@ wait for them to reply or approve.
 
 `userId` everywhere below is the **AAD object id** of someone in the same tenant. Use `find_user` to resolve a name to an id.
 
+## Prerequisites
+
+- Bot registered and installed in Teams.
+- Microsoft Graph application permission `User.ReadBasic.All` granted with admin consent.
+
 ## Configure
 
-Set credentials in `appsettings.json` *or* `Properties/launchSettings.json`
-(env-var form).
+Set credentials in `Properties/launchSettings.TEMPLATE.json`, then copy to `launchSettings.json` for local runs.
 
-`appsettings.json`:
-
-```json
-{
-  "AzureAd": {
-    "TenantId": "<your-tenant-id>",
-    "ClientId": "<your-azure-bot-app-id>",
-    "ClientCredentials": [
-      { "SourceType": "ClientSecret", "ClientSecret": "<your-azure-bot-app-secret>" }
-    ]
-  }
-}
-```
-
-Or via env vars in `launchSettings.json`:
+Required env vars:
 
 ```
 AzureAd__TenantId=<your-tenant-id>
@@ -75,7 +71,11 @@ default) and serves the MCP endpoint at `http://localhost:3978/mcp`.
 
 ```bash
 dotnet run --project samples/McpServer
-# in a second terminal:
+```
+
+In a second terminal:
+
+```bash
 npx @modelcontextprotocol/inspector
 ```
 

@@ -66,16 +66,6 @@ app.OnChannelUnshared(async (context, cancellationToken) =>
     await context.SendAsync($"Channel unshared: {channelName}", cancellationToken);
 });
 
-/*
-//not able to test - no activity received
-app.OnChannelRestored(async (context, cancellationToken) =>
-{
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
-    Console.WriteLine($"[ChannelRestored] Channel '{channelName}' was restored");
-    await context.SendAsync($"Channel restored: {channelName}", cancellationToken);
-});
-*/
-
 // ==================== TEAM EVENT HANDLERS ====================
 
 app.OnTeamMemberAdded(async (context, cancellationToken) =>
@@ -117,22 +107,5 @@ app.OnTeamUnarchived(async (context, cancellationToken) =>
     Console.WriteLine($"[TeamUnarchived] Team '{teamName}' was unarchived");
     await context.SendAsync($"Team unarchived: {teamName}", cancellationToken);
 });
-/*
-// how to test ?
-app.OnTeamHardDeleted((context, cancellationToken) =>
-{
-    var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
-    Console.WriteLine($"[TeamHardDeleted] Team '{teamName}' was permanently deleted");
-    return Task.CompletedTask;
-});
-
-// how to test ? Restore is unarchived 
-app.OnTeamRestored(async (context, cancellationToken) =>
-{
-    var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
-    Console.WriteLine($"[TeamRestored] Team '{teamName}' was restored");
-    await context.SendAsync($"Team restored: {teamName}", cancellationToken);
-});
-*/
 
 webApp.Run();

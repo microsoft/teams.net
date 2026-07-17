@@ -9,16 +9,8 @@ using Microsoft.Bot.Schema;
 using Microsoft.Teams.Apps.BotBuilder;
 using Microsoft.Teams.Core;
 
-// using Microsoft.Bot.Connector.Authentication;
-
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.AddTeamsBotFrameworkHttpAdapter();
-
-//builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
-//builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(provider => 
-//    new CloudAdapter(
-//        provider.GetRequiredService<BotFrameworkAuthentication>(),
-//        provider.GetRequiredService<ILogger<CloudAdapter>>()));
 
 
 MemoryStorage storage = new();
@@ -29,7 +21,6 @@ builder.Services.AddTransient<IBot, EchoBot>();
 WebApplication app = builder.Build();
 
 TeamsBotFrameworkHttpAdapter compatAdapter = (TeamsBotFrameworkHttpAdapter)app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
-compatAdapter.Use(new MyCompatMiddleware());
 compatAdapter.Use(new MyCompatMiddleware());
 compatAdapter.OnTurnError = async (turnContext, exception) =>
 {
@@ -46,6 +37,7 @@ app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string 
         Conversation = new() { Id = cid },
         ServiceUrl = "https://smba.trafficmanager.net/teams"
     };
+
     await ((BotAdapter)adapter).ContinueConversationAsync(
         string.Empty,
         proactive.GetConversationReference(),
@@ -55,6 +47,6 @@ app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string 
                 MessageFactory.Text($"Proactive.  <br/> SDK `{BotApplication.Version}` at {DateTime.Now:T}"), ct);
         },
         ct);
-});
+}).RequireAuthorization();
 
 app.Run();
