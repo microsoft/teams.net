@@ -66,8 +66,8 @@ public class TeamsActivity : CoreActivity
         base.From = TeamsChannelAccount.FromChannelAccount(activity.From) ?? new TeamsChannelAccount();
         base.Recipient = TeamsChannelAccount.FromChannelAccount(activity.Recipient) ?? new TeamsChannelAccount();
         base.Conversation = TeamsConversation.FromConversation(activity.Conversation) ?? new TeamsConversation();
-        ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
-        Entities = activity.Properties.Extract<EntityList>("entities");
+        ChannelData = Properties.Extract<TeamsChannelData>("channelData");
+        Entities = Properties.Extract<EntityList>("entities");
     }
 
     /// <summary>
