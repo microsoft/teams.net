@@ -48,7 +48,6 @@
     <File Path="version.json" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="samples/Proactive/Proactive.csproj" Id="69f021eb-451b-4dd3-b848-137d764ba586" />
     <Project Path="test/ABSTokenServiceClient/ABSTokenServiceClient.csproj" />
     <Project Path="test/Microsoft.Teams.Apps.BotBuilder.UnitTests/Microsoft.Teams.Apps.BotBuilder.UnitTests.csproj" Id="17f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Apps.UnitTests/Microsoft.Teams.Apps.UnitTests.csproj" Id="16f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
