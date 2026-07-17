@@ -102,7 +102,7 @@ dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
 | [MessageExtensionBot](samples/MessageExtensionBot/) | Message extension search and actions |
 | [MeetingsBot](samples/MeetingsBot/) | Meeting events and participant APIs |
 | [OAuthFlowBot](samples/OAuthFlowBot/) | OAuth sign-in and token management |
-| [SsoBot](samples/SsoBot/) | Single sign-on (SSO) token exchange |
+| [GraphBot](samples/GraphBot/) | App-only bot using the Microsoft Graph SDK with client credentials |
 | [StreamingBot](samples/StreamingBot/) | Progressive streaming responses |
 | [Proactive](samples/Proactive/) | Proactive messaging from external triggers |
 | [TabApp](samples/TabApp/) | Tab application with backend API |
