@@ -15,16 +15,16 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
 
 **Messages**
 - `hello` - Greeting
-- `extended` - Extended markdown demo (tables, math)
+- `extendedMarkdown` - Extended markdown demo (tables, math)
 - `markdown` - Markdown formatting demo
-- `citation` - AI citations with feedback- `card` - Send an Adaptive Card with a feedback form
-- `feedback` - Feedback form with Adaptive Card action round-trip- `suggested` - Suggested actions
+- `citation` - AI citations with feedback
+- `feedback` - Feedback form with Adaptive Card action round-trip
 
-** Commands**
+**Commands**
 - `/help` - Available slash commands
 - `/about` - About this bot
 - `/time` - Current server time
-"""
+""";
 
     public async Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {
