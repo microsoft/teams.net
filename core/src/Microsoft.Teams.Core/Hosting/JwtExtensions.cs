@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,9 +24,6 @@ namespace Microsoft.Teams.Core.Hosting
     /// </summary>
     public static class JwtExtensions
     {
-        internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
-        internal const string EntraOIDC = "https://login.microsoftonline.com/";
-
         /// <summary>
         /// Adds JWT authentication for bots and agents using configuration from appsettings.
         /// </summary>
@@ -36,7 +34,9 @@ namespace Microsoft.Teams.Core.Hosting
         public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = BotConfig.DefaultSectionName, ILogger? logger = null)
         {
             BotConfig botConfig = BotConfig.Resolve(services, aadSectionName);
-            return services.AddBotAuthentication(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
+            AuthenticationBuilder builder = services.AddAuthentication();
+            builder.AddBotAuthentication(botConfig, logger);
+            return builder;
         }
 
         /// <summary>
@@ -77,9 +77,16 @@ namespace Microsoft.Teams.Core.Hosting
             string schemeName = BotConfig.DefaultSectionName,
             ILogger? logger = null)
         {
-            if (string.IsNullOrWhiteSpace(clientId))
+            ArgumentNullException.ThrowIfNull(builder);
+
+            BotConfig? botConfig = ResolveBotConfig(builder.Services, schemeName);
+            if (botConfig?.DangerouslyAllowUnauthenticatedRequests == true)
             {
                 builder.AddBypassAuthentication(schemeName, logger);
+            }
+            else if (string.IsNullOrWhiteSpace(clientId))
+            {
+                builder.AddAuthenticationNotConfigured(schemeName);
             }
             else
             {
@@ -114,7 +121,19 @@ namespace Microsoft.Teams.Core.Hosting
         {
             logger ??= NullLogger.Instance;
 
-            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, botConfig.SectionName, logger);
+            // Call AddTeamsJwtBearer with the already-resolved BotConfig to avoid a redundant
+            // BotConfig.Resolve call (and duplicate startup log) that would occur through the
+            // public string-based AddBotAuthentication → AddTeamsJwtBearer chain.
+            AuthenticationBuilder authBuilder = services.AddAuthentication();
+            authBuilder.AddBotAuthentication(botConfig, logger);
+
+            return services
+                .AddAuthorizationBuilder()
+                .AddDefaultPolicy(botConfig.SectionName, policy =>
+                {
+                    policy.AuthenticationSchemes.Add(botConfig.SectionName);
+                    policy.RequireAuthenticatedUser();
+                });
         }
 
         /// <summary>
@@ -144,23 +163,45 @@ namespace Microsoft.Teams.Core.Hosting
                 });
         }
 
-        private static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId)
+        internal static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId, string entraInstance, string botTokenIssuer)
         {
-            // Bot Framework tokens
-            if (issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase))
+            // Bot Framework tokens. The expected issuer varies by sovereign cloud
+            // (e.g. https://api.botframework.us for USGov) so it comes from configuration.
+            if (issuer.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase))
+            {
                 return issuer;
+            }
 
-            // Entra tokens � bot-to-bot (agent) and user (tab/API)
-            // Use the token's own tid claim for multi-tenant; fall back to configured tenant
+            // Entra tokens - bot-to-bot (agent) and user (tab/API)
+            // Use the token's own tid claim for multi-tenant; fall back to configured tenant.
+            // The v2.0 expected issuer is derived from the configured Entra instance so sovereign
+            // tokens (e.g. login.microsoftonline.us) validate correctly.
             (_, string? tid) = GetTokenClaims(token);
             string? effectiveTenant = string.IsNullOrEmpty(configuredTenantId) ? tid : configuredTenantId;
 
             if (effectiveTenant is not null &&
-                (issuer == $"https://login.microsoftonline.com/{effectiveTenant}/v2.0" ||
+                (issuer == $"{entraInstance}{effectiveTenant}/v2.0" ||
                  issuer == $"https://sts.windows.net/{effectiveTenant}/"))
+            {
                 return issuer;
+            }
 
-            throw new SecurityTokenInvalidIssuerException($"Issuer '{issuer}' is not valid.");
+            throw new SecurityTokenInvalidIssuerException(
+                $"Issuer '{issuer}' is not valid for tenant '{effectiveTenant ?? "<unknown>"}'.");
+        }
+
+        /// <summary>
+        /// Picks the OIDC metadata authority to fetch signing keys from based on the token's
+        /// issuer claim. Tokens issued by the configured Bot Framework issuer (e.g. the public
+        /// "https://api.botframework.com" or a sovereign equivalent like "https://api.botframework.us")
+        /// resolve to the configured Bot OIDC URL; all others fall through to the Entra tenant authority.
+        /// </summary>
+        internal static string ResolveSigningAuthority(string? iss, string? tid, string botTokenIssuer, string botOidcUrl, string entraInstance)
+        {
+            if (iss is null) return string.Empty;
+            return iss.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase)
+                ? botOidcUrl
+                : $"{entraInstance}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
         }
 
         private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) =>
@@ -169,25 +210,88 @@ namespace Microsoft.Teams.Core.Hosting
                 : (null, null);
 
         /// <summary>
-        /// Adds Teams JWT Bearer authentication that supports both Bot Framework and Entra ID tokens.
+        /// Overload that accepts an already-resolved <see cref="BotConfig"/> to avoid a redundant
+        /// BotConfig resolution call during internal registration paths.
         /// </summary>
-        /// <param name="builder">The authentication builder.</param>
-        /// <param name="schemeName">The authentication scheme name.</param>
-        /// <param name="audience">The application (client) ID used to validate the audience of tokens.</param>
-        /// <param name="tenantId">The Azure AD tenant ID.</param>
-        /// <param name="logger">Optional logger for authentication events.</param>
-        /// <returns>The authentication builder for chaining.</returns>
-        /// <remarks>
-        /// This method configures authentication to support both types of tokens:
-        /// <list type="bullet">
-        /// <item><description>Bot Framework tokens: Issued by the Bot Connector service when channels send activities to your bot (issuer: https://api.botframework.com).</description></item>
-        /// <item><description>Entra ID tokens: Issued by Azure AD when the bot is registered as an agentic application (issuer: https://login.microsoftonline.com). See https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#understanding-agent-identity-components</description></item>
-        /// </list>
-        /// The signing keys for both token types are dynamically resolved at runtime using OpenID Connect discovery,
-        /// allowing the same authentication configuration to validate tokens from multiple issuers.
-        /// </remarks>
+        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, BotConfig botConfig, ILogger? logger = null)
+        {
+            return builder.AddTeamsJwtBearer(
+                botConfig.SectionName,
+                botConfig.ClientId,
+                botConfig.TenantId,
+                botConfig.OpenIdMetadataUrl,
+                botConfig.EntraInstance,
+                botConfig.BotTokenIssuer,
+                logger);
+        }
+
+        private static AuthenticationBuilder AddBotAuthentication(this AuthenticationBuilder builder, BotConfig botConfig, ILogger? logger = null)
+        {
+            if (botConfig.DangerouslyAllowUnauthenticatedRequests)
+            {
+                builder.AddBypassAuthentication(botConfig.SectionName, logger);
+            }
+            else if (string.IsNullOrWhiteSpace(botConfig.ClientId))
+            {
+                builder.AddAuthenticationNotConfiguredScheme(botConfig.SectionName);
+            }
+            else
+            {
+                builder.AddTeamsJwtBearer(botConfig, logger);
+            }
+
+            return builder;
+        }
+
+        private static BotConfig? ResolveBotConfig(IServiceCollection services, string sectionName)
+        {
+            return services.Any(d => d.ServiceType == typeof(IConfiguration))
+                ? BotConfig.Resolve(services, sectionName, log: false)
+                : null;
+        }
+
+        private static AuthenticationBuilder AddAuthenticationNotConfigured(this AuthenticationBuilder builder, string schemeName)
+        {
+            AddBotApplicationExtensions.LogFromServices(builder.Services, l => l.AuthenticationNotConfigured(schemeName));
+            return builder.AddAuthenticationNotConfiguredScheme(schemeName);
+        }
+
+        private static AuthenticationBuilder AddAuthenticationNotConfiguredScheme(this AuthenticationBuilder builder, string schemeName)
+        {
+            builder.AddScheme<AuthenticationSchemeOptions, AuthenticationNotConfiguredHandler>(schemeName, _ => { });
+            return builder;
+        }
+
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
+            // Resolve sovereign-cloud-aware URLs from the same AzureAd section that produced clientId/tenantId.
+            // Defaults to the public-cloud values when IConfiguration is not registered (manual-credentials callers)
+            // or when the section is missing or doesn't override them.
+            string botOidcUrl = BotConfig.DefaultOpenIdMetadataUrl;
+            string entraInstance = BotConfig.DefaultEntraInstance;
+            string botTokenIssuer = BotConfig.DefaultBotTokenIssuer;
+            BotConfig? botConfig = ResolveBotConfig(builder.Services, schemeName);
+            if (botConfig is not null)
+            {
+                botOidcUrl = botConfig.OpenIdMetadataUrl;
+                entraInstance = botConfig.EntraInstance;
+                botTokenIssuer = botConfig.BotTokenIssuer;
+            }
+
+            return builder.AddTeamsJwtBearer(schemeName, audience, tenantId, botOidcUrl, entraInstance, botTokenIssuer, logger);
+        }
+
+        private static AuthenticationBuilder AddTeamsJwtBearer(
+            this AuthenticationBuilder builder,
+            string schemeName,
+            string audience,
+            string tenantId,
+            string botOidcUrl,
+            string entraInstance,
+            string botTokenIssuer,
+            ILogger? logger)
+        {
+
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
 
@@ -206,16 +310,14 @@ namespace Microsoft.Teams.Core.Hosting
                     RequireSignedTokens = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidAudiences = [audience, $"api://{audience}"],
-                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId),
+                    ValidAudiences = [audience, $"api://{audience}", $"api://botid-{audience}"],
+                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId, entraInstance, botTokenIssuer),
                     IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {
                         (string? iss, string? tid) = GetTokenClaims(securityToken);
                         if (iss is null) return [];
 
-                        string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
-                            ? BotOIDC
-                            : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+                        string authority = ResolveSigningAuthority(iss, tid, botTokenIssuer, botOidcUrl, entraInstance);
 
                         logger?.ResolvingSigningKeys(authority, iss);
 

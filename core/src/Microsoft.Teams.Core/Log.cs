@@ -19,8 +19,8 @@ internal static partial class Log
     public static IDisposable? BeginActivityScope(this ILogger logger, string? activityType, string? activityId, Uri? serviceUrl, string? mscv) =>
         ActivityScopeCallback(logger, activityType, activityId, serviceUrl, mscv);
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}")]
-    public static partial void BotStarted(this ILogger logger, string thisType, string appId, string sdkVersion);
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Started BotApplication listener for AppID:{AppId} with Teams.Core version {SdkVersion}")]
+    public static partial void BotStarted(this ILogger logger, string appId, string sdkVersion);
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = "Start processing HTTP request for activity")]
     public static partial void StartProcessingActivity(this ILogger logger);
@@ -40,10 +40,10 @@ internal static partial class Log
     [LoggerMessage(EventId = 7, Level = LogLevel.Information, Message = "Finished processing activity: Id={Id}")]
     public static partial void ActivityProcessingFinished(this ILogger logger, string? id);
 
-    // ── ConversationClient ──────────────────────────────────────────────
+    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = "ServiceUrl in activity ({ActivityServiceUrl}) does not match serviceUrl claim ({ClaimServiceUrl}).")]
+    public static partial void LogServiceUrlClaimMismatch(this ILogger logger, Uri? activityServiceUrl, string claimServiceUrl);
 
-    [LoggerMessage(EventId = 10, Level = LogLevel.Information, Message = "Truncating conversation ID for 'agents' channel to comply with length restrictions.")]
-    public static partial void TruncatingConversationId(this ILogger logger);
+    // ── ConversationClient ──────────────────────────────────────────────
 
     [LoggerMessage(EventId = 11, Level = LogLevel.Trace, Message = "Updating activity at {Url}: {Activity}")]
     public static partial void UpdatingActivity(this ILogger logger, string url, string activity);
@@ -102,11 +102,14 @@ internal static partial class Log
     [LoggerMessage(EventId = 54, Level = LogLevel.Error, Message = "JWT authentication failed for scheme {Scheme}: {ExceptionMessage} | token iss={TokenIssuer} aud={TokenAudience} exp={TokenExpiration} sub={TokenSubject} | expected aud={ConfiguredAudience}")]
     public static partial void JwtAuthenticationFailed(this ILogger logger, Exception ex, string scheme, string exceptionMessage, string tokenIssuer, string tokenAudience, string tokenExpiration, string tokenSubject, string configuredAudience);
 
-    [LoggerMessage(EventId = 55, Level = LogLevel.Warning, Message = "ClientId not provided for scheme '{SchemeName}'. Configuring bypass authentication (no token validation). This is INSECURE and should only be used for development.")]
+    [LoggerMessage(EventId = 55, Level = LogLevel.Warning, Message = "DangerouslyAllowUnauthenticatedRequests is enabled for scheme '{SchemeName}'. Configuring bypass authentication with no token validation. This is INSECURE and should only be used for development.")]
     public static partial void BypassAuthenticationConfigured(this ILogger logger, string schemeName);
 
     [LoggerMessage(EventId = 56, Level = LogLevel.Warning, Message = "Using bypass authentication scheme succeeded for scheme: {Scheme}. This is INSECURE and should only be used for development.")]
     public static partial void BypassAuthenticationSucceeded(this ILogger logger, string scheme);
+
+    [LoggerMessage(EventId = 57, Level = LogLevel.Warning, Message = "Authentication is not configured for scheme '{SchemeName}'. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.")]
+    public static partial void AuthenticationNotConfigured(this ILogger logger, string schemeName);
 
     // ── Hosting (UMI inference) ─────────────────────────────────────────
 

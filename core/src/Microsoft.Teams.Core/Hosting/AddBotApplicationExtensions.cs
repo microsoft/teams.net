@@ -2,15 +2,16 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+using Microsoft.Identity.Web.TokenCacheProviders.Distributed;
 
 namespace Microsoft.Teams.Core.Hosting;
 
@@ -156,7 +157,7 @@ public static class AddBotApplicationExtensions
     {
         services.AddHttpClient()
                 .AddTokenAcquisition(true)
-                .AddInMemoryTokenCaches()
+                .AddDistributedTokenCaches()
                 .AddAgentIdentities();
 
         ArgumentNullException.ThrowIfNull(botConfig);
@@ -191,8 +192,7 @@ public static class AddBotApplicationExtensions
             // the IMDS endpoint instead of the standard app-credentials flow.
             if (botConfig.IsUserAssignedManagedIdentity)
             {
-                ILogger logger = GetLoggerFromServices(services);
-                logger.InferringUserAssignedManagedIdentity(botConfig.ClientId);
+                LogFromServices(services, l => l.InferringUserAssignedManagedIdentity(botConfig.ClientId));
                 services.Configure<ManagedIdentityOptions>(botConfig.SectionName, options =>
                 {
                     options.UserAssignedClientId = botConfig.ClientId;
@@ -239,25 +239,82 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Gets a logger instance from the service collection.
-    /// If the logger factory is not available as an instance, builds a temporary service provider to create the logger.
+    /// Registers a named <see cref="HttpClient"/> wired to bot authentication
+    /// using an already-resolved <see cref="BotConfig"/>, without binding it to a typed client.
+    /// Use this when the client type will be registered separately via a factory.
     /// </summary>
-    /// <param name="services">The service collection to extract the logger from.</param>
-    /// <param name="categoryType">The type to use for the logger category. If null, uses AddBotApplicationExtensions.</param>
-    /// <returns>An ILogger instance, or NullLogger if no logger factory is registered.</returns>
-    internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="httpClientName">The logical name for this <see cref="HttpClient"/> registration.</param>
+    /// <param name="botConfig">The resolved bot configuration containing tenant and client settings.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddBotHttpClient(
+        this IServiceCollection services,
+        string httpClientName,
+        BotConfig botConfig)
     {
-        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-
-        // If logger factory is available as an instance, use it directly
-        if (loggerFactory != null)
+        ArgumentNullException.ThrowIfNull(botConfig);
+        if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
-            return loggerFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
+            services.AddHttpClient(httpClientName)
+                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                    botConfig.SectionName,
+                    sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));
+        }
+        else
+        {
+            services.AddHttpClient(httpClientName);
+        }
+        return services;
+    }
+
+    /// <summary>
+    /// Resolves a service from the service collection before the host is built,
+    /// preferring a direct instance and falling back to building a temporary
+    /// <see cref="ServiceProvider"/> when the service is registered via factory or type.
+    /// </summary>
+    /// <remarks>
+    /// The temporary <see cref="ServiceProvider"/> is disposed before the method returns.
+    /// Only use this for services whose resolved instances remain valid after their
+    /// owning provider is disposed (e.g. <see cref="IConfiguration"/>). Do NOT use for
+    /// disposable services like <see cref="ILoggerFactory"/> — see
+    /// <see cref="LogFromServices"/> for that case.
+    /// </remarks>
+    internal static T? ResolveFromServicesPreHost<T>(IServiceCollection services) where T : class
+    {
+        ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(T));
+        if (descriptor is null)
+        {
+            return null;
         }
 
-        // Logger factory not available as a direct instance; return NullLogger
-        // to avoid building a throwaway ServiceProvider during DI configuration.
-        return Extensions.Logging.Abstractions.NullLogger.Instance;
+        if (descriptor.ImplementationInstance is T instance)
+        {
+            return instance;
+        }
+
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        return tempProvider.GetService<T>();
+    }
+
+    internal static void LogFromServices(IServiceCollection services, Action<ILogger> action, Type? categoryType = null)
+    {
+        ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        if (descriptor is null)
+        {
+            action(NullLogger.Instance);
+            return;
+        }
+
+        if (descriptor.ImplementationInstance is ILoggerFactory directFactory)
+        {
+            action(directFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions)));
+            return;
+        }
+
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
+        action(factory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions)) ?? NullLogger.Instance);
     }
 }

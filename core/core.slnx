@@ -10,21 +10,29 @@
     <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Streaming/Microsoft.Bot.Streaming.csproj" />
   </Folder> -->
   <Folder Name="/Samples/">
-    <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
-    <Project Path="samples/AllInvokesBot/AllInvokesBot.csproj" />
+    <Project Path="samples/A2ABot/A2ABot.csproj" />
+    <Project Path="samples/Agent365/Agent365.csproj" />
+    <Project Path="samples/AdaptiveCardTaskModuleBot/AdaptiveCardTaskModuleBot.csproj" />
+    <Project Path="samples/CommonHandlersBot/CommonHandlersBot.csproj" />
+    <Project Path="samples/CachingAuthTokens/CachingAuthTokens.csproj" Id="01e6530d-ac7d-47ca-9748-785883eb6c39" />
     <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
-    <Project Path="samples/CompatProactive/CompatProactive.csproj" Id="60e946ea-ea2f-4994-8b5b-e6aa98723aa4" />
     <Project Path="samples/CoreBot/CoreBot.csproj" Id="142a67bc-68e7-4020-83cf-51423e317b53" />
     <Project Path="samples/CustomHosting/CustomHosting.csproj" Id="de2e42de-3d8f-4a9d-920f-14c7e39fc3c0" />
+    <Project Path="samples/ExtAIBot/ExtAIBot.csproj" />
+    <Project Path="samples/GraphBot/GraphBot.csproj" />
     <Project Path="samples/McpServer/McpServer.csproj" />
     <Project Path="samples/MeetingsBot/MeetingsBot.csproj" />
     <Project Path="samples/MessageExtensionBot/MessageExtensionBot.csproj" />
     <Project Path="samples/OAuthFlowBot/OAuthFlowBot.csproj" />
+    <Project Path="samples/ObservabilityBot/ObservabilityBot.csproj" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
-    <Project Path="samples/Quoting/Quoting.csproj" />
-    <Project Path="samples/SsoBot/SsoBot.csproj" />
+    <Project Path="samples/QuotingAndThreadingBot/QuotingAndThreadingBot.csproj" />
+    <Project Path="samples/ReactionsBot/ReactionsBot.csproj" />
+    <Project Path="samples/StateBot/StateBot.csproj" Id="59061ea6-7fb8-4f94-908d-e32e323cafe4" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
+    <Project Path="samples/SuggestedActionBot/SuggestedActionBot.csproj" />
     <Project Path="samples/TabApp/TabApp.csproj" />
+    <Project Path="samples/TargetedMessages/TargetedMessages.csproj" />
     <Project Path="samples/TeamsBot/TeamsBot.csproj" Id="94a35050-6826-446f-9b29-863f2bbc75b7" />
     <Project Path="samples/TeamsChannelBot/TeamsChannelBot.csproj" />
   </Folder>
@@ -34,18 +42,17 @@
     <File Path="../.github/workflows/core-test.yaml" />
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="docs/Architecture.md" />
     <File Path="README.md" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Build.targets" />
     <File Path="version.json" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="samples/Proactive/Proactive.csproj" Id="69f021eb-451b-4dd3-b848-137d764ba586" />
     <Project Path="test/ABSTokenServiceClient/ABSTokenServiceClient.csproj" />
     <Project Path="test/Microsoft.Teams.Apps.BotBuilder.UnitTests/Microsoft.Teams.Apps.BotBuilder.UnitTests.csproj" Id="17f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Apps.UnitTests/Microsoft.Teams.Apps.UnitTests.csproj" Id="16f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Core.UnitTests/Microsoft.Teams.Core.UnitTests.csproj" Id="8e6790ed-0352-45f6-b3dc-0c4c3bcab038" />
+    <Project Path="test/TeamsApisDemo/TeamsApisDemo.csproj" Id="1446b240-c778-4fc6-a389-a655d789444c" />
   </Folder>
   <Project Path="src/Microsoft.Teams.Apps.BotBuilder/Microsoft.Teams.Apps.BotBuilder.csproj" />
   <Project Path="src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />

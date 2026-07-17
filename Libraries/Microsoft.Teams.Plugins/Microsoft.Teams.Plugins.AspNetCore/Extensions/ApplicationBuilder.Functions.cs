@@ -51,10 +51,10 @@ public static partial class ApplicationBuilderExtensions
     /// <param name="handler">The callback to handle the function</param>
     public static IApplicationBuilder AddFunction(this IApplicationBuilder builder, string name, Func<IFunctionContext<object?>, Task> handler)
     {
-        return builder.AddFunction<object?>(name, context =>
+        return builder.AddFunction<object?>(name, async context =>
         {
-            handler(context).ConfigureAwait(false).GetAwaiter();
-            return Task.FromResult<object?>(null);
+            await handler(context).ConfigureAwait(false);
+            return null;
         });
     }
 
@@ -66,10 +66,10 @@ public static partial class ApplicationBuilderExtensions
     /// <param name="handler">The callback to handle the function</param>
     public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, Task> handler)
     {
-        return builder.AddFunction<TBody>(name, context =>
+        return builder.AddFunction<TBody>(name, async context =>
         {
-            handler(context).ConfigureAwait(false).GetAwaiter();
-            return Task.FromResult<object?>(null);
+            await handler(context).ConfigureAwait(false);
+            return null;
         });
     }
 
@@ -101,17 +101,6 @@ public static partial class ApplicationBuilderExtensions
     /// <param name="handler">The callback to handle the function</param>
     public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, Task<object?>> handler)
     {
-        return builder.AddFunction<TBody>(name, context => handler(context).ConfigureAwait(false).GetAwaiter().GetResult());
-    }
-
-    /// <summary>
-    /// add/update a function that can be called remotely
-    /// </summary>
-    /// <typeparam name="TBody">The body (data) type</typeparam>
-    /// <param name="name">The unique function name</param>
-    /// <param name="handler">The callback to handle the function</param>
-    public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, object?> handler)
-    {
         builder.UseEndpoints(endpoints =>
         {
             endpoints.MapPost($"/api/functions/{name}", async context =>
@@ -120,21 +109,21 @@ public static partial class ApplicationBuilderExtensions
                 var app = context.RequestServices.GetRequiredService<App>();
                 var log = app.Logger.Child("functions").Child(name);
 
-                if (context.Request.Headers.Authorization.First() is null)
+                if (context.Request.Headers.Authorization.FirstOrDefault() is null)
                 {
-                    await Results.Unauthorized().ExecuteAsync(context);
+                    await Results.Unauthorized().ExecuteAsync(context).ConfigureAwait(false);
                     return;
                 }
 
                 if (!context.Request.Headers.TryGetValue("X-Teams-App-Session-Id", out var appSessionId))
                 {
-                    await Results.Unauthorized().ExecuteAsync(context);
+                    await Results.Unauthorized().ExecuteAsync(context).ConfigureAwait(false);
                     return;
                 }
 
                 if (!context.Request.Headers.TryGetValue("X-Teams-Page-Id", out var pageId))
                 {
-                    await Results.Unauthorized().ExecuteAsync(context);
+                    await Results.Unauthorized().ExecuteAsync(context).ConfigureAwait(false);
                     return;
                 }
 
@@ -188,12 +177,23 @@ public static partial class ApplicationBuilderExtensions
                 }
 
                 log.Debug(ctx.Data?.ToString());
-                var res = handler(ctx);
+                var res = await handler(ctx).ConfigureAwait(false);
                 log.Debug(res?.ToString());
-                await Results.Json(res).ExecuteAsync(context);
+                await Results.Json(res).ExecuteAsync(context).ConfigureAwait(false);
             }).RequireAuthorization(EntraTokenAuthConstants.AuthorizationPolicy);
         });
 
         return builder;
+    }
+
+    /// <summary>
+    /// add/update a function that can be called remotely
+    /// </summary>
+    /// <typeparam name="TBody">The body (data) type</typeparam>
+    /// <param name="name">The unique function name</param>
+    /// <param name="handler">The callback to handle the function</param>
+    public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, object?> handler)
+    {
+        return builder.AddFunction<TBody>(name, context => Task.FromResult(handler(context)));
     }
 }

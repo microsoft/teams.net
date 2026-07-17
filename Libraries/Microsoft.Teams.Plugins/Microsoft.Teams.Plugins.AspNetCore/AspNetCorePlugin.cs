@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Text.Json;
@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
@@ -114,22 +115,22 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 await client
                 .Conversations
                 .Activities
-                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity);
+                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity).ConfigureAwait(false);
             }
             else
             {
                 await client
                 .Conversations
                 .Activities
-                .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
+                .UpdateAsync(reference.Conversation.Id, activity.Id, activity).ConfigureAwait(false);
             }
 
             return activity;
         }
 
         var res = isTargeted
-            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity)
-            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity);
+            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity).ConfigureAwait(false)
+            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity).ConfigureAwait(false);
         #pragma warning restore ExperimentalTeamsTargeted
 
         activity.Id = res?.Id;
@@ -142,9 +143,10 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         {
             Send = async activity =>
             {
-                var res = await Send(activity, reference, cancellationToken);
+                var res = await Send(activity, reference, cancellationToken).ConfigureAwait(false);
                 return res;
-            }
+            },
+            Logger = Logger.Child("stream")
         };
     }
 
@@ -157,7 +159,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 "activity",
                 @event,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             var res = (Response?)@out ?? throw new Exception("expected activity response");
             Logger.Debug(res);
@@ -171,7 +173,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 "error",
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             return new Response(System.Net.HttpStatusCode.InternalServerError, ex.ToString());
         }
@@ -182,12 +184,54 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         try
         {
             var request = httpContext.Request;
-            var token = ExtractToken(request);
-            var activity = await ParseActivity(request);
+            var options = httpContext.RequestServices?.GetService(typeof(AspNetCorePluginOptions)) as AspNetCorePluginOptions;
+            var dangerouslyAllowUnauthenticatedRequests = options?.DangerouslyAllowUnauthenticatedRequests == true;
+            JsonWebToken? token = null;
+            if (!dangerouslyAllowUnauthenticatedRequests)
+            {
+                try
+                {
+                    token = ExtractToken(request);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Logger.Warn("Rejecting request: missing Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+                catch (ArgumentException)
+                {
+                    Logger.Warn("Rejecting request: invalid Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+                catch (SecurityTokenException)
+                {
+                    Logger.Warn("Rejecting request: invalid Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+            }
+            var activity = await ParseActivity(request).ConfigureAwait(false);
 
             if (activity is null)
             {
                 return Results.BadRequest("Missing activity");
+            }
+
+            IToken activityToken = token is null ? new UnauthenticatedToken(activity.ServiceUrl) : token;
+
+            // Require the token's serviceurl claim to match the activity's serviceUrl
+            // (normalized, case-insensitive) when the activity specifies one. Mismatches
+            // are logged server-side.
+            if (!dangerouslyAllowUnauthenticatedRequests && !string.IsNullOrEmpty(activity.ServiceUrl))
+            {
+                var claimServiceUrl = token!.Token.Payload.TryGetValue("serviceurl", out var serviceUrlClaim)
+                    ? serviceUrlClaim as string
+                    : null;
+
+                if (!NormalizeServiceUrl(claimServiceUrl).Equals(NormalizeServiceUrl(activity.ServiceUrl), StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Warn($"Rejecting activity {activity.Id}: serviceUrl '{activity.ServiceUrl}' does not match the token serviceurl claim '{claimServiceUrl}'.");
+                    return Results.Unauthorized();
+                }
             }
 
             var data = new Dictionary<string, object?>
@@ -206,11 +250,11 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
             var res = await Do(new ActivityEvent()
             {
-                Token = token,
+                Token = activityToken,
                 Activity = activity,
                 Extra = data,
                 Services = httpContext.RequestServices
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
 
             // convert response metadata to headers
             foreach (var (key, value) in res.Meta)
@@ -235,11 +279,17 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 "error",
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             return Results.Problem(detail: ex.Message, statusCode: 500);
         }
     }
+
+    // Normalize a serviceUrl for comparison: null/empty becomes empty, and a single
+    // trailing slash is trimmed so "https://host/teams" and "https://host/teams/" match.
+    private static string NormalizeServiceUrl(string? serviceUrl) =>
+        string.IsNullOrEmpty(serviceUrl) ? string.Empty :
+            serviceUrl.EndsWith('/') ? serviceUrl[..^1] : serviceUrl;
 
     public JsonWebToken ExtractToken(HttpRequest httpRequest)
     {
@@ -258,7 +308,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
 
         using StreamReader sr = new(httpRequest.Body);
-        var body = await sr.ReadToEndAsync();
+        var body = await sr.ReadToEndAsync().ConfigureAwait(false);
         Activity? activity = JsonSerializer.Deserialize<Activity>(body);
 
         return activity;

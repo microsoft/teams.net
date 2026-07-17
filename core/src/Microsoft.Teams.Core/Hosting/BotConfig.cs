@@ -15,6 +15,16 @@ public sealed class BotConfig
 {
     internal const string DefaultSectionName = "AzureAd";
 
+    internal const string BotFrameworkSectionName = "BotFramework";
+
+    private const string DangerouslyAllowUnauthenticatedRequestsKey = "DangerouslyAllowUnauthenticatedRequests";
+
+    internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
+
+    internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
+
+    internal const string DefaultBotTokenIssuer = "https://api.botframework.com";
+
     /// <summary>
     /// Gets or sets the Azure AD tenant ID.
     /// </summary>
@@ -30,6 +40,38 @@ public sealed class BotConfig
     /// Also used as the MSAL named-options key and the JWT auth scheme name.
     /// </summary>
     public string SectionName { get; set; } = DefaultSectionName;
+
+    /// <summary>
+    /// Gets or sets the Bot Framework OpenID metadata URL used to fetch signing keys
+    /// for validating inbound Bot Framework tokens. For sovereign clouds, set
+    /// <c>BotFramework:OpenIdMetadataUrl</c> in configuration, e.g.
+    /// <c>"https://login.botframework.azure.us/v1/.well-known/openid-configuration"</c> for USGov.
+    /// Defaults to the public-cloud endpoint when not configured.
+    /// </summary>
+    public string OpenIdMetadataUrl { get; set; } = DefaultOpenIdMetadataUrl;
+
+    /// <summary>
+    /// Gets or sets the Entra login instance used when validating Entra-issued tokens.
+    /// For sovereign clouds, set <c>{SectionName}:Instance</c> in configuration
+    /// (the standard Microsoft.Identity.Web key), e.g.
+    /// <c>"https://login.microsoftonline.us/"</c> for USGov.
+    /// Defaults to the public-cloud instance when not configured.
+    /// </summary>
+    public string EntraInstance { get; set; } = DefaultEntraInstance;
+
+    /// <summary>
+    /// Gets or sets the expected Bot Framework token issuer used to validate inbound
+    /// Bot Framework tokens. For sovereign clouds, set <c>BotFramework:BotTokenIssuer</c>
+    /// in configuration, e.g. <c>"https://api.botframework.us"</c> for USGov.
+    /// Defaults to the public-cloud issuer when not configured.
+    /// </summary>
+    public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
+
+    /// <summary>
+    /// Gets or sets whether inbound bot requests should bypass authentication.
+    /// This should only be enabled for local development.
+    /// </summary>
+    public bool DangerouslyAllowUnauthenticatedRequests { get; set; }
 
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
@@ -49,17 +91,14 @@ public sealed class BotConfig
     /// <returns>A BotConfig populated from the section, or an empty BotConfig if no ClientId is configured.</returns>
     public static BotConfig Resolve(IServiceCollection services, string sectionName = DefaultSectionName)
     {
+        return Resolve(services, sectionName, log: true);
+    }
+
+    internal static BotConfig Resolve(IServiceCollection services, string sectionName, bool log)
+    {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Extract IConfiguration from service collection — prefer the instance if available,
-        // otherwise resolve via the factory registered in the descriptor.
-        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
-        if (configuration is null && configDescriptor?.ImplementationFactory is not null)
-        {
-            using ServiceProvider tempProvider = services.BuildServiceProvider();
-            configuration = tempProvider.GetService<IConfiguration>();
-        }
+        IConfiguration? configuration = AddBotApplicationExtensions.ResolveFromServicesPreHost<IConfiguration>(services);
 
         if (configuration is null)
         {
@@ -68,31 +107,75 @@ public sealed class BotConfig
                 "Ensure AddConfiguration() or WebApplication.CreateBuilder() has been called.");
         }
 
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
-
         IConfigurationSection section = configuration.GetSection(sectionName);
+        IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
+        bool dangerouslyAllowUnauthenticatedRequests =
+            ResolveOptionalBoolean(section, DangerouslyAllowUnauthenticatedRequestsKey)
+            ?? false;
         BotConfig config = new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
+            EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
+            OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
+            BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
+            DangerouslyAllowUnauthenticatedRequests = dangerouslyAllowUnauthenticatedRequests,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
 
-        if (!string.IsNullOrEmpty(config.ClientId))
+        if (log)
         {
-            _logUsingSectionConfig(logger, sectionName, null);
+            AddBotApplicationExtensions.LogFromServices(services, l =>
+            {
+                if (config.DangerouslyAllowUnauthenticatedRequests)
+                    l.BypassAuthenticationConfigured(sectionName);
+                else if (!string.IsNullOrEmpty(config.ClientId))
+                    _logUsingSectionConfig(l, sectionName, null);
+                else
+                    l.AuthenticationNotConfigured(sectionName);
+            }, typeof(BotConfig));
         }
-        else
-        {
-            _logNoConfigFound(logger, null);
-        }
+
         return config;
+    }
+
+    private static bool? ResolveOptionalBoolean(IConfigurationSection section, string key)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        string? value = section[key];
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (bool.TryParse(value, out bool result))
+        {
+            return result;
+        }
+
+        throw new InvalidOperationException(
+            $"Configuration value '{section.Path}:{key}' is not a valid boolean: '{value}'.");
+    }
+
+    private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        string? value = section[key];
+        if (value is null)
+        {
+            return defaultValue;
+        }
+        if (!Uri.TryCreate(value, UriKind.Absolute, out _))
+        {
+            throw new InvalidOperationException(
+                $"Configuration value '{section.Key}:{key}' is not a valid absolute URI: '{value}'.");
+        }
+        return value;
     }
 
     private static readonly Action<ILogger, string, Exception?> _logUsingSectionConfig =
         LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Resolved bot configuration from '{SectionName}' configuration section");
-    private static readonly Action<ILogger, Exception?> _logNoConfigFound =
-        LoggerMessage.Define(LogLevel.Warning, new(4), "No bot configuration found in configuration.");
-
 }

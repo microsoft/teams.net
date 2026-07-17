@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -29,11 +29,51 @@ public class MemberClient : Client
         ServiceUrl = serviceUrl;
     }
 
+    [Obsolete("Use GetPagedAsync instead.")]
     public async Task<List<Account>> GetAsync(string conversationId, CancellationToken cancellationToken = default)
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v3/conversations/{conversationId}/members");
-        var response = await _http.SendAsync<List<Account>>(request, token);
+        var response = await _http.SendAsync<List<Account>>(request, token).ConfigureAwait(false);
+        foreach (var account in response.Body)
+        {
+            if (string.IsNullOrEmpty(account.AadObjectId) && !string.IsNullOrEmpty(account.ObjectId))
+            {
+                account.AadObjectId = account.ObjectId;
+            }
+        }
+        return response.Body;
+    }
+
+    public async Task<PagedMembersResult> GetPagedAsync(string conversationId, int? pageSize = null, string? continuationToken = null, CancellationToken cancellationToken = default)
+    {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var url = $"{ServiceUrl}v3/conversations/{conversationId}/pagedmembers";
+        var queryParts = new List<string>();
+        if (pageSize.HasValue)
+        {
+            queryParts.Add($"pageSize={pageSize.Value}");
+        }
+        if (continuationToken is not null)
+        {
+            queryParts.Add($"continuationToken={Uri.EscapeDataString(continuationToken)}");
+        }
+        if (queryParts.Count > 0)
+        {
+            url = $"{url}?{string.Join("&", queryParts)}";
+        }
+        var request = HttpRequest.Get(url);
+        var response = await _http.SendAsync<PagedMembersResult>(request, token).ConfigureAwait(false);
+        if (response.Body.Members is not null)
+        {
+            foreach (var account in response.Body.Members)
+            {
+                if (string.IsNullOrEmpty(account.AadObjectId) && !string.IsNullOrEmpty(account.ObjectId))
+                {
+                    account.AadObjectId = account.ObjectId;
+                }
+            }
+        }
         return response.Body;
     }
 
@@ -41,14 +81,15 @@ public class MemberClient : Client
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v3/conversations/{conversationId}/members/{memberId}");
-        var response = await _http.SendAsync<Account>(request, token);
+        var response = await _http.SendAsync<Account>(request, token).ConfigureAwait(false);
         return response.Body;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public async Task DeleteAsync(string conversationId, string memberId, CancellationToken cancellationToken = default)
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Delete($"{ServiceUrl}v3/conversations/{conversationId}/members/{memberId}");
-        await _http.SendAsync(request, token);
+        await _http.SendAsync(request, token).ConfigureAwait(false);
     }
 }

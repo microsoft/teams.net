@@ -27,7 +27,7 @@ public class InstallUpdateActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public InstallUpdateActivity() : base(TeamsActivityType.InstallationUpdate)
+    internal InstallUpdateActivity() : base(TeamsActivityTypes.InstallationUpdate)
     {
     }
 
@@ -35,7 +35,7 @@ public class InstallUpdateActivity : TeamsActivity
     /// Internal constructor to create InstallUpdateActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected InstallUpdateActivity(CoreActivity activity) : base(activity)
+    internal InstallUpdateActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         Action = activity.Properties.Extract<string>("action");
@@ -45,7 +45,7 @@ public class InstallUpdateActivity : TeamsActivity
     /// Gets or sets the action for the installation update. See <see cref="InstallUpdateActions"/> for known values.
     /// </summary>
     [JsonPropertyName("action")]
-    public string? Action { get; set; }
+    public string? Action { get; internal set; }
 }
 
 /// <summary>

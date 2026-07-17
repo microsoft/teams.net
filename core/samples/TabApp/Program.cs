@@ -19,12 +19,12 @@ app.UseAuthorization();
 
 // ==================== TABS ====================
 
-var contentTypes = new FileExtensionContentTypeProvider();
+FileExtensionContentTypeProvider contentTypes = new();
 app.MapGet("/tabs/test/{*path}", (string? path) =>
 {
-    var root = Path.Combine(Directory.GetCurrentDirectory(), "Web", "bin");
-    var full = Path.Combine(root, path ?? "index.html");
-    contentTypes.TryGetContentType(full, out var ct);
+    string root = Path.Combine(Directory.GetCurrentDirectory(), "Web", "bin");
+    string full = Path.Combine(root, path ?? "index.html");
+    contentTypes.TryGetContentType(full, out string? ct);
     return Results.File(File.OpenRead(full), ct ?? "text/html");
 });
 
@@ -41,7 +41,7 @@ app.MapPost("/functions/post-to-chat", async (
 {
     logger.LogInformation("post-to-chat called");
 
-    var serviceUrl = new Uri("https://smba.trafficmanager.net/teams");
+    Uri serviceUrl = new("https://smba.trafficmanager.net/teams");
     string conversationId;
 
     if (body.ChatId is not null)
@@ -68,7 +68,7 @@ app.MapPost("/functions/post-to-chat", async (
             {
                 IsGroup = false,
                 TenantId = tenantId,
-                Members = [new TeamsConversationAccount { Id = userId }]
+                Members = [new TeamsChannelAccount { Id = userId }]
             }, serviceUrl, cancellationToken: ct);
 
             cached = res.Id ?? throw new InvalidOperationException("CreateConversation returned no ID.");
@@ -78,13 +78,10 @@ app.MapPost("/functions/post-to-chat", async (
         conversationId = cached!;
     }
 
-    TeamsActivity activity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivityInput activity = MessageActivityInput.CreateBuilder()
         .WithText("Hello from the tab!")
-        .WithServiceUrl(serviceUrl)
-        .WithConversation(new TeamsConversation { Id = conversationId! })
         .Build();
-    await conversations.SendActivityAsync(activity, cancellationToken: ct);
+    await conversations.SendActivityAsync(conversationId!, activity, serviceUrl, cancellationToken: ct);
 
     return Results.Json(new PostToChatResult(Ok: true));
 }).RequireAuthorization();

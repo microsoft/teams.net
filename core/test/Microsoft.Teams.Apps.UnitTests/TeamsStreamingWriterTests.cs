@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
@@ -39,12 +40,12 @@ public class TeamsStreamingWriterTests
 
     private static TeamsActivity CreateReferenceActivity() => new()
     {
-        Type = TeamsActivityType.Message,
+        Type = TeamsActivityTypes.Message,
         ServiceUrl = new Uri("https://smba.trafficmanager.net/amer/"),
         ChannelId = "msteams",
         Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-123" }),
-        From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-123", Name = "User" }),
-        Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-123", Name = "Bot" })
+        From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "user-123", Name = "User" }),
+        Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-123", Name = "Bot" })
     };
 
     private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)
@@ -58,25 +59,37 @@ public class TeamsStreamingWriterTests
     // ── Guard conditions ──────────────────────────────────────────────────────
 
     [Fact]
-    public async Task AppendAsync_AfterFinalizeAsync_ThrowsInvalidOperationException()
+    public async Task AppendAsync_AfterFinalizeAsync_ReopensStreamForNextMessage()
     {
-        (TeamsStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendResponseAsync("Hello");
         await writer.FinalizeResponseAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.AppendResponseAsync("Too late"));
+        // Appending after finalize reopens the stream on the same instance instead of throwing.
+        await writer.AppendResponseAsync("Second message");
+        await writer.FinalizeResponseAsync();
+
+        int finalCount = handler.RequestBodies.Count(b => b.Contains("\"streamType\": \"final\"", StringComparison.Ordinal));
+        Assert.Equal(2, finalCount);
+        // The reopened cycle only carries the second message's text (accumulated text was reset).
+        Assert.Contains("Second message", handler.RequestBodies.Last());
     }
 
     [Fact]
-    public async Task FinalizeAsync_CalledTwice_ThrowsInvalidOperationException()
+    public async Task FinalizeAsync_CalledTwice_IsIdempotent()
     {
-        (TeamsStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendResponseAsync("Hello");
         await writer.FinalizeResponseAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
+        int countAfterFirstFinalize = handler.RequestBodies.Count;
+
+        // A second finalize is a no-op until the next append/informative reopens the stream.
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(countAfterFirstFinalize, handler.RequestBodies.Count);
     }
 
     // ── Informative-first path ────────────────────────────────────────────────
@@ -145,6 +158,86 @@ public class TeamsStreamingWriterTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
     }
 
+    // ── MessageActivity-based finalize ────────────────────────────────────────
+
+    [Fact]
+    public async Task FinalizeAsync_WithCustomMessageActivity_UsesCallerSuppliedContent()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("streamed text");
+
+        MessageActivityInput final = MessageActivityInput.CreateBuilder()
+            .WithText("explicit text")
+            .AddFeedback(FeedbackTypes.Custom)
+            .Build();
+
+        await writer.FinalizeResponseAsync(final);
+
+        string finalBody = handler.RequestBodies.Last();
+        // Caller-supplied text wins over accumulated.
+        Assert.Contains("explicit text", finalBody);
+        Assert.DoesNotContain("streamed text", finalBody);
+        // Writer still injects the streamType=final marker.
+        Assert.Contains("\"streamType\": \"final\"", finalBody);
+        // Custom feedback set on the caller's activity is preserved.
+        Assert.Contains("\"feedbackLoop\"", finalBody);
+        Assert.Contains("\"type\": \"custom\"", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_WithMessageActivityWithoutText_FallsBackToAccumulated()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("Hello, ");
+        await writer.AppendResponseAsync("world");
+
+        // No Text set on the activity — writer should fill in the accumulated text.
+        MessageActivityInput final = MessageActivityInput.CreateBuilder()
+            .AddFeedback(FeedbackTypes.Default)
+            .Build();
+
+        await writer.FinalizeResponseAsync(final);
+
+        string finalBody = handler.RequestBodies.Last();
+        Assert.Contains("Hello, world", finalBody);
+        Assert.Contains("\"type\": \"default\"", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_AttachmentOnlyReply_RequiresExplicitEmptyText()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        // Note: no AppendResponseAsync — the reply is the attachment only.
+        TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
+            .WithContentType("application/vnd.microsoft.card.adaptive")
+            .WithContent(new JsonObject { ["type"] = "AdaptiveCard", ["version"] = "1.5" })
+            .Build();
+
+        MessageActivityInput final = MessageActivityInput.CreateBuilder()
+            .WithText("")
+            .AddAttachment(attachment)
+            .Build();
+
+        await writer.FinalizeResponseAsync(final);
+
+        string finalBody = handler.RequestBodies.Last();
+        Assert.Contains("\"streamType\": \"final\"", finalBody);
+        Assert.Contains("AdaptiveCard", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_EmptyActivityWithNoStreamedText_Throws()
+    {
+        (TeamsStreamingWriter writer, _) = CreateWriter();
+
+        MessageActivityInput final = MessageActivityInput.CreateBuilder().Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync(final));
+    }
+
     // ── Shared streamId ───────────────────────────────────────────────────────
 
     [Fact]
@@ -171,5 +264,100 @@ public class TeamsStreamingWriterTests
         Assert.Null(streamIds[0]);
         Assert.NotNull(streamIds[1]);
         Assert.Equal(streamIds[1], streamIds[2]);
+    }
+
+    // ── Error handling (HTTP 403) ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task AppendAsync_403NotAllowed_ThrowsStreamNotAllowedException()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream is not allowed\"}}", HttpStatusCode.Forbidden);
+
+        StreamNotAllowedException ex = await Assert.ThrowsAsync<StreamNotAllowedException>(() => writer.AppendResponseAsync("hi"));
+        // The original HttpRequestException is preserved as the inner exception for diagnostics.
+        Assert.IsType<HttpRequestException>(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task AppendAsync_403UnknownMessage_ThrowsTerminalStreamException()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Message size too large\"}}", HttpStatusCode.Forbidden);
+
+        TerminalStreamException ex = await Assert.ThrowsAsync<TerminalStreamException>(() => writer.AppendResponseAsync("hi"));
+        Assert.IsType<HttpRequestException>(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task AppendAsync_403Cancelled_IsSwallowedAndFlagsCancelled()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream was canceled by user\"}}", HttpStatusCode.Forbidden);
+
+        // Cancellation is swallowed, not thrown.
+        await writer.AppendResponseAsync("hi");
+
+        Assert.True(writer.Cancelled);
+
+        // Finalize sends nothing once the stream is cancelled.
+        int countBeforeFinalize = handler.Requests.Count;
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(countBeforeFinalize, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_AfterStreamingTimeout_UpdatesOriginalMessageInPlace()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        // Informative send assigns the streamId that the in-place update will target.
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        // The next chunk trips the two-minute limit.
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        await writer.AppendResponseAsync("Final answer");
+
+        Assert.True(writer.TimedOut);
+
+        await writer.FinalizeResponseAsync();
+
+        // Finalize updates the original streamed message in place: a PUT to the streamId,
+        // carrying the buffered text without any stream markers.
+        HttpRequestMessage lastRequest = handler.Requests.Last();
+        Assert.Equal(HttpMethod.Put, lastRequest.Method);
+        Assert.EndsWith("/activities/stream-1", lastRequest.RequestUri!.AbsolutePath);
+
+        string lastBody = handler.RequestBodies.Last();
+        Assert.Contains("Final answer", lastBody);
+        Assert.DoesNotContain("\"streamType\": \"final\"", lastBody);
+        Assert.DoesNotContain("streaminfo", lastBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_WhenFinalSendTimesOut_FallsBackToInPlaceUpdate()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        // First chunk streams fine and assigns the streamId.
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.AppendResponseAsync("Buffered answer");
+
+        // The final streamed send itself trips the two-minute limit.
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        await writer.FinalizeResponseAsync();
+
+        Assert.True(writer.TimedOut);
+
+        // The final send fell back to updating the original message in place.
+        HttpRequestMessage lastRequest = handler.Requests.Last();
+        Assert.Equal(HttpMethod.Put, lastRequest.Method);
+        Assert.EndsWith("/activities/stream-1", lastRequest.RequestUri!.AbsolutePath);
+        Assert.Contains("Buffered answer", handler.RequestBodies.Last());
     }
 }

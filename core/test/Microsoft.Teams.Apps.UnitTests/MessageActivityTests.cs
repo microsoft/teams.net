@@ -12,14 +12,14 @@ public class MessageActivityTests
     public void Constructor_Default_SetsMessageType()
     {
         MessageActivity activity = new();
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
     }
 
     [Fact]
     public void Constructor_WithText_SetsTextAndMessageType()
     {
         MessageActivity activity = new("Hello World");
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
     }
 
@@ -30,13 +30,14 @@ public class MessageActivityTests
         MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
 
         Assert.Equal("Hello World", messageActivity.Text);
-        //Assert.Equal("This is a summary", messageActivity.Summary);
         Assert.Equal("plain", messageActivity.TextFormat);
-        //Assert.Equal(InputHints.AcceptingInput, messageActivity.InputHint);
-        //Assert.Equal(ImportanceLevels.High, messageActivity.Importance);
-        //Assert.Equal(DeliveryModes.Normal, messageActivity.DeliveryMode);
         Assert.Equal("carousel", messageActivity.AttachmentLayout);
-        //Assert.NotNull(messageActivity.Expiration);
+        Assert.NotNull(messageActivity.From);
+        Assert.Equal("user-123", messageActivity.From.Id);
+        Assert.Equal("Test User", messageActivity.From.Name);
+        Assert.NotNull(messageActivity.Recipient);
+        Assert.Equal("bot-123", messageActivity.Recipient.Id);
+        Assert.Equal("Test Bot", messageActivity.Recipient.Name);
     }
 
     [Fact]
@@ -44,51 +45,14 @@ public class MessageActivityTests
     {
         MessageActivity activity = new("Hello World")
         {
-            // Summary = "Test summary",
             TextFormat = TextFormats.Markdown,
-            //InputHint = InputHints.ExpectingInput,
-            //Importance = ImportanceLevels.Urgent,
-            //DeliveryMode = DeliveryModes.Notification
         };
 
         string json = activity.ToJson();
 
         Assert.Contains("Hello World", json);
-        //Assert.Contains("Test summary", json);
         Assert.Contains("markdown", json);
-        //Assert.Contains("expectingInput", json);
-        //Assert.Contains("urgent", json);
-        //Assert.Contains("notification", json);
     }
-
-    /*
-    [Fact]
-    public void MessageActivity_WithSpeak_Serialize()
-    {
-        MessageActivity activity = new("Hello")
-        {
-            Speak = "<speak>Hello World</speak>"
-        };
-
-        string json = activity.ToJson();
-        Assert.Contains("\"speak\":", json);
-        Assert.Contains("Hello World", json);
-    }
-
-    [Fact]
-    public void MessageActivity_WithExpiration_Serialize()
-    {
-        string expirationDate = "2026-12-31T23:59:59Z";
-        MessageActivity activity = new("Expiring message")
-        {
-            Expiration = expirationDate
-        };
-
-        string json = activity.ToJson();
-        Assert.Contains("2026-12-31T23:59:59Z", json);
-    }
-    */
-
 
     [Fact]
     public void MessageActivity_Constants_TextFormats()
@@ -104,6 +68,9 @@ public class MessageActivityTests
 
         activity.TextFormat = TextFormats.Xml;
         Assert.Equal("xml", activity.TextFormat);
+
+        activity.TextFormat = TextFormats.ExtendedMarkdown;
+        Assert.Equal("extendedmarkdown", activity.TextFormat);
     }
 
     [Fact]
@@ -113,14 +80,8 @@ public class MessageActivityTests
         MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
 
         Assert.Null(messageActivity.Text);
-        //Assert.Null(messageActivity.Speak);
-        //Assert.Null(messageActivity.InputHint);
-        //Assert.Null(messageActivity.Summary);
         Assert.Null(messageActivity.TextFormat);
         Assert.Null(messageActivity.AttachmentLayout);
-        //Assert.Null(messageActivity.Importance);
-        //Assert.Null(messageActivity.DeliveryMode);
-        //Assert.Null(messageActivity.Expiration);
     }
 
     [Fact]

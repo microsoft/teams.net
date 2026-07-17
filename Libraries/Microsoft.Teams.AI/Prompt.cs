@@ -9,6 +9,7 @@ namespace Microsoft.Teams.AI;
 /// abstractions that differ with the prompts supported
 /// media types
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IPrompt
 {
     /// <summary>

@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
 /// <summary>
 /// Message extension command context values.
 /// </summary>
-public static class MessageExtensionCommandContext
+public static class MessageExtensionCommandContexts
 {
     /// <summary>
     /// Command invoked from a message (message action).
@@ -31,7 +31,7 @@ public static class MessageExtensionCommandContext
 /// <summary>
 /// Bot message preview action values.
 /// </summary>
-public static class BotMessagePreviewAction
+public static class BotMessagePreviewActionTypes
 {
     /// <summary>
     /// User clicked edit on the preview.
@@ -69,14 +69,14 @@ public class MessageExtensionAction
 
     /// <summary>
     /// The context from which the command originates.
-    /// See <see cref="MessageExtensionCommandContext"/> for common values.
+    /// See <see cref="MessageExtensionCommandContexts"/> for common values.
     /// </summary>
     [JsonPropertyName("commandContext")]
     public required string CommandContext { get; set; }
 
     /// <summary>
     /// Bot message preview action taken by user.
-    /// See <see cref="BotMessagePreviewAction"/> for common values.
+    /// See <see cref="BotMessagePreviewActionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("botMessagePreviewAction")]
     public string? BotMessagePreviewAction { get; set; }
@@ -87,7 +87,7 @@ public class MessageExtensionAction
     /// </summary>
     // TODO : this needs to be activity type or something else - format is type, attachments[]
     [JsonPropertyName("botActivityPreview")]
-    public IList<TeamsActivity>? BotActivityPreview { get; set; }
+    public IList<TeamsActivityInput>? BotActivityPreview { get; set; }
 
     /// <summary>
     /// Data included with the submit action.
@@ -142,7 +142,7 @@ public class MessagePayload
     /// The importance of the message.
     /// </summary>
     /// <remarks>
-    /// See <see cref="MessagePayloadImportance"/> for common values.
+    /// See <see cref="MessagePayloadImportanceTypes"/> for common values.
     /// </remarks>
     [JsonPropertyName("importance")]
     public string? Importance { get; set; }
@@ -211,7 +211,7 @@ public class MessageFrom
 /// <summary>
 /// String constants for message importance levels.
 /// </summary>
-public static class MessagePayloadImportance
+public static class MessagePayloadImportanceTypes
 {
     /// <summary>
     /// Normal importance.
@@ -259,7 +259,7 @@ public class MessagePayloadAttachment
     public string? Id { get; set; }
 
     /// <summary>
-    /// Type of attachment content. See <see cref="AttachmentContentType"/> for common values.
+    /// Type of attachment content. See <see cref="AttachmentContentTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("contentType")]
     public string? ContentType { get; set; }
@@ -308,7 +308,7 @@ public class User
     public string? Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the user identity type.
+    /// Gets or sets the user identity type. See <see cref="UserIdentityTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("userIdentityType")]
     public string? UserIdentityType { get; set; }

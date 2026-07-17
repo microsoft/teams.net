@@ -33,7 +33,7 @@ public static class EventExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = TeamsActivityType.Event,
+            Name = TeamsActivityTypes.Event,
             Selector = _ => true,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -55,7 +55,7 @@ public static class EventExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.ReadReceipt),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.ReadReceipt),
             Selector = activity => activity.Name == EventNames.ReadReceipt,
             Handler = async (ctx, cancellationToken) =>
             {

@@ -54,7 +54,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageReactionActivity>());
+                await handler(context.ToActivityType<MessageReactionActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageReactionActivity
@@ -71,7 +71,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageReactionActivity
@@ -89,7 +89,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageReactionActivity>());
+                await handler(context.ToActivityType<MessageReactionActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity =>
@@ -114,7 +114,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity =>
@@ -140,7 +140,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageReactionActivity>());
+                await handler(context.ToActivityType<MessageReactionActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity =>
@@ -165,7 +165,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity =>

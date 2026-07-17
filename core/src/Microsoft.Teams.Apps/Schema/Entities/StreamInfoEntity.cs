@@ -26,7 +26,7 @@ public class StreamInfoEntity : Entity
     }
 
     /// <summary>
-    /// Gets or sets the stream type. See <see cref="StreamType"/> for possible values.
+    /// Gets or sets the stream type. See <see cref="StreamTypes"/> for possible values.
     /// </summary>
     [JsonPropertyName("streamType")]
     public string? StreamType
@@ -48,10 +48,11 @@ public class StreamInfoEntity : Entity
     }
 }
 
+
 /// <summary>
 /// Represents the types of streams.
 /// </summary>
-public static class StreamType
+public static class StreamTypes
 {
     /// <summary>
     /// Informative stream type.

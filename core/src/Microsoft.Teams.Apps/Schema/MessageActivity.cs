@@ -28,7 +28,8 @@ public class MessageActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageActivity() : base(TeamsActivityType.Message)
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    public MessageActivity() : base(TeamsActivityTypes.Message)
     {
     }
 
@@ -36,7 +37,8 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text">The text content of the message.</param>
-    public MessageActivity(string text) : base(TeamsActivityType.Message)
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    public MessageActivity(string text) : base(TeamsActivityTypes.Message)
     {
         Text = text;
     }
@@ -46,7 +48,8 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="attachments">The list of attachments for the message.</param>
-    public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityType.Message)
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityTypes.Message)
     {
         Attachments = attachments;
     }
@@ -55,39 +58,26 @@ public class MessageActivity : TeamsActivity
     /// Internal constructor to create MessageActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected MessageActivity(CoreActivity activity) : base(activity)
+    internal MessageActivity(CoreActivity activity) : base(activity)
     {
         Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
         Text = activity.Properties.Extract<string>("text");
         TextFormat = activity.Properties.Extract<string>("textFormat");
         AttachmentLayout = activity.Properties.Extract<string>("attachmentLayout");
         SuggestedActions = activity.Properties.Extract<SuggestedActions>("suggestedActions");
-
-        /*
-        if (activity.Properties.TryGetValue("summary", out var summary))
-        {
-            Summary = summary?.ToString();
-            activity.Properties.Remove("summary");
-        }
-        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
-        {
-            DeliveryMode = deliveryMode?.ToString();
-            activity.Properties.Remove("deliveryMode");
-        }
-        */
     }
 
     /// <summary>
-    /// Gets or sets the attachments for the message.
+    /// Gets the attachments for the message.
     /// </summary>
     [JsonPropertyName("attachments")]
-    public IList<TeamsAttachment>? Attachments { get; set; }
+    public IList<TeamsAttachment>? Attachments { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the text content of the message.
+    /// Gets the text content of the message.
     /// </summary>
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public string? Text { get; internal set; }
 
     /// <summary>
     /// Gets the message text with the bot (recipient) @mention removed and trimmed.
@@ -113,33 +103,16 @@ public class MessageActivity : TeamsActivity
         }
     }
     /// <summary>
-    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
+    /// Gets the text format. See <see cref="TextFormats"/> for common values (plain, markdown, xml, extendedmarkdown).
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; set; }
+    public string? TextFormat { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the attachment layout.
+    /// Gets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
-
-
-
-    //TODO : Review properties
-    /*
-    /// <summary>
-    /// Gets or sets the summary of the message.
-    /// </summary>
-    [JsonPropertyName("summary")]
-    public string? Summary { get; set; }
-
-    /// <summary>
-    /// Gets or sets the delivery mode. See <see cref="DeliveryModes"/> for common values.
-    /// </summary>
-    [JsonPropertyName("deliveryMode")]
-    public string? DeliveryMode { get; set; }
-    */
+    public string? AttachmentLayout { get; internal set; }
 
 }
 
@@ -162,32 +135,10 @@ public static class TextFormats
     /// XML text format.
     /// </summary>
     public const string Xml = "xml";
+
+    /// <summary>
+    /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
+    /// and other rich content beyond standard markdown.
+    /// </summary>
+    public const string ExtendedMarkdown = "extendedmarkdown";
 }
-
-/*
-/// <summary>
-/// String constants for delivery modes.
-/// </summary>
-public static class DeliveryModes
-{
-    /// <summary>
-    /// Normal delivery mode.
-    /// </summary>
-    public const string Normal = "normal";
-
-    /// <summary>
-    /// Notification delivery mode.
-    /// </summary>
-    public const string Notification = "notification";
-
-    /// <summary>
-    /// Ephemeral delivery mode.
-    /// </summary>
-    public const string Ephemeral = "ephemeral";
-
-    /// <summary>
-    /// Expected replies delivery mode.
-    /// </summary>
-    public const string ExpectedReplies = "expectReplies";
-}
-*/

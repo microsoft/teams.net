@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -47,15 +48,42 @@ public class AspNetCorePluginTests
         return ctx;
     }
 
-    private static MessageActivity CreateMessageActivity()
+    private static DefaultHttpContext CreateUnauthenticatedRequestsAllowedHttpContext(IActivity activity)
+    {
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Remove("Authorization");
+        ctx.RequestServices = new ServiceCollection()
+            .AddSingleton(new AspNetCorePluginOptions { DangerouslyAllowUnauthenticatedRequests = true })
+            .BuildServiceProvider();
+        return ctx;
+    }
+
+    private static MessageActivity CreateMessageActivity(string? serviceUrl = null)
     {
         return new MessageActivity("hi")
         {
             From = new() { Id = "user" },
             Recipient = new() { Id = "bot" },
-            Conversation = new Conversation() { Id = "conv", Type = ConversationType.Personal }
+            Conversation = new Conversation() { Id = "conv", Type = ConversationType.Personal },
+            ServiceUrl = serviceUrl
         };
     }
+
+    // Builds an unsigned-but-parseable JWT carrying the given serviceurl claim (omitted when null).
+    // JsonWebToken/JwtSecurityTokenHandler.ReadJwtToken parses without verifying the signature.
+    private static string CreateJwt(string? serviceUrl)
+    {
+        var payload = new Dictionary<string, object> { ["exp"] = 4702515200L };
+        if (serviceUrl is not null)
+        {
+            payload["serviceurl"] = serviceUrl;
+        }
+        return $"{Base64Url(new { alg = "HS256", typ = "JWT" })}.{Base64Url(payload)}.signature";
+    }
+
+    private static string Base64Url(object value) =>
+        Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value)))
+            .TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     [Fact]
     public async Task Test_Do_Http_CallsExtractTokenAndActivity_AndCallsCoreDo()
@@ -139,6 +167,107 @@ public class AspNetCorePluginTests
     }
 
     [Fact]
+    public async Task Test_Do_Http_DangerouslyAllowUnauthenticatedRequests_NoAuthorizationHeader_Processes()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        var eventsCalled = new List<string>();
+
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            if (name == "activity") return Task.FromResult<object?>(coreResponse);
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateUnauthenticatedRequestsAllowedHttpContext(activity);
+
+        var result = await plugin.Do(ctx);
+
+        Assert.Contains("activity", eventsCalled);
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("https://smba.trafficmanager.net/teams", "https://smba.trafficmanager.net/teams")]
+    public async Task Test_Do_Http_DangerouslyAllowUnauthenticatedRequests_UsesActivityServiceUrlAsTokenServiceUrl(string? activityServiceUrl, string expectedTokenServiceUrl)
+    {
+        var activity = CreateMessageActivity(activityServiceUrl);
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        string? tokenServiceUrl = null;
+
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            if (name == "activity")
+            {
+                var activityEvent = Assert.IsType<ActivityEvent>(payload);
+                tokenServiceUrl = activityEvent.Token.ServiceUrl;
+                return Task.FromResult<object?>(coreResponse);
+            }
+
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateUnauthenticatedRequestsAllowedHttpContext(activity);
+
+        var result = await plugin.Do(ctx);
+
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
+        Assert.Equal(expectedTokenServiceUrl, tokenServiceUrl);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_MissingAuthorizationHeader_ReturnsUnauthorized()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Remove("Authorization");
+
+        var result = await plugin.Do(ctx);
+
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_InvalidAuthorizationHeader_ReturnsUnauthorized()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Authorization = "Bearer not-a-jwt";
+
+        var result = await plugin.Do(ctx);
+
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
     public void Test_ExtractToken_ReturnsToken()
     {
         var plugin = CreatePlugin();
@@ -195,5 +324,85 @@ public class AspNetCorePluginTests
         // Assert
         Assert.Same(response, res);
         logger.Verify(l => l.Debug(It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Theory]
+    [InlineData("https://smba.trafficmanager.net/teams/", "https://smba.trafficmanager.net/teams/")] // exact match
+    [InlineData("HTTPS://SMBA.TRAFFICMANAGER.NET/teams/", "https://smba.trafficmanager.net/teams/")] // case-insensitive
+    [InlineData("https://smba.trafficmanager.net/teams", "https://smba.trafficmanager.net/teams/")] // trailing-slash normalized
+    public async Task Test_Do_Http_ServiceUrlClaimMatches_Processes(string claimServiceUrl, string activityServiceUrl)
+    {
+        // Arrange
+        var activity = CreateMessageActivity(activityServiceUrl);
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            if (name == "activity") return Task.FromResult<object?>(coreResponse);
+            return Task.FromResult<object?>(null);
+        };
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateHttpContext(activity, CreateJwt(claimServiceUrl));
+
+        // Act
+        var result = await plugin.Do(ctx);
+
+        // Assert
+        Assert.Contains("activity", eventsCalled);
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_ServiceUrlClaimMismatch_ReturnsUnauthorized()
+    {
+        // Arrange
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            if (name == "activity") return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+            return Task.FromResult<object?>(null);
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity, CreateJwt("https://evil.example.com/"));
+
+        // Act
+        var result = await plugin.Do(ctx);
+
+        // Assert: rejected with 401, activity never dispatched, neither URL echoed, logged server-side.
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_NoServiceUrlClaim_ReturnsUnauthorized()
+    {
+        // Arrange: activity carries a serviceUrl but the token has no serviceurl claim.
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            if (name == "activity") return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+            return Task.FromResult<object?>(null);
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity, CreateJwt(null));
+
+        // Act
+        var result = await plugin.Do(ctx);
+
+        // Assert: a token without a serviceurl claim is rejected when the activity has one.
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
     }
 }

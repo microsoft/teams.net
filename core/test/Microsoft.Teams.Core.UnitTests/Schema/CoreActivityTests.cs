@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core.UnitTests.Schema;
@@ -175,7 +174,7 @@ public class CoreCoreActivityTests
         Assert.Contains("\"type\": \"message\"", json2);
         Assert.True(act.Properties.ContainsKey("entities"));
         Assert.IsType<JsonElement>(act.Properties["entities"]);
-        var entitiesElement = (JsonElement)act.Properties["entities"]!;
+        JsonElement entitiesElement = (JsonElement)act.Properties["entities"]!;
         Assert.Equal(JsonValueKind.Array, entitiesElement.ValueKind);
         Assert.Equal(2, entitiesElement.GetArrayLength());
 
@@ -210,8 +209,8 @@ public class CoreCoreActivityTests
         CoreActivity act = new()
         {
             Type = ActivityType.Message,
-            From = new ConversationAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } },
-            Recipient = new ConversationAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } },
+            From = new ChannelAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } },
+            Recipient = new ChannelAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } },
             Properties =
             {
                 { "customField", "customValue" },
@@ -273,7 +272,7 @@ public class CoreCoreActivityTests
         Assert.Equal("invoke", act.Type);
         // Value is no longer on CoreActivity — it lands in Properties via [JsonExtensionData]
         Assert.True(act.Properties.ContainsKey("value"));
-        var valueElement = Assert.IsType<JsonElement>(act.Properties["value"]);
+        JsonElement valueElement = Assert.IsType<JsonElement>(act.Properties["value"]);
         Assert.Equal("value1", valueElement.GetProperty("key1").GetString());
         Assert.Equal(2, valueElement.GetProperty("key2").GetInt32());
     }
@@ -281,7 +280,7 @@ public class CoreCoreActivityTests
     [Fact]
     public void IsTargeted_DefaultsToNull()
     {
-        ConversationAccount account = new();
+        ChannelAccount account = new();
 
         Assert.Null(account.IsTargeted);
     }
@@ -289,7 +288,7 @@ public class CoreCoreActivityTests
     [Fact]
     public void IsTargeted_CanBeSetToTrue()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             IsTargeted = true
         };
@@ -303,7 +302,7 @@ public class CoreCoreActivityTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = "user-123", IsTargeted = true }
+            Recipient = new ChannelAccount { Id = "user-123", IsTargeted = true }
         };
 
         string json = activity.ToJson();
@@ -330,5 +329,50 @@ public class CoreCoreActivityTests
         Assert.NotNull(activity.Recipient);
         Assert.Equal("user-123", activity.Recipient.Id);
         Assert.True(activity.Recipient.IsTargeted);
+    }
+
+    [Fact]
+    public void AgenticIdentity_IncludesTenantId_FromRecipient()
+    {
+        string json = """
+        {
+            "type": "message",
+            "recipient": {
+                "id": "28:bot-id",
+                "agenticAppId": "agentic-app",
+                "agenticUserId": "agentic-user",
+                "agenticAppBlueprintId": "blueprint",
+                "tenantId": "tenant-abc"
+            }
+        }
+        """;
+
+        CoreActivity activity = CoreActivity.FromJsonString(json);
+
+        AgenticIdentity? identity = activity.Recipient?.GetAgenticIdentity();
+        Assert.NotNull(identity);
+        Assert.Equal("agentic-app", identity!.AgenticAppId);
+        Assert.Equal("agentic-user", identity.AgenticUserId);
+        Assert.Equal("blueprint", identity.AgenticAppBlueprintId);
+        Assert.Equal("tenant-abc", identity.TenantId);
+    }
+
+    [Fact]
+    public void AgenticIdentity_TenantIdAlone_DoesNotCreateIdentity()
+    {
+        string json = """
+        {
+            "type": "message",
+            "recipient": {
+                "id": "user-123",
+                "tenantId": "tenant-abc"
+            }
+        }
+        """;
+
+        CoreActivity activity = CoreActivity.FromJsonString(json);
+
+        Assert.Equal("tenant-abc", activity.Recipient?.TenantId);
+        Assert.Null(activity.Recipient?.GetAgenticIdentity());
     }
 }

@@ -70,6 +70,7 @@ public class EntityList : List<Entity>
                     "ProductInfo" => item.Deserialize<ProductInfoEntity>(options),
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
                     "quotedReply" => item.Deserialize<QuotedReplyEntity>(options),
+                    "targetedMessageInfo" => item.Deserialize<TargetedMessageInfoEntity>(options),
                     _ => item.Deserialize<Entity>(options)
                 };
                 if (entity != null)

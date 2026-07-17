@@ -8,6 +8,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Teams.Apps.BotBuilder;
 
@@ -51,13 +52,28 @@ public static class ActivitySchemaMapper
         return CoreActivity.FromJsonString(jsonString);
     }
 
+    /// <summary>
+    /// Converts a Bot Framework <see cref="Activity"/> to an outbound <see cref="CoreActivityInput"/>.
+    /// </summary>
+    /// <param name="activity">The Bot Framework activity to convert.</param>
+    /// <returns>The equivalent outbound activity input.</returns>
+    public static CoreActivityInput FromBotFrameworkActivityInput(this Activity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        StringBuilder sb = new();
+        using StringWriter stringWriter = new(sb);
+        using JsonTextWriter json = new(stringWriter);
+        BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
+        return CoreActivityInput.FromJsonString(sb.ToString());
+    }
+
 
     /// <summary>
-    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
     /// </summary>
     /// <param name="account">The conversation account to convert.</param>
     /// <returns>The equivalent channel account.</returns>
-    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -69,6 +85,10 @@ public static class ActivitySchemaMapper
             Name = account.Name
         };
 
+        if (!string.IsNullOrEmpty(account.BotId))
+        {
+            channelAccount.Properties.Add("botId", account.BotId);
+        }
 
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
@@ -109,11 +129,11 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/> with all known properties.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/> with all known properties.
     /// </summary>
     /// <param name="account">The conversation account to convert.</param>
     /// <returns>The equivalent Teams channel account.</returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -149,11 +169,11 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/>.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/>.
     /// </summary>
     /// <param name="account">The conversation account to convert.</param>
     /// <returns>The equivalent Teams channel account.</returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -198,13 +218,18 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a Bot Framework ChannelAccount to a Core ConversationAccount.
+    /// Converts a Bot Framework ChannelAccount to a Core ChannelAccount.
     /// </summary>
-    public static Microsoft.Teams.Core.Schema.ConversationAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
+    public static Microsoft.Teams.Core.Schema.ChannelAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        Microsoft.Teams.Core.Schema.ConversationAccount result = new() { Id = account.Id, Name = account.Name };
+        Microsoft.Teams.Core.Schema.ChannelAccount result = new() { Id = account.Id, Name = account.Name };
+
+        if (account.Properties is not null && account.Properties.TryGetValue("botId", out JToken? botId))
+        {
+            result.BotId = GetStringValue(botId);
+        }
 
         if (!string.IsNullOrEmpty(account.AadObjectId))
         {
@@ -232,7 +257,7 @@ public static class ActivitySchemaMapper
             Bot = parameters.Bot?.FromCompatChannelAccount(),
             Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
             TopicName = parameters.TopicName,
-            Activity = parameters.Activity?.FromBotFrameworkActivity(),
+            Activity = parameters.Activity is null ? null : parameters.Activity.FromBotFrameworkActivityInput(),
             ChannelData = parameters.ChannelData,
             TenantId = parameters.TenantId,
         };

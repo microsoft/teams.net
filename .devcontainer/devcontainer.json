@@ -17,7 +17,7 @@
 		"ghcr.io/devcontainers/features/dotnet:2": {
 			"version": "10.0"
 		},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+		"ghcr.io/devcontainers/features/docker-in-docker:4": {
 			"moby": true,
 			"azureDnsAutoDetection": true,
 			"installDockerBuildx": true,

@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Schema;
 /// <summary>
 /// Defines known conversation types for Teams.
 /// </summary>
-public static class ConversationType
+public static class ConversationTypes
 {
     /// <summary>
     /// One-to-one conversation between a user and a bot.
@@ -51,24 +51,24 @@ public class TeamsConversation : Conversation
         {
             return null;
         }
+
+        if (conversation is TeamsConversation teamsConversation)
+        {
+            return teamsConversation;
+        }
+
         TeamsConversation result = new();
         result.Id = conversation.Id;
         if (conversation.Properties == null)
         {
             return result;
         }
-        if (conversation.Properties.TryGetValue("tenantId", out object? tenantObj))
-        {
-            result.TenantId = tenantObj?.ToString();
-        }
-        if (conversation.Properties.TryGetValue("conversationType", out object? convTypeObj))
-        {
-            result.ConversationType = convTypeObj?.ToString();
-        }
-        if (conversation.Properties.TryGetValue("isGroup", out object? isGroupObj))
-        {
-            result.IsGroup = Convert.ToBoolean(isGroupObj?.ToString());
-        }
+
+        result.Properties = new ExtendedPropertiesDictionary(conversation.Properties);
+        result.TenantId = result.Properties.Extract<string>("tenantId");
+        result.ConversationType = result.Properties.Extract<string>("conversationType");
+        result.IsGroup = result.Properties.Extract<bool?>("isGroup");
+
         return result;
     }
 
@@ -78,7 +78,7 @@ public class TeamsConversation : Conversation
     [JsonPropertyName("tenantId")] public string? TenantId { get; set; }
 
     /// <summary>
-    /// Conversation Type. See <see cref="ConversationType"/> for known values.
+    /// Conversation Type. See <see cref="ConversationTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("conversationType")] public string? ConversationType { get; set; }
 

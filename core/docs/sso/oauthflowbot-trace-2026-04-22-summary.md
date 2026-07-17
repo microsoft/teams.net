@@ -8,9 +8,6 @@
 **SDK Version**: `0.0.1-alpha-0107-g1c503584a7`
 **Result**: ✅ SUCCESS (login graph + my ad user + logout graph)
 
-> **Key difference from SsoBot**: This connection does not have `tokenExchangeResource` (SSO not configured).
-> Login completes via **popup sign-in** + `signin/verifyState` instead of silent `signin/tokenExchange`.
-
 ### 🆔 Identity Reference
 
 | Identity | MRI / Value |
@@ -333,23 +330,3 @@
 > **Note**: The User MRI (`29:...`) is the Teams-specific identifier. It is used as `userid` in all Token Bot Service calls (GetToken, SignOut) and appears in `from.id` on incoming activities and `recipient.id` on outgoing replies. The AAD ObjectId (`03500558-...`) appears separately in `from.aadObjectId` and in the outgoing `recipient.aadObjectId`.
 
 ---
-
-## 🔑 vs SsoBot: Key Differences
-
-| Aspect | SsoBot (`sso` connection) | OAuthFlowBot (`teamsgraph` connection) |
-|--------|--------------------------|----------------------------------------|
-| SSO support | ✅ `tokenExchangeResource` present | ❌ `tokenExchangeResource` omitted |
-| Sign-in invoke | `signin/tokenExchange` (silent) | `signin/verifyState` (popup + code) |
-| Token acquisition | `POST /api/usertoken/exchange` with SSO JWT | `GET /api/usertoken/GetToken` with `code` param |
-| User interaction | None (fully silent) | Popup window + consent |
-| OAuthFlow API | Context API (`context.SignIn()`) | Instance API (`graphAuth.SignInAsync(context)`) |
-| verifyState value | N/A | `{ "state": "745254" }` |
-| tokenExchange value | `{ id, connectionName, token }` | N/A |
-
-## 🐛 Bug Fixed During This Run
-
-**Issue**: `OAuthCard` serialized `"tokenExchangeResource": null` explicitly in JSON. Teams rejected this with `BadRequest: {"error":{"code":"ServiceError","message":"Unknown"}}`.
-
-**Fix**: Added `[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]` to `TokenExchangeResource` and `TokenPostResource` properties in `OAuthCard.cs`. When null, these properties are now omitted from the JSON instead of being sent as explicit nulls.
-
-**File**: `src/Microsoft.Teams.Apps/Schema/OAuthCard.cs`

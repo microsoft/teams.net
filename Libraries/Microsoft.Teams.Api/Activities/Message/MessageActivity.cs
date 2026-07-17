@@ -23,10 +23,12 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("speak")]
     [JsonPropertyOrder(32)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public string? Speak { get; set; }
 
     [JsonPropertyName("inputHint")]
     [JsonPropertyOrder(33)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public InputHint? InputHint { get; set; }
 
     [JsonPropertyName("summary")]
@@ -51,6 +53,7 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("importance")]
     [JsonPropertyOrder(39)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public Importance? Importance { get; set; }
 
     [JsonPropertyName("deliveryMode")]
@@ -59,6 +62,7 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("expiration")]
     [JsonPropertyOrder(42)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public DateTime? Expiration { get; set; }
 
     [JsonPropertyName("value")]
@@ -73,14 +77,11 @@ public class MessageActivity : Activity
     /// <summary>
     /// Get all quoted reply entities from this message.
     /// </summary>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
-#pragma warning disable ExperimentalTeamsQuotedReplies
     public IReadOnlyList<QuotedReplyEntity> GetQuotedMessages()
     {
         return Entities?.OfType<QuotedReplyEntity>().ToList()
             ?? new List<QuotedReplyEntity>();
     }
-#pragma warning restore ExperimentalTeamsQuotedReplies
 
     public MessageActivity() : base(ActivityType.Message)
     {
@@ -98,15 +99,21 @@ public class MessageActivity : Activity
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithSpeak(string speak)
     {
+#pragma warning disable CS0618
         Speak = speak;
+#pragma warning restore CS0618
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithInputHint(InputHint inputHint)
     {
+#pragma warning disable CS0618
         InputHint = inputHint;
+#pragma warning restore CS0618
         return this;
     }
 
@@ -134,9 +141,12 @@ public class MessageActivity : Activity
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithImportance(Importance importance)
     {
+#pragma warning disable CS0618
         Importance = importance;
+#pragma warning restore CS0618
         return this;
     }
 
@@ -146,9 +156,12 @@ public class MessageActivity : Activity
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithExpiration(DateTime expiration)
     {
+#pragma warning disable CS0618
         Expiration = expiration;
+#pragma warning restore CS0618
         return this;
     }
 
@@ -178,8 +191,6 @@ public class MessageActivity : Activity
     /// </summary>
     /// <param name="messageId">the ID of the message to quote</param>
     /// <param name="text">optional text, appended to the quoted message placeholder</param>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
-#pragma warning disable ExperimentalTeamsQuotedReplies
     public MessageActivity AddQuote(string messageId, string? text = null)
     {
         Entities ??= new List<IEntity>();
@@ -194,14 +205,11 @@ public class MessageActivity : Activity
         }
         return this;
     }
-#pragma warning restore ExperimentalTeamsQuotedReplies
 
     /// <summary>
     /// Prepend a QuotedReply entity and placeholder before existing text.
     /// Used by Reply()/Quote() for quote-above-response.
     /// </summary>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
-#pragma warning disable ExperimentalTeamsQuotedReplies
     public MessageActivity PrependQuote(string messageId)
     {
         Entities ??= new List<IEntity>();
@@ -214,7 +222,6 @@ public class MessageActivity : Activity
         Text = hasText ? $"{placeholder} {Text}" : placeholder;
         return this;
     }
-#pragma warning restore ExperimentalTeamsQuotedReplies
 
 
     public MessageActivity AddAttachment(params Attachment[] value)
@@ -287,15 +294,17 @@ public class MessageActivity : Activity
         base.Merge(from);
 
         Text ??= from.Text;
+#pragma warning disable CS0618
         Speak ??= from.Speak;
         InputHint ??= from.InputHint;
+        Importance ??= from.Importance;
+        Expiration ??= from.Expiration;
+#pragma warning restore CS0618
         Summary ??= from.Summary;
         TextFormat ??= from.TextFormat;
         AttachmentLayout ??= from.AttachmentLayout;
         SuggestedActions ??= from.SuggestedActions;
-        Importance ??= from.Importance;
         DeliveryMode ??= from.DeliveryMode;
-        Expiration ??= from.Expiration;
         Value ??= from.Value;
         AddAttachment(from.Attachments?.ToArray() ?? []);
 

@@ -27,7 +27,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageReactionActivity() : base(TeamsActivityType.MessageReaction)
+    internal MessageReactionActivity() : base(TeamsActivityTypes.MessageReaction)
     {
     }
 
@@ -35,7 +35,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Internal constructor to create MessageReactionActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected MessageReactionActivity(CoreActivity activity) : base(activity)
+    internal MessageReactionActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ReactionsAdded = activity.Properties.Extract<IList<MessageReaction>>("reactionsAdded");
@@ -47,13 +47,13 @@ public class MessageReactionActivity : TeamsActivity
     /// Gets or sets the reactions added to the message.
     /// </summary>
     [JsonPropertyName("reactionsAdded")]
-    public IList<MessageReaction>? ReactionsAdded { get; set; }
+    public IList<MessageReaction>? ReactionsAdded { get; internal set; }
 
     /// <summary>
     /// Gets or sets the reactions removed from the message.
     /// </summary>
     [JsonPropertyName("reactionsRemoved")]
-    public IList<MessageReaction>? ReactionsRemoved { get; set; }
+    public IList<MessageReaction>? ReactionsRemoved { get; internal set; }
 }
 
 /// <summary>
@@ -66,7 +66,7 @@ public class MessageReaction
     /// See <see cref="ReactionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public string? Type { get; internal set; }
 }
 
 /// <summary>

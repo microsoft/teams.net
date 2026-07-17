@@ -1,15 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<NoWarn>$(NoWarn);ExperimentalTeamsTargeted</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<PackageId>Microsoft.Teams.Core</PackageId>
-		<Description>BotApplication and CoreActivity to support Microsoft Teams development.</Description>
+		<PackageDescription>BotApplication and CoreActivity to support Microsoft Teams development.</PackageDescription>
+		<PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,7 +32,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.7" />
 		<PackageReference Include="Microsoft.Identity.Web.UI" Version="4.8.0" />
-		<PackageReference Include="Microsoft.Identity.Web.AgentIdentities" Version="4.8.0" />
+		<PackageReference Include="Microsoft.Identity.Web.AgentIdentities" Version="4.8.0" />		
 	</ItemGroup>
 	<ItemGroup>
 		<Using Include="System.Text.Json.Serialization" />

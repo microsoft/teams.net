@@ -3,6 +3,7 @@
 
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 
 namespace Microsoft.Teams.Apps.BotBuilder;
 
@@ -19,6 +20,13 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot.Connector.Authentication.UserTokenClient
 {
     /// <summary>
+    /// Gets or sets the per-request properties captured from the incoming activity (agentic identity,
+    /// bot app id). Threaded into each outbound user token operation and stamped onto the request's
+    /// options for the authentication handler to read.
+    /// </summary>
+    internal BotRequestContext? RequestContext { get; set; }
+
+    /// <summary>
     /// Gets the status of all tokens for a specific user across all configured OAuth connections.
     /// </summary>
     /// <param name="userId">The unique identifier of the user. Cannot be null or empty.</param>
@@ -29,9 +37,18 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     /// A task that represents the asynchronous operation. The task result contains an array of <see cref="TokenStatus"/>
     /// objects representing the status of each configured connection for the user.
     /// </returns>
-    public async override Task<TokenStatus[]> GetTokenStatusAsync(string userId, string channelId, string includeFilter, CancellationToken cancellationToken)
+    public async override Task<TokenStatus[]> GetTokenStatusAsync(
+        string userId,
+        string channelId,
+        string includeFilter,
+        CancellationToken cancellationToken)
     {
-        GetTokenStatusResult[] res = await utc.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken).ConfigureAwait(false);
+        GetTokenStatusResult[] res = await utc.GetTokenStatusAsync(
+            userId,
+            channelId,
+            includeFilter,
+            RequestContext,
+            cancellationToken).ConfigureAwait(false);
         return res.Select(t => new TokenStatus
         {
             ChannelId = channelId,
@@ -53,9 +70,20 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     /// A task that represents the asynchronous operation. The task result contains a <see cref="TokenResponse"/> with
     /// the OAuth token if available, or null if the user has not completed authentication for this connection.
     /// </returns>
-    public async override Task<TokenResponse?> GetUserTokenAsync(string userId, string connectionName, string channelId, string magicCode, CancellationToken cancellationToken)
+    public async override Task<TokenResponse?> GetUserTokenAsync(
+        string userId,
+        string connectionName,
+        string channelId,
+        string magicCode,
+        CancellationToken cancellationToken)
     {
-        GetTokenResult? res = await utc.GetTokenAsync(userId, connectionName, channelId, magicCode, cancellationToken).ConfigureAwait(false);
+        GetTokenResult? res = await utc.GetTokenAsync(
+            userId,
+            connectionName,
+            channelId,
+            magicCode,
+            RequestContext,
+            cancellationToken).ConfigureAwait(false);
         if (res == null)
         {
             return null;
@@ -81,10 +109,20 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     /// with the sign-in link and optional token exchange or post resources for completing the OAuth flow.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="activity"/> is null.</exception>
-    public async override Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
+    public async override Task<SignInResource> GetSignInResourceAsync(
+        string connectionName,
+        Activity activity,
+        string finalRedirect,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        GetSignInResourceResult res = await utc.GetSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
+        GetSignInResourceResult res = await utc.GetSignInResourceAsync(
+            activity.From.Id,
+            connectionName,
+            activity.ChannelId,
+            finalRedirect,
+            RequestContext,
+            cancellationToken).ConfigureAwait(false);
         SignInResource signInResource = new()
         {
             SignInLink = res!.SignInLink
@@ -123,11 +161,20 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     /// A task that represents the asynchronous operation. The task result contains a <see cref="TokenResponse"/>
     /// with the exchanged token for the target connection.
     /// </returns>
-    public async override Task<TokenResponse> ExchangeTokenAsync(string userId, string connectionName, string channelId,
-     TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken)
+    public async override Task<TokenResponse> ExchangeTokenAsync(
+        string userId,
+        string connectionName,
+        string channelId,
+        TokenExchangeRequest exchangeRequest,
+        CancellationToken cancellationToken)
     {
-        GetTokenResult resp = await utc.ExchangeTokenAsync(userId, connectionName, channelId, exchangeRequest.Token,
-        cancellationToken).ConfigureAwait(false);
+        GetTokenResult resp = await utc.ExchangeTokenAsync(
+            userId,
+            connectionName,
+            channelId,
+            exchangeRequest.Token,
+            RequestContext,
+            cancellationToken).ConfigureAwait(false);
         return new TokenResponse
         {
             ChannelId = channelId,
@@ -144,9 +191,18 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     /// <param name="channelId">The channel identifier where the user is interacting. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous sign-out operation.</returns>
-    public async override Task SignOutUserAsync(string userId, string connectionName, string channelId, CancellationToken cancellationToken)
+    public async override Task SignOutUserAsync(
+        string userId,
+        string connectionName,
+        string channelId,
+        CancellationToken cancellationToken)
     {
-        await utc.SignOutUserAsync(userId, connectionName, channelId, cancellationToken).ConfigureAwait(false);
+        await utc.SignOutUserAsync(
+            userId,
+            connectionName,
+            channelId,
+            RequestContext,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -161,9 +217,20 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     /// A task that represents the asynchronous operation. The task result contains a dictionary mapping each
     /// resource URL to its corresponding <see cref="TokenResponse"/>. Returns an empty dictionary if no tokens are available.
     /// </returns>
-    public async override Task<Dictionary<string, TokenResponse>> GetAadTokensAsync(string userId, string connectionName, string[] resourceUrls, string channelId, CancellationToken cancellationToken)
+    public async override Task<Dictionary<string, TokenResponse>> GetAadTokensAsync(
+        string userId,
+        string connectionName,
+        string[] resourceUrls,
+        string channelId,
+        CancellationToken cancellationToken)
     {
-        IDictionary<string, GetTokenResult> res = await utc.GetAadTokensAsync(userId, connectionName, channelId, resourceUrls, cancellationToken).ConfigureAwait(false);
+        IDictionary<string, GetTokenResult> res = await utc.GetAadTokensAsync(
+            userId,
+            connectionName,
+            channelId,
+            resourceUrls,
+            RequestContext,
+            cancellationToken).ConfigureAwait(false);
         return res?.ToDictionary(kvp => kvp.Key, kvp => new TokenResponse
         {
             ChannelId = channelId,

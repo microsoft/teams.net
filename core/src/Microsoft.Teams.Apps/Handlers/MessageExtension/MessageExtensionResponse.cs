@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
 /// <summary>
 /// Messaging extension response types.
 /// </summary>
-public static class MessageExtensionResponseType
+public static class MessageExtensionResponseTypes
 {
     /// <summary>
     /// Result type - displays a list of search results.
@@ -30,14 +30,6 @@ public static class MessageExtensionResponseType
     /// Config type - prompts the user to set up the message extension.
     /// </summary>
     public const string Config = "config";
-
-    //TODO : review
-    /*
-    /// <summary>
-    /// Auth type - prompts the user to authenticate.
-    /// </summary>
-    public const string Auth = "auth";
-    */
 }
 
 /// <summary>
@@ -69,14 +61,14 @@ public class ComposeExtension
 {
     /// <summary>
     /// Type of result.
-    /// See <see cref="MessageExtensionResponseType"/> for common values.
+    /// See <see cref="MessageExtensionResponseTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
     /// <summary>
     /// Layout for attachments.
-    /// See <see cref="TeamsAttachmentLayout"/> for common values.
+    /// See <see cref="TeamsAttachmentLayouts"/> for common values.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }
@@ -99,7 +91,7 @@ public class ComposeExtension
     /// </summary>
     //TODO : this needs to be activity type or something else - format is type, attachments[]
     [JsonPropertyName("activityPreview")]
-    public TeamsActivity? ActivityPreview { get; set; }
+    public TeamsActivityInput? ActivityPreview { get; set; }
 
     /// <summary>
     /// Suggested actions for config type.
@@ -113,13 +105,11 @@ public class ComposeExtension
 /// </summary>
 public class MessageExtensionSuggestedAction
 {
-    //TODO : this should come from cards package
-
     /// <summary>
     /// Array of actions.
     /// </summary>
     [JsonPropertyName("actions")]
-    public IList<object>? Actions { get; set; }
+    public IList<SuggestedAction>? Actions { get; set; }
 }
 
 
@@ -131,8 +121,8 @@ public class MessageExtensionResponseBuilder
     private string? _type;
     private string? _attachmentLayout;
     private TeamsAttachment[]? _attachments;
-    private TeamsActivity? _activityPreview;
-    private object[]? _suggestedActions;
+    private TeamsActivityInput? _activityPreview;
+    private SuggestedAction[]? _suggestedActions;
     private string? _text;
 
     /// <summary>
@@ -165,7 +155,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets the activity preview for bot message preview type.
     /// </summary>
-    public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivity activityPreview)
+    public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivityInput activityPreview)
     {
         _activityPreview = activityPreview;
         return this;
@@ -174,7 +164,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets suggested actions for config type.
     /// </summary>
-    public MessageExtensionResponseBuilder WithSuggestedActions(params object[] actions)
+    public MessageExtensionResponseBuilder WithSuggestedActions(params SuggestedAction[] actions)
     {
         _suggestedActions = actions;
         return this;
@@ -196,15 +186,15 @@ public class MessageExtensionResponseBuilder
     {
         if (string.IsNullOrEmpty(_type))
         {
-            throw new InvalidOperationException("Type must be set. Use WithType() to specify MessageExtensionResponseType.Result, Message, BotMessagePreview, or Config.");
+            throw new InvalidOperationException("Type must be set. Use WithType() to specify MessageExtensionResponseTypes.Result, Message, BotMessagePreview, or Config.");
         }
 
         return _type switch
         {
-            MessageExtensionResponseType.Result => ValidateResultType(),
-            MessageExtensionResponseType.Message => ValidateMessageType(),
-            MessageExtensionResponseType.BotMessagePreview => ValidateBotMessagePreviewType(),
-            MessageExtensionResponseType.Config => ValidateConfigType(),
+            MessageExtensionResponseTypes.Result => ValidateResultType(),
+            MessageExtensionResponseTypes.Message => ValidateMessageType(),
+            MessageExtensionResponseTypes.BotMessagePreview => ValidateBotMessagePreviewType(),
+            MessageExtensionResponseTypes.Config => ValidateConfigType(),
             _ => throw new InvalidOperationException($"Unknown message extension response type: {_type}")
         };
     }

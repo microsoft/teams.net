@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Linq;
 using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
@@ -17,7 +19,7 @@ namespace IntegrationTests;
 /// Shared fixture that configures DI, acquires tokens, and exposes clients for integration tests.
 /// Reused across test classes via IClassFixture to avoid repeated token acquisition.
 /// </summary>
-public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
+public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHelperAccessor
 {
     public ServiceProvider ServiceProvider { get; }
     public ConversationClient ConversationClient { get; }
@@ -33,6 +35,32 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
     public string BotAppId { get; }
     public string? UserId2 { get; }
     public AgenticIdentity? AgenticIdentity { get; }
+
+    /// <summary>
+    /// True when running against the canary service endpoint.
+    /// </summary>
+    public bool IsCanary => ServiceUrl.Host.Contains("canary", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Cached conversation members — fetched once during InitializeAsync to avoid
+    /// repeated /members calls that trigger throttling (429).
+    /// </summary>
+    public IList<TeamsChannelAccount?>? CachedMembers { get; private set; }
+
+    /// <summary>
+    /// First member MRI from cache (convenience for tests needing a valid member ID).
+    /// </summary>
+    public string? MemberMri1 => CachedMembers?.FirstOrDefault()?.Id;
+
+    /// <summary>
+    /// Second member MRI from cache (for group chat tests requiring 2+ members).
+    /// </summary>
+    public string? MemberMri2 => CachedMembers?.Skip(1).FirstOrDefault()?.Id;
+
+    /// <summary>
+    /// Third member MRI from cache.
+    /// </summary>
+    public string? MemberMri3 => CachedMembers?.Skip(2).FirstOrDefault()?.Id;
 
     /// <summary>
     /// Set by each test class constructor to route ILogger output to xUnit's test output.
@@ -77,7 +105,7 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
         {
             string appBlueprintId = Env("AzureAd__ClientId");
-            ConversationAccount recipient = new()
+            ChannelAccount recipient = new()
             {
                 AgenticAppBlueprintId = appBlueprintId,
                 AgenticAppId = agenticAppId,
@@ -87,7 +115,31 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         }
     }
 
-    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl);
+    /// <summary>
+    /// Fetches and caches conversation members once for the entire test run.
+    /// Filters out the bot itself and null entries. Fails fast if no usable members are found.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        ApiClient scoped = ScopedApiClient;
+        IList<TeamsChannelAccount?> raw = await scoped.Conversations.GetMembersAsync(ConversationId);
+
+        string botMri = $"28:{BotAppId}";
+        CachedMembers = raw
+            .Where(m => m?.Id is not null && !m.Id.Equals(botMri, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (CachedMembers.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "No usable members found in test conversation (all null or bot-only). " +
+                "Ensure the conversation has at least 2 non-bot members.");
+        }
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl).ForAgenticIdentity(AgenticIdentity);
 
     public void Dispose()
     {
@@ -100,18 +152,18 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         ?? fallback
         ?? throw new InvalidOperationException($"{name} environment variable not set");
 
-    internal static ConversationAccount GetConversationAccountWithAgenticProperties()
+    internal static ChannelAccount GetChannelAccountWithAgenticProperties()
     {
-        var agenticUserId = Env("TEST_AGENTIC_USERID");
-        var agenticAppId = Env("TEST_AGENTIC_APPID");
-        var agenticAppBlueprintId = Env("AzureAd__ClientId");
+        string agenticUserId = Env("TEST_AGENTIC_USERID");
+        string agenticAppId = Env("TEST_AGENTIC_APPID");
+        string agenticAppBlueprintId = Env("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
-            return new ConversationAccount();
+            return new ChannelAccount();
         }
 
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = agenticUserId,
             Name = "Agentic User",
@@ -124,9 +176,9 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
 
     internal static AgenticIdentity GetAgenticIdentity()
     {
-        var agenticUserId = Env("TEST_AGENTIC_USERID");
-        var agenticAppId = Env("TEST_AGENTIC_APPID");
-        var agenticAppBlueprintId = Env("AzureAd__ClientId");
+        string agenticUserId = Env("TEST_AGENTIC_USERID");
+        string agenticAppId = Env("TEST_AGENTIC_APPID");
+        string agenticAppBlueprintId = Env("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {

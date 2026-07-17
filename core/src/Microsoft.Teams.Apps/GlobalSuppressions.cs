@@ -20,3 +20,9 @@ using System.Diagnostics.CodeAnalysis;
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
     Target = "~N:Microsoft.Teams.Apps")]
+
+[assembly: SuppressMessage("Naming",
+    "CA1724:Type names should not match namespaces",
+    Justification = "Microsoft.Teams.Apps.Context<T> is part of the public API and predates the OpenTelemetry.Api dep. The OpenTelemetry.Context namespace clash is benign because consumers always disambiguate via using directives.",
+    Scope = "type",
+    Target = "~T:Microsoft.Teams.Apps.Context`1")]

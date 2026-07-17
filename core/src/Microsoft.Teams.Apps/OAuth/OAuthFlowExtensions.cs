@@ -69,7 +69,7 @@ public static class OAuthFlowExtensions
         // signin/tokenExchange
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInTokenExchange),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SignInTokenExchange),
             Selector = activity => activity.Name == InvokeNames.SignInTokenExchange,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
@@ -94,27 +94,31 @@ public static class OAuthFlowExtensions
         // signin/failure - Teams client-side SSO failure notification
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInFailure),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SignInFailure),
             Selector = activity => activity.Name == InvokeNames.SignInFailure,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<SignInFailureValue> typedActivity = new(ctx.Activity);
                 SignInFailureValue failureValue = typedActivity.Value ?? new SignInFailureValue();
-                string? userId = ctx.Activity.From?.Id;
 
-                // signin/failure doesn't carry a connection name.
-                // Scope to flows that have an active sign-in for this user;
-                // fall back to all flows if none report a pending sign-in
-                // (e.g., multi-instance deployment where the OAuthCard was sent by another node).
-                IEnumerable<OAuthFlow> allFlows = registry.GetAllFlows();
-                List<OAuthFlow> activeFlows = userId is not null
-                    ? allFlows.Where(f => f.HasPendingSignIn(userId)).ToList()
-                    : [];
-                IEnumerable<OAuthFlow> targetFlows = activeFlows.Count > 0 ? activeFlows : allFlows;
+                // signin/failure carries no connection name. Since Teams only emits it for
+                // silent SSO attempts, ask the registry which connection had a pending SSO sign-in
+                // and attribute the failure there — this avoids firing the failure callback on
+                // a non-SSO connection (e.g., a GitHub flow) that merely signed in more recently.
+                OAuthFlow? target = registry.ResolvePendingSsoFlow(ctx);
 
-                foreach (OAuthFlow flow in targetFlows)
+                if (target is not null)
                 {
-                    await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    await target.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // No SSO-pending connection could be resolved (e.g., no distributed state).
+                    // Fall back to notifying every flow rather than dropping the failure.
+                    foreach (OAuthFlow flow in registry.GetAllFlows())
+                    {
+                        await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 return new InvokeResponse(200);
@@ -124,7 +128,7 @@ public static class OAuthFlowExtensions
         // signin/verifyState
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInVerifyState),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SignInVerifyState),
             Selector = activity => activity.Name == InvokeNames.SignInVerifyState,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
@@ -136,9 +140,42 @@ public static class OAuthFlowExtensions
                     return new InvokeResponse(404);
                 }
 
-                // verifyState doesn't carry a connection name, so try each registered flow
+                // verifyState doesn't carry a connection name.
+                // Try the most recently initiated flow first to avoid O(N) token service calls.
+                string? userId = ctx.Activity.From?.Id;
+                OAuthFlow? mostRecent = null;
+                DateTimeOffset mostRecentTs = DateTimeOffset.MinValue;
+
+                if (userId is not null)
+                {
+                    foreach (OAuthFlow f in registry.GetAllFlows())
+                    {
+                        DateTimeOffset? ts = f.GetPendingSignInTimestamp(ctx);
+                        if (ts is not null && ts.Value > mostRecentTs)
+                        {
+                            mostRecent = f;
+                            mostRecentTs = ts.Value;
+                        }
+                    }
+                }
+
+                if (mostRecent is not null)
+                {
+                    InvokeResponse response = await mostRecent.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
+                    if (response.Status == 200)
+                    {
+                        return response;
+                    }
+                }
+
+                // Fall back to trying all flows (skipping the one we already tried)
                 foreach (OAuthFlow flow in registry.GetAllFlows())
                 {
+                    if (flow == mostRecent)
+                    {
+                        continue;
+                    }
+
                     InvokeResponse response = await flow.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
                     if (response.Status == 200)
                     {
@@ -146,15 +183,14 @@ public static class OAuthFlowExtensions
                     }
                 }
 
-                return new InvokeResponse(400);
+                return new InvokeResponse(404);
             }
         });
     }
 
-    private static NullLogger GetLogger(TeamsBotApplication app)
+    private static ILogger GetLogger(TeamsBotApplication app)
     {
-        _ = app; // Reserved for future use (e.g., resolving ILoggerFactory from DI)
-        return NullLogger.Instance;
+        return app.Logger;
     }
 }
 
@@ -199,6 +235,33 @@ internal sealed class OAuthFlowRegistry
     internal IEnumerable<OAuthFlow> GetAllFlows() => _flows.Values;
 
     /// <summary>
+    /// Resolve the flow that currently has a pending silent-SSO sign-in for the user in the
+    /// given turn, or <c>null</c> if none. When multiple flows have a pending SSO sign-in, the
+    /// most recently initiated one is returned.
+    /// </summary>
+    /// <remarks>
+    /// Used to attribute connection-less <c>signin/failure</c> invokes — which Teams only emits
+    /// for silent SSO attempts — to the connection that actually offered SSO, instead of guessing
+    /// across all flows (which could fire the failure callback on a non-SSO connection).
+    /// </remarks>
+    internal OAuthFlow? ResolvePendingSsoFlow<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        OAuthFlow? resolved = null;
+        DateTimeOffset mostRecent = DateTimeOffset.MinValue;
+        foreach (OAuthFlow flow in _flows.Values)
+        {
+            DateTimeOffset? ts = flow.GetPendingSsoSignInTimestamp(context);
+            if (ts is not null && ts.Value > mostRecent)
+            {
+                resolved = flow;
+                mostRecent = ts.Value;
+            }
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
     /// Resolve when there's no connection name in the payload (e.g., verifyState).
     /// Returns the single registered flow, or null if zero or multiple flows exist.
     /// </summary>
@@ -207,30 +270,6 @@ internal sealed class OAuthFlowRegistry
         if (_flows.Count == 1)
         {
             return _flows.Values.First();
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Like <see cref="ResolveSingle"/> but when multiple flows are registered,
-    /// returns the first one and logs a warning instead of returning null.
-    /// Used by <c>Context.IsSignedIn</c> for backwards compatibility.
-    /// </summary>
-    internal OAuthFlow? ResolveSingleWithWarning()
-    {
-        if (_flows.Count == 1)
-        {
-            return _flows.Values.First();
-        }
-
-        if (_flows.Count > 1)
-        {
-            OAuthFlow first = _flows.Values.First();
-            System.Diagnostics.Trace.TraceWarning(
-                $"IsSignedIn: multiple OAuthFlow connections registered. " +
-                $"Checking '{first.ConnectionName}' only. Use IsSignedInAsync(connectionName) for explicit control.");
-            return first;
         }
 
         return null;

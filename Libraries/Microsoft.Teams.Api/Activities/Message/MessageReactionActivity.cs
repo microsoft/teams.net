@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma warning disable ExperimentalTeamsReactions
-
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -83,4 +81,3 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
         return this;
     }
 }
-#pragma warning restore ExperimentalTeamsReactions

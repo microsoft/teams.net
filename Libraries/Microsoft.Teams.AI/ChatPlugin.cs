@@ -10,6 +10,7 @@ namespace Microsoft.Teams.AI;
 /// a component that can change the
 /// way a ChatPrompt works
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IChatPlugin
 {
     /// <summary>
@@ -66,5 +67,5 @@ public interface IChatPlugin
     /// <param name="prompt">the prompt</param>
     /// <param name="instructions">the instructions</param>
     /// <returns>the transformed instructions</returns>
-    public Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions);
+    public Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions, CancellationToken cancellationToken = default);
 }

@@ -16,12 +16,13 @@
   <ItemGroup>
     <ProjectReference Include="../../Libraries/Microsoft.Teams.Api/Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="../../Libraries/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" />
+    <ProjectReference Include="../../Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore/Microsoft.Teams.Plugins.AspNetCore.csproj" />
     <ProjectReference Include="../../Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Hosting/Microsoft.Teams.Extensions.Hosting.csproj" />
-    <ProjectReference Include="../../Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.DevTools/Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0" />
   </ItemGroup>
 

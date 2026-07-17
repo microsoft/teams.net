@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Teams.Core.Schema;
@@ -22,6 +21,17 @@ namespace PABot
         Task<string> AcquireTokenForBotAsync(string scope, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Acquires a token minted as the specified bot application (client) id, using that app's
+        /// registered credentials. Falls back to the default bot credentials when the app id is not a
+        /// configured/trusted bot.
+        /// </summary>
+        /// <param name="botAppId">The bot application (client) id to authenticate as, sourced from the incoming activity.</param>
+        /// <param name="scope">The scope for the token request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>An access token.</returns>
+        Task<string> AcquireTokenForBotAppIdAsync(string botAppId, string scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Acquires a token using agentic application credentials.
         /// </summary>
         /// <param name="agenticIdentity">The agentic identity containing AgenticAppId and AgenticUserId.</param>
@@ -36,19 +46,24 @@ namespace PABot
     /// </summary>
     public class RoutedTokenAcquisitionService : IRoutedTokenAcquisitionService
     {
+        private const string BotOptionsName = "MsalBot";
+
         private readonly bool _hasBotIdentity;
         private readonly bool _hasAgentIdentity;
+        private readonly HashSet<string> _trustedBotAppIds;
         private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider;
         private readonly ILogger<RoutedTokenAcquisitionService> _logger;
 
         public RoutedTokenAcquisitionService(
             bool hasBotIdentity,
             bool hasAgentIdentity,
+            IEnumerable<string> trustedBotAppIds,
             IAuthorizationHeaderProvider authorizationHeaderProvider,
             ILogger<RoutedTokenAcquisitionService> logger)
         {
             _hasBotIdentity = hasBotIdentity;
             _hasAgentIdentity = hasAgentIdentity;
+            _trustedBotAppIds = new HashSet<string>(trustedBotAppIds ?? [], StringComparer.OrdinalIgnoreCase);
             _authorizationHeaderProvider = authorizationHeaderProvider;
             _logger = logger;
         }
@@ -71,10 +86,37 @@ namespace PABot
                 {
                     AcquireTokenOptions = new AcquireTokenOptions
                     {
-                        AuthenticationOptionsName = "MsalBot"
+                        AuthenticationOptionsName = BotOptionsName
                     }
                 },
                 cancellationToken);
+        }
+
+        public async Task<string> AcquireTokenForBotAppIdAsync(string botAppId, string scope, CancellationToken cancellationToken = default)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(botAppId);
+
+            // Each configured bot is registered as a named MicrosoftIdentityApplicationOptions keyed by its
+            // app (client) id, so selecting that name mints a token AS that specific bot. When the incoming
+            // app id is not a configured/trusted bot, fall back to the default bot credentials.
+            if (!_trustedBotAppIds.Contains(botAppId))
+            {
+                _logger.LogWarning("BotAppId '{BotAppId}' is not a configured/trusted bot; falling back to default bot credentials.", botAppId);
+                return await AcquireTokenForBotAsync(scope, cancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.LogDebug("Acquiring token as bot app id '{BotAppId}' using its registered credentials.", botAppId);
+
+            return await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(
+                scope,
+                new AuthorizationHeaderProviderOptions
+                {
+                    AcquireTokenOptions = new AcquireTokenOptions
+                    {
+                        AuthenticationOptionsName = botAppId
+                    }
+                },
+                cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<string> AcquireTokenForAgenticAsync(AgenticIdentity agenticIdentity, string scope, CancellationToken cancellationToken = default)

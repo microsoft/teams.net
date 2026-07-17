@@ -33,15 +33,13 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         _output = output;
     }
 
-    private async Task<(string first, string? second, string? third)> GetMemberMrisAsync()
+    private Task<(string first, string? second, string? third)> GetMemberMrisAsync()
     {
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
-        return (
-            members[0].Id!,
-            members.Count >= 2 ? members[1].Id : null,
-            members.Count >= 3 ? members[2].Id : null
-        );
+        return Task.FromResult((
+            _f.MemberMri1!,
+            _f.MemberMri2,
+            _f.MemberMri3
+        ));
     }
 
     /// <summary>
@@ -75,11 +73,11 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         _output.WriteLine($"\nHTTP {(int)response.StatusCode} {response.StatusCode}");
 
         _output.WriteLine("\nResponse headers:");
-        foreach (var header in response.Headers)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
         {
             _output.WriteLine($"  {header.Key}: {string.Join(", ", header.Value)}");
         }
-        foreach (var header in response.Content.Headers)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.Content.Headers)
         {
             _output.WriteLine($"  {header.Key}: {string.Join(", ", header.Value)}");
         }
@@ -87,8 +85,8 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         // Pretty-print JSON response
         try
         {
-            var parsed = JsonSerializer.Deserialize<JsonElement>(responseBody);
-            
+            JsonElement parsed = JsonSerializer.Deserialize<JsonElement>(responseBody);
+
             string pretty = JsonSerializer.Serialize(parsed, JsonOpts);
             _output.WriteLine($"\nResponse body:\n{pretty}");
         }
@@ -123,6 +121,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // =========================================================================
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task PersonalChat_MinimalParams()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -136,6 +135,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task PersonalChat_WithBot()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -150,6 +150,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task PersonalChat_WithInitialActivity()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -158,7 +159,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             IsGroup = false,
             Members = [new() { Id = memberMri }],
             TenantId = _f.TenantId,
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "[Diagnostic] 1:1 with initial activity")
                 .Build()
@@ -171,6 +172,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // =========================================================================
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_NoBotNoChannelData()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -185,6 +187,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_WithBot()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -200,6 +203,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_WithBotAndChannelData()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -216,6 +220,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_WithTopicAndActivity()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -228,7 +233,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             TenantId = _f.TenantId,
             TopicName = "Diagnostic group test",
             ChannelData = new { tenant = new { id = _f.TenantId } },
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "group chat init")
                 .Build()
@@ -237,6 +242,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_OneMember_IsGroupTrue()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -250,6 +256,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_OneMember_WithBot()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -265,6 +272,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_ThreeMembers()
     {
         (string first, string? second, string? third) = await GetMemberMrisAsync();
@@ -286,13 +294,14 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // =========================================================================
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task ChannelThread_WithActivity()
     {
         DiagnosticResult result = await SendDiagnosticRequestAsync("Channel Thread: with activity", new()
         {
             IsGroup = true,
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "[Diagnostic] channel thread")
                 .Build(),
@@ -302,6 +311,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task ChannelThread_NoActivity()
     {
         DiagnosticResult result = await SendDiagnosticRequestAsync("Channel Thread: without activity", new()
@@ -314,6 +324,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task ChannelThread_WithMembersAndActivity()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -322,7 +333,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             IsGroup = true,
             Members = [new() { Id = memberMri }],
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "[Diagnostic] channel thread with members")
                 .Build(),

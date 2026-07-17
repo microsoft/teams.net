@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Nodes;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
@@ -15,7 +14,7 @@ public class InvokeActivityTest
     {
         InvokeActivity ia = new();
         Assert.NotNull(ia);
-        Assert.Equal(TeamsActivityType.Invoke, ia.Type);
+        Assert.Equal(TeamsActivityTypes.Invoke, ia.Type);
         Assert.Null(ia.Name);
         Assert.Null(ia.Value);
         // Assert.Null(ia.Conversation);
@@ -35,7 +34,7 @@ public class InvokeActivityTest
             """);
         InvokeActivity ia = InvokeActivity.FromActivity(coreActivity);
         Assert.NotNull(ia);
-        Assert.Equal(TeamsActivityType.Invoke, ia.Type);
+        Assert.Equal(TeamsActivityTypes.Invoke, ia.Type);
         Assert.Equal("testName", ia.Name);
         Assert.NotNull(ia.Value);
         Assert.Equal("convId", ia.Conversation?.Id);

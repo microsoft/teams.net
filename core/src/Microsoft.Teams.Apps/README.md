@@ -24,23 +24,19 @@ dotnet add package Microsoft.Teams.Apps
 
 ```csharp
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddTeams();
+builder.Services.AddTeamsBotApplication();
 
 var app = builder.Build();
-var teams = app.UseTeams(); // maps POST /api/messages
+var teams = app.UseTeamsBotApplication(); // maps POST /api/messages
 
 teams.OnMessage(async (context, ct) =>
 {
-    await context.Send($"You said: {context.Activity.Text}");
+    await context.SendActivityAsync($"You said: {context.Activity.Text}", ct);
 });
 
-teams.OnMembersAdded(async (context, ct) =>
-{
-    foreach (var member in context.Activity.MembersAdded)
-        await context.Send($"Welcome, {member.Name}!");
-});
 
 app.Run();
 ```
@@ -52,13 +48,14 @@ Handlers are registered as extension methods on `TeamsBotApplication` and can be
 ### Messages
 
 ```csharp
+using Microsoft.Teams.Apps.Handlers;
 // All messages
 teams.OnMessage(async (context, ct) => { ... });
 
 // Regex pattern match
 teams.OnMessage(@"^help$", async (context, ct) =>
 {
-    await context.Send("Here's how to use the bot...");
+    await context.SendAsync("Here's how to use the bot...");
 });
 ```
 
@@ -87,93 +84,6 @@ teams.OnTaskSubmit(async (context, ct) => { ... });
 teams.OnQueryLink(async (context, ct) => { ... });
 ```
 
-### Conversation Updates
-
-```csharp
-teams.OnMembersAdded(async (context, ct) => { ... });
-teams.OnMembersRemoved(async (context, ct) => { ... });
-teams.OnChannelCreated(async (context, ct) => { ... });
-teams.OnTeamMemberAdded(async (context, ct) => { ... });
-```
-
-### Other Events
-
-```csharp
-teams.OnMessageReaction(async (context, ct) => { ... });
-teams.OnMessageUpdate(async (context, ct) => { ... });
-teams.OnMessageDelete(async (context, ct) => { ... });
-teams.OnInstallUpdate(async (context, ct) => { ... });
-teams.OnMeeting(async (context, ct) => { ... });
-```
-
-## OAuth Authentication
-
-```csharp
-// Configure OAuth during setup
-var appBuilder = App.Builder().AddOAuth("graph");
-builder.AddTeams(appBuilder);
-
-// Register sign-in handlers
-var flow = teams.GetOAuthFlow("graph");
-
-flow.OnSignInComplete(async (context, tokenResponse, ct) =>
-{
-    // Use token to call Microsoft Graph or other APIs
-});
-
-flow.OnSignInFailure(async (context, failure, ct) =>
-{
-    await context.Send("Sign-in failed. Please try again.");
-});
-
-// Trigger sign-in from a message handler
-teams.OnMessage(async (context, ct) =>
-{
-    var flow = context.App.GetOAuthFlow("graph");
-    await flow.SignInAsync(context, ct);
-});
-```
-
-## Teams API Clients
-
-Access Teams APIs through the typed `Context.Api` property:
-
-```csharp
-teams.OnMessage(async (context, ct) =>
-{
-    // Get conversation members
-    var members = await context.Api.Conversations.Members
-        .GetAsync(context.Activity.Conversation.Id);
-
-    // Get team details
-    var team = await context.Api.Teams.GetAsync(teamId);
-
-    // Send to a specific channel
-    await context.Api.Conversations.Activities
-        .SendAsync(channelId, activity);
-});
-```
-
-## Streaming Responses
-
-Send progressive message updates while the bot processes a request:
-
-```csharp
-teams.OnMessage(async (context, ct) =>
-{
-    var writer = TeamsStreamingWriter.CreateFromContext(context);
-    await writer.SendInformativeUpdateAsync("Thinking...");
-    await writer.AppendResponseAsync("Here is ");
-    await writer.AppendResponseAsync("the answer.");
-    await writer.FinalizeResponseAsync();
-});
-```
-
-## Routing Behavior
-
-- **Non-invoke activities**: All matching routes execute sequentially
-- **Invoke activities**: Only the first matching route executes and must return a response
-- Route names must be unique; mixing catch-all invoke handlers with specific invoke handlers is not allowed
 
 ## Main Types
 

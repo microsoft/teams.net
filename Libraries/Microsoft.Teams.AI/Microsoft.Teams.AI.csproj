@@ -4,9 +4,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Microsoft.Teams.AI</PackageId>
-    <PackageDescription>AI tools/utilities.</PackageDescription>
+    <IsPackable>false</IsPackable>
+    <PackageDescription>[DEPRECATED] Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.</PackageDescription>
     <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
-    <PackageTags>microsoft;teams;msteams;copilot;ai</PackageTags>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;deprecated</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,6 +15,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

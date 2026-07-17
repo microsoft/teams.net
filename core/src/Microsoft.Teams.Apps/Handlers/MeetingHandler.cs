@@ -57,12 +57,12 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingStart),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingStart),
             Selector = activity => activity.Name == EventNames.MeetingStart,
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingStartValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -84,12 +84,12 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingEnd),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingEnd),
             Selector = activity => activity.Name == EventNames.MeetingEnd,
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingEndValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingEndValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -99,75 +99,49 @@ public static class MeetingExtensions
 
     /// <summary>
     /// Registers a handler for meeting participant join event activities.
-    /// </summary>
-    /// <remarks>
-    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
-    /// </remarks>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMeetingParticipantJoin(this TeamsBotApplication app, MeetingParticipantJoinHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<EventActivity>
-        {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingParticipantJoin),
-            Selector = activity => activity.Name == EventNames.MeetingParticipantJoin,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                EventActivity<MeetingParticipantJoinValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingParticipantJoinValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                await handler(typedContext, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-
-    /// <summary>
-    /// Registers a handler for meeting participant leave event activities.
-    /// </summary>
-    /// <remarks>
-    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
-    /// </remarks>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMeetingParticipantLeave(this TeamsBotApplication app, MeetingParticipantLeaveHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<EventActivity>
-        {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingParticipantLeave),
-            Selector = activity => activity.Name == EventNames.MeetingParticipantLeave,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                EventActivity<MeetingParticipantLeaveValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingParticipantLeaveValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                await handler(typedContext, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-
-    /// <summary>
-    /// Registers a handler for meeting participant join event activities.
-    /// Alias for <see cref="OnMeetingParticipantJoin"/>.
     /// </summary>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMeetingJoin(this TeamsBotApplication app, MeetingParticipantJoinHandler handler)
-        => app.OnMeetingParticipantJoin(handler);
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<EventActivity>
+        {
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingParticipantJoin),
+            Selector = activity => activity.Name == EventNames.MeetingParticipantJoin,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                EventActivity<MeetingParticipantJoinValue> typedActivity = new(ctx.Activity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
+                await handler(typedContext, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
 
     /// <summary>
     /// Registers a handler for meeting participant leave event activities.
-    /// Alias for <see cref="OnMeetingParticipantLeave"/>.
     /// </summary>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMeetingLeave(this TeamsBotApplication app, MeetingParticipantLeaveHandler handler)
-        => app.OnMeetingParticipantLeave(handler);
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<EventActivity>
+        {
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingParticipantLeave),
+            Selector = activity => activity.Name == EventNames.MeetingParticipantLeave,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                EventActivity<MeetingParticipantLeaveValue> typedActivity = new(ctx.Activity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
+                await handler(typedContext, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
 }

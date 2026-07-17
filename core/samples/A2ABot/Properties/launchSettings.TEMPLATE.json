@@ -1,0 +1,46 @@
+{
+  "profiles": {
+    "Alice": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Alice",
+        "AzureAd__Instance": "https://login.microsoftonline.com/",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "Bot__Name": "Alice",
+        "Bot__SelfUrl": "http://localhost:3978",
+        "Bot__Description": "questions about cats",
+        "Bot__PeerUrl": "http://localhost:3979",
+        "Bot__PeerName": "Bob",
+        "AzureOpenAI__Endpoint": "",
+        "AzureOpenAI__ApiKey": "",
+        "AzureOpenAI__Deployment": ""
+      }
+    },
+    "Bob": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3979",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Bob",
+        "AzureAd__Instance": "https://login.microsoftonline.com/",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "Bot__Name": "Bob",
+        "Bot__SelfUrl": "http://localhost:3979",
+        "Bot__Description": "questions about dogs",
+        "Bot__PeerUrl": "http://localhost:3978",
+        "Bot__PeerName": "Alice",
+        "AzureOpenAI__Endpoint": "",
+        "AzureOpenAI__ApiKey": "",
+        "AzureOpenAI__Deployment": ""
+      }
+    }
+  }
+}

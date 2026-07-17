@@ -1,0 +1,408 @@
+# Observability Design
+
+## Overview
+
+The Teams .NET SDK (`Microsoft.Teams.Core`, `Microsoft.Teams.Apps`, `Microsoft.Teams.Apps.BotBuilder`) emits OpenTelemetry-compatible traces, metrics, and logs so that consuming bots can wire observability through the [Microsoft OpenTelemetry distro](https://github.com/microsoft/opentelemetry-distro-dotnet) and ship telemetry to Azure Monitor, an OTLP collector (Aspire Dashboard, Grafana LGTM, Jaeger), or the console.
+
+The SDK uses the BCL `System.Diagnostics.ActivitySource` and `System.Diagnostics.Metrics.Meter` for the trace and metric APIs. The OpenTelemetry SDK and exporters are an application concern: the bot project references `Microsoft.OpenTelemetry`, subscribes to the SDK's source/meter by name, and configures exporters. `Microsoft.Teams.Apps` takes a dependency on `OpenTelemetry.Api` so the `TeamsBaggageBuilder` can write to `OpenTelemetry.Baggage.Current` (see "Dependency impact" below).
+
+```
+Consuming bot                            Teams SDK (this design)
+─────────────                            ───────────────────────
+.UseMicrosoftOpenTelemetry(...)
+                                         ActivitySource("Microsoft.Teams.Core")
+.WithTracing(t => t                       ├─ "turn"                (BotApplication.ProcessAsync)
+    .AddSource(CoreTelemetryNames         ├─ "middleware"          (TurnMiddleware.RunPipelineAsync)
+        .ActivitySourceName)              ├─ "auth.outbound"       (BotAuthenticationHandler)
+    .AddSource(                           └─ "conversation_client" (ConversationClient send/update/delete)
+        TeamsBotApplicationTelemetry
+        .ActivitySourceName))            ActivitySource("Microsoft.Teams.Apps")
+        ├─ "handler"                  (Router.DispatchAsync)
+        ├─ "state.load"               (TurnStateLoader)
+        ├─ "state.save"               (TurnStateLoader)
+        ├─ "state.delete"             (TurnStateLoader)
+        ├─ "oauth.signin"             (OAuthFlow.SignInAsync)
+        ├─ "oauth.signout"            (OAuthFlow.SignOutAsync)
+        ├─ "oauth.get_token"          (OAuthFlow.GetTokenAsync)
+        ├─ "oauth.token_exchange"     (OAuthFlow.HandleTokenExchangeAsync)
+        ├─ "oauth.verify_state"       (OAuthFlow.HandleVerifyStateAsync)
+        ├─ "oauth.signin_failure"     (OAuthFlow.HandleSignInFailureAsync)
+        └─ "oauth.connection_status"  (OAuthFlow.GetConnectionStatusAsync)
+.WithMetrics(m => m
+    .AddMeter(CoreTelemetryNames         Meter("Microsoft.Teams.Core")
+        .MeterName)                       ├─ teams.activities.received   (Counter)
+    .AddMeter(                            ├─ teams.turn.duration         (Histogram, ms)
+        TeamsBotApplicationTelemetry      ├─ teams.handler.errors        (Counter)
+        .MeterName));                     ├─ teams.middleware.duration   (Histogram, ms)
+                                          ├─ teams.outbound.calls        (Counter)
+                                          └─ teams.outbound.errors       (Counter)
+
+                                         Meter("Microsoft.Teams.Apps")
+                                         ├─ teams.handler.dispatched         (Counter)
+                                         ├─ teams.handler.duration           (Histogram, ms)
+                                         ├─ teams.handler.failures           (Counter)
+                                         ├─ teams.handler.unmatched          (Counter)
+                                         ├─ teams.oauth.operations           (Counter)
+                                         ├─ teams.oauth.operation.duration   (Histogram, ms)
+                                         └─ teams.oauth.errors               (Counter)
+```
+
+## Layering constraints
+
+The SDK is split across two assemblies that observability must respect:
+
+- `Microsoft.Teams.Core` is the lower layer. It owns `BotApplication`, the turn pipeline (`TurnMiddleware`), the outbound HTTP clients (`ConversationClient`, `UserTokenClient`), and the auth-handler (`BotAuthenticationHandler`). It must **not reference anything in `Microsoft.Teams.Apps`**, including no string literals or constants tied to the Apps brand.
+- `Microsoft.Teams.Apps` depends on Core. It owns the typed activity model, `TeamsBotApplication`, and the `Router` that dispatches to user handlers.
+
+Telemetry follows the same rule: **each assembly publishes its own ActivitySource and Meter, named after the assembly.** A class named `TeamsBotApplicationTelemetry` describes Apps-level telemetry; it lives in Apps. Core's analogue is `CoreTelemetryNames`. Neither references the other.
+
+| Layer | Public name class | Source / Meter name | Spans | Metrics |
+|---|---|---|---|---|
+| `Microsoft.Teams.Core` | `Microsoft.Teams.Core.Diagnostics.CoreTelemetryNames` | `"Microsoft.Teams.Core"` | `turn`, `middleware`, `auth.outbound`, `conversation_client` | `teams.activities.received`, `teams.turn.duration`, `teams.handler.errors`, `teams.middleware.duration`, `teams.outbound.calls`, `teams.outbound.errors` |
+| `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Diagnostics.TeamsBotApplicationTelemetry` | `"Microsoft.Teams.Apps"` | `handler`, `state.load`, `state.save`, `state.delete`, `oauth.signin`, `oauth.signout`, `oauth.get_token`, `oauth.token_exchange`, `oauth.verify_state`, `oauth.signin_failure`, `oauth.connection_status` | `teams.handler.dispatched`, `teams.handler.duration`, `teams.handler.failures`, `teams.handler.unmatched`, `teams.state.*`, `teams.oauth.operations`, `teams.oauth.operation.duration`, `teams.oauth.errors` |
+
+Cross-assembly use is one-way: Apps's `Router` may call Core utilities (for example, the public `RecordException` extension on `Activity` defined in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`), but Core never reaches up into Apps. If a future Core-level helper would need an Apps concept, that helper belongs in Apps, not in Core.
+
+A consumer that uses both layers (the common case) registers both names. A consumer that only references Core (a minimal `BotApplication` bot without the `TeamsBotApplication` router) registers just `CoreTelemetryNames` and gets the full Core-level signal.
+
+## Public surface
+
+```csharp
+namespace Microsoft.Teams.Core.Diagnostics;
+public static class CoreTelemetryNames
+{
+    public const string ActivitySourceName = "Microsoft.Teams.Core";
+    public const string MeterName          = "Microsoft.Teams.Core";
+}
+
+namespace Microsoft.Teams.Apps.Diagnostics;
+public static class TeamsBotApplicationTelemetry
+{
+    public const string ActivitySourceName = "Microsoft.Teams.Apps";
+    public const string MeterName          = "Microsoft.Teams.Apps";
+}
+```
+
+The matching internal singletons live in each assembly's `Diagnostics/` folder:
+- `Microsoft.Teams.Core/Diagnostics/Telemetry.cs` — owned by Core; internal to `Microsoft.Teams.Core` (Apps has its own `AppsTelemetry` class).
+- `Microsoft.Teams.Apps/Diagnostics/AppsTelemetry.cs` — owned by Apps; the class is named `AppsTelemetry` to avoid collision with the Core `Telemetry` class when both namespaces are imported.
+
+## Spans
+
+The auto-instrumented HTTP-server span (from the OTel distro's ASP.NET Core instrumentation) is the parent of `turn`. Outbound HTTP-client spans (from the distro's HttpClient instrumentation) are children of `auth.outbound` and `conversation_client` automatically because the SDK opens the span before the underlying HTTP call. The `handler` span (from Apps) nests inside `turn` (from Core) via the ambient `Activity.Current`, even though the two spans come from different sources.
+
+| Span | Source | Where | Tags |
+|---|---|---|---|
+| `turn` | Core | `Microsoft.Teams.Core/BotApplication.cs` `ProcessAsync` body, after the request body has been deserialized into a `CoreActivity` | `activity.type`, `activity.id`, `conversation.id`, `channel.id`, `bot.id`, `service.url` |
+| `middleware` | Core | `Microsoft.Teams.Core/TurnMiddleware.cs` `RunPipelineAsync` per-middleware execution | `middleware.name`, `middleware.index` |
+| `handler` | Apps | `Microsoft.Teams.Apps/Routing/Router.cs` `DispatchAsync` matched-route invocation | `handler.type` (activity type or invoke name), `handler.dispatch` (`type` / `invoke` / `catchall`) |
+| `auth.outbound` | Core | `Microsoft.Teams.Core/Hosting/BotAuthenticationHandler.cs` `GetAuthorizationHeaderAsync` | `auth.flow` (`agentic` / `app_only` / `managed_identity`) |
+| `conversation_client` | Core | `Microsoft.Teams.Core/ConversationClient.cs` `SendActivityAsync` / `UpdateActivityAsync` / `DeleteActivityAsync` | `service.url`, `conversation.id`, `activity.type`, `activity.id` (set after response when known), `operation` |
+| `oauth.signin` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `SignInAsync` | `oauth.connection`, `oauth.operation` (`signin`), `oauth.result` (`cached` / `card_sent` / `failure`), `oauth.error.type` (only on unexpected exceptions). Span event `oauth.card.sent` is added when an OAuthCard is sent. |
+| `oauth.signout` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `SignOutAsync` | `oauth.connection`, `oauth.operation` (`signout`), `oauth.result` (`success` / `failure`), `oauth.error.type` (on exceptions) |
+| `oauth.get_token` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `GetTokenAsync` | `oauth.connection`, `oauth.operation` (`get_token`), `oauth.result` (`hit` / `miss` / `failure`), `oauth.error.type` (on exceptions) |
+| `oauth.token_exchange` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `HandleTokenExchangeAsync` (signin/tokenExchange invoke) | `oauth.connection`, `oauth.operation` (`token_exchange`), `oauth.result` (`success` / `duplicate` / `failure`), `invoke.response.status`, `oauth.callback.invoked`, `oauth.error.type` (only on unexpected HTTP status — not 404/400/412 — or `invalid_op`) |
+| `oauth.verify_state` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `HandleVerifyStateAsync` (signin/verifyState invoke) | `oauth.connection`, `oauth.operation` (`verify_state`), `oauth.result` (`success` / `no_token` / `failure`), `invoke.response.status`, `oauth.callback.invoked`, `oauth.error.type` (only on unexpected HTTP status — not 404/400/412) |
+| `oauth.signin_failure` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `HandleSignInFailureAsync` (signin/failure invoke) | `oauth.connection`, `oauth.operation` (`signin_failure`), `oauth.result` (`notified`), `oauth.failure.code` (the client-supplied failure code, e.g. `tokenmissing`, `resourcematchfailed`), `invoke.response.status`, `oauth.callback.invoked` |
+| `oauth.connection_status` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `GetConnectionStatusAsync` | `oauth.connection=all`, `oauth.operation` (`connection_status`), `oauth.result` (`success` / `failure`), `oauth.error.type` (on exceptions) |
+
+On exception every span sets `Status = Error` with the exception message and adds an `exception` span event with `exception.type`, `exception.message`, and `exception.stacktrace` tags. This is done through the `RecordException` extension method in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`, which is `public` so the Apps layer (`Router`) can use it too. The extension uses manual event tagging on both `net8.0` and `net10.0` to stay consistent across target frameworks; it intentionally does not delegate to the BCL `Activity.AddException` (added in .NET 9), because that API only adds the event without setting `ActivityStatusCode.Error`.
+
+### `auth.inbound` is intentionally omitted
+
+The `auth.inbound` span belongs to the auth middleware, not the bot pipeline. The SDK uses `Microsoft.AspNetCore.Authentication.JwtBearer` for inbound auth, which is already covered by the OTel distro's ASP.NET Core HTTP-server instrumentation. Adding a separate inbound-auth span would duplicate signal without new information; it is out of scope for this design.
+
+## Metrics
+
+Core-meter instruments cover the turn pipeline, middleware, and outbound HTTP clients. Apps-meter instruments cover router dispatch (one observation per matched route).
+
+### Core meter (`Microsoft.Teams.Core`)
+
+| Metric | Kind | Unit | Tags | Where |
+|---|---|---|---|---|
+| `teams.activities.received` | Counter | — | `activity.type` | top of `BotApplication.ProcessAsync` |
+| `teams.turn.duration` | Histogram | ms | `activity.type` | `finally` of the `turn` span |
+| `teams.handler.errors` | Counter | — | `activity.type` | catch block in `BotApplication.ProcessAsync` |
+| `teams.middleware.duration` | Histogram | ms | `middleware.name` | `finally` of the `middleware` span |
+| `teams.outbound.calls` | Counter | — | `operation` ∈ {`sendActivity`, `updateActivity`, `deleteActivity`} | success branch of `ConversationClient` calls |
+| `teams.outbound.errors` | Counter | — | `operation` | exception branch of `ConversationClient` calls |
+
+### Apps meter (`Microsoft.Teams.Apps`)
+
+| Metric | Kind | Unit | Tags | Where |
+|---|---|---|---|---|
+| `teams.handler.dispatched` | Counter | — | `handler.type`, `handler.dispatch` | `Router.DispatchAsync` / `DispatchWithReturnAsync` before each matched-route invocation |
+| `teams.handler.duration` | Histogram | ms | `handler.type`, `handler.dispatch` | `finally` block around each matched-route invocation (recorded even on exception) |
+| `teams.handler.failures` | Counter | — | `handler.type`, `handler.dispatch` | catch block when a route handler throws |
+| `teams.handler.unmatched` | Counter | — | `activity.type` (DispatchAsync) or `activity.type` + `invoke.name` (DispatchWithReturnAsync) | branch where no route selector matched |
+
+### OAuth meter (`Microsoft.Teams.Apps`)
+
+OAuth flow operations share three instruments, parameterized by the `oauth.operation` and `oauth.result` tags. The operations counter and duration histogram are recorded in the `finally` block of every flow method (so both successful and failed attempts are observed). The errors counter is only incremented for **unexpected** errors: HTTP status codes outside the protocol-fallback set (anything other than 404, 400, 412) and unexpected exception types (e.g. `InvalidOperationException` from the Token Service client). Expected protocol fallbacks — the Token Service returning 404/400/412 to indicate "no token, ask user to sign in" — are recorded with `oauth.result=failure` on the operations counter but **do not** increment `teams.oauth.errors`, so the error rate metric stays meaningful for alerting.
+
+| Metric | Kind | Unit | Tags | Where |
+|---|---|---|---|---|
+| `teams.oauth.operations` | Counter | — | `oauth.connection`, `oauth.operation` ∈ {`signin`, `signout`, `get_token`, `token_exchange`, `verify_state`, `signin_failure`, `connection_status`}, `oauth.result` ∈ {`cached`, `card_sent`, `hit`, `miss`, `success`, `failure`, `duplicate`, `no_token`, `notified`} | `finally` block of every OAuth flow method |
+| `teams.oauth.operation.duration` | Histogram | ms | same as `teams.oauth.operations` | `finally` block of every OAuth flow method |
+| `teams.oauth.errors` | Counter | — | `oauth.connection`, `oauth.operation`, `oauth.error.type` ∈ {`http_error`, `invalid_op`, `empty_token`} | only when an unexpected exception or unexpected HTTP status is observed (see above) |
+
+`oauth.connection` is the connection name (e.g. `graph`, `github`) and is constrained to the small set of OAuth connections the bot registers via `AddOAuthFlow(name)`. The special value `all` is used by `connection_status`, which queries every registered connection in a single call. User IDs, conversation IDs, tokens, exchange IDs, and the `signin/failure` client-supplied message are intentionally **not** emitted as tags or span attributes to keep cardinality bounded and avoid leaking PII.
+
+A single `signin/verifyState` invoke in a multi-connection deployment may emit N records on `teams.oauth.operations` (one per registered OAuth flow that the verifyState dispatch loop probes), with N–1 carrying `oauth.result=no_token` and one carrying `oauth.result=success` or `oauth.result=failure`. Aggregating success rate by `oauth.connection` is therefore more meaningful than aggregating by the raw invoke count.
+
+OTLP exposes these names with dots; Prometheus/Mimir maps them to `teams_*_total` (counters) and `teams_*_milliseconds_*` (histograms).
+
+## Logs
+
+The OTel distro's `UseMicrosoftOpenTelemetry()` automatically wires `ILogger` to OTel log records and stamps every record with the active `Activity` trace and span IDs. Existing `BotApplication._logger.BeginActivityScope(...)` already adds `ActivityType` / `ActivityId` / `ServiceUrl` / `MSCV` to the scope dictionary, so those fields ride along on every log record produced inside a turn. **No SDK changes are required for logs.**
+
+The TODO at `Microsoft.Teams.Core/BotApplication.cs:202` (`// TODO: Replace with structured scope data, ensure it works with OpenTelemetry...`) is resolved by this design and is removed.
+
+## Consumer integration
+
+```csharp
+using Microsoft.OpenTelemetry;
+using Microsoft.Teams.Apps.Diagnostics;
+using Microsoft.Teams.Core.Diagnostics;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenTelemetry()
+    .UseMicrosoftOpenTelemetry(o => o.Exporters = ExportTarget.AzureMonitor | ExportTarget.Otlp)
+    .WithTracing(t => t
+        .AddSource(CoreTelemetryNames.ActivitySourceName)
+        .AddSource(TeamsBotApplicationTelemetry.ActivitySourceName))
+    .WithMetrics(m => m
+        .AddMeter(CoreTelemetryNames.MeterName)
+        .AddMeter(TeamsBotApplicationTelemetry.MeterName));
+
+builder.Logging.AddOpenTelemetry(o => o.IncludeFormattedMessage = true);
+```
+
+Standard OpenTelemetry environment variables (`OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `APPLICATIONINSIGHTS_CONNECTION_STRING`, `OTEL_TRACES_SAMPLER`, `OTEL_TRACES_SAMPLER_ARG`) are honored by the distro without any SDK code.
+
+A working sample lives at `core/samples/ObservabilityBot/` with a README that documents the local Grafana LGTM container loop.
+
+## Span tree per turn
+
+```
+HTTP server span                       (auto, OTel ASP.NET Core)
+└─ turn                                (Microsoft.Teams.Core)
+   ├─ middleware [n times]             (Microsoft.Teams.Core)
+   ├─ handler                          (Microsoft.Teams.Apps)
+   │  ├─ state.load / state.save       (Microsoft.Teams.Apps, when state is used)
+   │  └─ oauth.* [zero or more]        (Microsoft.Teams.Apps, when OAuth flows are called)
+   │     └─ conversation_client        (Microsoft.Teams.Core, when an OAuthCard is sent)
+   └─ conversation_client              (Microsoft.Teams.Core)
+      ├─ auth.outbound                 (Microsoft.Teams.Core)
+      │  └─ HTTP client span           (auto, OTel HttpClient — token endpoint)
+      └─ HTTP client span              (auto, OTel HttpClient — Bot Service API)
+```
+
+## Agent365 baggage and the TurnContext mismatch
+
+When the consuming bot also exports to **Agent365** (`ExportTarget.Agent365` in the Microsoft OpenTelemetry distro), the Agent365 SDK certifies on a fixed set of OpenTelemetry baggage entries that decorate every span emitted from a turn. The distro ships three helpers in `Microsoft.Agents.A365.Observability.Hosting.Extensions` that pull these from a turn context — `BaggageBuilderExtensions.FromTurnContext(ITurnContext)`, `InvokeAgentScopeExtensions.FromTurnContext(ITurnContext)`, and `TurnContextExtensions.InjectObservabilityContext(ITurnContext, OpenTelemetryScope)`.
+
+**These helpers take `Microsoft.Agents.Builder.ITurnContext`. The Teams SDK does not produce an `ITurnContext`** — the Apps layer hands handlers a `Microsoft.Teams.Apps.Context<TeamsActivity>`, and the Core layer has no per-turn context type at all. The two activity object models are also subtly different (see field map below). A consumer cannot pass a Teams context into `FromTurnContext(...)` directly.
+
+We deliberately do **not** wrap `ITurnContext`: synthesizing a fake Activity shape (with `ChannelId.Channel` / `ChannelId.SubChannel` sub-properties, `StackState` dictionary, `ServiceUrl` as string) drags in `Microsoft.Agents.Builder` and is brittle to upstream changes. Instead, the Apps layer ships `TeamsBaggageBuilder` that reads directly off Teams types. See "Bridging strategy" below.
+
+### Agent365 certification — crisp definition
+
+Authoritative source: `https://github.com/microsoft/opentelemetry-distro-dotnet/blob/main/docs/agent365-getting-started.md` § "Validate for store publishing".
+
+Two requirements gate Agent365 store publishing:
+
+#### (1) Scope coverage
+
+The agent **must implement** the following scopes via the Agent365 SDK (`Microsoft.Agents.A365.Observability.Runtime.Tracing.Scopes`):
+
+| Scope | When to start | Required for publishing? |
+|---|---|---|
+| `InvokeAgentScope` | Top of agent processing | **Yes** |
+| `InferenceScope` | Around each LLM call | **Yes** |
+| `ExecuteToolScope` | Around each tool / function call | **Yes** |
+| `OutputScope` | Optional — for async output capture | No |
+
+Auto-instrumentation (Semantic Kernel, OpenAI, Azure OpenAI, Agent Framework) emits **inference** spans automatically, but `InvokeAgentScope` and `ExecuteToolScope` must be started by the agent.
+
+#### (2) Attribute coverage
+
+Every Required attribute on each scope must be **non-null at scope close**. The bulk of these come from baggage (set once per turn via `TeamsBaggageBuilder`); a handful are scope-specific and come from `ScopeDetails` / `Record*` methods.
+
+**Common Required attributes (all scopes):**
+
+| Key | Where it comes from |
+|---|---|
+| `microsoft.tenant.id` | `TeamsBaggageBuilder.TenantId(...)` |
+| `gen_ai.agent.id` | `TeamsBaggageBuilder.AgentId(...)` |
+| `gen_ai.agent.name` | `TeamsBaggageBuilder.AgentName(...)` |
+| `microsoft.a365.agent.blueprint.id` | `TeamsBaggageBuilder.AgentBlueprintId(...)` |
+| `microsoft.agent.user.id` | `TeamsBaggageBuilder.AgenticUserId(...)` |
+| `microsoft.agent.user.email` | `TeamsBaggageBuilder.AgenticUserEmail(...)` |
+| `client.address` | Caller-supplied (HTTP request remote IP) |
+| `user.id` | `TeamsBaggageBuilder.UserId(...)` |
+| `user.email` | `TeamsBaggageBuilder.UserEmail(...)` |
+| `microsoft.channel.name` | `TeamsBaggageBuilder.ChannelName(...)` |
+| `gen_ai.conversation.id` | `TeamsBaggageBuilder.ConversationId(...)` |
+| `gen_ai.operation.name` | Set by the scope automatically |
+
+**Scope-specific Required attributes:**
+
+| Scope | Additional Required attributes | Source |
+|---|---|---|
+| `InvokeAgentScope` | `gen_ai.input.messages`, `gen_ai.output.messages`, `server.address`, `server.port` | `scope.RecordInputMessages(...)` / `RecordOutputMessages(...)` + `TeamsBaggageBuilder.InvokeAgentServer(host, port)` |
+| `ExecuteToolScope` | `gen_ai.tool.call.arguments`, `gen_ai.tool.call.id`, `gen_ai.tool.call.result`, `gen_ai.tool.name`, `gen_ai.tool.type` | `ToolCallDetails` + `scope.RecordResponse(...)` |
+| `InferenceScope` | `gen_ai.input.messages`, `gen_ai.output.messages`, `gen_ai.provider.name`, `gen_ai.request.model` | `InferenceCallDetails` + `RecordInputMessages` / `RecordOutputMessages` |
+| `OutputScope` | `gen_ai.output.messages` | `Response` constructor |
+
+**Optional (recommended but not gating):** `gen_ai.agent.description`, `gen_ai.agent.version`, `microsoft.a365.agent.platform.id`, `microsoft.session.id`, `microsoft.session.description`, `microsoft.conversation.item.link`, `microsoft.channel.link`, all `microsoft.a365.caller.agent.*`, `microsoft.a365.agent.thought.process` (InferenceScope only).
+
+**Out of scope of this SDK:** the scope objects themselves (`InvokeAgentScope`, `InferenceScope`, `ExecuteToolScope`, `OutputScope`) ship in `Microsoft.OpenTelemetry`. The Teams SDK only ships the `TeamsBaggageBuilder` (in Apps) that populates the cert-required baggage; agents create the scopes themselves at the appropriate boundaries.
+
+### Required baggage map (Teams activity → Agent365 keys)
+
+| Group | Key (Agent365 wire) | Required for cert? | Source field on the Teams activity |
+|---|---|---|---|
+| Tenant | `microsoft.tenant.id` | **Yes** | `Activity.Recipient.TenantId` (typed on Apps's `TeamsConversationAccount`); fallback `Activity.ChannelData.tenant.id` (typed on Apps's `TeamsChannelData`) |
+| Conversation | `gen_ai.conversation.id` | **Yes** | `Activity.Conversation.Id` |
+| Conversation | `microsoft.conversation.item.link` | Optional | `Activity.ServiceUrl?.ToString()` |
+| Channel | `microsoft.channel.name` | **Yes** | `Activity.ChannelId` (the whole string — `"msteams"`, `"webchat"`, …) |
+| Channel | `microsoft.channel.link` | Optional | No equivalent on the Teams activity — see "Channel / SubChannel mapping" below |
+| Caller (human) | `user.id` | **Yes** | `((TeamsConversationAccount)Activity.From).AadObjectId` (Apps-only) |
+| Caller (human) | `user.name` | Optional | `Activity.From.Name` |
+| Caller (human) | `user.email` | **Yes** | `((TeamsConversationAccount)Activity.From).Email` (Apps-only) |
+| Target agent | `gen_ai.agent.id` | **Yes** | `Activity.Recipient.AgenticAppId ?? Activity.Recipient.Id` |
+| Target agent | `gen_ai.agent.name` | **Yes** | `Activity.Recipient.Name` |
+| Target agent | `microsoft.agent.user.id` | **Yes** | `Activity.Recipient.AgenticUserId` |
+| Target agent | `microsoft.agent.user.email` | **Yes** | `((TeamsConversationAccount)Activity.Recipient).Email` (Apps-only) |
+| Target agent | `gen_ai.agent.description` | Optional | `((TeamsConversationAccount)Activity.Recipient).UserRole` (Apps-only) |
+| Target agent | `microsoft.a365.agent.blueprint.id` | **Yes** | `Activity.Recipient.AgenticAppBlueprintId` |
+| Operation source | `service.name` (set via `TeamsBaggageBuilder.OperationSource`) | **Yes** (server spans) | Caller-supplied constant (e.g. `"teams-bot"`) |
+
+The fields the Agent365 helpers also access that have **no Teams equivalent**:
+
+- `turnContext.StackState[O11ySpanId / O11yTraceId]` — Teams's `Context<TActivity>` has no `StackState` dictionary. Reading the active span/trace id later in the turn must go through `Activity.Current?.SpanId` / `Activity.Current?.TraceId` instead. `InjectObservabilityContext` is therefore not portable as-is.
+
+### Channel / SubChannel mapping
+
+The upstream `BaggageBuilderExtensions.FromTurnContext` (in Agent Builder) reads `Activity.ChannelId.Channel` and `Activity.ChannelId.SubChannel` — Agent Builder's `ChannelId` is a complex object. Teams's `ChannelId` is a **plain string** (`"msteams"`, `"webchat"`, …) and has no `SubChannel` concept. Resolution:
+
+| Agent365 baggage key | Teams source | Auto-populated by `FromTeamsContext`? |
+|---|---|---|
+| `microsoft.channel.name` (Required) | `Activity.ChannelId` (the whole string) | **Yes** |
+| `microsoft.channel.link` (Optional in all four cert scopes) | No equivalent on the Teams activity | **No** — left unset by the extractor |
+
+`microsoft.channel.link` is **Optional** in every cert-scope manifest, so leaving it unset does not block certification. The `ChannelLink(string?)` fluent setter remains on `TeamsBaggageBuilder` for callers who do have a meaningful sub-channel value (for example, derived in HTTP middleware before the bot pipeline runs, or supplied from configuration).
+
+We deliberately avoid synthesizing `ChannelLink` from `TeamsChannelData.Channel.Id` (the Teams team/channel id) or from `ServiceUrl`: the upstream semantics of `microsoft.channel.link` is "the sub-channel within the channel" (`M365CopilotSubChannel`-style routing), which is a different concept from a Teams channel id. Misclassifying these would mis-categorize spans in Agent365 dashboards.
+
+### `TenantId` on `TeamsConversationAccount` (Apps only)
+
+`TenantId` is a typed property on Apps's `TeamsConversationAccount`:
+
+```csharp
+// Microsoft.Teams.Apps/Schema/TeamsConversationAccount.cs
+[JsonPropertyName("tenantId")]
+public string? TenantId { get; set; }
+```
+
+Core's `ConversationAccount` does **not** carry `TenantId` — the property lives only in Apps. A future follow-up could promote it to Core to support Core-only bots, but for now Agent365 baggage is only auto-populated at the Apps layer via `TeamsBaggageBuilder`.
+
+**Wire-format note:** classic Bot Framework Teams traffic carries tenant id in `channelData.tenant.id`, **not** at `from.tenantId` / `recipient.tenantId`. `TeamsBaggageBuilder.FromTeamsContext` falls back to `TeamsActivity.ChannelData?.Tenant?.Id` when the typed `Recipient.TenantId` field is null.
+
+### Bridging strategy
+
+**Single baggage builder in Apps.** After simplification, only `TeamsBaggageBuilder` (in `Microsoft.Teams.Apps`) exists. An earlier design called for a parallel `CoreBaggageBuilder` in Core, but it was descoped: the `OpenTelemetry.Api` dependency lives in Apps (not Core), and all current Agent365-integrated bots use the Apps layer. Core-only bots that need Agent365 baggage can use the `TeamsBaggageBuilder.Set(key, value)` escape hatch or add a Core-level builder in a future iteration.
+
+`TeamsBaggageBuilder` populates all cert-required keys reachable from `TeamsActivity` + `TeamsConversationAccount`:
+
+| Field set | Source |
+|---|---|
+| `microsoft.tenant.id`, `gen_ai.conversation.id`, `microsoft.conversation.item.link`, `microsoft.channel.name`, `gen_ai.agent.id`, `gen_ai.agent.name`, `microsoft.agent.user.id` (from `AgenticUserId`), `microsoft.a365.agent.blueprint.id`, `user.name`, `service.name`, `server.address`, `server.port` | `TeamsActivity` + `ConversationAccount` base fields |
+| `user.id` (from `AadObjectId`), `user.email`, `gen_ai.agent.description` (from `UserRole`), `microsoft.agent.user.email` | `TeamsConversationAccount`-only fields |
+
+#### Public surface
+
+```csharp
+// Microsoft.Teams.Apps/Diagnostics/TeamsBaggageBuilder.cs  (public)
+namespace Microsoft.Teams.Apps.Diagnostics;
+
+public sealed class TeamsBaggageBuilder
+{
+    // Keys reachable from ConversationAccount base fields:
+    public TeamsBaggageBuilder TenantId(string? v);
+    public TeamsBaggageBuilder ConversationId(string? v);
+    public TeamsBaggageBuilder ConversationItemLink(string? v);
+    public TeamsBaggageBuilder ChannelName(string? v);
+    public TeamsBaggageBuilder ChannelLink(string? v);
+    public TeamsBaggageBuilder AgentId(string? v);
+    public TeamsBaggageBuilder AgentName(string? v);
+    public TeamsBaggageBuilder AgenticUserId(string? v);
+    public TeamsBaggageBuilder AgentBlueprintId(string? v);
+    public TeamsBaggageBuilder UserName(string? v);
+    public TeamsBaggageBuilder OperationSource(string source);
+    public TeamsBaggageBuilder InvokeAgentServer(string? address, int? port = null);
+    public TeamsBaggageBuilder Set(string key, string? value);     // escape hatch
+
+    // Keys whose source field only exists on TeamsConversationAccount:
+    public TeamsBaggageBuilder UserId(string? v);                   // From.AadObjectId
+    public TeamsBaggageBuilder UserEmail(string? v);                // From.Email
+    public TeamsBaggageBuilder AgentDescription(string? v);         // Recipient.UserRole
+    public TeamsBaggageBuilder AgenticUserEmail(string? v);         // Recipient.Email
+
+    public TeamsBaggageBuilder FromTeamsContext<TActivity>(Context<TActivity> ctx)
+        where TActivity : TeamsActivity;
+
+    public IDisposable Build();  // applies pairs to OpenTelemetry.Baggage.Current; returns restore-scope
+}
+```
+
+The Agent365 wire keys are defined as `internal const` strings in `Microsoft.Teams.Apps.Diagnostics.AgentObservabilityKeys`. They are kept in sync against the upstream Agent365 spec and are not part of the public API.
+
+#### SDK-level wiring
+
+`TeamsBotApplication.OnActivity` creates the baggage scope automatically for every turn:
+
+```csharp
+// Microsoft.Teams.Apps/TeamsBotApplication.cs — inside OnActivity override
+Context<TeamsActivity> defaultContext = new(this, teamsActivity);
+
+using IDisposable baggageScope = new TeamsBaggageBuilder()
+    .FromTeamsContext(defaultContext)
+    .Build();
+```
+
+This auto-populates all activity-derivable keys. Keys that are **not** auto-populated (because they are not on the activity) must be set by the consumer in handler code:
+- `service.name` — via `.OperationSource("my-bot")`
+- `client.address` — via `.Set("client.address", remoteIp)` (typically from HTTP middleware)
+- `server.address` / `server.port` — via `.InvokeAgentServer(host, port)`
+
+#### Consumer site (additional enrichment)
+
+```csharp
+// If the consumer needs to add keys not derivable from the activity,
+// they create an additional baggage scope in their handler:
+using Microsoft.Teams.Apps.Diagnostics;
+
+botApp.OnMessage(async (ctx, ct) =>
+{
+    using IDisposable scope = new TeamsBaggageBuilder()
+        .OperationSource("teams-bot")     // required-for-cert; not derivable from the activity
+        .Build();
+
+    // … handler body — every span emitted from here carries Agent365 baggage.
+});
+```
+
+#### Dependency impact
+
+`Microsoft.Teams.Apps` takes a `PackageReference` on **`OpenTelemetry.Api`** (the lightweight API contract package, no SDK, no exporters — already a transitive dep of every `Microsoft.OpenTelemetry` consumer; conventional dep for libraries that publish OTel signals: Azure SDK, gRPC, MongoDB driver). `Build()` writes to `OpenTelemetry.Baggage.Current`, which is the canonical OTel baggage that the distro propagates onto every span emitted in the scope.
+
+`Microsoft.Teams.Core` does **not** depend on `OpenTelemetry.Api` — it uses only the BCL `System.Diagnostics` APIs for traces and metrics.
+
+## Why no DI plumbing
+
+`ActivitySource` and `Meter` are process-global by design — `ActivityListener` and `MeterListener` subscribe by source/meter name, not by instance. The SDK therefore owns the singletons as `static readonly` fields and does not register them in DI. Consuming code never receives an `ActivitySource` parameter; it just registers the source name once at startup.
+
+This keeps the instrumentation completely transparent: a bot that ignores the source name pays no overhead beyond the BCL's already-cheap "no listener attached" fast path. A bot that subscribes gets full traces, metrics, and trace-correlated logs.

@@ -27,39 +27,36 @@ public class EventActivity : TeamsActivity
     /// Gets or sets the name of the event. See <see cref="EventNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public string? Name { get; internal set; }
 
     /// <summary>
     /// Gets or sets the value payload of the event activity.
     /// </summary>
     [JsonPropertyName("value")]
-    public JsonNode? Value { get; set; }
+    public JsonNode? Value { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
     /// </summary>
     [JsonConstructor]
-    public EventActivity() : base(TeamsActivityType.Event)
+    internal EventActivity() : base(TeamsActivityTypes.Event)
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventActivity"/> class with the specified name.
-    /// </summary>
-    public EventActivity(string name) : base(TeamsActivityType.Event)
-    {
-        Name = name;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class from a CoreActivity.
     /// </summary>
-    protected EventActivity(CoreActivity activity) : base(activity)
+    internal EventActivity(CoreActivity activity) : base(activity)
     {
-        Name = activity.Properties.Extract<string>("name");
-        Value = activity is EventActivity evt
-            ? evt.Value
-            : activity.Properties.Extract<JsonNode>("value");
+        if (activity is EventActivity evt)
+        {
+            Name = evt.Name;
+            Value = evt.Value;
+            return;
+        }
+
+        Name = Properties.Extract<string>("name");
+        Value = Properties.Extract<JsonNode>("value");
     }
 }
 
@@ -82,21 +79,14 @@ public class EventActivity<TValue> : EventActivity
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity{TValue}"/> class.
     /// </summary>
-    public EventActivity() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventActivity{TValue}"/> class with the specified name.
-    /// </summary>
-    public EventActivity(string name) : base(name)
+    internal EventActivity() : base()
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity{TValue}"/> class from an EventActivity.
     /// </summary>
-    public EventActivity(EventActivity activity) : base(activity)
+    internal EventActivity(EventActivity activity) : base(activity)
     {
     }
 }
@@ -106,6 +96,9 @@ public class EventActivity<TValue> : EventActivity
 /// </summary>
 public static class EventNames
 {
+    /// <summary>Agent 365 lifecycle event name.</summary>
+    public const string AgentLifecycle = "agentLifecycle";
+
     /// <summary>Meeting start event name.</summary>
     public const string MeetingStart = "application/vnd.microsoft.meetingStart";
 
@@ -117,10 +110,4 @@ public static class EventNames
 
     /// <summary>Meeting participant leave event name.</summary>
     public const string MeetingParticipantLeave = "application/vnd.microsoft.meetingParticipantLeave";
-
-    //TODO : review read receipts
-    /*
-    /// <summary>Read receipt event name. Fired when a user reads a message in a 1:1 chat with the bot.</summary>
-    public const string ReadReceipt = "application/vnd.microsoft.readReceipt";
-    */
 }

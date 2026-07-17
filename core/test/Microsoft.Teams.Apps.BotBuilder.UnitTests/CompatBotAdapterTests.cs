@@ -4,10 +4,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
@@ -41,7 +41,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     "conversation-456",
                     "activity-123",
                     It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://smba.trafficmanager.net/teams"),
-                    It.IsAny<AgenticIdentity>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<BotRequestContext?>(),
                     null,
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -73,7 +74,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     "conversation-456",
                     "activity-123",
                     It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://fallback-service-url.com"),
-                    It.IsAny<AgenticIdentity>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<BotRequestContext?>(),
                     null,
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -151,7 +153,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient.Setup(c => c.SendActivityAsync(
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CoreActivityInput>(),
+                    It.IsAny<Uri>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "sent-123" });
@@ -177,7 +183,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(
-                    It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
+                    It.Is<string>(id => id == "turn-conversation-123"),
+                    It.IsAny<CoreActivityInput>(),
+                    It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
+                    It.IsAny<bool>(),
+                    It.Is<BotRequestContext?>(c => c != null && c.BotAppId == "bot-123"),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -191,9 +201,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             mockConversationClient.Setup(c => c.UpdateActivityAsync(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<CoreActivityInput>(),
+                    It.IsAny<Uri>(),
                     It.IsAny<bool>(),
-                    It.IsAny<AgenticIdentity?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new UpdateActivityResponse { Id = "updated-123" });
@@ -221,9 +232,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 c => c.UpdateActivityAsync(
                     "conversation-123",
                     "activity-123",
-                    It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
+                    It.IsAny<CoreActivityInput>(),
+                    It.Is<Uri>(u => u.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
                     It.IsAny<bool>(),
-                    It.IsAny<AgenticIdentity?>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -239,40 +251,21 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<Uri>(),
-                    It.IsAny<AgenticIdentity>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             mock.Setup(c => c.SendActivityAsync(
-                    It.IsAny<CoreActivity>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CoreActivityInput>(),
+                    It.IsAny<Uri>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<BotRequestContext?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "default-sent-id" });
-
-            return mock;
-        }
-
-        private static Mock<TeamsBotApplication> CreateMockTeamsBotApplication()
-        {
-            Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            Mock<UserTokenClient> mockUserTokenClient = new(
-                new HttpClient(),
-                Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
-                NullLogger<UserTokenClient>.Instance);
-            ApiClient mockTeamsApiClient = new(
-                new Uri("https://service.url"),
-                new HttpClient(),
-                mockConversationClient.Object,
-                mockUserTokenClient.Object,
-                NullLogger<ApiClient>.Instance);
-
-            Mock<TeamsBotApplication> mock = new(
-                mockConversationClient.Object,
-                mockUserTokenClient.Object,
-                mockTeamsApiClient,
-                Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotApplication>.Instance);
 
             return mock;
         }
@@ -281,31 +274,15 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Mock<UserTokenClient> mockUserTokenClient = new(
                 new HttpClient(),
-                Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
+                Mock.Of<IConfiguration>(),
                 NullLogger<UserTokenClient>.Instance);
-            ApiClient mockTeamsApiClient = new(
-                new Uri("https://service.url"),
-                new HttpClient(),
+            BotApplication botApplication = new(
                 conversationClient,
                 mockUserTokenClient.Object,
-                NullLogger<ApiClient>.Instance);
-            TeamsBotApplication teamsBotApplication = new(
-                conversationClient,
-                mockUserTokenClient.Object,
-                mockTeamsApiClient,
-                Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotApplication>.Instance);
+                NullLogger<BotApplication>.Instance);
 
             return new TeamsBotAdapter(
-                teamsBotApplication,
-                Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotAdapter>.Instance);
-        }
-
-        private static TeamsBotAdapter CreateCompatBotAdapter(TeamsBotApplication teamsBotApplication)
-        {
-            return new TeamsBotAdapter(
-                teamsBotApplication,
+                botApplication,
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotAdapter>.Instance);
         }
@@ -318,8 +295,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Id = "turn-activity-123",
                 ServiceUrl = serviceUrl,
                 Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "turn-conversation-123" },
-                From = new ChannelAccount { Id = "user-123" },
-                Recipient = new ChannelAccount { Id = "bot-123" },
+                From = new Microsoft.Bot.Schema.ChannelAccount { Id = "user-123" },
+                Recipient = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-123" },
                 ChannelId = "msteams"
             };
 

@@ -7,6 +7,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Apps.BotBuilder;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -34,25 +35,25 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
-        var mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
+        TeamsChannelAccount mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
-        // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
+        // Targeted Messaging via BF compat layer: setting isTargeted on the BF Microsoft.Bot.Schema.ChannelAccount
         // causes the compat layer to set CoreActivity.Recipient.IsTargeted, which appends
         // ?isTargetedActivity=true to the URL making the message visible only to that user.
-        var act = MessageFactory.Text(replyText, replyText);
-        act.Recipient = new ChannelAccount();
+        Activity act = MessageFactory.Text(replyText, replyText);
+        act.Recipient = new Microsoft.Bot.Schema.ChannelAccount();
         act.Recipient.Properties.Add("isTargeted", true);
         await turnContext.SendActivityAsync(act, cancellationToken);
 
 
         if (turnContext.Activity.Conversation.IsGroup == true)
         {
-            var teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
-            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented));
+            TeamDetails teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented), cancellationToken: cancellationToken);
 
             TeamsPagedMembersResult pagedMembersResult;
-            List<TeamsChannelAccount> members = new List<TeamsChannelAccount>();
+            List<TeamsChannelAccount> members = [];
             string continuationToken = null!;
             do
             {
@@ -67,27 +68,26 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
                 members.AddRange(pagedMembersResult.Members);
             } while (continuationToken != null);
 
-            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented));
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented), cancellationToken: cancellationToken);
         }
 
         // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
         // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
-        var incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
-        var incomingFrom = incomingCoreActivity.From;
-        var incomingRecipient = incomingCoreActivity.Recipient;
+        CoreActivity incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
+        Microsoft.Teams.Core.Schema.ChannelAccount? incomingFrom = incomingCoreActivity.From;
+        Microsoft.Teams.Core.Schema.ChannelAccount? incomingRecipient = incomingCoreActivity.Recipient;
+#pragma warning disable ExperimentalTeamsTargeted
         incomingFrom!.IsTargeted = true;
-        CoreActivity tm = CoreActivity.CreateBuilder()
-            .WithConversation(incomingCoreActivity.Conversation!)
+#pragma warning restore ExperimentalTeamsTargeted
+        CoreActivityInput tm = CoreActivityInput.CreateBuilder()
             .WithProperty("text", "Hello TM !")
-            .WithRecipient(incomingFrom)
-            .WithFrom(incomingRecipient)
-            //.WithServiceUrl(activity.ServiceUrl!)
-            .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+        Uri serviceUrl = new("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/");
 
-        var res = await turnContext.SendActivityAsync(
+        await teamsBotApp.ConversationClient.SendActivityAsync(incomingCoreActivity.Conversation!.Id!, tm, serviceUrl, cancellationToken: cancellationToken);
+
+        ResourceResponse res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
 
         await Task.Delay(500, cancellationToken);
@@ -98,7 +98,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             //incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromAccount(incomingRecipient),
+            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -109,7 +109,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             res.Id,
             "sad",
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromAccount(incomingRecipient),
+            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -121,7 +121,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromAccount(incomingRecipient),
+            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -183,13 +183,13 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         };
     }
 
-    protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    protected override async Task OnMembersAddedAsync(IList<Microsoft.Bot.Schema.ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
         await turnContext.SendActivityAsync(MessageFactory.Text("Welcome."), cancellationToken);
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
     }
 
-    protected override Task OnMembersRemovedAsync(IList<ChannelAccount> membersRemoved, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    protected override Task OnMembersRemovedAsync(IList<Microsoft.Bot.Schema.ChannelAccount> membersRemoved, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
         return turnContext.SendActivityAsync(MessageFactory.Text("Bye."), cancellationToken);
     }

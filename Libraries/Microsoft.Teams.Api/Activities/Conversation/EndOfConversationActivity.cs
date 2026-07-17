@@ -13,6 +13,7 @@ public partial class ActivityType : StringEnum
     public bool IsEndOfConversation => EndOfConversation.Equals(Value);
 }
 
+[Obsolete("This will be removed by end of summer 2026.")]
 public class EndOfConversationActivity() : Activity(ActivityType.EndOfConversation)
 {
     /// <summary>
@@ -31,6 +32,7 @@ public class EndOfConversationActivity() : Activity(ActivityType.EndOfConversati
 }
 
 [JsonConverter(typeof(JsonConverter<EndOfConversationCode>))]
+[Obsolete("This will be removed by end of summer 2026.")]
 public class EndOfConversationCode(string value) : StringEnum(value)
 {
     public static readonly EndOfConversationCode Unknown = new("unknown");

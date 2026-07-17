@@ -4,36 +4,37 @@ A Teams bot that doubles as an MCP server, exposing human-in-the-loop tools that
 let an MCP client (an agent, an IDE, etc.) reach a real user through Teams and
 wait for them to reply or approve.
 
+## What it shows
+
+- Human-in-the-loop tools (`ask`, `wait_for_reply`, `request_approval`) exposed through MCP.
+- Teams messaging from MCP calls (`notify`) and user lookup (`find_user` via Graph).
+- Async wait/poll patterns for replies and approvals.
+
 ## Tools
 
 | Tool               | Description                                                                          | Parameters                          |
 | ------------------ | ------------------------------------------------------------------------------------ | ----------------------------------- |
-| `notify`           | Send a one-way notification to a user. No response expected.                         | `userId`, `message`                 |
-| `ask`              | Ask a user a question. Returns a `requestId`.                                        | `userId`, `question`                |
-| `get_reply`        | Poll for the reply to an earlier `ask`. Returns `pending` until the user responds.   | `requestId`                         |
-| `request_approval` | Send an Approve/Reject card to a user. Returns an `approvalId`.                      | `userId`, `title`, `description`    |
-| `get_approval`     | Poll for the decision on an earlier `request_approval`.                              | `approvalId`                        |
+| `find_user`         | Search the tenant by partial name / email / UPN. Returns up to 5 AAD object ids.     | `query`                              |
+| `notify`            | Send a one-way notification to a user. No response expected.                         | `userId`, `message`                  |
+| `ask`               | Ask a user a question via an Adaptive Card with a reply box. Returns a `requestId`. Multiple asks per user can be in flight.  | `userId`, `question`                 |
+| `wait_for_reply`    | Wait up to `timeoutSeconds` for the reply (default 30). Returns `pending` on timeout.| `requestId`, `timeoutSeconds`        |
+| `get_reply`         | Snapshot the reply state without waiting. For manual polling.                        | `requestId`                          |
+| `request_approval`  | Send an Approve/Reject card to a user. Returns an `approvalId`.                      | `userId`, `title`, `description`     |
+| `wait_for_approval` | Wait up to `timeoutSeconds` for the decision (default 30). Returns `pending` on timeout. | `approvalId`, `timeoutSeconds`   |
+| `get_approval`      | Snapshot the approval status without waiting. For manual polling.                    | `approvalId`                         |
+
+`userId` everywhere below is the **AAD object id** of someone in the same tenant. Use `find_user` to resolve a name to an id.
+
+## Prerequisites
+
+- Bot registered and installed in Teams.
+- Microsoft Graph application permission `User.ReadBasic.All` granted with admin consent.
 
 ## Configure
 
-Set credentials in `appsettings.json` *or* `Properties/launchSettings.json`
-(env-var form).
+Set credentials in `Properties/launchSettings.TEMPLATE.json`, then copy to `launchSettings.json` for local runs.
 
-`appsettings.json`:
-
-```json
-{
-  "AzureAd": {
-    "TenantId": "<your-tenant-id>",
-    "ClientId": "<your-azure-bot-app-id>",
-    "ClientCredentials": [
-      { "SourceType": "ClientSecret", "ClientSecret": "<your-azure-bot-app-secret>" }
-    ]
-  }
-}
-```
-
-Or via env vars in `launchSettings.json`:
+Required env vars:
 
 ```
 AzureAd__TenantId=<your-tenant-id>
@@ -43,9 +44,19 @@ AzureAd__ClientCredentials__0__ClientSecret=<your-azure-bot-app-secret>
 ```
 
 The `userId` argument passed to `notify`, `ask`, and `request_approval` is the
-Teams user id of someone in the same tenant. For the simplest setup, message
-the bot once with a real user, then read the user id off the first incoming
-activity in the server log and use that.
+**AAD object id** of someone in the same tenant. Either call `find_user` to
+resolve a name, or DM the bot once and read the AAD object id off the first
+incoming activity in the server log.
+
+## Graph permissions
+
+`find_user` calls Microsoft Graph as the bot's app identity. In the bot's
+Azure AD app registration → **API permissions**, add **`User.ReadBasic.All`**
+(Microsoft Graph, **Application** permission) and grant admin consent for
+your tenant. Without this, `find_user` returns 403 Forbidden.
+
+The Graph call reuses `AzureAd:TenantId`, `AzureAd:ClientId`, and
+`AzureAd:ClientCredentials:0:ClientSecret` — no extra config keys.
 
 ## Run
 
@@ -60,7 +71,11 @@ default) and serves the MCP endpoint at `http://localhost:3978/mcp`.
 
 ```bash
 dotnet run --project samples/McpServer
-# in a second terminal:
+```
+
+In a second terminal:
+
+```bash
 npx @modelcontextprotocol/inspector
 ```
 
@@ -71,19 +86,17 @@ In the Inspector UI, pick **Streamable HTTP** as the transport and enter
 
 1. Agent calls `request_approval(userId, title, description)` → gets `approvalId`.
 2. The user sees an Approve/Reject card in Teams and clicks a button.
-3. The `OnAdaptiveCardAction` handler records the decision in shared state.
-4. Agent polls `get_approval(approvalId)` until the status flips to
-   `approved` or `rejected`.
+3. The `OnAdaptiveCardAction` handler records the decision in shared state
+   and signals any in-flight `wait_for_approval` waiter.
+4. Agent calls `wait_for_approval(approvalId)` — returns within
+   milliseconds of the click. If the user doesn't click within 30s, the
+   tool returns `pending` and the agent calls again. (The `get_approval`
+   variant exists for clients that prefer manual polling.)
 
 ## Limitations
 
 All state is in-memory. A server restart clears everything — pending asks and
 approvals in flight will be lost.
-
-**Only one outstanding `ask` per user.** The next message that user sends to
-the bot is treated as the answer to their open ask. Calling `ask` again for
-the same user while a previous ask is still pending overwrites the
-correlation, and the user's reply will resolve whichever ask is current.
 
 ## Security
 
