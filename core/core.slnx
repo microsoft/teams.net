@@ -11,6 +11,7 @@
   </Folder> -->
   <Folder Name="/Samples/">
     <Project Path="samples/A2ABot/A2ABot.csproj" />
+    <Project Path="samples/Agent365/Agent365.csproj" />
     <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
     <Project Path="samples/AllInvokesBot/AllInvokesBot.csproj" />
     <Project Path="samples/CachingAuthTokens/CachingAuthTokens.csproj" Id="01e6530d-ac7d-47ca-9748-785883eb6c39" />

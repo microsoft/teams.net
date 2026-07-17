@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -44,6 +45,16 @@ public class AspNetCorePluginTests
         var bytes = Encoding.UTF8.GetBytes(json);
         ctx.Request.Body = new MemoryStream(bytes);
         ctx.Request.ContentLength = bytes.Length;
+        return ctx;
+    }
+
+    private static DefaultHttpContext CreateUnauthenticatedRequestsAllowedHttpContext(IActivity activity)
+    {
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Remove("Authorization");
+        ctx.RequestServices = new ServiceCollection()
+            .AddSingleton(new AspNetCorePluginOptions { DangerouslyAllowUnauthenticatedRequests = true })
+            .BuildServiceProvider();
         return ctx;
     }
 
@@ -153,6 +164,107 @@ public class AspNetCorePluginTests
         Assert.Equal(500, problem.StatusCode);
         Assert.Contains("boom", problem.Value!.ToString());
         logger.Verify(l => l.Error(It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_DangerouslyAllowUnauthenticatedRequests_NoAuthorizationHeader_Processes()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        var eventsCalled = new List<string>();
+
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            if (name == "activity") return Task.FromResult<object?>(coreResponse);
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateUnauthenticatedRequestsAllowedHttpContext(activity);
+
+        var result = await plugin.Do(ctx);
+
+        Assert.Contains("activity", eventsCalled);
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("https://smba.trafficmanager.net/teams", "https://smba.trafficmanager.net/teams")]
+    public async Task Test_Do_Http_DangerouslyAllowUnauthenticatedRequests_UsesActivityServiceUrlAsTokenServiceUrl(string? activityServiceUrl, string expectedTokenServiceUrl)
+    {
+        var activity = CreateMessageActivity(activityServiceUrl);
+        var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
+        string? tokenServiceUrl = null;
+
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            if (name == "activity")
+            {
+                var activityEvent = Assert.IsType<ActivityEvent>(payload);
+                tokenServiceUrl = activityEvent.Token.ServiceUrl;
+                return Task.FromResult<object?>(coreResponse);
+            }
+
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateUnauthenticatedRequestsAllowedHttpContext(activity);
+
+        var result = await plugin.Do(ctx);
+
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal((int)coreResponse.Status, jsonResult.StatusCode);
+        Assert.Equal(expectedTokenServiceUrl, tokenServiceUrl);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_MissingAuthorizationHeader_ReturnsUnauthorized()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Remove("Authorization");
+
+        var result = await plugin.Do(ctx);
+
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_InvalidAuthorizationHeader_ReturnsUnauthorized()
+    {
+        var activity = CreateMessageActivity("https://smba.trafficmanager.net/teams/");
+        var eventsCalled = new List<string>();
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            eventsCalled.Add(name);
+            return Task.FromResult<object?>(new Response(HttpStatusCode.OK, new { ok = true }));
+        };
+        var logger = new Mock<ILogger>();
+        var plugin = CreatePlugin(logger, events);
+        var ctx = CreateHttpContext(activity);
+        ctx.Request.Headers.Authorization = "Bearer not-a-jwt";
+
+        var result = await plugin.Do(ctx);
+
+        var unauthorized = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult>(result);
+        Assert.Equal(401, unauthorized.StatusCode);
+        Assert.DoesNotContain("activity", eventsCalled);
+        logger.Verify(l => l.Warn(It.IsAny<object[]>()), Times.Once);
     }
 
     [Fact]

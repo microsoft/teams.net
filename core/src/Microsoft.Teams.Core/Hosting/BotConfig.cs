@@ -17,6 +17,8 @@ public sealed class BotConfig
 
     internal const string BotFrameworkSectionName = "BotFramework";
 
+    private const string DangerouslyAllowUnauthenticatedRequestsKey = "DangerouslyAllowUnauthenticatedRequests";
+
     internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
 
     internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
@@ -65,6 +67,12 @@ public sealed class BotConfig
     /// </summary>
     public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
 
+    /// <summary>
+    /// Gets or sets whether inbound bot requests should bypass authentication.
+    /// This should only be enabled for local development.
+    /// </summary>
+    public bool DangerouslyAllowUnauthenticatedRequests { get; set; }
+
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
     /// <summary>
@@ -83,6 +91,11 @@ public sealed class BotConfig
     /// <returns>A BotConfig populated from the section, or an empty BotConfig if no ClientId is configured.</returns>
     public static BotConfig Resolve(IServiceCollection services, string sectionName = DefaultSectionName)
     {
+        return Resolve(services, sectionName, log: true);
+    }
+
+    internal static BotConfig Resolve(IServiceCollection services, string sectionName, bool log)
+    {
         ArgumentNullException.ThrowIfNull(services);
 
         IConfiguration? configuration = AddBotApplicationExtensions.ResolveFromServicesPreHost<IConfiguration>(services);
@@ -96,6 +109,9 @@ public sealed class BotConfig
 
         IConfigurationSection section = configuration.GetSection(sectionName);
         IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
+        bool dangerouslyAllowUnauthenticatedRequests =
+            ResolveOptionalBoolean(section, DangerouslyAllowUnauthenticatedRequestsKey)
+            ?? false;
         BotConfig config = new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
@@ -103,19 +119,44 @@ public sealed class BotConfig
             EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
             OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
             BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
+            DangerouslyAllowUnauthenticatedRequests = dangerouslyAllowUnauthenticatedRequests,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
 
-        AddBotApplicationExtensions.LogFromServices(services, l =>
+        if (log)
         {
-            if (!string.IsNullOrEmpty(config.ClientId))
-                _logUsingSectionConfig(l, sectionName, null);
-            else
-                _logNoConfigFound(l, null);
-        }, typeof(BotConfig));
+            AddBotApplicationExtensions.LogFromServices(services, l =>
+            {
+                if (config.DangerouslyAllowUnauthenticatedRequests)
+                    l.BypassAuthenticationConfigured(sectionName);
+                else if (!string.IsNullOrEmpty(config.ClientId))
+                    _logUsingSectionConfig(l, sectionName, null);
+                else
+                    l.AuthenticationNotConfigured(sectionName);
+            }, typeof(BotConfig));
+        }
 
         return config;
+    }
+
+    private static bool? ResolveOptionalBoolean(IConfigurationSection section, string key)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        string? value = section[key];
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (bool.TryParse(value, out bool result))
+        {
+            return result;
+        }
+
+        throw new InvalidOperationException(
+            $"Configuration value '{section.Path}:{key}' is not a valid boolean: '{value}'.");
     }
 
     private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
@@ -137,7 +178,4 @@ public sealed class BotConfig
 
     private static readonly Action<ILogger, string, Exception?> _logUsingSectionConfig =
         LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Resolved bot configuration from '{SectionName}' configuration section");
-    private static readonly Action<ILogger, Exception?> _logNoConfigFound =
-        LoggerMessage.Define(LogLevel.Warning, new(4), "No bot configuration found in configuration.");
-
 }
