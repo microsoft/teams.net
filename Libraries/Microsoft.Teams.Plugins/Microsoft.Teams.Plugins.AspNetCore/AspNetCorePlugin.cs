@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
@@ -183,7 +184,31 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         try
         {
             var request = httpContext.Request;
-            var token = ExtractToken(request);
+            var options = httpContext.RequestServices?.GetService(typeof(AspNetCorePluginOptions)) as AspNetCorePluginOptions;
+            var dangerouslyAllowUnauthenticatedRequests = options?.DangerouslyAllowUnauthenticatedRequests == true;
+            JsonWebToken? token = null;
+            if (!dangerouslyAllowUnauthenticatedRequests)
+            {
+                try
+                {
+                    token = ExtractToken(request);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Logger.Warn("Rejecting request: missing Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+                catch (ArgumentException)
+                {
+                    Logger.Warn("Rejecting request: invalid Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+                catch (SecurityTokenException)
+                {
+                    Logger.Warn("Rejecting request: invalid Authorization bearer token.");
+                    return Results.Unauthorized();
+                }
+            }
             var activity = await ParseActivity(request).ConfigureAwait(false);
 
             if (activity is null)
@@ -191,12 +216,14 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 return Results.BadRequest("Missing activity");
             }
 
+            IToken activityToken = token is null ? new UnauthenticatedToken(activity.ServiceUrl) : token;
+
             // Require the token's serviceurl claim to match the activity's serviceUrl
             // (normalized, case-insensitive) when the activity specifies one. Mismatches
             // are logged server-side.
-            if (!string.IsNullOrEmpty(activity.ServiceUrl))
+            if (!dangerouslyAllowUnauthenticatedRequests && !string.IsNullOrEmpty(activity.ServiceUrl))
             {
-                var claimServiceUrl = token.Token.Payload.TryGetValue("serviceurl", out var serviceUrlClaim)
+                var claimServiceUrl = token!.Token.Payload.TryGetValue("serviceurl", out var serviceUrlClaim)
                     ? serviceUrlClaim as string
                     : null;
 
@@ -223,7 +250,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
             var res = await Do(new ActivityEvent()
             {
-                Token = token,
+                Token = activityToken,
                 Activity = activity,
                 Extra = data,
                 Services = httpContext.RequestServices

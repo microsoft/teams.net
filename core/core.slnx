@@ -11,6 +11,7 @@
   </Folder> -->
   <Folder Name="/Samples/">
     <Project Path="samples/A2ABot/A2ABot.csproj" />
+    <Project Path="samples/Agent365/Agent365.csproj" />
     <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
     <Project Path="samples/AllInvokesBot/AllInvokesBot.csproj" />
     <Project Path="samples/CachingAuthTokens/CachingAuthTokens.csproj" Id="01e6530d-ac7d-47ca-9748-785883eb6c39" />
@@ -27,7 +28,6 @@
     <Project Path="samples/ObservabilityBot/ObservabilityBot.csproj" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
     <Project Path="samples/Quoting/Quoting.csproj" />
-    <Project Path="samples/SsoBot/SsoBot.csproj" />
     <Project Path="samples/StateBot/StateBot.csproj" Id="59061ea6-7fb8-4f94-908d-e32e323cafe4" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
     <Project Path="samples/SuggestedActionBot/SuggestedActionBot.csproj" />

@@ -48,10 +48,15 @@ public class EventActivity : TeamsActivity
     /// </summary>
     internal EventActivity(CoreActivity activity) : base(activity)
     {
-        Name = activity.Properties.Extract<string>("name");
-        Value = activity is EventActivity evt
-            ? evt.Value
-            : activity.Properties.Extract<JsonNode>("value");
+        if (activity is EventActivity evt)
+        {
+            Name = evt.Name;
+            Value = evt.Value;
+            return;
+        }
+
+        Name = Properties.Extract<string>("name");
+        Value = Properties.Extract<JsonNode>("value");
     }
 }
 
@@ -91,6 +96,9 @@ public class EventActivity<TValue> : EventActivity
 /// </summary>
 public static class EventNames
 {
+    /// <summary>Agent 365 lifecycle event name.</summary>
+    public const string AgentLifecycle = "agentLifecycle";
+
     /// <summary>Meeting start event name.</summary>
     public const string MeetingStart = "application/vnd.microsoft.meetingStart";
 
