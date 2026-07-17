@@ -127,6 +127,7 @@ dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
 | Sample | Description |
 |--------|-------------|
 | [OAuthFlowBot](samples/OAuthFlowBot/) | OAuth sign-in and token management |
+| [GraphBot](samples/GraphBot/) | App-only bot using the Microsoft Graph SDK with client credentials |
 | [CachingAuthTokens](samples/CachingAuthTokens/) | Redis-backed cache for auth/session data |
 | [StateBot](samples/StateBot/) | Conversation and user state backed by cache |
 | [ObservabilityBot](samples/ObservabilityBot/) | OpenTelemetry and AI observability |
