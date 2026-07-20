@@ -42,7 +42,7 @@ teamsApp.OnMessage("(?i)^count$", async (context, ct) =>
 {
     int count = context.State.ConversationState.Get<int>("count") + 1;
     context.State.ConversationState.Set("count", count);
-    await context.SendAsync($"This conversation's counter is now **{count}**.", ct);
+    await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($"This conversation's counter is now **{count}**.", TextFormats.Markdown).Build(), ct);
 });
 
 // Persisted per user in this conversation.
