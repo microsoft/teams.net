@@ -29,5 +29,5 @@ public class TextFormat(string value) : StringEnum(value)
     /// </remarks>
     [Experimental("ExperimentalTeamsExtendedMarkdown")]
     public static readonly TextFormat ExtendedMarkdown = new("extendedmarkdown");
-    public bool IsExtendedMarkdown => ExtendedMarkdown.Equals(Value);
+    public bool IsExtendedMarkdown => "extendedmarkdown".Equals(Value);
 }

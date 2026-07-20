@@ -30,7 +30,9 @@ teams.OnMessage(async (context, cancellationToken) =>
 $$E = mc^2$$
 """)
         {
+#pragma warning disable ExperimentalTeamsExtendedMarkdown
             TextFormat = TextFormat.ExtendedMarkdown
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
         };
         await context.Send(reply, cancellationToken);
     }

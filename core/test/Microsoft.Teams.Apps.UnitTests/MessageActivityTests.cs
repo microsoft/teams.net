@@ -69,7 +69,9 @@ public class MessageActivityTests
         activity.TextFormat = TextFormats.Xml;
         Assert.Equal("xml", activity.TextFormat);
 
+#pragma warning disable ExperimentalTeamsExtendedMarkdown
         activity.TextFormat = TextFormats.ExtendedMarkdown;
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
         Assert.Equal("extendedmarkdown", activity.TextFormat);
     }
 
