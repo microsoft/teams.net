@@ -69,7 +69,7 @@ teamsApp.OnMessage("(?i)^who am i$", async (context, ct) =>
         return;
     }
 
-    await context.SendAsync($"You are **{name}**.", ct);
+    await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($"You are **{name}**.", TextFormats.Markdown).Build(), ct);
 });
 
 teamsApp.OnMessage("(?i)^show completed$", async (context, ct) =>
