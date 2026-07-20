@@ -57,7 +57,7 @@ teamsApp.OnMessage("(?i)^my name is (.+)$", async (context, ct) =>
     }
 
     context.State.UserState?.Set("name", name);
-    await context.SendAsync($"Got it. I'll remember you as **{name}**.", ct);
+    await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($"Got it. I'll remember you as **{name}**.", TextFormats.Markdown).Build(), ct);
 });
 
 teamsApp.OnMessage("(?i)^who am i$", async (context, ct) =>
