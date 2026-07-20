@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.HtmlWidget;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
@@ -825,6 +826,119 @@ public class HtmlWidgetHelpersTests
         var match = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>", System.Text.RegularExpressions.RegexOptions.Singleline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         Assert.True(match.Success);
         await VerifyXunit.Verifier.Verify(match.Groups[1].Value);
+    }
+
+    // --- TryGetWidgetModelContext ---
+
+    private static MessageActivity MessageActivityWithValue(object? value)
+    {
+        CoreActivity core = new()
+        {
+            Type = TeamsActivityTypes.Message
+        };
+        if (value is not null)
+        {
+            core.Properties["value"] = JsonSerializer.SerializeToElement(value);
+        }
+        return MessageActivity.FromActivity(core);
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ParsesRawRequest()
+    {
+        var activity = MessageActivityWithValue(new
+        {
+            method = "ui/update-model-context",
+            @params = new { content = new[] { new { type = "text", text = "hello" } } }
+        });
+
+        var result = HtmlWidgetHelpers.TryGetWidgetModelContext(activity);
+
+        Assert.NotNull(result);
+        Assert.Equal("ui/update-model-context", result!.Method);
+        Assert.NotNull(result.Params.Content);
+        Assert.Single(result.Params.Content!);
+        Assert.Equal("hello", result.Params.Content![0].Text);
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ParsesStructuredContentOnly()
+    {
+        var activity = MessageActivityWithValue(new
+        {
+            method = "ui/update-model-context",
+            @params = new { structuredContent = new { count = 5 } }
+        });
+
+        var result = HtmlWidgetHelpers.TryGetWidgetModelContext(activity);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result!.Params.StructuredContent);
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_UnwrapsEnvelope()
+    {
+        var activity = MessageActivityWithValue(new
+        {
+            type = "widgetModelContext",
+            data = new
+            {
+                method = "ui/update-model-context",
+                @params = new { content = new[] { new { type = "text", text = "wrapped" } } }
+            }
+        });
+
+        var result = HtmlWidgetHelpers.TryGetWidgetModelContext(activity);
+
+        Assert.NotNull(result);
+        Assert.Equal("wrapped", result!.Params.Content![0].Text);
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ReturnsNullWhenValueMissing()
+    {
+        var activity = MessageActivityWithValue(null);
+        Assert.Null(HtmlWidgetHelpers.TryGetWidgetModelContext(activity));
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ReturnsNullWhenValueNotObject()
+    {
+        var activity = MessageActivityWithValue("hello");
+        Assert.Null(HtmlWidgetHelpers.TryGetWidgetModelContext(activity));
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ReturnsNullForNonMatchingMethod()
+    {
+        var activity = MessageActivityWithValue(new
+        {
+            method = "something/else",
+            @params = new { }
+        });
+        Assert.Null(HtmlWidgetHelpers.TryGetWidgetModelContext(activity));
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ReturnsNullWhenParamsMissing()
+    {
+        var activity = MessageActivityWithValue(new
+        {
+            method = "ui/update-model-context"
+        });
+        Assert.Null(HtmlWidgetHelpers.TryGetWidgetModelContext(activity));
+    }
+
+    [Fact]
+    public void TryGetWidgetModelContext_ReturnsNullForWrongEnvelopeType()
+    {
+        var activity = MessageActivityWithValue(new
+        {
+            type = "other",
+            data = new { method = "ui/update-model-context", @params = new { } }
+        });
+        Assert.Null(HtmlWidgetHelpers.TryGetWidgetModelContext(activity));
     }
 }
 

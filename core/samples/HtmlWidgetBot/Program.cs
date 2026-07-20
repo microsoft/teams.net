@@ -29,6 +29,9 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                     {
                         Name = "Simple Widget",
                         Html = Widgets.SimpleHtml,
+                        // Domain is the widget's own origin. Teams uses it to sandbox the
+                        // widget iframe. Any valid origin works; this value is the example
+                        // from the widget design spec.
                         Domain = "https://teams.microsoft.com",
                     },
                     new HtmlWidgetMarkdownOptions

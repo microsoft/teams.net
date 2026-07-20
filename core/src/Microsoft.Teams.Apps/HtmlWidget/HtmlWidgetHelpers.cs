@@ -257,6 +257,69 @@ public static class HtmlWidgetHelpers
     }
 
     /// <summary>
+    /// Attempts to extract an MCP UI update-model-context request from a message
+    /// activity's <c>value</c>. A widget can request that content be added to the
+    /// model context by reusing the messageBack mechanism (like <c>Action.Submit</c>
+    /// for adaptive cards).
+    /// Such a request arrives as a normal message activity whose <c>value</c> carries
+    /// the <see cref="McpUiUpdateModelContextRequest"/> payload.
+    /// This is fire-and-forget: the bot does not respond.
+    /// The helper is tolerant of two wire shapes: the raw request object, or an
+    /// envelope of the form <c>{ "type": "widgetModelContext", "data": &lt;request&gt; }</c>.
+    /// </summary>
+    /// <param name="activity">The received message activity.</param>
+    /// <returns>The parsed request, or <c>null</c> if the activity value is not a valid update-model-context request.</returns>
+    [Experimental("ExperimentalTeamsHtmlWidget")]
+    public static McpUiUpdateModelContextRequest? TryGetWidgetModelContext(MessageActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+
+        if (!activity.Properties.TryGetValue("value", out object? raw) || raw is null)
+        {
+            return null;
+        }
+
+        JsonElement value = raw is JsonElement je ? je : JsonSerializer.SerializeToElement(raw);
+        if (value.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        // Unwrap the { "type": "widgetModelContext", "data": ... } envelope if present.
+        JsonElement candidate = value;
+        if (value.TryGetProperty("type", out JsonElement typeEl)
+            && typeEl.ValueKind == JsonValueKind.String
+            && typeEl.GetString() == "widgetModelContext"
+            && value.TryGetProperty("data", out JsonElement dataEl)
+            && dataEl.ValueKind == JsonValueKind.Object)
+        {
+            candidate = dataEl;
+        }
+
+        if (!candidate.TryGetProperty("method", out JsonElement methodEl)
+            || methodEl.ValueKind != JsonValueKind.String
+            || methodEl.GetString() != "ui/update-model-context")
+        {
+            return null;
+        }
+
+        if (!candidate.TryGetProperty("params", out JsonElement paramsEl)
+            || paramsEl.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<McpUiUpdateModelContextRequest>(candidate.GetRawText());
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Validates that external references in widget HTML are covered by the
     /// declared security policy. Returns a list of warnings for any
     /// references to origins not present in the appropriate policy field.
