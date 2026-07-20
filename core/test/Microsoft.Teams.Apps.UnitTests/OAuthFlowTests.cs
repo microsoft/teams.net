@@ -158,7 +158,7 @@ public class OAuthFlowTests
     }
 
     [Fact]
-    public async Task TokenExchange_Failure_ClearsPendingSignIn()
+    public async Task TokenExchange_Non412Failure_ClearsPendingSignIn()
     {
         TestHarness harness = CreateHarness(GraphConnection);
 
@@ -247,6 +247,24 @@ public class OAuthFlowTests
             .ThrowsAsync(new HttpRequestException("Not found", null, System.Net.HttpStatusCode.NotFound));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-1", ConnectionName = GraphConnection, Token = "sso-token" };
+        Context<InvokeActivity> invokeCtx = CreateInvokeContext(harness, TestUserId);
+
+        InvokeResponse response = await harness.GraphFlow!.HandleTokenExchangeAsync(invokeCtx, exchangeValue, CancellationToken.None);
+
+        Assert.Equal(412, response.Status);
+        Assert.NotNull(response.Body);
+    }
+
+    [Fact]
+    public async Task TokenExchange_PreconditionFailed_Returns412WithBody()
+    {
+        TestHarness harness = CreateHarness(GraphConnection);
+
+        harness.MockUserTokenClient
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("Precondition failed", null, System.Net.HttpStatusCode.PreconditionFailed));
+
+        SignInTokenExchangeValue exchangeValue = new() { Id = "ex-412", ConnectionName = GraphConnection, Token = "sso-token" };
         Context<InvokeActivity> invokeCtx = CreateInvokeContext(harness, TestUserId);
 
         InvokeResponse response = await harness.GraphFlow!.HandleTokenExchangeAsync(invokeCtx, exchangeValue, CancellationToken.None);

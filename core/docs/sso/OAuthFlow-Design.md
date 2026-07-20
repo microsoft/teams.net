@@ -120,7 +120,7 @@ Teams client) and null for server-side token-exchange / verify-state failures.
 | Scenario | Behavior |
 | --- | --- |
 | Channel or group chat | Silent SSO can't complete, so the card omits `TokenExchangeResource` and Teams shows the sign-in button directly. |
-| `resourcematchfailed` | The silent SSO leg failed — the Entra app's *Expose an API → Application ID URI* must match the connection's Token Exchange URL (`api://<domain>/botid-<appId>`). Teams then falls back to the button. |
+| `resourcematchfailed` | The silent SSO leg failed — the Entra app's *Expose an API → Application ID URI* must match the connection's Token Exchange URL (`api://<domain>/botid-<appId>`).|
 | User denies consent / exchange fails | Responds `412`, Teams shows the button fallback; `OnSignInFailure` fires with `failure: null`. |
 | Token expired | `GetTokenAsync` returns null; `SignInAsync` restarts the flow. |
 | Non-Entra provider (GitHub, etc.) | No `TokenExchangeResource`; sign-in always completes via the button + `signin/verifyState`. |

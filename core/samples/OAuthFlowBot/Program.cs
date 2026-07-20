@@ -34,6 +34,14 @@ webAppBuilder.Services.AddTeamsBotApplication(options =>
     });
 });
 
+// Configure distributed cache for turn state persistence. This is optional, but recommended for production scenarios.
+// The sample below uses Redis, but you can use any IDistributedCache implementation.
+/*
+webAppBuilder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis") ?? throw new InvalidProgramException("Redis connection string not found");
+});*/
+
 WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
