@@ -43,6 +43,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
                  ]
         })
         .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(helpActivity, cancellationToken);
 });
@@ -60,12 +61,14 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
         .WithText(replyText)
         .AddMention(context.Activity.From)
         .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
     await context.SendAsync(ta, cancellationToken);
 });
 
 // Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
 teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
 {
+#pragma warning disable ExperimentalTeamsExtendedMarkdown
     MessageActivityInput extendedMarkdownMessage = MessageActivityInput.CreateBuilder()
         .WithText("""
 # Extended Markdown Demo
@@ -80,6 +83,7 @@ teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) 
 $$E = mc^2$$
 """, TextFormats.ExtendedMarkdown)
         .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(extendedMarkdownMessage, cancellationToken);
 });
@@ -120,6 +124,7 @@ public class Example
 > It can span multiple lines
 """, TextFormats.Markdown)
         .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(markdownMessage, cancellationToken);
 });
@@ -146,6 +151,7 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
         .AddAIGenerated()
         .AddFeedback()
         .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(reply, cancellationToken);
 });
@@ -158,6 +164,7 @@ teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
             .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
     MessageActivityInput feedbackActivity = MessageActivityInput.CreateBuilder().AddAttachment(feedbackCard).Build();
     await context.SendAsync(feedbackActivity, cancellationToken);
 });
@@ -198,6 +205,7 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
             .Build()
         )
         .Build();
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(reply, cancellationToken);
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
@@ -140,5 +141,9 @@ public static class TextFormats
     /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
     /// and other rich content beyond standard markdown.
     /// </summary>
+    /// <remarks>
+    /// This format is currently in public preview and may be subject to change.
+    /// </remarks>
+    [Experimental("ExperimentalTeamsExtendedMarkdown")]
     public const string ExtendedMarkdown = "extendedmarkdown";
 }
