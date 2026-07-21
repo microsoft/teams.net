@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<NoWarn>$(NoWarn);ExperimentalTeamsHtmlWidget</NoWarn>
+		<NoWarn>$(NoWarn);ExperimentalTeamsHtmlWidget;ExperimentalTeamsExtendedMarkdown</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
