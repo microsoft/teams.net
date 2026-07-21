@@ -19,9 +19,18 @@ public class HtmlWidgetHelpersTests
     [Fact]
     public void InjectWidgetProtocol_SkipsIfAlreadyPresent()
     {
-        var html = "<body><script>ui/initialize</script></body>";
+        var html = "<body><script>window.parent.postMessage({method:'ui/initialize'},'*')</script></body>";
         var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
         Assert.Equal(html, result);
+    }
+
+    [Fact]
+    public void InjectWidgetProtocol_StillInjectsWhenUiInitializeOnlyMentioned()
+    {
+        var html = "<body><!-- ui/initialize --><p>ui/initialize</p></body>";
+        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
+        Assert.NotEqual(html, result);
+        Assert.Contains("method:'ui/initialize'", result);
     }
 
     [Fact]
@@ -258,7 +267,34 @@ public class HtmlWidgetHelpersTests
         Assert.Contains("domain", ex.Message);
     }
 
-    // --- BuildHtmlWidgetMessage ---
+    [Theory]
+    [InlineData("https://")]
+    [InlineData("https:// not a url")]
+    [InlineData("example.com")]
+    public void BuildHtmlWidgetMarkdown_ThrowsOnMalformedDomain(string domain)
+    {
+        var payload = new HtmlWidgetPayload
+        {
+            Name = "test",
+            Html = "<body>Hi</body>",
+            Domain = domain
+        };
+        var ex = Assert.Throws<ArgumentException>(() => HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload));
+        Assert.Contains("domain", ex.Message);
+    }
+
+    [Fact]
+    public void BuildHtmlWidgetMarkdown_AcceptsValidHttpsDomain()
+    {
+        var payload = new HtmlWidgetPayload
+        {
+            Name = "test",
+            Html = "<body>Hi</body>",
+            Domain = "https://teams.microsoft.com"
+        };
+        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
+        Assert.Contains("teams.microsoft.com", result);
+    }
 
     [Fact]
     public void BuildHtmlWidgetMessage_SetsExtendedMarkdownFormat()
@@ -292,6 +328,46 @@ public class HtmlWidgetHelpersTests
     {
         var html = "<script src=\"https://cdn.example.com/lib.js\"></script>";
         var policy = new HtmlWidgetSecurityPolicy { ResourceDomains = ["https://cdn.example.com"] };
+        var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
+        Assert.Empty(warnings);
+    }
+
+    [Fact]
+    public void ValidateSecurityPolicy_WarnsWhenSubdomainUsesDifferentSchemeThanPinnedEntry()
+    {
+        var html = "<script src=\"http://cdn.example.com/lib.js\"></script>";
+        var policy = new HtmlWidgetSecurityPolicy { ResourceDomains = ["https://example.com"] };
+        var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
+        Assert.Single(warnings);
+        Assert.Equal("http://cdn.example.com/lib.js", warnings[0].Url);
+    }
+
+    [Fact]
+    public void ValidateSecurityPolicy_AllowsAnySchemeForHostOnlyEntry()
+    {
+        var html = "<script src=\"http://cdn.example.com/lib.js\"></script>";
+        var policy = new HtmlWidgetSecurityPolicy { ResourceDomains = ["example.com"] };
+        var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
+        Assert.Empty(warnings);
+    }
+
+    [Fact]
+    public void ValidateSecurityPolicy_DetectsBaseHref()
+    {
+        var html = "<base href=\"https://evil.example.com/\">";
+        var policy = new HtmlWidgetSecurityPolicy { BaseUriDomains = [] };
+        var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
+        Assert.Single(warnings);
+        Assert.Equal("baseUriDomains", warnings[0].PolicyField);
+        Assert.Equal("<base href>", warnings[0].Source);
+        Assert.Equal("https://evil.example.com/", warnings[0].Url);
+    }
+
+    [Fact]
+    public void ValidateSecurityPolicy_AllowsBaseHrefInPolicy()
+    {
+        var html = "<base href=\"https://cdn.example.com/\">";
+        var policy = new HtmlWidgetSecurityPolicy { BaseUriDomains = ["https://cdn.example.com"] };
         var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
         Assert.Empty(warnings);
     }

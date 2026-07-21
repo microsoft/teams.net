@@ -134,7 +134,10 @@ public static class HtmlWidgetHelpers
     {
         ArgumentNullException.ThrowIfNull(html);
 
-        if (html.Contains("ui/initialize", StringComparison.Ordinal))
+        // Skip injection only if the HTML already performs the ui/initialize
+        // handshake (a `method: 'ui/initialize'` postMessage), not if it merely
+        // mentions the string somewhere (e.g. in a comment or visible text).
+        if (Regex.IsMatch(html, "[\"']?method[\"']?\\s*:\\s*[\"']ui/initialize[\"']"))
         {
             return html;
         }
@@ -354,6 +357,9 @@ public static class HtmlWidgetHelpers
         // connectDomains: <form action>
         CheckTagAttribute(html, "form", "action", "connectDomains", "<form action>", policy.ConnectDomains, warnings);
 
+        // baseUriDomains: <base href>
+        CheckTagAttribute(html, "base", "href", "baseUriDomains", "<base href>", policy.BaseUriDomains, warnings);
+
         return warnings;
     }
 
@@ -369,7 +375,10 @@ public static class HtmlWidgetHelpers
             throw new ArgumentException("HTML widget payload requires a non-empty \"html\" field.");
         }
 
-        if (string.IsNullOrWhiteSpace(payload.Domain) || !payload.Domain.StartsWith("https://", StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(payload.Domain)
+            || !Uri.TryCreate(payload.Domain.Trim(), UriKind.Absolute, out var domainUri)
+            || domainUri.Scheme != Uri.UriSchemeHttps
+            || string.IsNullOrEmpty(domainUri.Host))
         {
             throw new ArgumentException("HTML widget payload requires \"domain\" to be a valid URL starting with \"https://\".");
         }
@@ -420,6 +429,14 @@ public static class HtmlWidgetHelpers
             var cleaned = domain.Trim('\'', '"');
             if (cleaned == "*") return true;
             if (origin == cleaned) return true;
+
+            // If the policy entry pins a scheme (e.g. "https://example.com"), the
+            // origin must use that same scheme; otherwise fall back to host-only match.
+            var schemeMatch = Regex.Match(cleaned, @"^(https?)://");
+            if (schemeMatch.Success && !origin.StartsWith($"{schemeMatch.Groups[1].Value}://", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
 
             var domainHost = Regex.Replace(cleaned, @"^https?://", "");
             if (origin.EndsWith($".{domainHost}", StringComparison.OrdinalIgnoreCase)) return true;
