@@ -28,12 +28,14 @@ namespace Microsoft.Teams.Apps;
 /// </code>
 ///
 /// To attach entities, attachments, suggested actions, or feedback to the final message,
-/// build a <see cref="MessageActivity"/> and pass it in. If its <see cref="MessageActivity.Text"/> is null the
-/// writer fills in the accumulated streamed text.
+/// build a <see cref="MessageActivityInput"/> using <see cref="MessageActivityInput.CreateBuilder"/> and pass it in.
+/// If its <see cref="MessageActivityInput.Text"/> is null the writer fills in the accumulated streamed text.
 /// <code>
-///     MessageActivity final = new MessageActivity().AddAttachment(card);
-///     final.AddEntity(citation);
-///     final.AddFeedback(FeedbackTypes.Default);
+///     MessageActivityInput final = MessageActivityInput.CreateBuilder()
+///         .AddAttachment(card)
+///         .AddEntity(citation)
+///         .AddFeedback(FeedbackTypes.Default)
+///         .Build();
 ///     await writer.FinalizeResponseAsync(final);
 /// </code>
 ///
