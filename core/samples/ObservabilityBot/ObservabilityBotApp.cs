@@ -9,6 +9,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Apps.State;
 
 namespace ObservabilityBot;
