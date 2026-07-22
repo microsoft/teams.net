@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents an installation update activity.
@@ -38,7 +38,7 @@ public class InstallUpdateActivity : TeamsActivity
     internal InstallUpdateActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        Action = activity.Properties.Extract<string>("action");
+        Action = Properties.Extract<string>("action");
     }
 
     /// <summary>

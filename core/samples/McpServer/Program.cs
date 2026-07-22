@@ -3,7 +3,7 @@
 
 using McpServer;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
+
 using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);

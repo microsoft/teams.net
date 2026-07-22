@@ -9,7 +9,7 @@ using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 
-namespace Microsoft.Teams.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Clients;
 
 /// <summary>
 /// Client for creating, updating, and deleting activities in a conversation.
@@ -134,6 +134,6 @@ public class ActivityClient
     /// </summary>
     public Task DeleteTargetedAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, isTargeted: true,  requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, isTargeted: true, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

@@ -99,7 +99,7 @@ public class CoreActivityInput
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        CoreActivityInput input = new(activity.Type) { Id = activity.Id , Recipient = activity.Recipient };
+        CoreActivityInput input = new(activity.Type) { Id = activity.Id, Recipient = activity.Recipient };
         foreach (KeyValuePair<string, object?> kv in activity.Properties)
         {
             input.Properties[kv.Key] = kv.Value;

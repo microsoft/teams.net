@@ -6,7 +6,7 @@ using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Clients;
 
 /// <summary>
 /// Client for retrieving team information and channels.

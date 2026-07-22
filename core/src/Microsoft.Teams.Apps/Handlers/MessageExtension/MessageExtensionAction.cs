@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 
-namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
+namespace Microsoft.Teams.Apps.MessageExtension;
 
 /// <summary>
 /// Message extension command context values.

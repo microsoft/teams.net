@@ -4,7 +4,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers.TaskModules;
+namespace Microsoft.Teams.Apps.TaskModules;
 
 /// <summary>
 /// Task module response types.
@@ -94,7 +94,7 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Sets the card content for continue type.
+    /// Sets the card content for <see cref="TaskModuleResponseTypes.Continue"/> responses.
     /// </summary>
     public TaskModuleResponseBuilder WithCard(TeamsAttachment card)
     {
@@ -121,7 +121,7 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Sets the message for message type.
+    /// Sets the message for <see cref="TaskModuleResponseTypes.Message"/> responses.
     /// </summary>
     public TaskModuleResponseBuilder WithMessage(string message)
     {
@@ -213,7 +213,7 @@ public class TaskModuleResponseBuilder
 public class Response
 {
     /// <summary>
-    /// Type of result.
+    /// Type of result. See <see cref="TaskModuleResponseTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("type")]
     public required string Type { get; set; }

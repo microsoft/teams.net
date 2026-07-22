@@ -2,11 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Api.Clients;
-using Microsoft.Teams.Apps.Handlers;
-using Microsoft.Teams.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.TaskModules;
 using Microsoft.Teams.Cards;
 
 namespace ExtAIBot;

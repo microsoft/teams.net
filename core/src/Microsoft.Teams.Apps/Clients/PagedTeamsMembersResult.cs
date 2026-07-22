@@ -3,7 +3,7 @@
 
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Clients;
 
 /// <summary>
 /// Result from getting paged members of a conversation, with Teams-specific account information.

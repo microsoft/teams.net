@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 

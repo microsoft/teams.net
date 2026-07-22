@@ -212,7 +212,7 @@ public class BotApplicationTests
 
         Assert.True(onActivityCalled);
     }
-       
+
 
     [Fact]
     public async Task ProcessAsync_ServiceUrlClaimMismatch_ThrowsInvalidDataException()

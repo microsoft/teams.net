@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ApiClient` (`Microsoft.Teams.Apps.Api.Clients`) is a hierarchical, Libraries-compatible facade over the Bot Framework v3 REST API. Sub-clients delegate to the core SDK (`ConversationClient`, `UserTokenClient`) or call `BotHttpClient` directly — they never duplicate HTTP logic.
+`ApiClient` (`Microsoft.Teams.Apps.Clients`) is a hierarchical, Libraries-compatible facade over the Bot Framework v3 REST API. Sub-clients delegate to the core SDK (`ConversationClient`, `UserTokenClient`) or call `BotHttpClient` directly — they never duplicate HTTP logic.
 
 ## Architecture
 
