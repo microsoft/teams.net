@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
@@ -49,20 +51,27 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             queryParams.Add("include", include);
         }
-        IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
-            HttpMethod.Get,
-            _apiEndpoint,
-            "api/usertoken/GetTokenStatus",
-            queryParams,
-            body: null,
-            CreateRequestOptions("getting token status", requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false);
+        return (await ExecuteUserTokenClientAsync<GetTokenStatusResult[]>(
+            Telemetry.Operations.GetTokenStatus,
+            async span =>
+            {
+                IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
+                    HttpMethod.Get,
+                    _apiEndpoint,
+                    "api/usertoken/GetTokenStatus",
+                    queryParams,
+                    body: null,
+                    CreateRequestOptions("getting token status", requestContext: requestContext),
+                    cancellationToken).ConfigureAwait(false);
 
-        if (result == null || result.Count == 0)
-        {
-            return [new GetTokenStatusResult { HasToken = false }];
-        }
-        return [.. result];
+                if (result == null || result.Count == 0)
+                {
+                    return new[] { new GetTokenStatusResult { HasToken = false } };
+                }
+                GetTokenStatusResult[] values = new GetTokenStatusResult[result.Count];
+                result.CopyTo(values, 0);
+                return values;
+            }).ConfigureAwait(false))!;
 
     }
 
@@ -90,14 +99,16 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("code", code);
         }
 
-        return await _botHttpClient.SendAsync<GetTokenResult>(
-            HttpMethod.Get,
-            _apiEndpoint,
-            "api/usertoken/GetToken",
-            queryParams,
-            body: null,
-            CreateRequestOptions("getting token", returnNullOnNotFound: true, requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false);
+        return await ExecuteUserTokenClientAsync(
+            Telemetry.Operations.GetToken,
+            async span => await _botHttpClient.SendAsync<GetTokenResult>(
+                HttpMethod.Get,
+                _apiEndpoint,
+                "api/usertoken/GetToken",
+                queryParams,
+                body: null,
+                CreateRequestOptions("getting token", returnNullOnNotFound: true, requestContext: requestContext),
+                cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -149,14 +160,16 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         if (finalRedirect is not null)
             queryParams.Add("finalRedirect", finalRedirect.ToString());
 
-        return await _botHttpClient.SendAsync<string>(
-            HttpMethod.Get,
-            _apiEndpoint,
-            "api/botsignin/GetSignInUrl",
-            queryParams,
-            body: null,
-            CreateRequestOptions("getting sign-in URL", requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false);
+        return await ExecuteUserTokenClientAsync(
+            Telemetry.Operations.GetSignInUrl,
+            async span => await _botHttpClient.SendAsync<string>(
+                HttpMethod.Get,
+                _apiEndpoint,
+                "api/botsignin/GetSignInUrl",
+                queryParams,
+                body: null,
+                CreateRequestOptions("getting sign-in URL", requestContext: requestContext),
+                cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -180,14 +193,16 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         if (finalRedirect is not null)
             queryParams.Add("finalRedirect", finalRedirect.ToString());
 
-        return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
-            HttpMethod.Get,
-            _apiEndpoint,
-            "api/botsignin/GetSignInResource",
-            queryParams,
-            body: null,
-            CreateRequestOptions("getting sign-in resource", requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteUserTokenClientAsync(
+            Telemetry.Operations.GetSignInResource,
+            async span => (await _botHttpClient.SendAsync<GetSignInResourceResult>(
+                HttpMethod.Get,
+                _apiEndpoint,
+                "api/botsignin/GetSignInResource",
+                queryParams,
+                body: null,
+                CreateRequestOptions("getting sign-in resource", requestContext: requestContext),
+                cancellationToken).ConfigureAwait(false))!).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -213,14 +228,16 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             token = exchangeToken
         };
 
-        return (await _botHttpClient.SendAsync<GetTokenResult>(
-            HttpMethod.Post,
-            _apiEndpoint,
-            "api/usertoken/exchange",
-            queryParams,
-            JsonSerializer.Serialize(tokenExchangeRequest),
-            CreateRequestOptions("exchanging token", requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteUserTokenClientAsync(
+            Telemetry.Operations.ExchangeToken,
+            async span => (await _botHttpClient.SendAsync<GetTokenResult>(
+                HttpMethod.Post,
+                _apiEndpoint,
+                "api/usertoken/exchange",
+                queryParams,
+                JsonSerializer.Serialize(tokenExchangeRequest),
+                CreateRequestOptions("exchanging token", requestContext: requestContext),
+                cancellationToken).ConfigureAwait(false))!).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -249,14 +266,20 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("channelId", channelId);
         }
 
-        await _botHttpClient.SendAsync(
-            HttpMethod.Delete,
-            _apiEndpoint,
-            "api/usertoken/SignOut",
-            queryParams,
-            body: null,
-            CreateRequestOptions("signing out user", requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false);
+        await ExecuteUserTokenClientAsync<object?>(
+            Telemetry.Operations.SignOutUser,
+            async span =>
+            {
+                await _botHttpClient.SendAsync(
+                    HttpMethod.Delete,
+                    _apiEndpoint,
+                    "api/usertoken/SignOut",
+                    queryParams,
+                    body: null,
+                    CreateRequestOptions("signing out user", requestContext: requestContext),
+                    cancellationToken).ConfigureAwait(false);
+                return null;
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -279,14 +302,16 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             resourceUrls = resourceUrls ?? []
         };
 
-        return (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
-            HttpMethod.Post,
-            _apiEndpoint,
-            "api/usertoken/GetAadTokens",
-            queryParams: null,
-            JsonSerializer.Serialize(body),
-            CreateRequestOptions("getting AAD tokens", requestContext: requestContext),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteUserTokenClientAsync(
+            Telemetry.Operations.GetAadTokens,
+            async span => (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
+                HttpMethod.Post,
+                _apiEndpoint,
+                "api/usertoken/GetAadTokens",
+                queryParams: null,
+                JsonSerializer.Serialize(body),
+                CreateRequestOptions("getting AAD tokens", requestContext: requestContext),
+                cancellationToken).ConfigureAwait(false))!).ConfigureAwait(false))!;
     }
 
     private static BotRequestOptions CreateRequestOptions(string operationDescription, bool returnNullOnNotFound = false, BotRequestContext? requestContext = null) =>
@@ -296,4 +321,32 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             OperationDescription = operationDescription,
             ReturnNullOnNotFound = returnNullOnNotFound
         };
+
+    private static async Task<T?> ExecuteUserTokenClientAsync<T>(string operation, Func<Activity?, Task<T?>> action)
+    {
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.UserTokenClient, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.Client, Telemetry.Clients.UserToken);
+            span.SetTag(Telemetry.Tags.Operation, operation);
+        }
+
+        long start = Stopwatch.GetTimestamp();
+        try
+        {
+            T? result = await action(span).ConfigureAwait(false);
+            OutboundTelemetry.RecordCall(Telemetry.Clients.UserToken, operation);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            OutboundTelemetry.RecordError(span, ex, Telemetry.Clients.UserToken, operation);
+            throw;
+        }
+        finally
+        {
+            OutboundTelemetry.RecordDuration(start, Telemetry.Clients.UserToken, operation);
+        }
+    }
+
 }

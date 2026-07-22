@@ -64,33 +64,22 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string body = activity.ToJson();
 
-        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.SendActivity);
-        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
-        if (span is not null)
-        {
-            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.SendActivity);
-            span.SetTag(Telemetry.Tags.ServiceUrl, serviceUrl.ToString());
-            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
-            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
-        }
-        try
-        {
-            SendActivityResponse? response = await _botHttpClient.SendAsync<SendActivityResponse>(
-                HttpMethod.Post,
-                url,
-                body,
-                CreateRequestOptions(requestContext, "sending activity", customHeaders),
-                cancellationToken).ConfigureAwait(false);
-            span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
-            Telemetry.OutboundCalls.Add(1, opTag);
-            return response;
-        }
-        catch (Exception ex)
-        {
-            span.RecordException(ex);
-            Telemetry.OutboundErrors.Add(1, opTag);
-            throw;
-        }
+        return await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.SendActivity,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+                SendActivityResponse? response = await _botHttpClient.SendAsync<SendActivityResponse>(
+                    HttpMethod.Post,
+                    url,
+                    body,
+                    CreateRequestOptions(requestContext, "sending activity", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
+                return response;
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -124,33 +113,22 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.UpdatingActivity(url, body);
 
-        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.UpdateActivity);
-        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
-        if (span is not null)
-        {
-            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.UpdateActivity);
-            span.SetTag(Telemetry.Tags.ServiceUrl, serviceUrl.ToString());
-            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
-            span.SetTag(Telemetry.Tags.ActivityId, activityId);
-            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
-        }
-        try
-        {
-            UpdateActivityResponse response = (await _botHttpClient.SendAsync<UpdateActivityResponse>(
-                HttpMethod.Put,
-                url,
-                body,
-                CreateRequestOptions(requestContext, "updating activity", customHeaders),
-                cancellationToken).ConfigureAwait(false))!;
-            Telemetry.OutboundCalls.Add(1, opTag);
-            return response;
-        }
-        catch (Exception ex)
-        {
-            span.RecordException(ex);
-            Telemetry.OutboundErrors.Add(1, opTag);
-            throw;
-        }
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.UpdateActivity,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityId, activityId);
+                span?.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+                UpdateActivityResponse response = (await _botHttpClient.SendAsync<UpdateActivityResponse>(
+                    HttpMethod.Put,
+                    url,
+                    body,
+                    CreateRequestOptions(requestContext, "updating activity", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+                return response;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -178,31 +156,21 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += "?isTargetedActivity=true";
         }
 
-        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.DeleteActivity);
-        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
-        if (span is not null)
-        {
-            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.DeleteActivity);
-            span.SetTag(Telemetry.Tags.ServiceUrl, serviceUrl.ToString());
-            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
-            span.SetTag(Telemetry.Tags.ActivityId, activityId);
-        }
-        try
-        {
-            await _botHttpClient.SendAsync(
-                HttpMethod.Delete,
-                url,
-                body: null,
-                CreateRequestOptions(requestContext, "deleting activity", customHeaders),
-                cancellationToken).ConfigureAwait(false);
-            Telemetry.OutboundCalls.Add(1, opTag);
-        }
-        catch (Exception ex)
-        {
-            span.RecordException(ex);
-            Telemetry.OutboundErrors.Add(1, opTag);
-            throw;
-        }
+        await ExecuteConversationClientAsync<object?>(
+            serviceUrl,
+            Telemetry.Operations.DeleteActivity,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityId, activityId);
+                await _botHttpClient.SendAsync(
+                    HttpMethod.Delete,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "deleting activity", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                return null;
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -222,12 +190,19 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members";
 
-        return (await _botHttpClient.SendAsync<IList<ChannelAccount>>(
-            HttpMethod.Get,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "getting conversation members", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.GetConversationMembers,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                return (await _botHttpClient.SendAsync<IList<ChannelAccount>>(
+                    HttpMethod.Get,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "getting conversation members", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
 
@@ -254,12 +229,19 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members/{Uri.EscapeDataString(userId)}";
 
-        return (await _botHttpClient.SendAsync<T>(
-            HttpMethod.Get,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "getting conversation member", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.GetConversationMember,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                return (await _botHttpClient.SendAsync<T>(
+                    HttpMethod.Get,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "getting conversation member", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -282,12 +264,18 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += $"?continuationToken={Uri.EscapeDataString(continuationToken)}";
         }
 
-        return (await _botHttpClient.SendAsync<GetConversationsResponse>(
-            HttpMethod.Get,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "getting conversations", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.GetConversations,
+            async span =>
+            {
+                return (await _botHttpClient.SendAsync<GetConversationsResponse>(
+                    HttpMethod.Get,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "getting conversations", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -309,12 +297,20 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/members";
 
-        return (await _botHttpClient.SendAsync<IList<ChannelAccount>>(
-            HttpMethod.Get,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "getting activity members", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.GetActivityMembers,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityId, activityId);
+                return (await _botHttpClient.SendAsync<IList<ChannelAccount>>(
+                    HttpMethod.Get,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "getting activity members", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -340,12 +336,18 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.CreatingConversation(url, paramsJson);
 
-        return (await _botHttpClient.SendAsync<CreateConversationResponse>(
-            HttpMethod.Post,
-            url,
-            paramsJson,
-            CreateRequestOptions(properties, "creating conversation", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.CreateConversation,
+            async span =>
+            {
+                return (await _botHttpClient.SendAsync<CreateConversationResponse>(
+                    HttpMethod.Post,
+                    url,
+                    paramsJson,
+                    CreateRequestOptions(properties, "creating conversation", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -381,12 +383,19 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += $"?{string.Join("&", queryParams)}";
         }
 
-        return (await _botHttpClient.SendAsync<PagedMembersResult>(
-            HttpMethod.Get,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "getting paged conversation members", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.GetConversationPagedMembers,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                return (await _botHttpClient.SendAsync<PagedMembersResult>(
+                    HttpMethod.Get,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "getting paged conversation members", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -409,12 +418,20 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members/{Uri.EscapeDataString(memberId)}";
 
-        await _botHttpClient.SendAsync(
-            HttpMethod.Delete,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "deleting conversation member", customHeaders),
-            cancellationToken).ConfigureAwait(false);
+        await ExecuteConversationClientAsync<object?>(
+            serviceUrl,
+            Telemetry.Operations.DeleteConversationMember,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                await _botHttpClient.SendAsync(
+                    HttpMethod.Delete,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "deleting conversation member", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                return null;
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -440,12 +457,19 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         string transcriptJson = JsonSerializer.Serialize(transcript, _jsonSerializerOptions);
         logger.SendingConversationHistory(url, transcriptJson);
 
-        return (await _botHttpClient.SendAsync<SendConversationHistoryResponse>(
-            HttpMethod.Post,
-            url,
-            transcriptJson,
-            CreateRequestOptions(requestContext, "sending conversation history", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.SendConversationHistory,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                return (await _botHttpClient.SendAsync<SendConversationHistoryResponse>(
+                    HttpMethod.Post,
+                    url,
+                    transcriptJson,
+                    CreateRequestOptions(requestContext, "sending conversation history", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -471,12 +495,19 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         string attachmentDataJson = JsonSerializer.Serialize(attachmentData, _jsonSerializerOptions);
         logger.UploadingAttachment(url, attachmentDataJson);
 
-        return (await _botHttpClient.SendAsync<UploadAttachmentResponse>(
-            HttpMethod.Post,
-            url,
-            attachmentDataJson,
-            CreateRequestOptions(requestContext, "uploading attachment", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        return (await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.Operations.UploadAttachment,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                return (await _botHttpClient.SendAsync<UploadAttachmentResponse>(
+                    HttpMethod.Post,
+                    url,
+                    attachmentDataJson,
+                    CreateRequestOptions(requestContext, "uploading attachment", customHeaders),
+                    cancellationToken).ConfigureAwait(false))!;
+            }).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -500,12 +531,21 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/reactions/{Uri.EscapeDataString(reactionType)}";
 
-        await _botHttpClient.SendAsync(
-            HttpMethod.Put,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "adding reaction", customHeaders),
-            cancellationToken).ConfigureAwait(false);
+        await ExecuteConversationClientAsync<object?>(
+            serviceUrl,
+            Telemetry.Operations.AddReaction,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityId, activityId);
+                await _botHttpClient.SendAsync(
+                    HttpMethod.Put,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "adding reaction", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                return null;
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -529,12 +569,21 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/reactions/{Uri.EscapeDataString(reactionType)}";
 
-        await _botHttpClient.SendAsync(
-            HttpMethod.Delete,
-            url,
-            body: null,
-            CreateRequestOptions(requestContext, "deleting reaction", customHeaders),
-            cancellationToken).ConfigureAwait(false);
+        await ExecuteConversationClientAsync<object?>(
+            serviceUrl,
+            Telemetry.Operations.DeleteReaction,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityId, activityId);
+                await _botHttpClient.SendAsync(
+                    HttpMethod.Delete,
+                    url,
+                    body: null,
+                    CreateRequestOptions(requestContext, "deleting reaction", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                return null;
+            }).ConfigureAwait(false);
     }
 
     private static BotRequestOptions CreateRequestOptions(BotRequestContext? requestContext, string operationDescription, CustomHeaders? customHeaders) =>
@@ -544,4 +593,33 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             OperationDescription = operationDescription,
             CustomHeaders = customHeaders
         };
+
+    private static async Task<T?> ExecuteConversationClientAsync<T>(Uri serviceUrl, string operation, Func<Activity?, Task<T?>> action)
+    {
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.Client, Telemetry.Clients.Conversation);
+            span.SetTag(Telemetry.Tags.Operation, operation);
+            span.SetTag(Telemetry.Tags.ServiceUrl, serviceUrl.ToString());
+        }
+
+        long start = Stopwatch.GetTimestamp();
+        try
+        {
+            T? result = await action(span).ConfigureAwait(false);
+            OutboundTelemetry.RecordCall(Telemetry.Clients.Conversation, operation);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            OutboundTelemetry.RecordError(span, ex, Telemetry.Clients.Conversation, operation);
+            throw;
+        }
+        finally
+        {
+            OutboundTelemetry.RecordDuration(start, Telemetry.Clients.Conversation, operation);
+        }
+    }
+
 }

@@ -45,7 +45,8 @@ public sealed class TurnStateLoader
     /// </summary>
     public async Task<TurnStateContainer> LoadAsync(string conversationId, string? userId, CancellationToken cancellationToken)
     {
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.StateLoad, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.State, ActivityKind.Internal);
+        span?.SetTag(AppsTelemetry.Tags.StateOperation, AppsTelemetry.StateOperations.Load);
         long startTs = Stopwatch.GetTimestamp();
 
         try
@@ -75,7 +76,7 @@ public sealed class TurnStateLoader
         catch (Exception ex)
         {
             span?.RecordException(ex);
-            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "load"));
+            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.StateOperation, AppsTelemetry.StateOperations.Load));
             _logger.StateLoadFailed(ex, conversationId);
             throw;
         }
@@ -92,7 +93,8 @@ public sealed class TurnStateLoader
     {
         ArgumentNullException.ThrowIfNull(container);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.StateSave, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.State, ActivityKind.Internal);
+        span?.SetTag(AppsTelemetry.Tags.StateOperation, AppsTelemetry.StateOperations.Save);
         long startTs = Stopwatch.GetTimestamp();
 
         try
@@ -130,7 +132,7 @@ public sealed class TurnStateLoader
         catch (Exception ex)
         {
             span?.RecordException(ex);
-            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "save"));
+            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.StateOperation, AppsTelemetry.StateOperations.Save));
             _logger.StateSaveFailed(ex, conversationId);
             throw;
         }
@@ -145,7 +147,8 @@ public sealed class TurnStateLoader
     /// </summary>
     public async Task DeleteAsync(string conversationId, string? userId, CancellationToken cancellationToken)
     {
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.StateDelete, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.State, ActivityKind.Internal);
+        span?.SetTag(AppsTelemetry.Tags.StateOperation, AppsTelemetry.StateOperations.Delete);
 
         try
         {
@@ -163,7 +166,7 @@ public sealed class TurnStateLoader
         catch (Exception ex)
         {
             span?.RecordException(ex);
-            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "delete"));
+            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.StateOperation, AppsTelemetry.StateOperations.Delete));
             throw;
         }
     }

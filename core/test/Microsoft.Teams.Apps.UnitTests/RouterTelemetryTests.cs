@@ -30,7 +30,6 @@ public class RouterTelemetryTests
 
         Activity span = Assert.Single(capture.Stopped, a => a.OperationName == "handler");
         Assert.Equal("message", span.GetTagItem("handler.type"));
-        Assert.Equal("type", span.GetTagItem("handler.dispatch"));
     }
 
     [Fact]
@@ -51,7 +50,6 @@ public class RouterTelemetryTests
 
         Activity span = Assert.Single(capture.Stopped, a => a.OperationName == "handler");
         Assert.Equal("invoke", span.GetTagItem("handler.type"));
-        Assert.Equal("catchall", span.GetTagItem("handler.dispatch"));
     }
 
     [Fact]
@@ -70,8 +68,7 @@ public class RouterTelemetryTests
         await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity { Type = TeamsActivityTypes.Invoke, Name = "tab/fetch" }));
 
         Activity span = Assert.Single(capture.Stopped, a => a.OperationName == "handler");
-        Assert.Equal("tab/fetch", span.GetTagItem("handler.type"));
-        Assert.Equal("invoke", span.GetTagItem("handler.dispatch"));
+        Assert.Equal($"{TeamsActivityTypes.Invoke}/tab/fetch", span.GetTagItem("handler.type"));
     }
 
     [Fact]
@@ -117,7 +114,6 @@ public class RouterTelemetryTests
 
         IReadOnlyList<KeyValuePair<string, object?>> dispatchedTags = metrics.GetCounterTags("teams.handler.dispatched");
         Assert.Contains(new KeyValuePair<string, object?>("handler.type", "message"), dispatchedTags);
-        Assert.Contains(new KeyValuePair<string, object?>("handler.dispatch", "type"), dispatchedTags);
     }
 
     [Fact]
@@ -143,7 +139,6 @@ public class RouterTelemetryTests
 
         IReadOnlyList<KeyValuePair<string, object?>> failureTags = metrics.GetCounterTags("teams.handler.failures");
         Assert.Contains(new KeyValuePair<string, object?>("handler.type", "message"), failureTags);
-        Assert.Contains(new KeyValuePair<string, object?>("handler.dispatch", "type"), failureTags);
     }
 
     [Fact]
@@ -188,8 +183,7 @@ public class RouterTelemetryTests
         Assert.Equal(0, metrics.GetCounterTotal("teams.handler.failures"));
 
         IReadOnlyList<KeyValuePair<string, object?>> dispatchedTags = metrics.GetCounterTags("teams.handler.dispatched");
-        Assert.Contains(new KeyValuePair<string, object?>("handler.type", "tab/fetch"), dispatchedTags);
-        Assert.Contains(new KeyValuePair<string, object?>("handler.dispatch", "invoke"), dispatchedTags);
+        Assert.Contains(new KeyValuePair<string, object?>("handler.type", $"{TeamsActivityTypes.Invoke}/tab/fetch"), dispatchedTags);
     }
 
     [Fact]
