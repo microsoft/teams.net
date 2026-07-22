@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
@@ -24,7 +25,7 @@ public static class InvokeExtensions
     /// <summary>
     /// Registers a catch-all handler for all invoke activities.
     /// Cannot be combined with specific invoke handlers such as <see cref="AdaptiveCardExtensions.OnAdaptiveCardAction"/>,
-    /// <see cref="TaskExtensions.OnTaskFetch"/>, etc.
+    /// <see cref="Microsoft.Teams.Apps.Handlers.TaskModules.TaskExtensions.OnTaskFetch(TeamsBotApplication, TaskModuleHandler)"/>, etc.
     /// </summary>
     /// <remarks>
     /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.

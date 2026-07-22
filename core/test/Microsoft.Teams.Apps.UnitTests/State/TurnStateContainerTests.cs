@@ -84,6 +84,30 @@ public class TurnStateContainerTests
     }
 
     [Fact]
+    public async Task DeleteAsync_ClearsInMemoryConversationState()
+    {
+        TurnStateContainer container = CreateContainer();
+        container.SetDeleteDelegate(_ => Task.CompletedTask);
+        container.ConversationState.Set("key", "value");
+
+        await container.DeleteAsync();
+
+        Assert.False(container.ConversationState.ContainsKey("key"));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ClearsInMemoryUserState()
+    {
+        TurnStateContainer container = CreateContainer();
+        container.SetDeleteDelegate(_ => Task.CompletedTask);
+        container.UserState!.Set("name", "Ada");
+
+        await container.DeleteAsync();
+
+        Assert.False(container.UserState.ContainsKey("name"));
+    }
+
+    [Fact]
     public async Task DeleteAsync_PassesCancellationToken()
     {
         CancellationToken captured = default;
