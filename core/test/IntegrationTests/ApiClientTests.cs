@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.Json;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
