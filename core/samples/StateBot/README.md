@@ -7,20 +7,16 @@ Shows conversation state and user state in a Teams bot, backed by Redis so value
 - Bot registered and installed in Teams.
 - Redis available and configured through `ConnectionStrings__Redis`.
 
-## What it shows
+## Commands
 
-- `UseState()` to enable Teams state helpers.
-- Conversation state for a per-conversation message counter.
-- User state for per-user preferences (`UserName`, `FavoriteColor`).
-- Redis-backed persistence instead of in-memory state.
-
-## Behavior
-
-| Interaction | Behavior |
+| Command | Behavior |
 |---|---|
-| first message in a conversation | Returns `Message #1` and default user prefs |
-| more messages in same conversation | Increments conversation counter |
-| same user in another conversation | Counter restarts for that conversation, user prefs continue for the user |
+| `count` | Increments a counter in **conversation** state (shared by everyone in this chat). |
+| `my name is <name>` | Saves your name in **user** state. |
+| `who am i` | Reads your saved name from user state. |
+| `show completed` | Starts a background task that demonstrates sealed state (`IsCompleted`) after turn end. |
+| `reset counter` | Clears this conversation's state (counter resets). |
+| `help` | Shows command help. |
 
 ## Running the Sample
 
@@ -28,4 +24,4 @@ Shows conversation state and user state in a Teams bot, backed by Redis so value
 dotnet run --project samples/StateBot/StateBot.csproj
 ~~~
 
-In Teams, send multiple messages in one chat, then another chat, to verify conversation vs user state behavior.
+In Teams, try `count`, `my name is Ada`, `who am i`, `show completed`, and `reset counter` to verify conversation vs user state behavior.

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Enable per-turn state management in `BotApplication`, backed by `IDistributedCache` from the ASP.NET ecosystem. This allows developers to use any session state provider (Redis, SQL Server, in-memory, etc.) to persist state scoped to conversations and users.
+Enable per-turn state management in `TeamsBotApplication`, backed by `IDistributedCache` from the ASP.NET ecosystem. This allows developers to use any session state provider (Redis, SQL Server, in-memory, etc.) to persist state scoped to conversations and users.
 
 ## State Scopes
 
@@ -25,6 +25,9 @@ Per-turn state storage backed by `Dictionary<string, object?>`. Tracks dirty sta
 - Typed objects stored under `$FullTypeName` (e.g. `$MyApp.UserPreferences`).
 - Serialized to/from JSON via `System.Text.Json`.
 - Handles `JsonElement` values from deserialization — both key-value `Get<T>(key)` and typed `Get<T>()` deserialize `JsonElement` to the requested type after a cache round-trip.
+- `Clear()` removes all values in the scope; if a persisted scope is emptied this way, save removes it from storage.
+- State is sealed at end-of-turn (`Complete()`), and further access throws `InvalidOperationException`.
+- `IsCompleted` lets background code detect post-turn state without triggering the guard.
 
 ### `TurnStateContainer`
 
@@ -35,10 +38,12 @@ public sealed class TurnStateContainer
 {
     public TurnState ConversationState { get; }
     public TurnState? UserState { get; }
+    public Task DeleteAsync(CancellationToken cancellationToken = default);
 }
 ```
 
 `UserState` is null when the activity has no `From` field.
+`Complete()` is framework-internal and used by `TeamsBotApplication` to seal scopes at end of turn.
 
 ### `TurnStateLoader`
 
@@ -48,7 +53,9 @@ Loads and saves per-turn state from a distributed cache. Injected into `TeamsBot
 2. `SaveAsync`: Save each scope independently if dirty.
 3. `DeleteAsync`: Remove conversation and/or user state from the cache.
 
-State is loaded at the start of `OnActivity` and saved in a `finally` block, ensuring dirty state is persisted even on handler errors.
+`TurnStateContainer.DeleteAsync()` invokes this loader delete operation, then clears in-memory scopes immediately so reads in the same turn reflect deletion.
+
+State is loaded at the start of `OnActivity` and saved in a `finally` block. After save, `TeamsBotApplication` calls `defaultContext.State.Complete()` to seal both scopes for the rest of the turn lifecycle.
 
 ### `TurnStateOptions`
 
@@ -57,10 +64,7 @@ Configuration POCO:
 ```csharp
 public class TurnStateOptions
 {
-    public DistributedCacheEntryOptions CacheEntryOptions { get; set; } = new()
-    {
-        SlidingExpiration = TimeSpan.FromHours(1)
-    };
+    public DistributedCacheEntryOptions CacheEntryOptions { get; set; } = new();
 }
 ```
 

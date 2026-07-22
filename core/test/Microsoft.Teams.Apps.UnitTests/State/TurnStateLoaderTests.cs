@@ -119,6 +119,44 @@ public class TurnStateLoaderTests
     }
 
     [Fact]
+    public async Task SaveAsync_EmptyDirtyUserState_IsRemoved()
+    {
+        TurnStateLoader loader = CreateLoader();
+        TurnStateContainer container = await loader.LoadAsync("conv1", "user1", CancellationToken.None);
+
+        container.UserState!.Set("key", "value");
+        container.UserState.Clear();
+
+        await loader.SaveAsync(container, "conv1", "user1", CancellationToken.None);
+
+        _cacheMock.Verify(c => c.RemoveAsync("ts:user:conv1:user1", It.IsAny<CancellationToken>()), Times.Once);
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:user:conv1:user1",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveAsync_EmptyDirtyConversationState_IsRemoved()
+    {
+        TurnStateLoader loader = CreateLoader();
+        TurnStateContainer container = await loader.LoadAsync("conv1", "user1", CancellationToken.None);
+
+        container.ConversationState.Set("key", "value");
+        container.ConversationState.Clear();
+
+        await loader.SaveAsync(container, "conv1", "user1", CancellationToken.None);
+
+        _cacheMock.Verify(c => c.RemoveAsync("ts:conv:conv1", It.IsAny<CancellationToken>()), Times.Once);
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:conv:conv1",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SaveAsync_NonDirtyState_IsNotSaved()
     {
         TurnStateLoader loader = CreateLoader();
