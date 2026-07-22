@@ -8,7 +8,8 @@
         "AzureAd__ClientId": "",
         "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
         "AzureAd__ClientCredentials__0__ClientSecret": "",
-        "AzureAd__Instance": "https://login.microsoftonline.com/"
+        "AzureAd__Instance": "https://login.microsoftonline.com/",
+        "ConnectionStrings__Redis": ""
       },
       "applicationUrl": "http://localhost:3978",
       "launchBrowser": false

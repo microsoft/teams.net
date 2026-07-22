@@ -180,6 +180,7 @@ public class TeamsBotApplication : BotApplication
                 if (_stateLoader is not null && defaultContext.HasState)
                 {
                     await _stateLoader.SaveAsync(defaultContext.State, conversationId!, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
+                    defaultContext.State.Complete();
                 }
             }
         };

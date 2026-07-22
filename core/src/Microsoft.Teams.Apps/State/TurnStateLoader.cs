@@ -104,17 +104,31 @@ public sealed class TurnStateLoader
             if (convDirty)
             {
                 string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
-                byte[] bytes = container.ConversationState.ToJsonBytes();
-                bytesWritten += bytes.Length;
-                await _cache.SetAsync(conversationKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+                if (container.ConversationState.IsEmpty)
+                {
+                    await _cache.RemoveAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    byte[] bytes = container.ConversationState.ToJsonBytes();
+                    bytesWritten += bytes.Length;
+                    await _cache.SetAsync(conversationKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             if (userDirty)
             {
                 string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
-                byte[] bytes = container.UserState!.ToJsonBytes();
-                bytesWritten += bytes.Length;
-                await _cache.SetAsync(userKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+                if (container.UserState!.IsEmpty)
+                {
+                    await _cache.RemoveAsync(userKey, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    byte[] bytes = container.UserState.ToJsonBytes();
+                    bytesWritten += bytes.Length;
+                    await _cache.SetAsync(userKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             span?.SetTag(AppsTelemetry.Tags.StateConversationDirty, convDirty);
