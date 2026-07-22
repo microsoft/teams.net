@@ -119,7 +119,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> ReplyAsync(TeamsActivityInput activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> ReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         if (!string.IsNullOrWhiteSpace(Activity.Id))
@@ -163,7 +163,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send. For <see cref="MessageActivity"/>, a quote placeholder for messageId is prepended to its text. Other activity types are sent as-is without quoting.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    public Task<SendActivityResponse?> QuoteAsync(string messageId, TeamsActivityInput activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> QuoteAsync(string messageId, MessageActivityInput activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -181,7 +181,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <inheritdoc cref="SendAsync(TeamsActivityInput, CancellationToken)"/>
     [Obsolete("Use SendActivityAsync with a TeamsActivityInput built via MessageActivityInput.CreateBuilder() instead.")]
-    public Task<SendActivityResponse?> Send(TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> Send(MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         string conversationId = Activity.Conversation?.Id
@@ -198,7 +198,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <inheritdoc cref="ReplyAsync(TeamsActivityInput, CancellationToken)"/>
     [Obsolete("Use ReplyAsync with a TeamsActivityInput built via MessageActivityInput.CreateBuilder() instead.")]
-    public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> Reply(MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         string conversationId = Activity.Conversation?.Id
@@ -225,7 +225,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <inheritdoc cref="QuoteAsync(string, TeamsActivityInput, CancellationToken)"/>
     [Obsolete("Use QuoteAsync with a TeamsActivityInput built via MessageActivityInput.CreateBuilder() instead.")]
-    public Task<SendActivityResponse?> Quote(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> Quote(string messageId, MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         string conversationId = Activity.Conversation?.Id
@@ -254,7 +254,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> SendAsync(TeamsActivityInput activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> SendAsync(MessageActivityInput activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
 

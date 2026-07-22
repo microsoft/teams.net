@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps;
-
 using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
