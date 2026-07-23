@@ -322,7 +322,8 @@ public static class MessageActivityExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
         message.ChannelData ??= new TeamsChannelData();
-        message.ChannelData.Properties["app"] = new Dictionary<string, object?> { ["id"] = value };
+        message.ChannelData.App ??= new AppInfo();
+        message.ChannelData.App.Id = value;
         return message;
     }
 
