@@ -8,6 +8,7 @@ using Microsoft.Agents.A365.Observability.Runtime.Tracing.Scopes;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Clients;
+using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Apps.State;
