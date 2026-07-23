@@ -46,7 +46,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal("tok", token);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthGetToken);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.GetToken);
         Assert.Equal(AppsTelemetry.OAuthOperations.GetToken, span.GetTagItem(AppsTelemetry.Tags.OAuthOperation));
         Assert.Equal(AppsTelemetry.OAuthResults.Hit, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(GraphConnection, span.GetTagItem(AppsTelemetry.Tags.OAuthConnection));
@@ -72,7 +72,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Null(token);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthGetToken);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.GetToken);
         Assert.Equal(AppsTelemetry.OAuthResults.Miss, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
     }
@@ -95,16 +95,14 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal("cached", token);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthSignIn);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.SignIn);
         Assert.Equal(AppsTelemetry.OAuthResults.Cached, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
-        Assert.DoesNotContain(span.Events, e => e.Name == AppsTelemetry.OAuthEvents.CardSent);
-
         Assert.Equal(1, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthOperations));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
     }
 
     [Fact]
-    public async Task SignInAsync_NoCachedToken_EmitsCardSentResultAndCardSentEvent()
+    public async Task SignInAsync_NoCachedToken_EmitsCardSentResult()
     {
         using SpanCapture spans = new();
         using MetricCapture metrics = new();
@@ -119,9 +117,8 @@ public class OAuthFlowTelemetryTests
 
         Assert.Null(token);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthSignIn);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.SignIn);
         Assert.Equal(AppsTelemetry.OAuthResults.CardSent, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
-        Assert.Contains(span.Events, e => e.Name == AppsTelemetry.OAuthEvents.CardSent);
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
     }
 
@@ -141,7 +138,7 @@ public class OAuthFlowTelemetryTests
         Context<MessageActivity> ctx = CreateMessageContext(harness);
         await harness.Flow.SignOutAsync(ctx);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthSignOut);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.SignOut);
         Assert.Equal(AppsTelemetry.OAuthResults.Success, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(1, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthOperations));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
@@ -165,7 +162,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Single(statuses);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthConnectionStatus);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.ConnectionStatus);
         Assert.Equal(AppsTelemetry.OAuthAllConnections, span.GetTagItem(AppsTelemetry.Tags.OAuthConnection));
         Assert.Equal(AppsTelemetry.OAuthOperations.ConnectionStatus, span.GetTagItem(AppsTelemetry.Tags.OAuthOperation));
         Assert.Equal(AppsTelemetry.OAuthResults.Success, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
@@ -194,7 +191,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(200, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthTokenExchange);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.TokenExchange);
         Assert.Equal(AppsTelemetry.OAuthResults.Success, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(200, span.GetTagItem(AppsTelemetry.Tags.InvokeResponseStatus));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
@@ -221,7 +218,8 @@ public class OAuthFlowTelemetryTests
         Assert.Equal(200, second.Status);
 
         List<Activity> exchangeSpans = spans.Stopped
-            .Where(a => a.OperationName == AppsTelemetry.Spans.OAuthTokenExchange)
+            .Where(a => a.OperationName == AppsTelemetry.Spans.OAuth)
+            .Where(a => string.Equals(a.GetTagItem(AppsTelemetry.Tags.OAuthOperation) as string, AppsTelemetry.OAuthOperations.TokenExchange, StringComparison.Ordinal))
             .ToList();
         Assert.Equal(2, exchangeSpans.Count);
         Assert.Contains(exchangeSpans, s => string.Equals(s.GetTagItem(AppsTelemetry.Tags.OAuthResult) as string, AppsTelemetry.OAuthResults.Duplicate, StringComparison.Ordinal));
@@ -247,7 +245,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(412, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthTokenExchange);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.TokenExchange);
         Assert.Equal(AppsTelemetry.OAuthResults.Failure, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Null(span.GetTagItem(AppsTelemetry.Tags.OAuthErrorType));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
@@ -271,7 +269,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(403, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthTokenExchange);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.TokenExchange);
         Assert.Equal(AppsTelemetry.OAuthResults.Failure, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(AppsTelemetry.OAuthErrorTypes.HttpError, span.GetTagItem(AppsTelemetry.Tags.OAuthErrorType));
 
@@ -297,7 +295,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(404, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthVerifyState);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.VerifyState);
         Assert.Equal(AppsTelemetry.OAuthResults.Failure, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
     }
@@ -320,7 +318,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(412, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthVerifyState);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.VerifyState);
         Assert.Equal(AppsTelemetry.OAuthResults.NoToken, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
     }
@@ -343,7 +341,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(412, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthVerifyState);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.VerifyState);
         Assert.Equal(AppsTelemetry.OAuthResults.Failure, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Null(span.GetTagItem(AppsTelemetry.Tags.OAuthErrorType));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
@@ -367,7 +365,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(403, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthVerifyState);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.VerifyState);
         Assert.Equal(AppsTelemetry.OAuthResults.Failure, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal(AppsTelemetry.OAuthErrorTypes.HttpError, span.GetTagItem(AppsTelemetry.Tags.OAuthErrorType));
         Assert.Equal(1, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
@@ -389,7 +387,7 @@ public class OAuthFlowTelemetryTests
 
         Assert.Equal(200, response.Status);
 
-        Activity span = AssertOAuthSpan(spans, AppsTelemetry.Spans.OAuthSignInFailure);
+        Activity span = AssertOAuthSpan(spans, AppsTelemetry.OAuthOperations.SignInFailure);
         Assert.Equal(AppsTelemetry.OAuthResults.Notified, span.GetTagItem(AppsTelemetry.Tags.OAuthResult));
         Assert.Equal("resourcematchfailed", span.GetTagItem(AppsTelemetry.Tags.OAuthFailureCode));
         Assert.Equal(0, metrics.GetCounterTotal(AppsTelemetry.Metrics.OAuthErrors));
@@ -397,10 +395,11 @@ public class OAuthFlowTelemetryTests
 
     // ==================== test scaffolding ====================
 
-    private static Activity AssertOAuthSpan(SpanCapture capture, string operationName)
+    private static Activity AssertOAuthSpan(SpanCapture capture, string oauthOperation)
     {
         Activity? span = capture.Stopped
-            .Where(a => a.OperationName == operationName)
+            .Where(a => a.OperationName == AppsTelemetry.Spans.OAuth)
+            .Where(a => string.Equals(a.GetTagItem(AppsTelemetry.Tags.OAuthOperation) as string, oauthOperation, StringComparison.Ordinal))
             .Where(a => (a.GetTagItem(AppsTelemetry.Tags.OAuthConnection) as string) == GraphConnection
                         || (a.GetTagItem(AppsTelemetry.Tags.OAuthConnection) as string) == AppsTelemetry.OAuthAllConnections)
             .LastOrDefault();

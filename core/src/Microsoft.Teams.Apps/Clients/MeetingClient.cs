@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Diagnostics;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
@@ -29,7 +31,13 @@ public class MeetingClient
     public async Task<Meeting?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(id)}";
-        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Meeting,
+            AppsTelemetry.ClientOperations.GetMeetingById,
+            async (options, _) => await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -38,13 +46,14 @@ public class MeetingClient
     public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}";
-        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Meeting,
+            AppsTelemetry.ClientOperations.GetMeetingParticipant,
+            async (options, _) => await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
+            .ConfigureAwait(false);
     }
-
-    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
-
-    private BotRequestOptions? CreateRequestOptions() =>
-        AgenticContext is { } context ? new() { RequestContext = context } : null;
 }
 
 /// <summary>

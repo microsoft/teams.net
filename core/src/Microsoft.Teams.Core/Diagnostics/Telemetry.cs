@@ -33,20 +33,28 @@ internal static class Telemetry
         Meter.CreateHistogram<double>("teams.middleware.duration", unit: "ms", description: "Duration of individual middleware execution.");
 
     public static readonly Counter<long> OutboundCalls =
-        Meter.CreateCounter<long>("teams.outbound.calls", description: "Total outbound Bot Service API calls.");
+        Meter.CreateCounter<long>("teams.outbound.calls", description: "Total outbound Core HTTP client calls.");
 
     public static readonly Counter<long> OutboundErrors =
-        Meter.CreateCounter<long>("teams.outbound.errors", description: "Total outbound Bot Service API call errors.");
+        Meter.CreateCounter<long>("teams.outbound.errors", description: "Total outbound Core HTTP client call errors.");
 
-    // Span name constants — kept here so callers don't drift on naming.
+    public static readonly Histogram<double> OutboundDuration =
+        Meter.CreateHistogram<double>("teams.outbound.duration", unit: "ms", description: "Duration of Core HTTP client calls.");
+
+    /// <summary>
+    /// Span names for telemetry emitted by the SDK. These are used to identify spans in traces.
+    /// </summary>
     public static class Spans
     {
         public const string Turn = "turn";
         public const string Middleware = "middleware";
         public const string AuthOutbound = "auth.outbound";
-        public const string ConversationClient = "conversation_client";
+        public const string Client = "client";
     }
 
+    /// <summary>
+    /// Custom tag names for telemetry emitted by the SDK. These are used to add additional context to spans and metrics.
+    /// </summary>
     public static class Tags
     {
         public const string ActivityType = "activity.type";
@@ -59,13 +67,44 @@ internal static class Telemetry
         public const string MiddlewareIndex = "middleware.index";
         public const string AuthFlow = "auth.flow";
         public const string AuthScope = "auth.scope";
-        public const string Operation = "operation";
+        public const string Client = "client.name";
+        public const string ClientOperation = "client.operation";
     }
 
-    public static class Operations
+    /// <summary>
+    /// Values for the <c>client.operation</c> tag, which represents the operation being performed by the SDK's <c>conversation</c> and <c>user_token</c> clients.
+    /// </summary>
+    public static class ClientOperations
     {
         public const string SendActivity = "sendActivity";
         public const string UpdateActivity = "updateActivity";
         public const string DeleteActivity = "deleteActivity";
+        public const string GetConversationMembers = "getConversationMembers";
+        public const string GetConversationMember = "getConversationMember";
+        public const string GetConversations = "getConversations";
+        public const string GetActivityMembers = "getActivityMembers";
+        public const string CreateConversation = "createConversation";
+        public const string GetConversationPagedMembers = "getConversationPagedMembers";
+        public const string DeleteConversationMember = "deleteConversationMember";
+        public const string SendConversationHistory = "sendConversationHistory";
+        public const string UploadAttachment = "uploadAttachment";
+        public const string AddReaction = "addReaction";
+        public const string DeleteReaction = "deleteReaction";
+        public const string GetTokenStatus = "getTokenStatus";
+        public const string GetToken = "getToken";
+        public const string GetSignInResource = "getSignInResource";
+        public const string GetSignInUrl = "getSignInUrl";
+        public const string ExchangeToken = "exchangeToken";
+        public const string SignOutUser = "signOutUser";
+        public const string GetAadTokens = "getAadTokens";
+    }
+
+    /// <summary>
+    /// Values for the <c>client.name</c> tag, which represents the SDK's <c>conversation</c> and <c>user_token</c> clients.
+    /// </summary>
+    public static class Clients
+    {
+        public const string Conversation = "conversation";
+        public const string UserToken = "user_token";
     }
 }

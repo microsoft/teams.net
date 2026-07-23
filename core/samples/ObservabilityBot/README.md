@@ -7,6 +7,7 @@ Minimal Teams bot wired to the [`Microsoft.OpenTelemetry`](https://github.com/mi
 - Bot registered and installed in Teams.
 - OpenTelemetry export target available (for local demo, Grafana LGTM).
 - Azure OpenAI configuration (required by the sample's AI path).
+- OAuth connection named `sso` configured on the bot resource.
 
 ## What it shows
 
@@ -56,6 +57,11 @@ To exercise the pipeline you need to POST a Bot Framework activity payload (with
 - Drive the bot from one of the harnesses under `core/test/IntegrationTests`.
 - Deploy the bot to a Teams tenant and chat with it.
 
+Then use these commands in chat:
+- `help`
+- `login` / `logout` / `status` (OAuth flow telemetry)
+- `team` (TeamClient telemetry)
+
 ## Export targets
 
 - Set `APPLICATIONINSIGHTS_CONNECTION_STRING` to additionally export to Azure Monitor / Application Insights.
@@ -71,7 +77,10 @@ HTTP server span                       (auto, OTel ASP.NET Core)
 └─ turn                                (Microsoft.Teams.Core)
    ├─ middleware [n times]             (Microsoft.Teams.Core)
    ├─ handler                          (Microsoft.Teams.Apps)
-   └─ conversation_client              (Microsoft.Teams.Core)
+   ├─ oauth                            (Microsoft.Teams.Apps, when login/status/logout runs)
+   │  └─ user_token_client             (Microsoft.Teams.Core)
+   ├─ team_client                      (Microsoft.Teams.Apps, when team runs)
+   └─ conversation_client              (Microsoft.Teams.Core, AI responses / sends)
       ├─ auth.outbound                 (Microsoft.Teams.Core)
       │  └─ HTTP client span           (auto — token endpoint)
       └─ HTTP client span              (auto — Bot Service API)
