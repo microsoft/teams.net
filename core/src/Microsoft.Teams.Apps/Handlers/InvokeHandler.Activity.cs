@@ -114,6 +114,11 @@ public static class InvokeNames
     public const string AdaptiveCardAction = "adaptiveCard/action";
 
     /// <summary>
+    /// Search invoke name. Sent by Adaptive Card dynamic typeahead 'Input.ChoiceSet' inputs.
+    /// </summary>
+    public const string Search = "application/search";
+
+    /// <summary>
     /// Task fetch invoke name.
     /// </summary>
     public const string TaskFetch = "task/fetch";
