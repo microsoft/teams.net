@@ -49,6 +49,22 @@ public class TeamsChannelDataSettings
 }
 
 /// <summary>
+/// Information about the app sending an activity.
+/// </summary>
+public class AppInfo
+{
+    /// <summary>
+    /// Unique identifier representing an app.
+    /// </summary>
+    [JsonPropertyName("id")] public string? Id { get; set; }
+
+    /// <summary>
+    /// Version of the app.
+    /// </summary>
+    [JsonPropertyName("version")] public string? Version { get; set; }
+}
+
+/// <summary>
 /// Represents Teams-specific channel data.
 /// </summary>
 public class TeamsChannelData : ChannelData
@@ -79,6 +95,11 @@ public class TeamsChannelData : ChannelData
     /// Gets or sets the channel information associated with this entity.
     /// </summary>
     [JsonPropertyName("channel")] public TeamsChannel? Channel { get; set; }
+
+    /// <summary>
+    /// Information about the app sending this activity.
+    /// </summary>
+    [JsonPropertyName("app")] public AppInfo? App { get; set; }
 
     /// <summary>
     /// Team information.
