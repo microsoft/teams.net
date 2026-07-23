@@ -4,10 +4,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Schema;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents an outbound message activity constructed by a builder and sent by the API clients.

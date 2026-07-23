@@ -4,7 +4,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
+namespace Microsoft.Teams.Apps.MessageExtension;
 
 /// <summary>
 /// Messaging extension response types.
@@ -126,7 +126,7 @@ public class MessageExtensionResponseBuilder
     private string? _text;
 
     /// <summary>
-    /// Sets the type of the response. Common values: "result", "auth", "config", "message", "botMessagePreview".
+    /// Sets the type of the response. See <see cref="MessageExtensionResponseTypes"/> for known values.
     /// </summary>
     public MessageExtensionResponseBuilder WithType(string type)
     {
@@ -135,7 +135,7 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Sets the attachment layout. Common values: "list", "grid".
+    /// Sets the attachment layout. See <see cref="TeamsAttachmentLayouts"/> for known values.
     /// </summary>
     public MessageExtensionResponseBuilder WithAttachmentLayout(string layout)
     {
@@ -153,7 +153,7 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Sets the activity preview for bot message preview type.
+    /// Sets the activity preview for <see cref="MessageExtensionResponseTypes.BotMessagePreview"/> responses.
     /// </summary>
     public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivityInput activityPreview)
     {
@@ -162,7 +162,7 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Sets suggested actions for config type.
+    /// Sets suggested actions for <see cref="MessageExtensionResponseTypes.Config"/> responses.
     /// </summary>
     public MessageExtensionResponseBuilder WithSuggestedActions(params SuggestedAction[] actions)
     {
@@ -171,7 +171,7 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Sets the text message for message type.
+    /// Sets the text message for <see cref="MessageExtensionResponseTypes.Message"/> responses.
     /// </summary>
     public MessageExtensionResponseBuilder WithText(string text)
     {

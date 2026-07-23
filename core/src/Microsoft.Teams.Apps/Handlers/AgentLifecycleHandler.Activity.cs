@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents an Agent 365 <c>agentLifecycle</c> event activity.
@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Apps.Handlers;
 public class AgentLifecycleEventActivity : EventActivity
 {
     /// <summary>
-    /// Gets or sets the lifecycle value payload type.
+    /// Gets or sets the lifecycle value payload type. See <see cref="AgentLifecycleEventValueTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("valueType")]
     public string? ValueType { get; internal set; }

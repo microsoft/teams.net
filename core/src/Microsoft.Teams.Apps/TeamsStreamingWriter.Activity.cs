@@ -3,13 +3,15 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 
-namespace Microsoft.Teams.Apps.Schema;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
-/// Represents an outbound streaming activity chunk. Has type "typing" to satisfy the Teams
-/// streaming API, but carries text content that accumulates into the final response.
+/// Outbound streaming activity chunk used by <see cref="TeamsStreamingWriter"/>.
+/// Has type "typing" to satisfy the Teams streaming API, but carries text content that
+/// accumulates into the final response.
 /// </summary>
 public class StreamingActivityInput : TeamsActivityInput
 {
@@ -48,7 +50,7 @@ public class StreamingActivityInput : TeamsActivityInput
 }
 
 /// <summary>
-/// Provides a fluent API for building outbound <see cref="StreamingActivityInput"/> instances.
+/// Fluent builder for <see cref="StreamingActivityInput"/>.
 /// </summary>
 public class StreamingActivityInputBuilder : TeamsActivityInputBuilder<StreamingActivityInput, StreamingActivityInputBuilder>
 {

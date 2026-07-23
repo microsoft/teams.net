@@ -6,7 +6,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;

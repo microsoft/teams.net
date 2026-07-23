@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
 /// Provides the shared fluent API for builders of outbound <see cref="TeamsActivityInput"/> subtypes
-/// (for example <see cref="MessageActivityInputBuilder"/> and <see cref="StreamingActivityInputBuilder"/>).
+/// (for example <see cref="Microsoft.Teams.Apps.MessageActivityInputBuilder"/> and <see cref="Microsoft.Teams.Apps.StreamingActivityInputBuilder"/>).
 /// <para>
 /// Inherits the common activity-level builder surface (id, type, recipient, properties) from
 /// <see cref="CoreActivityInputBuilder{TActivity, TBuilder}"/> and adds Teams-specific entity helpers.

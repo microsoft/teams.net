@@ -3,7 +3,6 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using TeamsBot;

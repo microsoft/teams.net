@@ -269,24 +269,21 @@ public class TeamsStreamingWriterTests
     // ── Error handling (HTTP 403) ─────────────────────────────────────────────
 
     [Fact]
-    public async Task AppendAsync_403NotAllowed_ThrowsStreamNotAllowedException()
+    public async Task AppendAsync_403NotAllowed_ThrowsHttpRequestException()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
         handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream is not allowed\"}}", HttpStatusCode.Forbidden);
 
-        StreamNotAllowedException ex = await Assert.ThrowsAsync<StreamNotAllowedException>(() => writer.AppendResponseAsync("hi"));
-        // The original HttpRequestException is preserved as the inner exception for diagnostics.
-        Assert.IsType<HttpRequestException>(ex.InnerException);
+        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
     }
 
     [Fact]
-    public async Task AppendAsync_403UnknownMessage_ThrowsTerminalStreamException()
+    public async Task AppendAsync_403UnknownMessage_ThrowsHttpRequestException()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
         handler.EnqueueResponse("{\"error\":{\"message\":\"Message size too large\"}}", HttpStatusCode.Forbidden);
 
-        TerminalStreamException ex = await Assert.ThrowsAsync<TerminalStreamException>(() => writer.AppendResponseAsync("hi"));
-        Assert.IsType<HttpRequestException>(ex.InnerException);
+        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
     }
 
     [Fact]

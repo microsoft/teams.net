@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents a conversation update activity.
@@ -45,8 +45,8 @@ public class ConversationUpdateActivity : TeamsActivity
         }
         */
 
-        MembersAdded = activity.Properties.Extract<IList<TeamsChannelAccount>>("membersAdded");
-        MembersRemoved = activity.Properties.Extract<IList<TeamsChannelAccount>>("membersRemoved");
+        MembersAdded = Properties.Extract<IList<TeamsChannelAccount>>("membersAdded");
+        MembersRemoved = Properties.Extract<IList<TeamsChannelAccount>>("membersRemoved");
     }
 
     //TODO : review properties

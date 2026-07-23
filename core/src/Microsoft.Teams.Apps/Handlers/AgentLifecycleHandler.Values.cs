@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Manager profile carried by the <c>AgenticUserIdentityCreated</c> lifecycle event.

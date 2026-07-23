@@ -3,7 +3,6 @@
 
 using System.ComponentModel;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 using ModelContextProtocol.Server;

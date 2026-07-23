@@ -108,11 +108,11 @@ public sealed class TeamsBaggageBuilder
         ChannelName(activity.ChannelId);
 
         UserName(activity.From?.Name);
-if (activity.From is TeamsChannelAccount fromAccount)
-{
-    UserId(fromAccount.AadObjectId);
-    UserEmail(fromAccount.Email);
-}
+        if (activity.From is TeamsChannelAccount fromAccount)
+        {
+            UserId(fromAccount.AadObjectId);
+            UserEmail(fromAccount.Email);
+        }
 
         TeamsChannelAccount? recipient = activity.Recipient;
         if (recipient is not null)

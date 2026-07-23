@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents a message reaction activity.
@@ -38,9 +38,9 @@ public class MessageReactionActivity : TeamsActivity
     internal MessageReactionActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ReactionsAdded = activity.Properties.Extract<IList<MessageReaction>>("reactionsAdded");
-        ReactionsRemoved = activity.Properties.Extract<IList<MessageReaction>>("reactionsRemoved");
-        ReplyToId = activity.Properties.Extract<string>("replyToId");
+        ReactionsAdded = Properties.Extract<IList<MessageReaction>>("reactionsAdded");
+        ReactionsRemoved = Properties.Extract<IList<MessageReaction>>("reactionsRemoved");
+        ReplyToId = Properties.Extract<string>("replyToId");
     }
 
     /// <summary>
