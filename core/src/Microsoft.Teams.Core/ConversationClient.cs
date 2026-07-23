@@ -66,7 +66,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.SendActivity,
+            Telemetry.ClientOperations.SendActivity,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -115,7 +115,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.UpdateActivity,
+            Telemetry.ClientOperations.UpdateActivity,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -158,7 +158,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         await ExecuteConversationClientAsync<object?>(
             serviceUrl,
-            Telemetry.Operations.DeleteActivity,
+            Telemetry.ClientOperations.DeleteActivity,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -192,7 +192,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.GetConversationMembers,
+            Telemetry.ClientOperations.GetConversationMembers,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -231,7 +231,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.GetConversationMember,
+            Telemetry.ClientOperations.GetConversationMember,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -266,7 +266,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.GetConversations,
+            Telemetry.ClientOperations.GetConversations,
             async span =>
             {
                 return (await _botHttpClient.SendAsync<GetConversationsResponse>(
@@ -299,7 +299,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.GetActivityMembers,
+            Telemetry.ClientOperations.GetActivityMembers,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -338,7 +338,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.CreateConversation,
+            Telemetry.ClientOperations.CreateConversation,
             async span =>
             {
                 return (await _botHttpClient.SendAsync<CreateConversationResponse>(
@@ -385,7 +385,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.GetConversationPagedMembers,
+            Telemetry.ClientOperations.GetConversationPagedMembers,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -420,7 +420,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         await ExecuteConversationClientAsync<object?>(
             serviceUrl,
-            Telemetry.Operations.DeleteConversationMember,
+            Telemetry.ClientOperations.DeleteConversationMember,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -459,7 +459,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.SendConversationHistory,
+            Telemetry.ClientOperations.SendConversationHistory,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -497,7 +497,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         return (await ExecuteConversationClientAsync(
             serviceUrl,
-            Telemetry.Operations.UploadAttachment,
+            Telemetry.ClientOperations.UploadAttachment,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -533,7 +533,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         await ExecuteConversationClientAsync<object?>(
             serviceUrl,
-            Telemetry.Operations.AddReaction,
+            Telemetry.ClientOperations.AddReaction,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -571,7 +571,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         await ExecuteConversationClientAsync<object?>(
             serviceUrl,
-            Telemetry.Operations.DeleteReaction,
+            Telemetry.ClientOperations.DeleteReaction,
             async span =>
             {
                 span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
@@ -596,11 +596,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
     private static async Task<T?> ExecuteConversationClientAsync<T>(Uri serviceUrl, string operation, Func<Activity?, Task<T?>> action)
     {
-        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.Client, ActivityKind.Client);
         if (span is not null)
         {
             span.SetTag(Telemetry.Tags.Client, Telemetry.Clients.Conversation);
-            span.SetTag(Telemetry.Tags.Operation, operation);
+            span.SetTag(Telemetry.Tags.ClientOperation, operation);
             span.SetTag(Telemetry.Tags.ServiceUrl, serviceUrl.ToString());
         }
 
@@ -621,5 +621,4 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             OutboundTelemetry.RecordDuration(start, Telemetry.Clients.Conversation, operation);
         }
     }
-
 }

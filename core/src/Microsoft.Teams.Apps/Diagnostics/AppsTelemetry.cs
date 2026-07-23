@@ -60,22 +60,30 @@ internal static class AppsTelemetry
     public static readonly Counter<long> OAuthErrors =
         Meter.CreateCounter<long>(Metrics.OAuthErrors, description: "Total OAuth flow operations that failed with an unexpected exception. Expected protocol fallbacks (HTTP 404/400/412 from the Token Service) are not counted here; they are recorded as oauth.result=failure on teams.oauth.operations instead.");
 
+    /// <summary>
+    /// Span names used in the <see cref="AppsTelemetry"/> source.
+    /// </summary>
     public static class Spans
     {
         public const string Handler = "handler";
         public const string State = "state";
         public const string OAuth = "oauth";
-        public const string TeamClient = "team_client";
-        public const string MeetingClient = "meeting_client";
+        public const string Client = "client";
     }
 
+    /// <summary>
+    /// Custom tag names used in the <see cref="AppsTelemetry"/> source and instruments.
+    /// </summary>
     public static class Tags
     {
         public const string HandlerType = "handler.type";
         public const string ActivityType = "activity.type";
         public const string InvokeName = "invoke.name";
-        public const string Client = "client";
+        public const string Client = "client.name";
         public const string ServiceUrl = "service.url";
+
+        // Client tags
+        public const string ClientOperation = "client.operation";
 
         // State tags
         public const string StateConversationHit = "state.conversation.hit";
@@ -84,8 +92,7 @@ internal static class AppsTelemetry
         public const string StateUserDirty = "state.user.dirty";
         public const string StateBytesRead = "state.bytes.read";
         public const string StateBytesWritten = "state.bytes.written";
-        public const string Operation = "operation";
-        public const string StateOperation = "operation";
+        public const string StateOperation = "state.operation";
 
         // OAuth tags
         public const string OAuthConnection = "oauth.connection";
@@ -116,12 +123,24 @@ internal static class AppsTelemetry
         public const string OAuthErrors = "teams.oauth.errors";
     }
 
-    public static class ApiOperations
+    /// <summary>
+    /// Values used for the <see cref="Tags.ClientOperation"/> tag.
+    /// </summary>
+    public static class ClientOperations
     {
         public const string GetTeamById = "getTeamById";
         public const string GetTeamConversations = "getTeamConversations";
         public const string GetMeetingById = "getMeetingById";
         public const string GetMeetingParticipant = "getMeetingParticipant";
+    }
+
+    /// <summary>
+    /// Values used for the <see cref="Tags.Client"/> tag.
+    /// </summary>
+    public static class Clients
+    {
+        public const string Team = "team";
+        public const string Meeting = "meeting";
     }
 
     /// <summary>

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using System.Diagnostics;
 using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Apps.Schema;
@@ -33,9 +32,12 @@ public class TeamClient
     public async Task<Team?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}";
-        return await ExecuteTeamClientAsync(
-            AppsTelemetry.ApiOperations.GetTeamById,
-            async span => await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false))
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Team,
+            AppsTelemetry.ClientOperations.GetTeamById,
+            async (options, _) => await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
             .ConfigureAwait(false);
     }
 
@@ -45,47 +47,16 @@ public class TeamClient
     public async Task<List<TeamsChannel>?> GetConversationsAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}/conversations";
-        return await ExecuteTeamClientAsync(
-            AppsTelemetry.ApiOperations.GetTeamConversations,
-            async span =>
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Team,
+            AppsTelemetry.ClientOperations.GetTeamConversations,
+            async (options, _) =>
             {
-                ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
+                ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false);
                 return response?.Conversations;
             }).ConfigureAwait(false);
-    }
-
-    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
-
-    private BotRequestOptions? CreateRequestOptions() =>
-        AgenticContext is { } context ? new() { RequestContext = context } : null;
-
-    private async Task<T?> ExecuteTeamClientAsync<T>(string operation, Func<Activity?, Task<T?>> action)
-    {
-        const string client = "team";
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.TeamClient, ActivityKind.Client);
-        if (span is not null)
-        {
-            span.SetTag(AppsTelemetry.Tags.Client, client);
-            span.SetTag(AppsTelemetry.Tags.Operation, operation);
-            span.SetTag(AppsTelemetry.Tags.ServiceUrl, _serviceUrl);
-        }
-
-        long start = Stopwatch.GetTimestamp();
-        try
-        {
-            T? result = await action(span).ConfigureAwait(false);
-            OutboundTelemetry.RecordCall(client, operation);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            OutboundTelemetry.RecordError(span, ex, client, operation);
-            throw;
-        }
-        finally
-        {
-            OutboundTelemetry.RecordDuration(start, client, operation);
-        }
     }
 
     private sealed class ConversationListResponse

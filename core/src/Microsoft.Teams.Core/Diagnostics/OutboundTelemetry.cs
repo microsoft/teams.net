@@ -17,7 +17,7 @@ public static class OutboundTelemetry
         => Telemetry.OutboundCalls.Add(
             1,
             new KeyValuePair<string, object?>(Telemetry.Tags.Client, client),
-            new KeyValuePair<string, object?>(Telemetry.Tags.Operation, operation));
+            new KeyValuePair<string, object?>(Telemetry.Tags.ClientOperation, operation));
 
     /// <summary>
     /// Records a failed outbound call and the exception on the active span.
@@ -28,7 +28,7 @@ public static class OutboundTelemetry
         Telemetry.OutboundErrors.Add(
             1,
             new KeyValuePair<string, object?>(Telemetry.Tags.Client, client),
-            new KeyValuePair<string, object?>(Telemetry.Tags.Operation, operation));
+            new KeyValuePair<string, object?>(Telemetry.Tags.ClientOperation, operation));
     }
 
     /// <summary>
@@ -38,5 +38,5 @@ public static class OutboundTelemetry
         => Telemetry.OutboundDuration.Record(
             Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds,
             new KeyValuePair<string, object?>(Telemetry.Tags.Client, client),
-            new KeyValuePair<string, object?>(Telemetry.Tags.Operation, operation));
+            new KeyValuePair<string, object?>(Telemetry.Tags.ClientOperation, operation));
 }

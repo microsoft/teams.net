@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using System.Diagnostics;
 using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
@@ -32,9 +31,12 @@ public class MeetingClient
     public async Task<Meeting?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(id)}";
-        return await ExecuteMeetingClientAsync(
-            AppsTelemetry.ApiOperations.GetMeetingById,
-            async span => await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false))
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Meeting,
+            AppsTelemetry.ClientOperations.GetMeetingById,
+            async (options, _) => await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
             .ConfigureAwait(false);
     }
 
@@ -44,44 +46,13 @@ public class MeetingClient
     public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}";
-        return await ExecuteMeetingClientAsync(
-            AppsTelemetry.ApiOperations.GetMeetingParticipant,
-            async span => await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false))
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Meeting,
+            AppsTelemetry.ClientOperations.GetMeetingParticipant,
+            async (options, _) => await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
             .ConfigureAwait(false);
-    }
-
-    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
-
-    private BotRequestOptions? CreateRequestOptions() =>
-        AgenticContext is { } context ? new() { RequestContext = context } : null;
-
-    private async Task<T?> ExecuteMeetingClientAsync<T>(string operation, Func<Activity?, Task<T?>> action)
-    {
-        const string client = "meeting";
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.MeetingClient, ActivityKind.Client);
-        if (span is not null)
-        {
-            span.SetTag(AppsTelemetry.Tags.Client, client);
-            span.SetTag(AppsTelemetry.Tags.Operation, operation);
-            span.SetTag(AppsTelemetry.Tags.ServiceUrl, _serviceUrl);
-        }
-
-        long start = Stopwatch.GetTimestamp();
-        try
-        {
-            T? result = await action(span).ConfigureAwait(false);
-            OutboundTelemetry.RecordCall(client, operation);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            OutboundTelemetry.RecordError(span, ex, client, operation);
-            throw;
-        }
-        finally
-        {
-            OutboundTelemetry.RecordDuration(start, client, operation);
-        }
     }
 }
 

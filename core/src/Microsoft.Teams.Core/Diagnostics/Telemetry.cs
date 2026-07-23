@@ -41,16 +41,20 @@ internal static class Telemetry
     public static readonly Histogram<double> OutboundDuration =
         Meter.CreateHistogram<double>("teams.outbound.duration", unit: "ms", description: "Duration of Core HTTP client calls.");
 
-    // Span name constants — kept here so callers don't drift on naming.
+    /// <summary>
+    /// Span names for telemetry emitted by the SDK. These are used to identify spans in traces.
+    /// </summary>
     public static class Spans
     {
         public const string Turn = "turn";
         public const string Middleware = "middleware";
         public const string AuthOutbound = "auth.outbound";
-        public const string ConversationClient = "conversation_client";
-        public const string UserTokenClient = "user_token_client";
+        public const string Client = "client";
     }
 
+    /// <summary>
+    /// Custom tag names for telemetry emitted by the SDK. These are used to add additional context to spans and metrics.
+    /// </summary>
     public static class Tags
     {
         public const string ActivityType = "activity.type";
@@ -63,11 +67,14 @@ internal static class Telemetry
         public const string MiddlewareIndex = "middleware.index";
         public const string AuthFlow = "auth.flow";
         public const string AuthScope = "auth.scope";
-        public const string Client = "client";
-        public const string Operation = "operation";
+        public const string Client = "client.name";
+        public const string ClientOperation = "client.operation";
     }
 
-    public static class Operations
+    /// <summary>
+    /// Values for the <c>client.operation</c> tag, which represents the operation being performed by the SDK's <c>conversation</c> and <c>user_token</c> clients.
+    /// </summary>
+    public static class ClientOperations
     {
         public const string SendActivity = "sendActivity";
         public const string UpdateActivity = "updateActivity";
@@ -92,6 +99,9 @@ internal static class Telemetry
         public const string GetAadTokens = "getAadTokens";
     }
 
+    /// <summary>
+    /// Values for the <c>client.name</c> tag, which represents the SDK's <c>conversation</c> and <c>user_token</c> clients.
+    /// </summary>
     public static class Clients
     {
         public const string Conversation = "conversation";

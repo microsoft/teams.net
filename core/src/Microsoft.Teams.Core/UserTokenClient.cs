@@ -52,7 +52,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("include", include);
         }
         return (await ExecuteUserTokenClientAsync<GetTokenStatusResult[]>(
-            Telemetry.Operations.GetTokenStatus,
+            Telemetry.ClientOperations.GetTokenStatus,
             async span =>
             {
                 IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
@@ -100,7 +100,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         return await ExecuteUserTokenClientAsync(
-            Telemetry.Operations.GetToken,
+            Telemetry.ClientOperations.GetToken,
             async span => await _botHttpClient.SendAsync<GetTokenResult>(
                 HttpMethod.Get,
                 _apiEndpoint,
@@ -161,7 +161,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("finalRedirect", finalRedirect.ToString());
 
         return await ExecuteUserTokenClientAsync(
-            Telemetry.Operations.GetSignInUrl,
+            Telemetry.ClientOperations.GetSignInUrl,
             async span => await _botHttpClient.SendAsync<string>(
                 HttpMethod.Get,
                 _apiEndpoint,
@@ -194,7 +194,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("finalRedirect", finalRedirect.ToString());
 
         return (await ExecuteUserTokenClientAsync(
-            Telemetry.Operations.GetSignInResource,
+            Telemetry.ClientOperations.GetSignInResource,
             async span => (await _botHttpClient.SendAsync<GetSignInResourceResult>(
                 HttpMethod.Get,
                 _apiEndpoint,
@@ -229,7 +229,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         };
 
         return (await ExecuteUserTokenClientAsync(
-            Telemetry.Operations.ExchangeToken,
+            Telemetry.ClientOperations.ExchangeToken,
             async span => (await _botHttpClient.SendAsync<GetTokenResult>(
                 HttpMethod.Post,
                 _apiEndpoint,
@@ -267,7 +267,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         await ExecuteUserTokenClientAsync<object?>(
-            Telemetry.Operations.SignOutUser,
+            Telemetry.ClientOperations.SignOutUser,
             async span =>
             {
                 await _botHttpClient.SendAsync(
@@ -303,7 +303,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         };
 
         return (await ExecuteUserTokenClientAsync(
-            Telemetry.Operations.GetAadTokens,
+            Telemetry.ClientOperations.GetAadTokens,
             async span => (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
                 HttpMethod.Post,
                 _apiEndpoint,
@@ -324,11 +324,11 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
 
     private static async Task<T?> ExecuteUserTokenClientAsync<T>(string operation, Func<Activity?, Task<T?>> action)
     {
-        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.UserTokenClient, ActivityKind.Client);
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.Client, ActivityKind.Client);
         if (span is not null)
         {
             span.SetTag(Telemetry.Tags.Client, Telemetry.Clients.UserToken);
-            span.SetTag(Telemetry.Tags.Operation, operation);
+            span.SetTag(Telemetry.Tags.ClientOperation, operation);
         }
 
         long start = Stopwatch.GetTimestamp();
