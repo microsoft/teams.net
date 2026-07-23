@@ -322,8 +322,8 @@ public static class MessageActivityExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
         message.ChannelData ??= new TeamsChannelData();
-message.ChannelData.App ??= new AppInfo();
-message.ChannelData.App.Id = value;
+        message.ChannelData.App ??= new AppInfo();
+        message.ChannelData.App.Id = value;
         return message;
     }
 
