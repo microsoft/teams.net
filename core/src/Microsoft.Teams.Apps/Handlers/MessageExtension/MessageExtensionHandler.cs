@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
+namespace Microsoft.Teams.Apps.MessageExtension;
 
 /// <summary>
 /// Delegate for handling message extension query invoke activities.

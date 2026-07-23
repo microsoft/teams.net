@@ -4,7 +4,7 @@
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers.TaskModules;
+namespace Microsoft.Teams.Apps.TaskModules;
 
 /// <summary>
 /// Delegate for handling task module invoke activities.

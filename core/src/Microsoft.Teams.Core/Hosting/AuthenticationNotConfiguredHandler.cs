@@ -4,9 +4,9 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Teams.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Teams.Core;
 
 namespace Microsoft.Teams.Core.Hosting;
 

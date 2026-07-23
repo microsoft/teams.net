@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents an invoke activity.
@@ -61,10 +61,10 @@ public class InvokeActivity : TeamsActivity
     internal InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        Name = activity.Properties.Extract<string>("name");
+        Name = Properties.Extract<string>("name");
         Value = activity is InvokeActivity invoke
             ? invoke.Value
-            : activity.Properties.Extract<JsonNode>("value");
+            : Properties.Extract<JsonNode>("value");
     }
 }
 
@@ -112,6 +112,11 @@ public static class InvokeNames
     /// Adaptive card action invoke name.
     /// </summary>
     public const string AdaptiveCardAction = "adaptiveCard/action";
+
+    /// <summary>
+    /// Search invoke name. Sent by Adaptive Card dynamic typeahead 'Input.ChoiceSet' inputs.
+    /// </summary>
+    public const string Search = "application/search";
 
     /// <summary>
     /// Task fetch invoke name.

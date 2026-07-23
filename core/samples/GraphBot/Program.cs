@@ -5,8 +5,7 @@ using Azure.Core;
 using Azure.Identity;
 using Microsoft.Graph;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
-using Microsoft.Teams.Apps.Schema;
+
 using GraphOrganization = Microsoft.Graph.Models.Organization;
 using GraphUser = Microsoft.Graph.Models.User;
 

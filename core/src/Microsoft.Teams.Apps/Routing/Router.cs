@@ -3,8 +3,8 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Diagnostics;
 

@@ -7,7 +7,7 @@ using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Clients;
 
 /// <summary>
 /// Client for retrieving meeting information and participants.

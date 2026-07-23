@@ -4,23 +4,25 @@
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps;
+namespace Microsoft.Teams.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling adaptive card action invoke activities.
+/// Delegate for handling 'application/search' invoke activities, sent by Adaptive Card
+/// dynamic typeahead 'Input.ChoiceSet' inputs.
 /// </summary>
 /// <param name="context">The context for the invoke activity, providing access to the activity data and bot application.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-/// <returns>A task that represents the asynchronous operation. The task result contains the invoke response.</returns>
-public delegate Task<InvokeResponse> AdaptiveCardActionHandler(Context<InvokeActivity<AdaptiveCardActionValue>> context, CancellationToken cancellationToken = default);
+/// <returns>A task that represents the asynchronous operation. The task result contains the search invoke response.</returns>
+public delegate Task<InvokeResponse<SearchResponse>> SearchHandler(Context<InvokeActivity<SearchValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Extension methods for registering adaptive card action invoke handlers.
+/// Extension methods for registering 'application/search' invoke handlers.
 /// </summary>
-public static class AdaptiveCardExtensions
+public static class SearchExtensions
 {
     /// <summary>
-    /// Registers a handler for adaptive card action invoke activities.
+    /// Registers a handler for 'application/search' invoke activities. The handler returns an
+    /// <see cref="InvokeResponse{TBody}"/> carrying a <see cref="SearchResponse"/> body.
     /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
     /// <remarks>
@@ -29,16 +31,16 @@ public static class AdaptiveCardExtensions
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnAdaptiveCardAction(this TeamsBotApplication app, AdaptiveCardActionHandler handler)
+    public static TeamsBotApplication OnSearch(this TeamsBotApplication app, SearchHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.AdaptiveCardAction),
-            Selector = activity => activity.Name == InvokeNames.AdaptiveCardAction,
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.Search),
+            Selector = activity => activity.Name == InvokeNames.Search,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
-                InvokeActivity<AdaptiveCardActionValue> typedActivity = new(ctx.Activity);
+                InvokeActivity<SearchValue> typedActivity = new(ctx.Activity);
                 var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }

@@ -5,7 +5,7 @@ using A2A.AspNetCore;
 using A2ABot;
 using A2ABot.A2A;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
+
 using AgentCard = A2A.AgentCard;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);

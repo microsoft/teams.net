@@ -12,7 +12,7 @@ using Microsoft.Teams.Core.Diagnostics;
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 using CoreUserTokenClient = Microsoft.Teams.Core.UserTokenClient;
 
-namespace Microsoft.Teams.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Clients;
 
 /// <summary>
 /// Top-level API client that provides access to all Teams Bot API sub-clients.
@@ -77,7 +77,7 @@ public class ApiClient
     /// Creates a new <see cref="ApiClient"/> without a service URL (DI-friendly).
     /// Use <see cref="ForServiceUrl"/> to create a scoped instance bound to a specific service URL.
     /// </summary>
-    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <see cref="Microsoft.Teams.Core.Hosting.BotAuthenticationHandler"/>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
@@ -104,7 +104,7 @@ public class ApiClient
     /// Creates a new <see cref="ApiClient"/> bound to a specific service URL.
     /// </summary>
     /// <param name="serviceUrl">The Bot Framework service URL.</param>
-    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <see cref="Microsoft.Teams.Core.Hosting.BotAuthenticationHandler"/>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
@@ -164,7 +164,7 @@ public class ApiClient
 
     /// <summary>
     /// Creates a new <see cref="ApiClient"/> scoped to an inbound activity, binding both the
-    /// service URL and the agentic identity (from the activity's <c>Recipient</c>) in one call.
+    /// service URL and the agentic identity (from the activity's <see cref="CoreActivity.Recipient"/>) in one call.
     /// </summary>
     /// <param name="activity">The inbound activity to derive routing and identity from.</param>
     /// <returns>A new <see cref="ApiClient"/> bound to the activity's service URL and agentic identity.</returns>

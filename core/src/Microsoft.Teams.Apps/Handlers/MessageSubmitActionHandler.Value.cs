@@ -4,7 +4,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Defines the structure that arrives in the Activity.Value for an Invoke activity with
@@ -41,7 +41,7 @@ public class MessageSubmitFeedbackValue
 
     /// <summary>
     /// The user's response, as a JSON-encoded string containing the form input values
-    /// (e.g. <c>{"feedbackText":"..."}</c>). Parse with <c>JsonDocument.Parse</c> to read individual fields.
+    /// (e.g. <c>{"feedbackText":"..."}</c>). Parse with <see cref="System.Text.Json.JsonDocument.Parse(string, System.Text.Json.JsonDocumentOptions)"/> to read individual fields.
     /// </summary>
     [JsonPropertyName("feedback")]
     public string? Feedback { get; internal set; }

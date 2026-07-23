@@ -12,9 +12,7 @@
 // | GitHubConnection  | GitHub       | repo read:user            |
 
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
-using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);

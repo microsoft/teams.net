@@ -5,7 +5,7 @@ using Microsoft.Teams.Core;
 
 using CoreUserTokenClient = Microsoft.Teams.Core.UserTokenClient;
 
-namespace Microsoft.Teams.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Clients;
 
 /// <summary>
 /// Client for user token operations.

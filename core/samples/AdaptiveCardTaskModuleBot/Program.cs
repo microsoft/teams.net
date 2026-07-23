@@ -5,9 +5,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AdaptiveCardTaskModuleBot;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
-using Microsoft.Teams.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.TaskModules;
 using Microsoft.Teams.Core.Hosting;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);

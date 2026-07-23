@@ -4,8 +4,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Api.Clients;
-using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;

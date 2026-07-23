@@ -22,7 +22,7 @@ public class TeamsAttachmentBuilder
     }
 
     /// <summary>
-    /// Sets the content type for the attachment.
+    /// Sets the content type for the attachment. See <see cref="AttachmentContentTypes"/> for known values.
     /// </summary>
     public TeamsAttachmentBuilder WithContentType(string contentType)
     {
