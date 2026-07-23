@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
-using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
 
@@ -193,7 +192,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Adds a mention (@mention) entity and optionally prepends mention text.
     /// </summary>
-    public MessageActivityInputBuilder AddMention(ChannelAccount account, string? text = null, bool addText = true)
+    public MessageActivityInputBuilder AddMention(TeamsChannelAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(account);
         MentionEntityExtensions.AddToActivity(_activity, account, text, addText);
@@ -261,7 +260,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Configures the feedback loop mode on the activity.
     /// </summary>
-    public MessageActivityInputBuilder AddFeedback(string mode)
+    public MessageActivityInputBuilder AddFeedback(FeedbackType mode)
     {
         _activity.ChannelData ??= new TeamsOutboundChannelData();
         _activity.ChannelData.FeedbackLoop = new FeedbackLoop(mode);

@@ -376,7 +376,7 @@ public sealed class TeamsStreamingWriter
         _lastChunkSent = DateTime.MinValue;
     }
 
-    private StreamingActivityInput BuildActivity(string text, string streamType)
+    private StreamingActivityInput BuildActivity(string text, StreamType streamType)
     {
         return StreamingActivityInput.CreateBuilder()
             .WithText(text)

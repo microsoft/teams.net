@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -72,93 +73,81 @@ public class ConversationUpdateActivity : TeamsActivity
 }
 
 /// <summary>
-/// String constants for conversation event types.
+/// String enum for conversation event types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<ConversationEventType>))]
+public class ConversationEventType(string value) : StringEnum(value)
+{
+    /// <summary>Gets the channel created event type.</summary>
+    public static readonly ConversationEventType ChannelCreated = new("channelCreated");
+    /// <summary>Gets the channel deleted event type.</summary>
+    public static readonly ConversationEventType ChannelDeleted = new("channelDeleted");
+    /// <summary>Gets the channel renamed event type.</summary>
+    public static readonly ConversationEventType ChannelRenamed = new("channelRenamed");
+    /// <summary>Gets the channel shared event type.</summary>
+    public static readonly ConversationEventType ChannelShared = new("channelShared");
+    /// <summary>Gets the channel unshared event type.</summary>
+    public static readonly ConversationEventType ChannelUnShared = new("channelUnshared");
+    /// <summary>Gets the channel member added event type.</summary>
+    public static readonly ConversationEventType ChannelMemberAdded = new("channelMemberAdded");
+    /// <summary>Gets the channel member removed event type.</summary>
+    public static readonly ConversationEventType ChannelMemberRemoved = new("channelMemberRemoved");
+    /// <summary>Gets the team member added event type.</summary>
+    public static readonly ConversationEventType TeamMemberAdded = new("teamMemberAdded");
+    /// <summary>Gets the team member removed event type.</summary>
+    public static readonly ConversationEventType TeamMemberRemoved = new("teamMemberRemoved");
+    /// <summary>Gets the team archived event type.</summary>
+    public static readonly ConversationEventType TeamArchived = new("teamArchived");
+    /// <summary>Gets the team deleted event type.</summary>
+    public static readonly ConversationEventType TeamDeleted = new("teamDeleted");
+    /// <summary>Gets the team renamed event type.</summary>
+    public static readonly ConversationEventType TeamRenamed = new("teamRenamed");
+    /// <summary>Gets the team unarchived event type.</summary>
+    public static readonly ConversationEventType TeamUnarchived = new("teamUnarchived");
+
+}
+
+/// <summary>
+/// Common conversation event type values.
 /// </summary>
 public static class ConversationEventTypes
 {
-    /// <summary>
-    /// Channel created event.
-    /// </summary>
-    public const string ChannelCreated = "channelCreated";
+    /// <summary>Gets the channel created event type.</summary>
+    public static ConversationEventType ChannelCreated => ConversationEventType.ChannelCreated;
 
-    /// <summary>
-    /// Channel deleted event.
-    /// </summary>
-    public const string ChannelDeleted = "channelDeleted";
+    /// <summary>Gets the channel deleted event type.</summary>
+    public static ConversationEventType ChannelDeleted => ConversationEventType.ChannelDeleted;
 
-    /// <summary>
-    /// Channel renamed event.
-    /// </summary>
-    public const string ChannelRenamed = "channelRenamed";
+    /// <summary>Gets the channel renamed event type.</summary>
+    public static ConversationEventType ChannelRenamed => ConversationEventType.ChannelRenamed;
 
+    /// <summary>Gets the channel shared event type.</summary>
+    public static ConversationEventType ChannelShared => ConversationEventType.ChannelShared;
 
-    /// <summary>
-    /// Channel shared event.
-    /// </summary>
-    public const string ChannelShared = "channelShared";
+    /// <summary>Gets the channel unshared event type.</summary>
+    public static ConversationEventType ChannelUnShared => ConversationEventType.ChannelUnShared;
 
-    /// <summary>
-    /// Channel unshared event.
-    /// </summary>
-    public const string ChannelUnShared = "channelUnshared";
+    /// <summary>Gets the channel member added event type.</summary>
+    public static ConversationEventType ChannelMemberAdded => ConversationEventType.ChannelMemberAdded;
 
-    /// <summary>
-    /// Channel member added event.
-    /// </summary>
-    public const string ChannelMemberAdded = "channelMemberAdded";
+    /// <summary>Gets the channel member removed event type.</summary>
+    public static ConversationEventType ChannelMemberRemoved => ConversationEventType.ChannelMemberRemoved;
 
-    /// <summary>
-    /// Channel member removed event.
-    /// </summary>
-    public const string ChannelMemberRemoved = "channelMemberRemoved";
+    /// <summary>Gets the team member added event type.</summary>
+    public static ConversationEventType TeamMemberAdded => ConversationEventType.TeamMemberAdded;
 
-    //TODO : review these events
-    /*
-    /// <summary>
-    /// Channel restored event.
-    /// </summary>
-    public const string ChannelRestored = "channelRestored";
-    */
+    /// <summary>Gets the team member removed event type.</summary>
+    public static ConversationEventType TeamMemberRemoved => ConversationEventType.TeamMemberRemoved;
 
-    /// <summary>
-    /// Team member added event.
-    /// </summary>
-    public const string TeamMemberAdded = "teamMemberAdded";
+    /// <summary>Gets the team archived event type.</summary>
+    public static ConversationEventType TeamArchived => ConversationEventType.TeamArchived;
 
-    /// <summary>
-    /// Team member removed event.
-    /// </summary>
-    public const string TeamMemberRemoved = "teamMemberRemoved";
+    /// <summary>Gets the team deleted event type.</summary>
+    public static ConversationEventType TeamDeleted => ConversationEventType.TeamDeleted;
 
-    /// <summary>
-    /// Team archived event.
-    /// </summary>
-    public const string TeamArchived = "teamArchived";
+    /// <summary>Gets the team renamed event type.</summary>
+    public static ConversationEventType TeamRenamed => ConversationEventType.TeamRenamed;
 
-    /// <summary>
-    /// Team deleted event.
-    /// </summary>
-    public const string TeamDeleted = "teamDeleted";
-
-    /// <summary>
-    /// Team renamed event.
-    /// </summary>
-    public const string TeamRenamed = "teamRenamed";
-
-    /// <summary>
-    /// Team unarchived event.
-    /// </summary>
-    public const string TeamUnarchived = "teamUnarchived";
-
-    /*TODO : review these events
-    /// <summary>
-    /// Team hard deleted event.
-    /// </summary>
-    public const string TeamHardDeleted = "teamHardDeleted";
-
-    /// <summary>
-    /// Team restored event.
-    /// </summary>
-    public const string TeamRestored = "teamRestored";
-    */
+    /// <summary>Gets the team unarchived event type.</summary>
+    public static ConversationEventType TeamUnarchived => ConversationEventType.TeamUnarchived;
 }

@@ -691,7 +691,7 @@ public static class MessageActivityExtensions
         ArgumentNullException.ThrowIfNull(message);
 
         message.ChannelData ??= new TeamsChannelData();
-        message.ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        message.ChannelData.FeedbackLoop = new FeedbackLoop(new FeedbackType(mode));
         message.ChannelData.FeedbackLoopEnabled = null;
         return message;
     }
