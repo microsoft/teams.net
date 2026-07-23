@@ -13,7 +13,8 @@ namespace Microsoft.Teams.Apps.Handlers;
 public class SearchValue
 {
     /// <summary>
-    /// The kind for this search invoke value. Must be either 'search', 'searchAnswer', or 'typeahead'.
+    /// The kind for this search invoke value ('search', 'searchAnswer', or 'typeahead'). Omitted by
+    /// Adaptive Card dynamic typeahead 'Input.ChoiceSet' inputs, so this may be null.
     /// </summary>
     [JsonPropertyName("kind")]
     public string? Kind { get; set; }

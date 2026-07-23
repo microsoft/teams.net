@@ -27,7 +27,7 @@ public class SearchResponse
     /// The response value.
     /// </summary>
     [JsonPropertyName("value")]
-    public SearchResponseValue? Value { get; set; }
+    public required SearchResponseValue Value { get; set; }
 }
 
 /// <summary>
