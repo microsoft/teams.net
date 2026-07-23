@@ -6,6 +6,7 @@ This sample shows multiple OAuth flows in one bot. It demonstrates how to keep s
 
 - Bot registered and installed in Teams.
 - Azure Bot OAuth connection settings created for both Graph and GitHub.
+- [optional for multiple instances] Redis available and configured via `ConnectionStrings__Redis` (for shared OAuth pending state across instances).
 
 ## OAuth connection setup
 
@@ -13,8 +14,8 @@ Configure these two connection settings in your bot resource:
 
 | Connection name | Provider | Scopes |
 |---|---|---|
-| `GraphConnection` | Azure AD v2 | `User.Read Calendars.Read` |
-| `GitHubConnection` | GitHub | `repo read:user` |
+| `sso` | Azure AD v2 | `User.Read Calendars.Read` |
+| `gh` | GitHub | `repo read:user` |
 
 ## What it shows
 

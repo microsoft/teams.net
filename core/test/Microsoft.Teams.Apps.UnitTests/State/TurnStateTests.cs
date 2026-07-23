@@ -70,6 +70,29 @@ public class TurnStateTests
     }
 
     [Fact]
+    public void Clear_WithValues_EmptiesStateAndMarksDirty()
+    {
+        TurnState state = new();
+        state.Set("key", "value");
+
+        state.Clear();
+
+        Assert.True(state.IsDirty);
+        Assert.False(state.ContainsKey("key"));
+        Assert.Null(state.Get<string>("key"));
+    }
+
+    [Fact]
+    public void Clear_EmptyState_DoesNotMarkDirty()
+    {
+        TurnState state = new();
+
+        state.Clear();
+
+        Assert.False(state.IsDirty);
+    }
+
+    [Fact]
     public void ContainsKey_ExistingKey_ReturnsTrue()
     {
         TurnState state = new();
@@ -147,6 +170,19 @@ public class TurnStateTests
         state.Remove<FakeState>();
 
         Assert.False(state.Has<FakeState>());
+    }
+
+    [Fact]
+    public void Clear_AfterTypedSet_EmptiesAllTypedValues()
+    {
+        TurnState state = new();
+        state.Set(new FakeState { Name = "custom" });
+        state.Set(new OtherState { Count = 7 });
+
+        state.Clear();
+
+        Assert.False(state.Has<FakeState>());
+        Assert.False(state.Has<OtherState>());
     }
 
     [Fact]
@@ -228,6 +264,21 @@ public class TurnStateTests
         TurnState state = TurnState.FromDictionary(new Dictionary<string, object?> { ["x"] = 1 });
 
         Assert.False(state.IsDirty);
+    }
+
+    [Fact]
+    public void Complete_AfterTurn_ThrowsOnFurtherAccess()
+    {
+        TurnState state = new();
+        state.Set("name", "Alice");
+
+        Assert.False(state.IsCompleted);
+        state.Complete();
+        Assert.True(state.IsCompleted);
+
+        Assert.Throws<InvalidOperationException>(() => state.Get<string>("name"));
+        Assert.Throws<InvalidOperationException>(() => state.Set("other", "value"));
+        Assert.Throws<InvalidOperationException>(() => state.ContainsKey("name"));
     }
 
     // ── Serialization ─────────────────────────────────────────────────

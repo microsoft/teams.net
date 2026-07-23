@@ -12,6 +12,7 @@ namespace Microsoft.Teams.Apps.State;
 public class TurnState
 {
     private readonly Dictionary<string, object?> _data;
+    private bool _completed;
 
     /// <summary>
     /// Initializes a new, empty <see cref="TurnState"/>.
@@ -26,10 +27,22 @@ public class TurnState
     public bool IsDirty { get; internal set; }
 
     /// <summary>
+    /// Returns true once this state scope has been sealed at end of turn.
+    /// </summary>
+    public bool IsCompleted => _completed;
+
+    /// <summary>
+    /// Returns true when the scope contains no values.
+    /// </summary>
+    public bool IsEmpty => _data.Count == 0;
+
+    /// <summary>
     /// Gets a value by key. Returns <c>default</c> if the key is not present or the value cannot be converted.
     /// </summary>
     public T? Get<T>(string key)
     {
+        ThrowIfCompleted();
+
         if (!_data.TryGetValue(key, out object? value) || value is null)
         {
             return default;
@@ -61,6 +74,8 @@ public class TurnState
     /// </summary>
     public void Set<T>(string key, T value)
     {
+        ThrowIfCompleted();
+
         _data[key] = value;
         IsDirty = true;
     }
@@ -70,10 +85,23 @@ public class TurnState
     /// </summary>
     public void Remove(string key)
     {
+        ThrowIfCompleted();
+
         if (_data.Remove(key))
         {
             IsDirty = true;
         }
+    }
+
+    /// <summary>
+    /// Removes every value from the scope.
+    /// A persisted scope emptied this way is deleted from storage on save.
+    /// </summary>
+    public void Clear()
+    {
+        ThrowIfCompleted();
+        IsDirty |= _data.Count > 0;
+        _data.Clear();
     }
 
     /// <summary>
@@ -82,6 +110,8 @@ public class TurnState
     /// </summary>
     public bool TryGet<T>(string key, out T? value)
     {
+        ThrowIfCompleted();
+
         if (!_data.TryGetValue(key, out object? raw) || raw is null)
         {
             value = default;
@@ -115,13 +145,19 @@ public class TurnState
     /// <summary>
     /// Returns <c>true</c> if the key exists in state.
     /// </summary>
-    public bool ContainsKey(string key) => _data.ContainsKey(key);
+    public bool ContainsKey(string key)
+    {
+        ThrowIfCompleted();
+        return _data.ContainsKey(key);
+    }
 
     /// <summary>
     /// Gets a typed state object. Creates a new instance via parameterless constructor if not present.
     /// </summary>
     public T Get<T>() where T : class, new()
     {
+        ThrowIfCompleted();
+
         string key = TypeKey<T>();
 
         if (_data.TryGetValue(key, out object? value) && value is not null)
@@ -158,6 +194,8 @@ public class TurnState
     /// </summary>
     public void Set<T>(T value) where T : class
     {
+        ThrowIfCompleted();
+
         _data[TypeKey<T>()] = value;
         IsDirty = true;
     }
@@ -165,13 +203,19 @@ public class TurnState
     /// <summary>
     /// Returns <c>true</c> if a typed state object of this type exists.
     /// </summary>
-    public bool Has<T>() where T : class => _data.ContainsKey(TypeKey<T>());
+    public bool Has<T>() where T : class
+    {
+        ThrowIfCompleted();
+        return _data.ContainsKey(TypeKey<T>());
+    }
 
     /// <summary>
     /// Removes the typed state object of this type.
     /// </summary>
     public void Remove<T>() where T : class
     {
+        ThrowIfCompleted();
+
         if (_data.Remove(TypeKey<T>()))
         {
             IsDirty = true;
@@ -181,7 +225,11 @@ public class TurnState
     /// <summary>
     /// Serializes the state to a JSON byte array.
     /// </summary>
-    public byte[] ToJsonBytes() => JsonSerializer.SerializeToUtf8Bytes(_data);
+    public byte[] ToJsonBytes()
+    {
+        ThrowIfCompleted();
+        return JsonSerializer.SerializeToUtf8Bytes(_data);
+    }
 
     /// <summary>
     /// Deserializes a <see cref="TurnState"/> from a JSON byte array.
@@ -212,6 +260,22 @@ public class TurnState
     public static TurnState FromDictionary(Dictionary<string, object?> data)
     {
         return new TurnState(new Dictionary<string, object?>(data));
+    }
+
+    /// <summary>
+    /// Seals the state; subsequent access throws.
+    /// </summary>
+    internal void Complete() => _completed = true;
+
+    private void ThrowIfCompleted()
+    {
+        if (_completed)
+        {
+            throw new InvalidOperationException(
+                "TurnState was accessed after the turn completed. State is per-turn and is saved once " +
+                "when the handler returns. Read the values you need during the turn and pass them into " +
+                "any background work, e.g. `var name = ctx.State.UserState.Get<string>(\"name\");`.");
+        }
     }
 
     private static string TypeKey<T>() => $"${typeof(T).FullName}";
