@@ -3,28 +3,38 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Core.Schema;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
-/// Defines known conversation types for Teams.
+/// String enum for Teams conversation types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<ConversationType>))]
+public class ConversationType(string value) : StringEnum(value)
+{
+    /// <summary>Personal conversation type.</summary>
+    public static readonly ConversationType Personal = new("personal");
+    /// <summary>Group chat conversation type.</summary>
+    public static readonly ConversationType GroupChat = new("groupChat");
+    /// <summary>Channel conversation type.</summary>
+    public static readonly ConversationType Channel = new("channel");
+
+}
+
+/// <summary>
+/// Common Teams conversation type values.
 /// </summary>
 public static class ConversationTypes
 {
-    /// <summary>
-    /// One-to-one conversation between a user and a bot.
-    /// </summary>
-    public const string Personal = "personal";
+    /// <summary>Gets the personal conversation type.</summary>
+    public static ConversationType Personal => ConversationType.Personal;
 
-    /// <summary>
-    /// Group chat conversation.
-    /// </summary>
-    public const string GroupChat = "groupChat";
+    /// <summary>Gets the group chat conversation type.</summary>
+    public static ConversationType GroupChat => ConversationType.GroupChat;
 
-    /// <summary>
-    /// Channel conversation
-    /// </summary>
-    public const string Channel = "channel";
+    /// <summary>Gets the channel conversation type.</summary>
+    public static ConversationType Channel => ConversationType.Channel;
 }
 
 /// <summary>
@@ -66,7 +76,7 @@ public class TeamsConversation : Conversation
 
         result.Properties = new ExtendedPropertiesDictionary(conversation.Properties);
         result.TenantId = result.Properties.Extract<string>("tenantId");
-        result.ConversationType = result.Properties.Extract<string>("conversationType");
+        result.ConversationType = result.Properties.Extract<ConversationType>("conversationType");
         result.IsGroup = result.Properties.Extract<bool?>("isGroup");
 
         return result;
@@ -80,7 +90,7 @@ public class TeamsConversation : Conversation
     /// <summary>
     /// Conversation Type. See <see cref="ConversationTypes"/> for known values.
     /// </summary>
-    [JsonPropertyName("conversationType")] public string? ConversationType { get; set; }
+    [JsonPropertyName("conversationType")] public ConversationType? ConversationType { get; set; }
 
     /// <summary>
     /// Indicates whether the conversation is a group conversation.

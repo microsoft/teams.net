@@ -8,7 +8,7 @@ using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
-public class MessageActivityInputBuilderTests
+public class MessageActivityInputTests
 {
     [Fact]
     public void Constructor_DefaultConstructor_CreatesNewActivity()

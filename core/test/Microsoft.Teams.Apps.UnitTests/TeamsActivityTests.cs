@@ -60,10 +60,10 @@ public class TeamsActivityTests
     [Fact]
     public void Serialize_TeamsActivity_WithEntities()
     {
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
               .WithText("Hello World")
               .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
-          .Build();
+          ;
 
         string jsonResult = activity.ToJson();
         Assert.Contains("clientInfo", jsonResult);
@@ -114,7 +114,7 @@ public class TeamsActivityTests
             }
             """;
 
-        MessageActivityInput teamsActivity = MessageActivityInput.CreateBuilder().Build();
+        MessageActivityInput teamsActivity = new MessageActivityInput();
         Assert.NotNull(teamsActivity);
         string json = teamsActivity.ToJson();
         Assert.Equal(minActivityJson.Replace("\r\n", "\n"), json.Replace("\r\n", "\n"));

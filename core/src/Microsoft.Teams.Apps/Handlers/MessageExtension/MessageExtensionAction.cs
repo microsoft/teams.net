@@ -4,8 +4,31 @@
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.MessageExtension;
+
+/// <summary>
+/// Message extension command context values.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<MessageExtensionCommandContext>))]
+public class MessageExtensionCommandContext(string value) : StringEnum(value)
+{
+    /// <summary>
+    /// Command invoked from a message (message action).
+    /// </summary>
+    public static readonly MessageExtensionCommandContext Message = new("message");
+
+    /// <summary>
+    /// Command invoked from the compose box.
+    /// </summary>
+    public static readonly MessageExtensionCommandContext Compose = new("compose");
+
+    /// <summary>
+    /// Command invoked from the command box.
+    /// </summary>
+    public static readonly MessageExtensionCommandContext CommandBox = new("commandbox");
+}
 
 /// <summary>
 /// Message extension command context values.
@@ -15,17 +38,34 @@ public static class MessageExtensionCommandContexts
     /// <summary>
     /// Command invoked from a message (message action).
     /// </summary>
-    public const string Message = "message";
+    public static MessageExtensionCommandContext Message => MessageExtensionCommandContext.Message;
 
     /// <summary>
     /// Command invoked from the compose box.
     /// </summary>
-    public const string Compose = "compose";
+    public static MessageExtensionCommandContext Compose => MessageExtensionCommandContext.Compose;
 
     /// <summary>
     /// Command invoked from the command box.
     /// </summary>
-    public const string CommandBox = "commandbox";
+    public static MessageExtensionCommandContext CommandBox => MessageExtensionCommandContext.CommandBox;
+}
+
+/// <summary>
+/// Bot message preview action values.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<BotMessagePreviewActionType>))]
+public class BotMessagePreviewActionType(string value) : StringEnum(value)
+{
+    /// <summary>
+    /// User clicked edit on the preview.
+    /// </summary>
+    public static readonly BotMessagePreviewActionType Edit = new("edit");
+
+    /// <summary>
+    /// User clicked send on the preview.
+    /// </summary>
+    public static readonly BotMessagePreviewActionType Send = new("send");
 }
 
 /// <summary>
@@ -36,12 +76,12 @@ public static class BotMessagePreviewActionTypes
     /// <summary>
     /// User clicked edit on the preview.
     /// </summary>
-    public const string Edit = "edit";
+    public static BotMessagePreviewActionType Edit => BotMessagePreviewActionType.Edit;
 
     /// <summary>
     /// User clicked send on the preview.
     /// </summary>
-    public const string Send = "send";
+    public static BotMessagePreviewActionType Send => BotMessagePreviewActionType.Send;
 }
 
 /// <summary>
@@ -72,14 +112,14 @@ public class MessageExtensionAction
     /// See <see cref="MessageExtensionCommandContexts"/> for common values.
     /// </summary>
     [JsonPropertyName("commandContext")]
-    public required string CommandContext { get; set; }
+    public required MessageExtensionCommandContext CommandContext { get; set; }
 
     /// <summary>
     /// Bot message preview action taken by user.
     /// See <see cref="BotMessagePreviewActionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("botMessagePreviewAction")]
-    public string? BotMessagePreviewAction { get; set; }
+    public BotMessagePreviewActionType? BotMessagePreviewAction { get; set; }
 
     /// <summary>
     /// The activity preview that was originally sent to Teams when showing the bot message preview.
@@ -145,7 +185,7 @@ public class MessagePayload
     /// See <see cref="MessagePayloadImportanceTypes"/> for common values.
     /// </remarks>
     [JsonPropertyName("importance")]
-    public string? Importance { get; set; }
+    public MessageImportance? Importance { get; set; }
 
     /// <summary>
     /// Locale of the message set by the client.
@@ -175,7 +215,7 @@ public class MessagePayload
     /// How the attachment(s) are displayed in the message.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
+    public AttachmentLayoutType? AttachmentLayout { get; set; }
 
     /// <summary>
     /// Attachments in the message - card, image, file, etc.
@@ -211,22 +251,44 @@ public class MessageFrom
 /// <summary>
 /// String constants for message importance levels.
 /// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<MessageImportance>))]
+public class MessageImportance(string value) : StringEnum(value)
+{
+    /// <summary>
+    /// Normal importance.
+    /// </summary>
+    public static readonly MessageImportance Normal = new("normal");
+
+    /// <summary>
+    /// High importance.
+    /// </summary>
+    public static readonly MessageImportance High = new("high");
+
+    /// <summary>
+    /// Urgent importance.
+    /// </summary>
+    public static readonly MessageImportance Urgent = new("urgent");
+}
+
+/// <summary>
+/// Common message importance values.
+/// </summary>
 public static class MessagePayloadImportanceTypes
 {
     /// <summary>
     /// Normal importance.
     /// </summary>
-    public const string Normal = "normal";
+    public static MessageImportance Normal => MessageImportance.Normal;
 
     /// <summary>
     /// High importance.
     /// </summary>
-    public const string High = "high";
+    public static MessageImportance High => MessageImportance.High;
 
     /// <summary>
     /// Urgent importance.
     /// </summary>
-    public const string Urgent = "urgent";
+    public static MessageImportance Urgent => MessageImportance.Urgent;
 }
 
 /// <summary>
@@ -238,7 +300,7 @@ public class MessagePayloadBody
     /// Type of content. Common values: "text", "html".
     /// </summary>
     [JsonPropertyName("contentType")]
-    public string? ContentType { get; set; }
+    public AttachmentContentType? ContentType { get; set; }
 
     /// <summary>
     /// The content of the message.
@@ -281,7 +343,7 @@ public class MessagePayloadReaction
     /// See <see cref="ReactionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("reactionType")]
-    public string? ReactionType { get; set; }
+    public ReactionType? ReactionType { get; set; }
 
     /// <summary>
     /// Timestamp when the reaction was created.
@@ -311,7 +373,7 @@ public class User
     /// Gets or sets the user identity type. See <see cref="UserIdentityTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("userIdentityType")]
-    public string? UserIdentityType { get; set; }
+    public UserIdentityType? UserIdentityType { get; set; }
 
     /// <summary>
     /// Gets or sets the display name of the user.
@@ -323,25 +385,41 @@ public class User
 /// <summary>
 /// String constants for user identity types.
 /// </summary>
-public static class UserIdentityTypes
+[JsonConverter(typeof(StringEnumJsonConverter<UserIdentityType>))]
+public class UserIdentityType(string value) : StringEnum(value)
 {
     /// <summary>
     /// Azure Active Directory user.
     /// </summary>
-    public const string AadUser = "aadUser";
+    public static readonly UserIdentityType AadUser = new("aadUser");
 
     /// <summary>
     /// On-premise Azure Active Directory user.
     /// </summary>
-    public const string OnPremiseAadUser = "onPremiseAadUser";
+    public static readonly UserIdentityType OnPremiseAadUser = new("onPremiseAadUser");
 
     /// <summary>
     /// Anonymous guest user.
     /// </summary>
-    public const string AnonymousGuest = "anonymousGuest";
+    public static readonly UserIdentityType AnonymousGuest = new("anonymousGuest");
 
     /// <summary>
     /// Federated user.
     /// </summary>
-    public const string FederatedUser = "federatedUser";
+    public static readonly UserIdentityType FederatedUser = new("federatedUser");
+}
+
+/// <summary>
+/// String constants for user identity types.
+/// </summary>
+public static class UserIdentityTypes
+{
+    /// <summary>Azure Active Directory user.</summary>
+    public static UserIdentityType AadUser => UserIdentityType.AadUser;
+    /// <summary>On-premise Azure Active Directory user.</summary>
+    public static UserIdentityType OnPremiseAadUser => UserIdentityType.OnPremiseAadUser;
+    /// <summary>Anonymous guest user.</summary>
+    public static UserIdentityType AnonymousGuest => UserIdentityType.AnonymousGuest;
+    /// <summary>Federated user.</summary>
+    public static UserIdentityType FederatedUser => UserIdentityType.FederatedUser;
 }

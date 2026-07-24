@@ -81,7 +81,7 @@ public class ActivitiesTests
     public void InstallUpdate_FromActivityConvertsCorrectly()
     {
         CoreActivity coreActivity = new()
-        {
+            {
             Type = TeamsActivityTypes.InstallationUpdate
         };
         coreActivity.Properties["action"] = "remove";
@@ -89,6 +89,6 @@ public class ActivitiesTests
         InstallUpdateActivity activity = InstallUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
         Assert.Equal(TeamsActivityTypes.InstallationUpdate, activity.Type);
-        Assert.Equal("remove", activity.Action);
+        Assert.Equal(InstallUpdateActions.Remove, activity.Action);
     }
 }

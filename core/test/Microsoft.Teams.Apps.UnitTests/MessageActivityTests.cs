@@ -30,8 +30,8 @@ public class MessageActivityTests
         MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
 
         Assert.Equal("Hello World", messageActivity.Text);
-        Assert.Equal("plain", messageActivity.TextFormat);
-        Assert.Equal("carousel", messageActivity.AttachmentLayout);
+        Assert.Equal("plain", messageActivity.TextFormat!.ToString());
+        Assert.Equal("carousel", messageActivity.AttachmentLayout!.ToString());
         Assert.NotNull(messageActivity.From);
         Assert.Equal("user-123", messageActivity.From.Id);
         Assert.Equal("Test User", messageActivity.From.Name);
@@ -61,18 +61,18 @@ public class MessageActivityTests
         {
             TextFormat = TextFormats.Plain
         };
-        Assert.Equal("plain", activity.TextFormat);
+        Assert.Equal("plain", activity.TextFormat!.ToString());
 
         activity.TextFormat = TextFormats.Markdown;
-        Assert.Equal("markdown", activity.TextFormat);
+        Assert.Equal("markdown", activity.TextFormat!.ToString());
 
         activity.TextFormat = TextFormats.Xml;
-        Assert.Equal("xml", activity.TextFormat);
+        Assert.Equal("xml", activity.TextFormat!.ToString());
 
 #pragma warning disable ExperimentalTeamsExtendedMarkdown
         activity.TextFormat = TextFormats.ExtendedMarkdown;
 #pragma warning restore ExperimentalTeamsExtendedMarkdown
-        Assert.Equal("extendedmarkdown", activity.TextFormat);
+        Assert.Equal("extendedmarkdown", activity.TextFormat!.ToString());
     }
 
     [Fact]

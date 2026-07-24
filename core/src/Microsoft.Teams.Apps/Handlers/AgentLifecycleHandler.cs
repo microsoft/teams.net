@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps;
 
@@ -93,7 +94,6 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            EventNames.AgentLifecycle,
             valueType: null,
             activity => new AgentLifecycleEventActivity(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
@@ -221,35 +221,24 @@ public static class AgentLifecycleExtensions
 
     private static TeamsBotApplication RegisterAgentLifecycleRoute<TActivity>(
         this TeamsBotApplication app,
-        string valueType,
-        Func<EventActivity, TActivity> createActivity,
-        Func<Context<TActivity>, CancellationToken, Task> handler) where TActivity : AgentLifecycleEventActivity
-    {
-        return app.RegisterAgentLifecycleRoute(valueType, valueType, createActivity, handler);
-    }
-
-    private static TeamsBotApplication RegisterAgentLifecycleRoute<TActivity>(
-        this TeamsBotApplication app,
-        string routeSuffix,
-        string? valueType,
+        AgentLifecycleEventValueType? valueType,
         Func<EventActivity, TActivity> createActivity,
         Func<Context<TActivity>, CancellationToken, Task> handler) where TActivity : AgentLifecycleEventActivity
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
-        ArgumentException.ThrowIfNullOrWhiteSpace(routeSuffix);
         ArgumentNullException.ThrowIfNull(createActivity, nameof(createActivity));
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
 
         string routeName = valueType is null
-            ? string.Join("/", TeamsActivityTypes.Event, routeSuffix)
-            : string.Join("/", TeamsActivityTypes.Event, EventNames.AgentLifecycle, routeSuffix);
+            ? string.Join("/", TeamsActivityTypes.Event, EventNames.AgentLifecycle)
+            : string.Join("/", TeamsActivityTypes.Event, EventNames.AgentLifecycle, valueType);
 
         app.Router.Register(new Route<EventActivity>
         {
             Name = routeName,
             Selector = activity =>
                 activity.Name == EventNames.AgentLifecycle
-                && (valueType is null || activity.Properties.Get<string>("valueType") == valueType),
+                && (valueType is null || activity.Properties.Get<AgentLifecycleEventValueType>("valueType") == valueType),
             Handler = async (ctx, cancellationToken) =>
             {
                 TActivity typedActivity = createActivity(ctx.Activity);

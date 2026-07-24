@@ -42,14 +42,13 @@ TeamsActivity teams = TeamsActivity.FromActivity(core);
 
 ## Outbound flow
 
-1. Handlers build outbound payloads with `*ActivityInputBuilder` APIs.
+1. Handlers build outbound payloads with fluent `*ActivityInput` APIs.
 2. `ConversationClient` serializes and sends using the activity input JSON context.
 3. Reply helpers apply conversation reference data from the inbound turn activity.
 
 ```csharp
-MessageActivityInput reply = MessageActivityInput.CreateBuilder()
-    .WithText("Hello", TextFormats.Markdown)
-    .Build();
+MessageActivityInput reply = new MessageActivityInput()
+    .WithText("Hello", TextFormats.Markdown);
 await context.SendAsync(reply, ct);
 ```
 
@@ -69,4 +68,4 @@ await context.SendAsync(reply, ct);
 
 - Extension-data projection is flexible but depends on key names and conversion behavior.
 - Converting Core -> Teams introduces mapping cost, but keeps handler APIs strongly typed and predictable.
-- Some convenience APIs remain for compatibility, but builder-based outbound APIs are the preferred path.
+- Builder-based outbound APIs are the preferred design, but `MessageActivityInput` exposes fluent methods directly for back-compat and easier `new`-based usage.

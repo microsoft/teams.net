@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.Schema;
@@ -87,7 +88,7 @@ public class TeamsOutboundChannelData : ChannelData
     /// <summary>
     /// Gets or sets the stream type. See <see cref="StreamTypes"/> for known values.
     /// </summary>
-    [JsonPropertyName("streamType")] public string? StreamType { get; set; }
+    [JsonPropertyName("streamType")] public StreamType? StreamType { get; set; }
 
     /// <summary>
     /// Gets or sets the monotonically increasing stream sequence number.

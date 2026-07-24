@@ -32,7 +32,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, ct) =>
         """;
 
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder().WithText(helpText, TextFormats.Markdown).Build(), ct);
+        new MessageActivityInput().WithText(helpText, TextFormats.Markdown), ct);
 });
 
 // Persisted per conversation: shared by everyone in the chat.
@@ -40,7 +40,7 @@ teamsApp.OnMessage("(?i)^count$", async (context, ct) =>
 {
     int count = context.State.ConversationState.Get<int>("count") + 1;
     context.State.ConversationState.Set("count", count);
-    await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($"This conversation's counter is now **{count}**.", TextFormats.Markdown).Build(), ct);
+    await context.SendAsync(new MessageActivityInput().WithText($"This conversation's counter is now **{count}**.", TextFormats.Markdown), ct);
 });
 
 // Persisted per user in this conversation.
@@ -55,7 +55,7 @@ teamsApp.OnMessage("(?i)^my name is (.+)$", async (context, ct) =>
     }
 
     context.State.UserState?.Set("name", name);
-    await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($"Got it. I'll remember you as **{name}**.", TextFormats.Markdown).Build(), ct);
+    await context.SendAsync(new MessageActivityInput().WithText($"Got it. I'll remember you as **{name}**.", TextFormats.Markdown), ct);
 });
 
 teamsApp.OnMessage("(?i)^who am i$", async (context, ct) =>
@@ -67,7 +67,7 @@ teamsApp.OnMessage("(?i)^who am i$", async (context, ct) =>
         return;
     }
 
-    await context.SendAsync(MessageActivityInput.CreateBuilder().WithText($"You are **{name}**.", TextFormats.Markdown).Build(), ct);
+    await context.SendAsync(new MessageActivityInput().WithText($"You are **{name}**.", TextFormats.Markdown), ct);
 });
 
 teamsApp.OnMessage("(?i)^show completed$", async (context, ct) =>

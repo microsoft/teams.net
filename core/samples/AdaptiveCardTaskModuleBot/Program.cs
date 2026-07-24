@@ -20,13 +20,13 @@ bot.OnMessage(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnMessage");
 
-    JsonObject card = Cards.CreateWelcomeCard();
+    JsonElement card = Cards.CreateWelcomeCard();
 
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(card)
         .Build();
 
-    await context.SendAsync(MessageActivityInput.CreateBuilder().AddAttachment(attachment).Build(), cancellationToken);
+    await context.SendAsync(new MessageActivityInput().AddAttachment(attachment), cancellationToken);
 });
 
 // ==================== ADAPTIVE CARD ACTION ====================
@@ -48,16 +48,16 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         TeamsAttachment fileConsentCardResponse = TeamsAttachment.CreateBuilder()
             .WithContent(fileConsentCard).WithContentType(AttachmentContentTypes.FileConsentCard)
             .WithName("file_consent.json").Build();
-        await context.SendAsync(MessageActivityInput.CreateBuilder().AddAttachment(fileConsentCardResponse).Build(), cancellationToken);
+        await context.SendAsync(new MessageActivityInput().AddAttachment(fileConsentCardResponse), cancellationToken);
 
         return AdaptiveCardResponse.CreateMessageResponse("File Consent requested!");
     }
 
     string? message = data != null && data.TryGetValue("message", out object? msgValue) ? msgValue?.ToString() : null;
 
-    JsonObject adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
+    JsonElement adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
-    await context.SendAsync(MessageActivityInput.CreateBuilder().AddAttachment(adaptiveActionCardResponse).Build(), cancellationToken);
+    await context.SendAsync(new MessageActivityInput().AddAttachment(adaptiveActionCardResponse), cancellationToken);
 
     return AdaptiveCardResponse.CreateMessageResponse("Action submitted!");
 });
@@ -135,7 +135,7 @@ bot.OnFileConsent(async (context, cancellationToken) =>
                         .WithContentUrl(contentUrl != null ? new Uri(contentUrl) : null)
                         .WithContent(fileInfoContent).Build();
 
-                    await context.SendAsync(MessageActivityInput.CreateBuilder().AddAttachment(fileUploadResponse).Build(), cancellationToken);
+                    await context.SendAsync(new MessageActivityInput().AddAttachment(fileUploadResponse), cancellationToken);
                 }
                 else
                 {

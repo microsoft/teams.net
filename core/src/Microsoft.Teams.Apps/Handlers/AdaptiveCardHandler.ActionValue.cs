@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
 
 namespace Microsoft.Teams.Apps;
 

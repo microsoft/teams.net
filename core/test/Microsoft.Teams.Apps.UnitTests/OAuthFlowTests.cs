@@ -90,7 +90,7 @@ public class OAuthFlowTests
         // Dispatch signin/failure through the route — should only hit GitHub (most recent)
         InvokeActivity failureActivity = new()
         {
-            Name = "signin/failure",
+            Name = InvokeName.SignInFailure,
             ChannelId = TestChannelId,
             From = new TeamsChannelAccount { Id = TestUserId },
             Recipient = new TeamsChannelAccount { Id = "bot-id" },
@@ -564,7 +564,7 @@ public class OAuthFlowTests
             NullLogger<UserTokenClient>.Instance);
     }
 
-    private static Context<MessageActivity> CreateMessageContext(TestHarness harness, string userId, string? conversationType = null)
+    private static Context<MessageActivity> CreateMessageContext(TestHarness harness, string userId, ConversationType? conversationType = null)
     {
         MessageActivity activity = new("hello")
         {

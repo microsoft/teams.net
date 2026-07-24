@@ -68,9 +68,9 @@ internal sealed class A2AServer(
         string greeting = await agent.GreetWithHandoffAsync(
             newConvId, handoff.From, handoff.UserName, handoff.Summary, ct);
 
-        MessageActivityInput proactive = MessageActivityInput.CreateBuilder()
+        MessageActivityInput proactive = new MessageActivityInput()
             .WithText(greeting)
-            .Build();
+            ;
         SendActivityResponse? sent = await conversations.SendActivityAsync(newConvId, proactive, serviceUrl, cancellationToken: ct);
         logger.LogInformation("[{Bot}/A2A] proactive greeting sent (conv={ConvId}, activityId={ActivityId})",
             config.Name, newConvId, sent?.Id ?? "<none>");

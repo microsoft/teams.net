@@ -199,9 +199,8 @@ public class TeamsBotApplication : BotApplication
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendAsync(string conversationId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
-            .WithText(text)
-            .Build();
+        MessageActivityInput activity = new MessageActivityInput()
+            .WithText(text);
 
         return SendAsync(conversationId, activity, serviceUrl, agenticIdentity, cancellationToken);
     }

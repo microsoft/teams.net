@@ -155,7 +155,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
                 .WithType(MessageExtensionResponseTypes.BotMessagePreview)
-                .WithActivityPreview(MessageActivityInput.CreateBuilder().AddAttachment(attachment).Build())
+                .WithActivityPreview(new MessageActivityInput().AddAttachment(attachment))
                 )
             .Build();
 });

@@ -104,7 +104,7 @@ public class AgenticUserIdentityCreatedValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserIdentityCreated;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserIdentityCreated;
 
     /// <summary>
     /// Gets or sets the manager assigned to the agentic user at creation.
@@ -128,7 +128,7 @@ public class AgenticUserIdentityUpdatedValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserIdentityUpdated;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserIdentityUpdated;
 
     /// <summary>
     /// Gets or sets the property that changed.
@@ -146,7 +146,7 @@ public class AgenticUserManagerUpdatedValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserManagerUpdated;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserManagerUpdated;
 
     /// <summary>
     /// Gets or sets the new manager reference. The value is absent when the manager was removed.
@@ -164,7 +164,7 @@ public class AgenticUserEnabledValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserEnabled;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserEnabled;
 }
 
 /// <summary>
@@ -176,7 +176,7 @@ public class AgenticUserDisabledValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserDisabled;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserDisabled;
 }
 
 /// <summary>
@@ -188,7 +188,7 @@ public class AgenticUserDeletedValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserDeleted;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserDeleted;
 
     /// <summary>
     /// Gets or sets the reason the agentic user was deleted.
@@ -206,7 +206,7 @@ public class AgenticUserUndeletedValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserUndeleted;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserUndeleted;
 }
 
 /// <summary>
@@ -218,7 +218,7 @@ public class AgenticUserWorkloadOnboardingUpdatedValue : AgentLifecycleValueBase
     /// Gets or sets the lifecycle event type.
     /// </summary>
     [JsonPropertyName("eventType")]
-    public string EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserWorkloadOnboardingUpdated;
+    public AgentLifecycleEventType EventType { get; set; } = AgentLifecycleEventTypes.AgenticUserWorkloadOnboardingUpdated;
 
     /// <summary>
     /// Gets or sets the workload being onboarded.

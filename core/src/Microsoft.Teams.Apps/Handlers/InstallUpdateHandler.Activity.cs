@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -38,28 +39,40 @@ public class InstallUpdateActivity : TeamsActivity
     internal InstallUpdateActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        Action = Properties.Extract<string>("action");
+        Action = Properties.Extract<InstallUpdateAction>("action");
     }
 
     /// <summary>
     /// Gets or sets the action for the installation update. See <see cref="InstallUpdateActions"/> for known values.
     /// </summary>
     [JsonPropertyName("action")]
-    public string? Action { get; internal set; }
+    public InstallUpdateAction? Action { get; internal set; }
 }
 
 /// <summary>
 /// String constants for installation update actions.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<InstallUpdateAction>))]
+public class InstallUpdateAction(string value) : StringEnum(value)
+{
+    /// <summary>Add action.</summary>
+    public static readonly InstallUpdateAction Add = new("add");
+    /// <summary>Remove action.</summary>
+    public static readonly InstallUpdateAction Remove = new("remove");
+}
+
+/// <summary>
+/// Common installation update action values.
 /// </summary>
 public static class InstallUpdateActions
 {
     /// <summary>
     /// Add action constant.
     /// </summary>
-    public const string Add = "add";
+    public static InstallUpdateAction Add => InstallUpdateAction.Add;
 
     /// <summary>
     /// Remove action constant.
     /// </summary>
-    public const string Remove = "remove";
+    public static InstallUpdateAction Remove => InstallUpdateAction.Remove;
 }

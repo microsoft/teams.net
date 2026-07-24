@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
@@ -29,9 +30,9 @@ public class StreamInfoEntity : Entity
     /// Gets or sets the stream type. See <see cref="StreamTypes"/> for possible values.
     /// </summary>
     [JsonPropertyName("streamType")]
-    public string? StreamType
+    public StreamType? StreamType
     {
-        get => base.Properties.TryGetValue("streamType", out object? value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("streamType", out object? value) && value is not null ? new StreamType(value.ToString()!) : null;
         set => base.Properties["streamType"] = value;
     }
 
@@ -50,20 +51,31 @@ public class StreamInfoEntity : Entity
 
 
 /// <summary>
-/// Represents the types of streams.
+/// String enum for stream types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<StreamType>))]
+public class StreamType(string value) : StringEnum(value)
+{
+    /// <summary>Informative stream type.</summary>
+    public static readonly StreamType Informative = new("informative");
+    /// <summary>Streaming stream type.</summary>
+    public static readonly StreamType Streaming = new("streaming");
+    /// <summary>Final stream type.</summary>
+    public static readonly StreamType Final = new("final");
+
+}
+
+/// <summary>
+/// Common stream type values.
 /// </summary>
 public static class StreamTypes
 {
-    /// <summary>
-    /// Informative stream type.
-    /// </summary>
-    public const string Informative = "informative";
-    /// <summary>
-    /// Streaming stream type.
-    /// </summary>
-    public const string Streaming = "streaming";
-    /// <summary>
-    /// Represents the string literal "final".
-    /// </summary>
-    public const string Final = "final";
+    /// <summary>Gets the informative stream type.</summary>
+    public static StreamType Informative => StreamType.Informative;
+
+    /// <summary>Gets the streaming stream type.</summary>
+    public static StreamType Streaming => StreamType.Streaming;
+
+    /// <summary>Gets the final stream type.</summary>
+    public static StreamType Final => StreamType.Final;
 }

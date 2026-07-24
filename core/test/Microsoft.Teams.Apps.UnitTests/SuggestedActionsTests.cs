@@ -167,9 +167,9 @@ public class SuggestedActionsTests
         Assert.Contains("user1", activity.SuggestedActions.To);
         Assert.Contains("user2", activity.SuggestedActions.To);
         Assert.Equal(2, activity.SuggestedActions.Actions.Count);
-        Assert.Equal("imBack", activity.SuggestedActions.Actions[0].Type);
+        Assert.Equal("imBack", activity.SuggestedActions.Actions[0].Type!.ToString());
         Assert.Equal("Option 1", activity.SuggestedActions.Actions[0].Title);
-        Assert.Equal("postBack", activity.SuggestedActions.Actions[1].Type);
+        Assert.Equal("postBack", activity.SuggestedActions.Actions[1].Type!.ToString());
         Assert.Equal("Option 2", activity.SuggestedActions.Actions[1].Title);
     }
 
@@ -194,10 +194,10 @@ public class SuggestedActionsTests
     {
         SuggestedActions suggestedActions = new();
 
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
-            .Build();
+            ;
 
         Assert.NotNull(activity.SuggestedActions);
         Assert.Same(suggestedActions, activity.SuggestedActions);
@@ -212,10 +212,10 @@ public class SuggestedActionsTests
         SuggestedActions suggestedActions = new SuggestedActions()
             .AddAction(new SuggestedAction(ActionTypes.IMBack, "Option 1", "opt1"));
 
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
-            .Build();
+            ;
 
         Assert.NotNull(activity.SuggestedActions);
         Assert.Same(suggestedActions, activity.SuggestedActions);
@@ -245,9 +245,9 @@ public class SuggestedActionsTests
         Assert.Single(roundTripped.SuggestedActions.To);
         Assert.Equal("user1", roundTripped.SuggestedActions.To[0]);
         Assert.Equal(2, roundTripped.SuggestedActions.Actions.Count);
-        Assert.Equal("openUrl", roundTripped.SuggestedActions.Actions[0].Type);
+        Assert.Equal("openUrl", roundTripped.SuggestedActions.Actions[0].Type!.ToString());
         Assert.Equal("Open", roundTripped.SuggestedActions.Actions[0].Title);
-        Assert.Equal("imBack", roundTripped.SuggestedActions.Actions[1].Type);
+        Assert.Equal("imBack", roundTripped.SuggestedActions.Actions[1].Type!.ToString());
         Assert.Equal("Say Hi", roundTripped.SuggestedActions.Actions[1].Title);
     }
 }

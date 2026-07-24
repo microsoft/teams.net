@@ -25,7 +25,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendAsync(MessageActivityInput.CreateBuilder().WithText("response text").WithRecipient(inbound.From!, isTargeted: true).Build());
+        await ctx.SendAsync(new MessageActivityInput().WithText("response text").WithRecipient(inbound.From!, isTargeted: true));
 
         Assert.NotNull(captured.Value);
         TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
@@ -59,7 +59,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendAsync(MessageActivityInput.CreateBuilder().WithText("hello").Build());
+        await ctx.SendAsync(new MessageActivityInput().WithText("hello"));
 
         Assert.NotNull(captured.Value);
         TeamsActivityInput teamsActivity = (TeamsActivityInput)captured.Value!;
@@ -75,11 +75,11 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivityInput outbound = MessageActivityInput.CreateBuilder()
+        MessageActivityInput outbound = new MessageActivityInput()
             .WithText("response")
             .WithRecipient(inbound.From!, isTargeted: true)
             .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
-            .Build();
+            ;
 
         await ctx.SendAsync(outbound);
 
@@ -99,7 +99,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("secret").WithRecipient(inbound.From!, isTargeted: true).Build();
+        MessageActivityInput outbound = new MessageActivityInput().WithText("secret").WithRecipient(inbound.From!, isTargeted: true);
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => ctx.SendAsync(outbound));
@@ -115,7 +115,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        await ctx.SendAsync(MessageActivityInput.CreateBuilder().WithText("hi").Build());
+        await ctx.SendAsync(new MessageActivityInput().WithText("hi"));
 
         Assert.NotNull(captured.Value);
     }
@@ -129,7 +129,7 @@ public class PromptPreviewTests
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
-        MessageActivityInput outbound = MessageActivityInput.CreateBuilder().WithText("only you can see this").WithRecipient(inbound.From!, isTargeted: true).Build();
+        MessageActivityInput outbound = new MessageActivityInput().WithText("only you can see this").WithRecipient(inbound.From!, isTargeted: true);
 
         await ctx.SendAsync(outbound);
 
@@ -143,7 +143,7 @@ public class PromptPreviewTests
         public CoreActivityInput? Value { get; set; }
     }
 
-    private static MessageActivity BuildInbound(bool targetedInbound, string inboundId, string convType)
+    private static MessageActivity BuildInbound(bool targetedInbound, string inboundId, ConversationType convType)
     {
         return new MessageActivity("inbound text")
         {

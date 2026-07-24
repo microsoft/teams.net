@@ -84,7 +84,7 @@ public class StreamingActivityInputBuilder : TeamsActivityInputBuilder<Streaming
     /// <param name="streamType">The stream type. See <see cref="StreamTypes"/>.</param>
     /// <param name="streamId">Optional stream identifier.</param>
     /// <param name="streamSequence">Optional monotonically increasing sequence number.</param>
-    public StreamingActivityInputBuilder WithStreamInfo(string streamType, string? streamId = null, int? streamSequence = null)
+    public StreamingActivityInputBuilder WithStreamInfo(StreamType streamType, string? streamId = null, int? streamSequence = null)
     {
         _activity.StreamInfo = StreamInfoEntityExtensions.AddToActivity(_activity, streamType, streamId, streamSequence);
         return this;
