@@ -160,12 +160,12 @@ public class ObservabilityBotApp : TeamsBotApplication
             // Record output on the top-level invoke_agent span before it closes.
             invokeScope.RecordOutputMessages([responseText]);
 
-            MessageActivityInput builder = new MessageActivityInput()
+            MessageActivityInput msg = new MessageActivityInput()
                 .WithText(responseText, TextFormats.Markdown)
                 .AddMention(context.Activity?.From!)
                 .AddAIGenerated();
 
-            await context.SendAsync(builder.Build(), ct);
+            await context.SendAsync(msg, ct);
         }
         catch (Exception ex)
         {
@@ -256,7 +256,7 @@ public class ObservabilityBotApp : TeamsBotApplication
                 - channels: {{channels?.Count ?? 0}}
                 """;
 
-            await context.SendAsync(MessageActivityInput.CreateBuilder().WithText(response, TextFormats.Markdown).Build(), ct).ConfigureAwait(false);
+            await context.SendAsync(new MessageActivityInput().WithText(response, TextFormats.Markdown), ct).ConfigureAwait(false);
             return true;
         }
 
