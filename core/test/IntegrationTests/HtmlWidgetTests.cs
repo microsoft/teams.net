@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.HtmlWidget;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
