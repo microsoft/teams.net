@@ -2,8 +2,26 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps;
+
+/// <summary>
+/// Adaptive card response types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<AdaptiveCardResponseType>))]
+public class AdaptiveCardResponseType(string value) : StringEnum(value)
+{
+    /// <summary>
+    /// Message type - displays a message to the user.
+    /// </summary>
+    public static readonly AdaptiveCardResponseType Message = new("application/vnd.microsoft.activity.message");
+
+    /// <summary>
+    /// Card type - updates the card with new content.
+    /// </summary>
+    public static readonly AdaptiveCardResponseType Card = new("application/vnd.microsoft.card.adaptive");
+}
 
 /// <summary>
 /// Adaptive card response types.
@@ -13,12 +31,12 @@ public static class AdaptiveCardResponseTypes
     /// <summary>
     /// Message type - displays a message to the user.
     /// </summary>
-    public const string Message = "application/vnd.microsoft.activity.message";
+    public static AdaptiveCardResponseType Message => AdaptiveCardResponseType.Message;
 
     /// <summary>
     /// Card type - updates the card with new content.
     /// </summary>
-    public const string Card = "application/vnd.microsoft.card.adaptive";
+    public static AdaptiveCardResponseType Card => AdaptiveCardResponseType.Card;
 }
 
 /// <summary>
@@ -37,7 +55,7 @@ public class AdaptiveCardResponse
     /// </summary>
     [JsonPropertyName("type")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Type { get; internal set; }
+    public AdaptiveCardResponseType? Type { get; internal set; }
 
     /// <summary>
     /// Value for the response. Can be a string message or card content.
@@ -91,7 +109,7 @@ public class AdaptiveCardResponse
 public class AdaptiveCardResponseBuilder
 {
     private int _statusCode = 200;
-    private string? _type;
+    private AdaptiveCardResponseType? _type;
     private object? _value;
 
     /// <summary>
@@ -106,7 +124,7 @@ public class AdaptiveCardResponseBuilder
     /// <summary>
     /// Sets the type of the response. See <see cref="AdaptiveCardResponseTypes"/> for common values.
     /// </summary>
-    public AdaptiveCardResponseBuilder WithType(string type)
+    public AdaptiveCardResponseBuilder WithType(AdaptiveCardResponseType type)
     {
         _type = type;
         return this;

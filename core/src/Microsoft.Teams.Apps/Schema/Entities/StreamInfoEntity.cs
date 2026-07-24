@@ -56,11 +56,11 @@ public class StreamInfoEntity : Entity
 [JsonConverter(typeof(StringEnumJsonConverter<StreamType>))]
 public class StreamType(string value) : StringEnum(value)
 {
-    /// <summary>Gets the informative stream type.</summary>
+    /// <summary>Informative stream type.</summary>
     public static readonly StreamType Informative = new("informative");
-    /// <summary>Gets the streaming stream type.</summary>
+    /// <summary>Streaming stream type.</summary>
     public static readonly StreamType Streaming = new("streaming");
-    /// <summary>Gets the final stream type.</summary>
+    /// <summary>Final stream type.</summary>
     public static readonly StreamType Final = new("final");
 
 }

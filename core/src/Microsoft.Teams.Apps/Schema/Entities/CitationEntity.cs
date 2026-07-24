@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
@@ -146,7 +147,7 @@ public class CitationAppearanceDocument
     /// Gets or sets the encoding format of the text. See <see cref="EncodingFormats"/> for known values.
     /// </summary>
     [JsonPropertyName("encodingFormat")]
-    public string? EncodingFormat { get; set; }
+    public EncodingFormat? EncodingFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the citation icon information.
@@ -182,7 +183,57 @@ public class CitationImageObject
     /// Gets or sets the icon name. See <see cref="CitationIcons"/> for known values.
     /// </summary>
     [JsonPropertyName("name")]
-    public required string Name { get; set; }
+    public required CitationIcon Name { get; set; }
+}
+
+/// <summary>
+/// Known citation icon names.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<CitationIcon>))]
+public class CitationIcon(string value) : StringEnum(value)
+{
+    /// <summary>Microsoft Word icon.</summary>
+    public static readonly CitationIcon MicrosoftWord = new("Microsoft Word");
+    /// <summary>Microsoft Excel icon.</summary>
+    public static readonly CitationIcon MicrosoftExcel = new("Microsoft Excel");
+    /// <summary>Microsoft PowerPoint icon.</summary>
+    public static readonly CitationIcon MicrosoftPowerPoint = new("Microsoft PowerPoint");
+    /// <summary>Microsoft OneNote icon.</summary>
+    public static readonly CitationIcon MicrosoftOneNote = new("Microsoft OneNote");
+    /// <summary>Microsoft SharePoint icon.</summary>
+    public static readonly CitationIcon MicrosoftSharePoint = new("Microsoft SharePoint");
+    /// <summary>Microsoft Visio icon.</summary>
+    public static readonly CitationIcon MicrosoftVisio = new("Microsoft Visio");
+    /// <summary>Microsoft Loop icon.</summary>
+    public static readonly CitationIcon MicrosoftLoop = new("Microsoft Loop");
+    /// <summary>Microsoft Whiteboard icon.</summary>
+    public static readonly CitationIcon MicrosoftWhiteboard = new("Microsoft Whiteboard");
+    /// <summary>Adobe Illustrator icon.</summary>
+    public static readonly CitationIcon AdobeIllustrator = new("Adobe Illustrator");
+    /// <summary>Adobe Photoshop icon.</summary>
+    public static readonly CitationIcon AdobePhotoshop = new("Adobe Photoshop");
+    /// <summary>Adobe InDesign icon.</summary>
+    public static readonly CitationIcon AdobeInDesign = new("Adobe InDesign");
+    /// <summary>Adobe Flash icon.</summary>
+    public static readonly CitationIcon AdobeFlash = new("Adobe Flash");
+    /// <summary>Sketch icon.</summary>
+    public static readonly CitationIcon Sketch = new("Sketch");
+    /// <summary>Source code icon.</summary>
+    public static readonly CitationIcon SourceCode = new("Source Code");
+    /// <summary>Image icon.</summary>
+    public static readonly CitationIcon Image = new("Image");
+    /// <summary>GIF icon.</summary>
+    public static readonly CitationIcon Gif = new("GIF");
+    /// <summary>Video icon.</summary>
+    public static readonly CitationIcon Video = new("Video");
+    /// <summary>Sound icon.</summary>
+    public static readonly CitationIcon Sound = new("Sound");
+    /// <summary>ZIP icon.</summary>
+    public static readonly CitationIcon Zip = new("ZIP");
+    /// <summary>Text icon.</summary>
+    public static readonly CitationIcon Text = new("Text");
+    /// <summary>PDF icon.</summary>
+    public static readonly CitationIcon Pdf = new("PDF");
 }
 
 /// <summary>
@@ -191,67 +242,57 @@ public class CitationImageObject
 public static class CitationIcons
 {
     /// <summary>Microsoft Word icon.</summary>
-    public const string MicrosoftWord = "Microsoft Word";
-
+    public static CitationIcon MicrosoftWord => CitationIcon.MicrosoftWord;
     /// <summary>Microsoft Excel icon.</summary>
-    public const string MicrosoftExcel = "Microsoft Excel";
-
+    public static CitationIcon MicrosoftExcel => CitationIcon.MicrosoftExcel;
     /// <summary>Microsoft PowerPoint icon.</summary>
-    public const string MicrosoftPowerPoint = "Microsoft PowerPoint";
-
+    public static CitationIcon MicrosoftPowerPoint => CitationIcon.MicrosoftPowerPoint;
     /// <summary>Microsoft OneNote icon.</summary>
-    public const string MicrosoftOneNote = "Microsoft OneNote";
-
+    public static CitationIcon MicrosoftOneNote => CitationIcon.MicrosoftOneNote;
     /// <summary>Microsoft SharePoint icon.</summary>
-    public const string MicrosoftSharePoint = "Microsoft SharePoint";
-
+    public static CitationIcon MicrosoftSharePoint => CitationIcon.MicrosoftSharePoint;
     /// <summary>Microsoft Visio icon.</summary>
-    public const string MicrosoftVisio = "Microsoft Visio";
-
+    public static CitationIcon MicrosoftVisio => CitationIcon.MicrosoftVisio;
     /// <summary>Microsoft Loop icon.</summary>
-    public const string MicrosoftLoop = "Microsoft Loop";
-
+    public static CitationIcon MicrosoftLoop => CitationIcon.MicrosoftLoop;
     /// <summary>Microsoft Whiteboard icon.</summary>
-    public const string MicrosoftWhiteboard = "Microsoft Whiteboard";
-
+    public static CitationIcon MicrosoftWhiteboard => CitationIcon.MicrosoftWhiteboard;
     /// <summary>Adobe Illustrator icon.</summary>
-    public const string AdobeIllustrator = "Adobe Illustrator";
-
+    public static CitationIcon AdobeIllustrator => CitationIcon.AdobeIllustrator;
     /// <summary>Adobe Photoshop icon.</summary>
-    public const string AdobePhotoshop = "Adobe Photoshop";
-
+    public static CitationIcon AdobePhotoshop => CitationIcon.AdobePhotoshop;
     /// <summary>Adobe InDesign icon.</summary>
-    public const string AdobeInDesign = "Adobe InDesign";
-
+    public static CitationIcon AdobeInDesign => CitationIcon.AdobeInDesign;
     /// <summary>Adobe Flash icon.</summary>
-    public const string AdobeFlash = "Adobe Flash";
-
+    public static CitationIcon AdobeFlash => CitationIcon.AdobeFlash;
     /// <summary>Sketch icon.</summary>
-    public const string Sketch = "Sketch";
-
+    public static CitationIcon Sketch => CitationIcon.Sketch;
     /// <summary>Source code icon.</summary>
-    public const string SourceCode = "Source Code";
-
+    public static CitationIcon SourceCode => CitationIcon.SourceCode;
     /// <summary>Image icon.</summary>
-    public const string Image = "Image";
-
+    public static CitationIcon Image => CitationIcon.Image;
     /// <summary>GIF icon.</summary>
-    public const string Gif = "GIF";
-
+    public static CitationIcon Gif => CitationIcon.Gif;
     /// <summary>Video icon.</summary>
-    public const string Video = "Video";
-
+    public static CitationIcon Video => CitationIcon.Video;
     /// <summary>Sound icon.</summary>
-    public const string Sound = "Sound";
-
+    public static CitationIcon Sound => CitationIcon.Sound;
     /// <summary>ZIP icon.</summary>
-    public const string Zip = "ZIP";
-
+    public static CitationIcon Zip => CitationIcon.Zip;
     /// <summary>Text icon.</summary>
-    public const string Text = "Text";
-
+    public static CitationIcon Text => CitationIcon.Text;
     /// <summary>PDF icon.</summary>
-    public const string Pdf = "PDF";
+    public static CitationIcon Pdf => CitationIcon.Pdf;
+}
+
+/// <summary>
+/// Known encoding format MIME types for citation documents.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<EncodingFormat>))]
+public class EncodingFormat(string value) : StringEnum(value)
+{
+    /// <summary>Adaptive card encoding format.</summary>
+    public static readonly EncodingFormat AdaptiveCard = new("application/vnd.microsoft.card.adaptive");
 }
 
 /// <summary>
@@ -260,7 +301,7 @@ public static class CitationIcons
 public static class EncodingFormats
 {
     /// <summary>Adaptive card encoding format.</summary>
-    public const string AdaptiveCard = "application/vnd.microsoft.card.adaptive";
+    public static EncodingFormat AdaptiveCard => EncodingFormat.AdaptiveCard;
 }
 
 /// <summary>
@@ -291,12 +332,12 @@ public class CitationAppearance
     /// <summary>
     /// Gets or sets the encoding format of the text. See <see cref="EncodingFormats"/> for known values.
     /// </summary>
-    public string? EncodingFormat { get; set; }
+    public EncodingFormat? EncodingFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the citation icon name. See <see cref="CitationIcons"/> for known values.
     /// </summary>
-    public string? Icon { get; set; }
+    public CitationIcon? Icon { get; set; }
 
     /// <summary>
     /// Gets or sets the keywords (max length 3, max keyword length 28).

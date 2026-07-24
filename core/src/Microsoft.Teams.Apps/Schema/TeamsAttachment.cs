@@ -15,19 +15,19 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonConverter(typeof(StringEnumJsonConverter<AttachmentContentType>))]
 public class AttachmentContentType(string value) : StringEnum(value)
 {
-    /// <summary>Gets the adaptive card content type.</summary>
+    /// <summary>Adaptive card content type.</summary>
     public static readonly AttachmentContentType AdaptiveCard = new("application/vnd.microsoft.card.adaptive");
-    /// <summary>Gets the hero card content type.</summary>
+    /// <summary>Hero card content type.</summary>
     public static readonly AttachmentContentType HeroCard = new("application/vnd.microsoft.card.hero");
-    /// <summary>Gets the thumbnail card content type.</summary>
+    /// <summary>Thumbnail card content type.</summary>
     public static readonly AttachmentContentType ThumbnailCard = new("application/vnd.microsoft.card.thumbnail");
-    /// <summary>Gets the O365 connector card content type.</summary>
+    /// <summary>O365 connector card content type.</summary>
     public static readonly AttachmentContentType O365ConnectorCard = new("application/vnd.microsoft.teams.card.o365connector");
-    /// <summary>Gets the file consent card content type.</summary>
+    /// <summary>File consent card content type.</summary>
     public static readonly AttachmentContentType FileConsentCard = new("application/vnd.microsoft.teams.card.file.consent");
-    /// <summary>Gets the file info card content type.</summary>
+    /// <summary>File info card content type.</summary>
     public static readonly AttachmentContentType FileInfoCard = new("application/vnd.microsoft.teams.card.file.info");
-    /// <summary>Gets the OAuth card content type.</summary>
+    /// <summary>OAuth card content type.</summary>
     public static readonly AttachmentContentType OAuthCard = new("application/vnd.microsoft.card.oauth");
 
 }
@@ -65,11 +65,11 @@ public static class AttachmentContentTypes
 [JsonConverter(typeof(StringEnumJsonConverter<AttachmentLayoutType>))]
 public class AttachmentLayoutType(string value) : StringEnum(value)
 {
-    /// <summary>Gets the list layout.</summary>
+    /// <summary>List layout.</summary>
     public static readonly AttachmentLayoutType List = new("list");
-    /// <summary>Gets the grid layout.</summary>
+    /// <summary>Grid layout.</summary>
     public static readonly AttachmentLayoutType Grid = new("grid");
-    /// <summary>Gets the carousel layout.</summary>
+    /// <summary>Carousel layout.</summary>
     public static readonly AttachmentLayoutType Carousel = new("carousel");
 
 }

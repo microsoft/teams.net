@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -66,61 +67,89 @@ public class MessageReaction
     /// See <see cref="ReactionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; internal set; }
+    public ReactionType? Type { get; internal set; }
 }
 
 /// <summary>
 /// String constants for reaction types.
 /// </summary>
-public static class ReactionTypes
+[JsonConverter(typeof(StringEnumJsonConverter<ReactionType>))]
+public class ReactionType(string value) : StringEnum(value)
 {
     /// <summary>
     /// Like reaction (👍).
     /// </summary>
-    public const string Like = "like";
+    public static readonly ReactionType Like = new("like");
 
     /// <summary>
     /// Heart reaction (❤️).
     /// </summary>
-    public const string Heart = "heart";
+    public static readonly ReactionType Heart = new("heart");
 
     /// <summary>
     /// Checkmark reaction (✅).
     /// </summary>
-    public const string Checkmark = "checkmark";
+    public static readonly ReactionType Checkmark = new("checkmark");
 
     /// <summary>
     /// Hourglass reaction (⏳).
     /// </summary>
-    public const string Hourglass = "hourglass";
+    public static readonly ReactionType Hourglass = new("hourglass");
 
     /// <summary>
     /// Pushpin reaction (📌).
     /// </summary>
-    public const string Pushpin = "pushpin";
+    public static readonly ReactionType Pushpin = new("pushpin");
 
     /// <summary>
     /// Exclamation reaction (❗).
     /// </summary>
-    public const string Exclamation = "exclamation";
+    public static readonly ReactionType Exclamation = new("exclamation");
 
     /// <summary>
     /// Laugh reaction (😆).
     /// </summary>
-    public const string Laugh = "laugh";
+    public static readonly ReactionType Laugh = new("laugh");
 
     /// <summary>
     /// Surprise reaction (😮).
     /// </summary>
-    public const string Surprise = "surprise";
+    public static readonly ReactionType Surprise = new("surprise");
 
     /// <summary>
     /// Sad reaction (🙁).
     /// </summary>
-    public const string Sad = "sad";
+    public static readonly ReactionType Sad = new("sad");
 
     /// <summary>
     /// Angry reaction (😠).
     /// </summary>
-    public const string Angry = "angry";
+    public static readonly ReactionType Angry = new("angry");
+}
+
+/// <summary>
+/// Common reaction type values.
+/// </summary>
+public static class ReactionTypes
+{
+    /// <summary>Like reaction.</summary>
+    public static ReactionType Like => ReactionType.Like;
+    /// <summary>Heart reaction.</summary>
+    public static ReactionType Heart => ReactionType.Heart;
+    /// <summary>Checkmark reaction.</summary>
+    public static ReactionType Checkmark => ReactionType.Checkmark;
+    /// <summary>Hourglass reaction.</summary>
+    public static ReactionType Hourglass => ReactionType.Hourglass;
+    /// <summary>Pushpin reaction.</summary>
+    public static ReactionType Pushpin => ReactionType.Pushpin;
+    /// <summary>Exclamation reaction.</summary>
+    public static ReactionType Exclamation => ReactionType.Exclamation;
+    /// <summary>Laugh reaction.</summary>
+    public static ReactionType Laugh => ReactionType.Laugh;
+    /// <summary>Surprise reaction.</summary>
+    public static ReactionType Surprise => ReactionType.Surprise;
+    /// <summary>Sad reaction.</summary>
+    public static ReactionType Sad => ReactionType.Sad;
+    /// <summary>Angry reaction.</summary>
+    public static ReactionType Angry => ReactionType.Angry;
 }

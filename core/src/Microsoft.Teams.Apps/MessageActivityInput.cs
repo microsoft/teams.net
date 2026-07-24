@@ -32,7 +32,7 @@ public class MessageActivityInput : TeamsActivityInput
     /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; set; }
+    public TextFormat? TextFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the attachments for the message.
@@ -44,7 +44,7 @@ public class MessageActivityInput : TeamsActivityInput
     /// Gets or sets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
+    public AttachmentLayoutType? AttachmentLayout { get; set; }
 
     /// <summary>
     /// Serializes the current activity to a JSON string using the outbound message serializer context.
@@ -83,7 +83,17 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Sets the text content (and optional text format) of the message.
     /// </summary>
-    public MessageActivityInputBuilder WithText(string text, string textFormat = TextFormats.Plain)
+    public MessageActivityInputBuilder WithText(string text)
+    {
+        _activity.Text = text;
+        _activity.TextFormat = TextFormats.Plain;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the text content and format of the message.
+    /// </summary>
+    public MessageActivityInputBuilder WithText(string text, TextFormat textFormat)
     {
         _activity.Text = text;
         _activity.TextFormat = textFormat;
@@ -102,7 +112,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Sets the text format. See <see cref="TextFormats"/>.
     /// </summary>
-    public MessageActivityInputBuilder WithTextFormat(string textFormat)
+    public MessageActivityInputBuilder WithTextFormat(TextFormat textFormat)
     {
         _activity.TextFormat = textFormat;
         return this;
@@ -134,7 +144,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Sets the attachment layout (e.g., "list", "carousel").
     /// </summary>
-    public MessageActivityInputBuilder WithAttachmentLayout(string attachmentLayout)
+    public MessageActivityInputBuilder WithAttachmentLayout(AttachmentLayoutType attachmentLayout)
     {
         _activity.AttachmentLayout = attachmentLayout;
         return this;

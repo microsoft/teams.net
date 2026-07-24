@@ -9,7 +9,13 @@
         "AzureAd__TenantId": "",
         "AzureAd__ClientId": "",
         "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
-        "AzureAd__ClientCredentials__0__ClientSecret": ""
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "AzureOpenAI__Endpoint": "",
+        "AzureOpenAI__ApiKey": "",
+        "AzureOpenAI__Deployment": "",
+        "AZURE_OPENAI_ENDPOINT": "",
+        "AZURE_OPENAI_KEY": "",
+        "AZURE_OPENAI_DEPLOYMENT": ""
       },
       "applicationUrl": "http://localhost:3978"
     }

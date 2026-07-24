@@ -3,8 +3,25 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.MessageExtension;
+
+/// <summary>
+/// Messaging extension response types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<MessageExtensionResponseType>))]
+public class MessageExtensionResponseType(string value) : StringEnum(value)
+{
+    /// <summary>Result response type.</summary>
+    public static readonly MessageExtensionResponseType Result = new("result");
+    /// <summary>Message response type.</summary>
+    public static readonly MessageExtensionResponseType Message = new("message");
+    /// <summary>Bot message preview response type.</summary>
+    public static readonly MessageExtensionResponseType BotMessagePreview = new("botMessagePreview");
+    /// <summary>Config response type.</summary>
+    public static readonly MessageExtensionResponseType Config = new("config");
+}
 
 /// <summary>
 /// Messaging extension response types.
@@ -14,22 +31,22 @@ public static class MessageExtensionResponseTypes
     /// <summary>
     /// Result type - displays a list of search results.
     /// </summary>
-    public const string Result = "result";
+    public static MessageExtensionResponseType Result => MessageExtensionResponseType.Result;
 
     /// <summary>
     /// Message type - displays a plain text message.
     /// </summary>
-    public const string Message = "message";
+    public static MessageExtensionResponseType Message => MessageExtensionResponseType.Message;
 
     /// <summary>
     /// Bot message preview type - shows a preview that can be edited before sending.
     /// </summary>
-    public const string BotMessagePreview = "botMessagePreview";
+    public static MessageExtensionResponseType BotMessagePreview => MessageExtensionResponseType.BotMessagePreview;
 
     /// <summary>
     /// Config type - prompts the user to set up the message extension.
     /// </summary>
-    public const string Config = "config";
+    public static MessageExtensionResponseType Config => MessageExtensionResponseType.Config;
 }
 
 /// <summary>
@@ -64,14 +81,14 @@ public class ComposeExtension
     /// See <see cref="MessageExtensionResponseTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public MessageExtensionResponseType? Type { get; set; }
 
     /// <summary>
     /// Layout for attachments.
     /// See <see cref="TeamsAttachmentLayouts"/> for common values.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
+    public AttachmentLayoutType? AttachmentLayout { get; set; }
 
     /// <summary>
     /// Array of attachments (cards) to display.
@@ -118,8 +135,8 @@ public class MessageExtensionSuggestedAction
 /// </summary>
 public class MessageExtensionResponseBuilder
 {
-    private string? _type;
-    private string? _attachmentLayout;
+    private MessageExtensionResponseType? _type;
+    private AttachmentLayoutType? _attachmentLayout;
     private TeamsAttachment[]? _attachments;
     private TeamsActivityInput? _activityPreview;
     private SuggestedAction[]? _suggestedActions;
@@ -128,7 +145,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets the type of the response. See <see cref="MessageExtensionResponseTypes"/> for known values.
     /// </summary>
-    public MessageExtensionResponseBuilder WithType(string type)
+    public MessageExtensionResponseBuilder WithType(MessageExtensionResponseType type)
     {
         _type = type;
         return this;
@@ -137,7 +154,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets the attachment layout. See <see cref="TeamsAttachmentLayouts"/> for known values.
     /// </summary>
-    public MessageExtensionResponseBuilder WithAttachmentLayout(string layout)
+    public MessageExtensionResponseBuilder WithAttachmentLayout(AttachmentLayoutType layout)
     {
         _attachmentLayout = layout;
         return this;
@@ -184,17 +201,17 @@ public class MessageExtensionResponseBuilder
     /// </summary>
     internal MessageExtensionResponse Validate()
     {
-        if (string.IsNullOrEmpty(_type))
+        if (_type is null)
         {
             throw new InvalidOperationException("Type must be set. Use WithType() to specify MessageExtensionResponseTypes.Result, Message, BotMessagePreview, or Config.");
         }
 
-        return _type switch
+        return _type.Value switch
         {
-            MessageExtensionResponseTypes.Result => ValidateResultType(),
-            MessageExtensionResponseTypes.Message => ValidateMessageType(),
-            MessageExtensionResponseTypes.BotMessagePreview => ValidateBotMessagePreviewType(),
-            MessageExtensionResponseTypes.Config => ValidateConfigType(),
+            "result" => ValidateResultType(),
+            "message" => ValidateMessageType(),
+            "botMessagePreview" => ValidateBotMessagePreviewType(),
+            "config" => ValidateConfigType(),
             _ => throw new InvalidOperationException($"Unknown message extension response type: {_type}")
         };
     }
@@ -244,7 +261,7 @@ public class MessageExtensionResponseBuilder
             throw new InvalidOperationException("Attachments cannot be set for Message type. Attachments is only used with Result or BotMessagePreview type.");
         }
 
-        if (!string.IsNullOrEmpty(_attachmentLayout))
+        if (_attachmentLayout is not null)
         {
             throw new InvalidOperationException("AttachmentLayout cannot be set for Message type. AttachmentLayout is only used with Result type.");
         }
@@ -281,7 +298,7 @@ public class MessageExtensionResponseBuilder
             throw new InvalidOperationException("Text cannot be set for BotMessagePreview type. Text is only used with Message type.");
         }
 
-        if (!string.IsNullOrEmpty(_attachmentLayout))
+        if (_attachmentLayout is not null)
         {
             throw new InvalidOperationException("AttachmentLayout cannot be set for BotMessagePreview type. AttachmentLayout is only used with Result type.");
         }
@@ -314,7 +331,7 @@ public class MessageExtensionResponseBuilder
             throw new InvalidOperationException("Attachments cannot be set for Config type. Attachments is only used with Result or BotMessagePreview type.");
         }
 
-        if (!string.IsNullOrEmpty(_attachmentLayout))
+        if (_attachmentLayout is not null)
         {
             throw new InvalidOperationException("AttachmentLayout cannot be set for Config type. AttachmentLayout is only used with Result type.");
         }

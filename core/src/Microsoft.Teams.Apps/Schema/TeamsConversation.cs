@@ -13,11 +13,11 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonConverter(typeof(StringEnumJsonConverter<ConversationType>))]
 public class ConversationType(string value) : StringEnum(value)
 {
-    /// <summary>Gets the personal conversation type.</summary>
+    /// <summary>Personal conversation type.</summary>
     public static readonly ConversationType Personal = new("personal");
-    /// <summary>Gets the group chat conversation type.</summary>
+    /// <summary>Group chat conversation type.</summary>
     public static readonly ConversationType GroupChat = new("groupChat");
-    /// <summary>Gets the channel conversation type.</summary>
+    /// <summary>Channel conversation type.</summary>
     public static readonly ConversationType Channel = new("channel");
 
 }

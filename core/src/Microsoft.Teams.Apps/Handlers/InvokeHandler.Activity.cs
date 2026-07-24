@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -29,7 +30,7 @@ public class InvokeActivity : TeamsActivity
     /// Gets or sets the name of the operation. See <see cref="InvokeNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name { get; internal set; }
+    public InvokeName? Name { get; internal set; }
 
     /// <summary>
     /// Gets or sets the value payload of the invoke activity.
@@ -51,7 +52,7 @@ public class InvokeActivity : TeamsActivity
     /// <param name="name">The invoke operation name.</param>
     internal InvokeActivity(string name) : base(TeamsActivityTypes.Invoke)
     {
-        Name = name;
+        Name = new InvokeName(name);
     }
 
     /// <summary>
@@ -61,7 +62,7 @@ public class InvokeActivity : TeamsActivity
     internal InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        Name = Properties.Extract<string>("name");
+        Name = Properties.Extract<InvokeName>("name");
         Value = activity is InvokeActivity invoke
             ? invoke.Value
             : Properties.Extract<JsonNode>("value");
@@ -101,98 +102,142 @@ public class InvokeActivity<TValue> : InvokeActivity
 /// <summary>
 /// String constants for invoke activity names.
 /// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<InvokeName>))]
+public class InvokeName(string value) : StringEnum(value)
+{
+    /// <summary>File consent invoke name.</summary>
+    public static readonly InvokeName FileConsent = new("fileConsent/invoke");
+    /// <summary>Adaptive card action invoke name.</summary>
+    public static readonly InvokeName AdaptiveCardAction = new("adaptiveCard/action");
+    /// <summary>Search invoke name.</summary>
+    public static readonly InvokeName Search = new("application/search");
+    /// <summary>Task fetch invoke name.</summary>
+    public static readonly InvokeName TaskFetch = new("task/fetch");
+    /// <summary>Task submit invoke name.</summary>
+    public static readonly InvokeName TaskSubmit = new("task/submit");
+    /// <summary>Sign-in token exchange invoke name.</summary>
+    public static readonly InvokeName SignInTokenExchange = new("signin/tokenExchange");
+    /// <summary>Sign-in verify state invoke name.</summary>
+    public static readonly InvokeName SignInVerifyState = new("signin/verifyState");
+    /// <summary>Sign-in failure invoke name.</summary>
+    public static readonly InvokeName SignInFailure = new("signin/failure");
+    /// <summary>Message extension anonymous query link invoke name.</summary>
+    public static readonly InvokeName MessageExtensionAnonQueryLink = new("composeExtension/anonymousQueryLink");
+    /// <summary>Message extension fetch task invoke name.</summary>
+    public static readonly InvokeName MessageExtensionFetchTask = new("composeExtension/fetchTask");
+    /// <summary>Message extension query invoke name.</summary>
+    public static readonly InvokeName MessageExtensionQuery = new("composeExtension/query");
+    /// <summary>Message extension query link invoke name.</summary>
+    public static readonly InvokeName MessageExtensionQueryLink = new("composeExtension/queryLink");
+    /// <summary>Message extension query setting URL invoke name.</summary>
+    public static readonly InvokeName MessageExtensionQuerySettingUrl = new("composeExtension/querySettingUrl");
+    /// <summary>Message extension select item invoke name.</summary>
+    public static readonly InvokeName MessageExtensionSelectItem = new("composeExtension/selectItem");
+    /// <summary>Message extension submit action invoke name.</summary>
+    public static readonly InvokeName MessageExtensionSubmitAction = new("composeExtension/submitAction");
+    /// <summary>Message fetch task invoke name.</summary>
+    public static readonly InvokeName MessageFetchTask = new("message/fetchTask");
+    /// <summary>Message submit action invoke name.</summary>
+    public static readonly InvokeName MessageSubmitAction = new("message/submitAction");
+    /// <summary>Suggested action submit invoke name.</summary>
+    public static readonly InvokeName SuggestedActionSubmit = new("suggestedActions/submit");
+}
+
+/// <summary>
+/// String constants for invoke activity names.
+/// </summary>
 public static class InvokeNames
 {
     /// <summary>
     /// File consent invoke name.
     /// </summary>
-    public const string FileConsent = "fileConsent/invoke";
+    public static InvokeName FileConsent => InvokeName.FileConsent;
 
     /// <summary>
     /// Adaptive card action invoke name.
     /// </summary>
-    public const string AdaptiveCardAction = "adaptiveCard/action";
+    public static InvokeName AdaptiveCardAction => InvokeName.AdaptiveCardAction;
 
     /// <summary>
     /// Search invoke name. Sent by Adaptive Card dynamic typeahead 'Input.ChoiceSet' inputs.
     /// </summary>
-    public const string Search = "application/search";
+    public static InvokeName Search => InvokeName.Search;
 
     /// <summary>
     /// Task fetch invoke name.
     /// </summary>
-    public const string TaskFetch = "task/fetch";
+    public static InvokeName TaskFetch => InvokeName.TaskFetch;
 
     /// <summary>
     /// Task submit invoke name.
     /// </summary>
-    public const string TaskSubmit = "task/submit";
+    public static InvokeName TaskSubmit => InvokeName.TaskSubmit;
 
     /// <summary>
     /// Sign-in token exchange invoke name.
     /// </summary>
-    public const string SignInTokenExchange = "signin/tokenExchange";
+    public static InvokeName SignInTokenExchange => InvokeName.SignInTokenExchange;
 
     /// <summary>
     /// Sign-in verify state invoke name.
     /// </summary>
-    public const string SignInVerifyState = "signin/verifyState";
+    public static InvokeName SignInVerifyState => InvokeName.SignInVerifyState;
 
     /// <summary>
     /// Sign-in failure invoke name. Sent by the Teams client when SSO token exchange
     /// fails client-side (e.g., misconfigured Entra app registration).
     /// </summary>
-    public const string SignInFailure = "signin/failure";
+    public static InvokeName SignInFailure => InvokeName.SignInFailure;
 
     /// <summary>
     /// Message extension anonymous query link invoke name.
     /// </summary>
-    public const string MessageExtensionAnonQueryLink = "composeExtension/anonymousQueryLink";
+    public static InvokeName MessageExtensionAnonQueryLink => InvokeName.MessageExtensionAnonQueryLink;
 
     /// <summary>
     /// Message extension fetch task invoke name.
     /// </summary>
-    public const string MessageExtensionFetchTask = "composeExtension/fetchTask";
+    public static InvokeName MessageExtensionFetchTask => InvokeName.MessageExtensionFetchTask;
 
     /// <summary>
     /// Message extension query invoke name.
     /// </summary>
-    public const string MessageExtensionQuery = "composeExtension/query";
+    public static InvokeName MessageExtensionQuery => InvokeName.MessageExtensionQuery;
 
     /// <summary>
     /// Message extension query link invoke name.
     /// </summary>
-    public const string MessageExtensionQueryLink = "composeExtension/queryLink";
+    public static InvokeName MessageExtensionQueryLink => InvokeName.MessageExtensionQueryLink;
 
     /// <summary>
     /// Message extension query setting URL invoke name.
     /// </summary>
-    public const string MessageExtensionQuerySettingUrl = "composeExtension/querySettingUrl";
+    public static InvokeName MessageExtensionQuerySettingUrl => InvokeName.MessageExtensionQuerySettingUrl;
 
     /// <summary>
     /// Message extension select item invoke name.
     /// </summary>
-    public const string MessageExtensionSelectItem = "composeExtension/selectItem";
+    public static InvokeName MessageExtensionSelectItem => InvokeName.MessageExtensionSelectItem;
 
     /// <summary>
     /// Message extension submit action invoke name.
     /// </summary>
-    public const string MessageExtensionSubmitAction = "composeExtension/submitAction";
+    public static InvokeName MessageExtensionSubmitAction => InvokeName.MessageExtensionSubmitAction;
 
     /// <summary>
     /// Message fetch task invoke name. Sent when the user clicks a feedback button on an AI-generated message.
     /// </summary>
-    public const string MessageFetchTask = "message/fetchTask";
+    public static InvokeName MessageFetchTask => InvokeName.MessageFetchTask;
 
     /// <summary>
     /// Message submit action invoke name.
     /// </summary>
-    public const string MessageSubmitAction = "message/submitAction";
+    public static InvokeName MessageSubmitAction => InvokeName.MessageSubmitAction;
 
     /// <summary>
     /// Suggested action submit invoke name.
     /// Sent when the user clicks a suggested action of type <c>Action.Submit</c>.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
-    public const string SuggestedActionSubmit = "suggestedActions/submit";
+    public static InvokeName SuggestedActionSubmit => InvokeName.SuggestedActionSubmit;
 }

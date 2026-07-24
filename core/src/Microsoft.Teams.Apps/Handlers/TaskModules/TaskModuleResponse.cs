@@ -3,8 +3,26 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.TaskModules;
+
+/// <summary>
+/// Task module response types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<TaskModuleResponseType>))]
+public class TaskModuleResponseType(string value) : StringEnum(value)
+{
+    /// <summary>
+    /// Continue type - displays a card or URL in the task module.
+    /// </summary>
+    public static readonly TaskModuleResponseType Continue = new("continue");
+
+    /// <summary>
+    /// Message type - displays a plain text message.
+    /// </summary>
+    public static readonly TaskModuleResponseType Message = new("message");
+}
 
 /// <summary>
 /// Task module response types.
@@ -14,12 +32,26 @@ public static class TaskModuleResponseTypes
     /// <summary>
     /// Continue type - displays a card or URL in the task module.
     /// </summary>
-    public const string Continue = "continue";
+    public static TaskModuleResponseType Continue => TaskModuleResponseType.Continue;
 
     /// <summary>
     /// Message type - displays a plain text message.
     /// </summary>
-    public const string Message = "message";
+    public static TaskModuleResponseType Message => TaskModuleResponseType.Message;
+}
+
+/// <summary>
+/// Task module size constants.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<TaskModuleSize>))]
+public class TaskModuleSize(string value) : StringEnum(value)
+{
+    /// <summary>Small task module size.</summary>
+    public static readonly TaskModuleSize Small = new("small");
+    /// <summary>Medium task module size.</summary>
+    public static readonly TaskModuleSize Medium = new("medium");
+    /// <summary>Large task module size.</summary>
+    public static readonly TaskModuleSize Large = new("large");
 }
 
 /// <summary>
@@ -30,17 +62,17 @@ public static class TaskModuleSizes
     /// <summary>
     /// Small size.
     /// </summary>
-    public const string Small = "small";
+    public static TaskModuleSize Small => TaskModuleSize.Small;
 
     /// <summary>
     /// Medium size.
     /// </summary>
-    public const string Medium = "medium";
+    public static TaskModuleSize Medium => TaskModuleSize.Medium;
 
     /// <summary>
     /// Large size.
     /// </summary>
-    public const string Large = "large";
+    public static TaskModuleSize Large => TaskModuleSize.Large;
 }
 
 /// <summary>
@@ -68,7 +100,7 @@ public class TaskModuleResponse
 /// </summary>
 public class TaskModuleResponseBuilder
 {
-    private string? _type;
+    private TaskModuleResponseType? _type;
     private string? _title;
     private TeamsAttachment? _card;
     private object _height = TaskModuleSizes.Small;
@@ -78,7 +110,7 @@ public class TaskModuleResponseBuilder
     /// <summary>
     /// Sets the type of the response. Use <see cref="TaskModuleResponseTypes"/> constants.
     /// </summary>
-    public TaskModuleResponseBuilder WithType(string type)
+    public TaskModuleResponseBuilder WithType(TaskModuleResponseType type)
     {
         _type = type;
         return this;
@@ -134,15 +166,15 @@ public class TaskModuleResponseBuilder
     /// </summary>
     internal TaskModuleResponse Validate()
     {
-        if (string.IsNullOrEmpty(_type))
+        if (_type is null)
         {
             throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseTypes.Continue or TaskModuleResponseTypes.Message.");
         }
 
-        object? value = _type switch
+        object? value = _type.Value switch
         {
-            TaskModuleResponseTypes.Continue => ValidateContinueType(),
-            TaskModuleResponseTypes.Message => ValidateMessageType(),
+            "continue" => ValidateContinueType(),
+            "message" => ValidateMessageType(),
             _ => throw new InvalidOperationException($"Unknown task module response type: {_type}")
         };
 
@@ -216,7 +248,7 @@ public class Response
     /// Type of result. See <see cref="TaskModuleResponseTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("type")]
-    public required string Type { get; set; }
+    public required TaskModuleResponseType Type { get; set; }
 
     /// <summary>
     /// The result value.

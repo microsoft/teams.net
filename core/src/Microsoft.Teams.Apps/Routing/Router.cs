@@ -148,7 +148,7 @@ internal sealed class Router
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
-        string? name = ctx.Activity is InvokeActivity inv ? inv.Name : null;
+        string? name = ctx.Activity is InvokeActivity inv ? inv.Name?.Value : null;
 
         _logger.LogDebug("Routing invoke activity with name '{Name}' against {RouteCount} registered routes.", name, _routes.Count);
 

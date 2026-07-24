@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -65,8 +66,8 @@ public class MessageActivity : TeamsActivity
     {
         Attachments = Properties.Extract<IList<TeamsAttachment>>("attachments");
         Text = Properties.Extract<string>("text");
-        TextFormat = Properties.Extract<string>("textFormat");
-        AttachmentLayout = Properties.Extract<string>("attachmentLayout");
+        TextFormat = Properties.Extract<TextFormat>("textFormat");
+        AttachmentLayout = Properties.Extract<AttachmentLayoutType>("attachmentLayout");
         SuggestedActions = Properties.Extract<SuggestedActions>("suggestedActions");
     }
 
@@ -109,14 +110,46 @@ public class MessageActivity : TeamsActivity
     /// Gets the text format. See <see cref="TextFormats"/> for common values (plain, markdown, xml, extendedmarkdown).
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; internal set; }
+    public TextFormat? TextFormat { get; internal set; }
 
     /// <summary>
     /// Gets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; internal set; }
+    public AttachmentLayoutType? AttachmentLayout { get; internal set; }
 
+}
+
+/// <summary>
+/// String constants for text formats.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<TextFormat>))]
+public class TextFormat(string value) : StringEnum(value)
+{
+    /// <summary>
+    /// Plain text format.
+    /// </summary>
+    public static readonly TextFormat Plain = new("plain");
+
+    /// <summary>
+    /// Markdown text format.
+    /// </summary>
+    public static readonly TextFormat Markdown = new("markdown");
+
+    /// <summary>
+    /// XML text format.
+    /// </summary>
+    public static readonly TextFormat Xml = new("xml");
+
+    /// <summary>
+    /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
+    /// and other rich content beyond standard markdown.
+    /// </summary>
+    /// <remarks>
+    /// This format is currently in public preview and may be subject to change.
+    /// </remarks>
+    [Experimental("ExperimentalTeamsExtendedMarkdown")]
+    public static readonly TextFormat ExtendedMarkdown = new("extendedmarkdown");
 }
 
 /// <summary>
@@ -127,17 +160,17 @@ public static class TextFormats
     /// <summary>
     /// Plain text format.
     /// </summary>
-    public const string Plain = "plain";
+    public static TextFormat Plain => TextFormat.Plain;
 
     /// <summary>
     /// Markdown text format.
     /// </summary>
-    public const string Markdown = "markdown";
+    public static TextFormat Markdown => TextFormat.Markdown;
 
     /// <summary>
     /// XML text format.
     /// </summary>
-    public const string Xml = "xml";
+    public static TextFormat Xml => TextFormat.Xml;
 
     /// <summary>
     /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
@@ -147,7 +180,7 @@ public static class TextFormats
     /// This format is currently in public preview and may be subject to change.
     /// </remarks>
     [Experimental("ExperimentalTeamsExtendedMarkdown")]
-    public const string ExtendedMarkdown = "extendedmarkdown";
+    public static TextFormat ExtendedMarkdown => TextFormat.ExtendedMarkdown;
 }
 
 /// <summary>
@@ -331,10 +364,25 @@ public static class MessageActivityExtensions
     /// </summary>
     /// <param name="message">The message activity.</param>
     /// <param name="text">The text to set.</param>
-    /// <param name="textFormat">The text format. Default is "plain".</param>
     /// <returns>The message activity for chaining.</returns>
     [Obsolete(ObsoleteMessage)]
-    public static MessageActivity WithText(this MessageActivity message, string text, string textFormat = TextFormats.Plain)
+    public static MessageActivity WithText(this MessageActivity message, string text)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.Text = text;
+        message.TextFormat = TextFormats.Plain;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the text content of the message.
+    /// </summary>
+    /// <param name="message">The message activity.</param>
+    /// <param name="text">The text to set.</param>
+    /// <param name="textFormat">The text format.</param>
+    /// <returns>The message activity for chaining.</returns>
+    [Obsolete(ObsoleteMessage)]
+    public static MessageActivity WithText(this MessageActivity message, string text, TextFormat textFormat)
     {
         ArgumentNullException.ThrowIfNull(message);
         message.Text = text;
@@ -363,7 +411,7 @@ public static class MessageActivityExtensions
     /// <param name="textFormat">The text format. See <see cref="TextFormats"/> for common values.</param>
     /// <returns>The message activity for chaining.</returns>
     [Obsolete(ObsoleteMessage)]
-    public static MessageActivity WithTextFormat(this MessageActivity message, string textFormat)
+    public static MessageActivity WithTextFormat(this MessageActivity message, TextFormat textFormat)
     {
         ArgumentNullException.ThrowIfNull(message);
         message.TextFormat = textFormat;
@@ -396,7 +444,7 @@ public static class MessageActivityExtensions
     /// <param name="attachmentLayout">The attachment layout (e.g., "list", "carousel").</param>
     /// <returns>The message activity for chaining.</returns>
     [Obsolete(ObsoleteMessage)]
-    public static MessageActivity WithAttachmentLayout(this MessageActivity message, string attachmentLayout)
+    public static MessageActivity WithAttachmentLayout(this MessageActivity message, AttachmentLayoutType attachmentLayout)
     {
         ArgumentNullException.ThrowIfNull(message);
         message.AttachmentLayout = attachmentLayout;

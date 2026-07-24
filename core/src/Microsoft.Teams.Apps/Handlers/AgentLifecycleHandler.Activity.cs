@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps;
 
@@ -15,7 +16,7 @@ public class AgentLifecycleEventActivity : EventActivity
     /// Gets or sets the lifecycle value payload type. See <see cref="AgentLifecycleEventValueTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("valueType")]
-    public string? ValueType { get; internal set; }
+    public AgentLifecycleEventValueType? ValueType { get; internal set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentLifecycleEventActivity"/> class.
@@ -33,7 +34,7 @@ public class AgentLifecycleEventActivity : EventActivity
     internal AgentLifecycleEventActivity(EventActivity activity) : base(activity)
     {
         Name ??= EventNames.AgentLifecycle;
-        ValueType = Properties.Extract<string>("valueType");
+        ValueType = Properties.Extract<AgentLifecycleEventValueType>("valueType");
         if (ValueType is null && activity is AgentLifecycleEventActivity lifecycleActivity)
         {
             ValueType = lifecycleActivity.ValueType;
@@ -78,28 +79,28 @@ public class AgentLifecycleEventActivity<TValue> : AgentLifecycleEventActivity
 public static class AgentLifecycleEventValueTypes
 {
     /// <summary>Agentic user identity created value type.</summary>
-    public const string AgenticUserIdentityCreated = "AgenticUserIdentityCreated";
+    public static AgentLifecycleEventValueType AgenticUserIdentityCreated => AgentLifecycleEventValueType.AgenticUserIdentityCreated;
 
     /// <summary>Agentic user identity updated value type.</summary>
-    public const string AgenticUserIdentityUpdated = "AgenticUserIdentityUpdated";
+    public static AgentLifecycleEventValueType AgenticUserIdentityUpdated => AgentLifecycleEventValueType.AgenticUserIdentityUpdated;
 
     /// <summary>Agentic user manager updated value type.</summary>
-    public const string AgenticUserManagerUpdated = "AgenticUserManagerUpdated";
+    public static AgentLifecycleEventValueType AgenticUserManagerUpdated => AgentLifecycleEventValueType.AgenticUserManagerUpdated;
 
     /// <summary>Agentic user enabled value type.</summary>
-    public const string AgenticUserEnabled = "AgenticUserEnabled";
+    public static AgentLifecycleEventValueType AgenticUserEnabled => AgentLifecycleEventValueType.AgenticUserEnabled;
 
     /// <summary>Agentic user disabled value type.</summary>
-    public const string AgenticUserDisabled = "AgenticUserDisabled";
+    public static AgentLifecycleEventValueType AgenticUserDisabled => AgentLifecycleEventValueType.AgenticUserDisabled;
 
     /// <summary>Agentic user deleted value type.</summary>
-    public const string AgenticUserDeleted = "AgenticUserDeleted";
+    public static AgentLifecycleEventValueType AgenticUserDeleted => AgentLifecycleEventValueType.AgenticUserDeleted;
 
     /// <summary>Agentic user undeleted value type.</summary>
-    public const string AgenticUserUndeleted = "AgenticUserUndeleted";
+    public static AgentLifecycleEventValueType AgenticUserUndeleted => AgentLifecycleEventValueType.AgenticUserUndeleted;
 
     /// <summary>Agentic user workload onboarding updated value type.</summary>
-    public const string AgenticUserWorkloadOnboardingUpdated = "AgenticUserWorkloadOnboardingUpdated";
+    public static AgentLifecycleEventValueType AgenticUserWorkloadOnboardingUpdated => AgentLifecycleEventValueType.AgenticUserWorkloadOnboardingUpdated;
 }
 
 /// <summary>
@@ -108,26 +109,74 @@ public static class AgentLifecycleEventValueTypes
 public static class AgentLifecycleEventTypes
 {
     /// <summary>Agentic user identity created event type.</summary>
-    public const string AgenticUserIdentityCreated = "agenticUserIdentityCreated";
+    public static AgentLifecycleEventType AgenticUserIdentityCreated => AgentLifecycleEventType.AgenticUserIdentityCreated;
 
     /// <summary>Agentic user identity updated event type.</summary>
-    public const string AgenticUserIdentityUpdated = "agenticUserIdentityUpdated";
+    public static AgentLifecycleEventType AgenticUserIdentityUpdated => AgentLifecycleEventType.AgenticUserIdentityUpdated;
 
     /// <summary>Agentic user manager updated event type.</summary>
-    public const string AgenticUserManagerUpdated = "agenticUserManagerUpdated";
+    public static AgentLifecycleEventType AgenticUserManagerUpdated => AgentLifecycleEventType.AgenticUserManagerUpdated;
 
     /// <summary>Agentic user enabled event type.</summary>
-    public const string AgenticUserEnabled = "agenticUserEnabled";
+    public static AgentLifecycleEventType AgenticUserEnabled => AgentLifecycleEventType.AgenticUserEnabled;
 
     /// <summary>Agentic user disabled event type.</summary>
-    public const string AgenticUserDisabled = "agenticUserDisabled";
+    public static AgentLifecycleEventType AgenticUserDisabled => AgentLifecycleEventType.AgenticUserDisabled;
 
     /// <summary>Agentic user deleted event type.</summary>
-    public const string AgenticUserDeleted = "agenticUserDeleted";
+    public static AgentLifecycleEventType AgenticUserDeleted => AgentLifecycleEventType.AgenticUserDeleted;
 
     /// <summary>Agentic user undeleted event type.</summary>
-    public const string AgenticUserUndeleted = "agenticUserUndeleted";
+    public static AgentLifecycleEventType AgenticUserUndeleted => AgentLifecycleEventType.AgenticUserUndeleted;
 
     /// <summary>Agentic user workload onboarding updated event type.</summary>
-    public const string AgenticUserWorkloadOnboardingUpdated = "agenticUserWorkloadOnboardingUpdated";
+    public static AgentLifecycleEventType AgenticUserWorkloadOnboardingUpdated => AgentLifecycleEventType.AgenticUserWorkloadOnboardingUpdated;
+}
+
+/// <summary>
+/// String enum for Agent 365 lifecycle value types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<AgentLifecycleEventValueType>))]
+public class AgentLifecycleEventValueType(string value) : StringEnum(value)
+{
+    /// <summary>Agentic user identity created value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserIdentityCreated = new("AgenticUserIdentityCreated");
+    /// <summary>Agentic user identity updated value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserIdentityUpdated = new("AgenticUserIdentityUpdated");
+    /// <summary>Agentic user manager updated value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserManagerUpdated = new("AgenticUserManagerUpdated");
+    /// <summary>Agentic user enabled value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserEnabled = new("AgenticUserEnabled");
+    /// <summary>Agentic user disabled value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserDisabled = new("AgenticUserDisabled");
+    /// <summary>Agentic user deleted value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserDeleted = new("AgenticUserDeleted");
+    /// <summary>Agentic user undeleted value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserUndeleted = new("AgenticUserUndeleted");
+    /// <summary>Agentic user workload onboarding updated value type.</summary>
+    public static readonly AgentLifecycleEventValueType AgenticUserWorkloadOnboardingUpdated = new("AgenticUserWorkloadOnboardingUpdated");
+}
+
+/// <summary>
+/// String enum for Agent 365 lifecycle event types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<AgentLifecycleEventType>))]
+public class AgentLifecycleEventType(string value) : StringEnum(value)
+{
+    /// <summary>Agentic user identity created event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserIdentityCreated = new("agenticUserIdentityCreated");
+    /// <summary>Agentic user identity updated event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserIdentityUpdated = new("agenticUserIdentityUpdated");
+    /// <summary>Agentic user manager updated event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserManagerUpdated = new("agenticUserManagerUpdated");
+    /// <summary>Agentic user enabled event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserEnabled = new("agenticUserEnabled");
+    /// <summary>Agentic user disabled event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserDisabled = new("agenticUserDisabled");
+    /// <summary>Agentic user deleted event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserDeleted = new("agenticUserDeleted");
+    /// <summary>Agentic user undeleted event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserUndeleted = new("agenticUserUndeleted");
+    /// <summary>Agentic user workload onboarding updated event type.</summary>
+    public static readonly AgentLifecycleEventType AgenticUserWorkloadOnboardingUpdated = new("agenticUserWorkloadOnboardingUpdated");
 }

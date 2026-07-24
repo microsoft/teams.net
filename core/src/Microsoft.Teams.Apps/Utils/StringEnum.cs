@@ -19,6 +19,15 @@ public class StringEnum(string value)
     /// </summary>
     public string Value { get; set; } = value;
 
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is StringEnum other
+            && GetType() == other.GetType()
+            && string.Equals(Value, other.Value, StringComparison.Ordinal);
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => HashCode.Combine(GetType(), Value);
 }
 
 /// <summary>
