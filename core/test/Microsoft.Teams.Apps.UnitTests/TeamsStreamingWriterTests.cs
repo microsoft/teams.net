@@ -212,7 +212,7 @@ public class TeamsStreamingWriterTests
 
         // Note: no AppendResponseAsync — the reply is the attachment only.
         TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-            .WithContentType("application/vnd.microsoft.card.adaptive")
+            .WithContentType(AttachmentContentType.AdaptiveCard)
             .WithContent(new JsonObject { ["type"] = "AdaptiveCard", ["version"] = "1.5" })
             .Build();
 

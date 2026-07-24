@@ -35,7 +35,7 @@ public class CreateDerivedContextTests
     public void Parameterless_PreservesActivity()
     {
         TeamsBotApplication app = CreateApp();
-        InvokeActivity activity = new() { Type = TeamsActivityTypes.Invoke, Name = "test" };
+        InvokeActivity activity = new(InvokeNames.TaskFetch);
         Context<TeamsActivity> source = new(app, activity);
 
         Context<TeamsActivity> derived = source.CreateDerivedContext();
@@ -74,7 +74,7 @@ public class CreateDerivedContextTests
     {
         TeamsBotApplication app = CreateApp();
         Context<TeamsActivity> source = CreateContext(app);
-        InvokeActivity typedActivity = new() { Type = TeamsActivityTypes.Invoke, Name = "test" };
+        InvokeActivity typedActivity = new(InvokeNames.TaskFetch);
 
         Context<InvokeActivity> derived = source.CreateDerivedContext(typedActivity);
 
@@ -86,7 +86,7 @@ public class CreateDerivedContextTests
     {
         TeamsBotApplication app = CreateApp();
         Context<TeamsActivity> source = CreateContext(app);
-        InvokeActivity typedActivity = new() { Type = TeamsActivityTypes.Invoke, Name = "test" };
+        InvokeActivity typedActivity = new(InvokeNames.TaskFetch);
 
         Context<InvokeActivity> derived = source.CreateDerivedContext(typedActivity);
 
@@ -101,7 +101,7 @@ public class CreateDerivedContextTests
         Context<TeamsActivity> source = CreateContext(app);
         TurnStateContainer state = CreateState();
         source.State = state;
-        InvokeActivity typedActivity = new() { Type = TeamsActivityTypes.Invoke, Name = "test" };
+        InvokeActivity typedActivity = new(InvokeNames.TaskFetch);
 
         Context<InvokeActivity> derived = source.CreateDerivedContext(typedActivity);
 
@@ -113,7 +113,7 @@ public class CreateDerivedContextTests
     {
         TeamsBotApplication app = CreateApp();
         Context<TeamsActivity> source = CreateContext(app);
-        InvokeActivity typedActivity = new() { Type = TeamsActivityTypes.Invoke, Name = "test" };
+        InvokeActivity typedActivity = new(InvokeNames.TaskFetch);
 
         Context<InvokeActivity> derived = source.CreateDerivedContext(typedActivity);
 
@@ -124,7 +124,7 @@ public class CreateDerivedContextTests
     public void Typed_WidensActivityType()
     {
         TeamsBotApplication app = CreateApp();
-        InvokeActivity invokeActivity = new() { Type = TeamsActivityTypes.Invoke, Name = "test" };
+        InvokeActivity invokeActivity = new(InvokeNames.TaskFetch);
         Context<InvokeActivity> source = new(app, invokeActivity);
         TurnStateContainer state = CreateState();
         source.State = state;

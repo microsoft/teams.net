@@ -190,7 +190,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         if (command == "help")
         {
             await context.SendAsync(
-                MessageActivityInput.CreateBuilder()
+                new MessageActivityInput()
                     .WithText(
                         """
                         **ObservabilityBot commands**
@@ -200,8 +200,7 @@ public class ObservabilityBotApp : TeamsBotApplication
                         - `team` - call TeamClient and show current team details
                         - anything else - AI response path
                         """,
-                        TextFormats.Markdown)
-                    .Build(),
+                        TextFormats.Markdown),
                 ct).ConfigureAwait(false);
             return true;
         }
@@ -231,9 +230,8 @@ public class ObservabilityBotApp : TeamsBotApplication
                 statuses.Select(s => $"- `{s.ConnectionName}`: {(s.HasToken == true ? "connected" : "not connected")}"));
 
             await context.SendAsync(
-                MessageActivityInput.CreateBuilder()
-                    .WithText($"**OAuth status**\n{statusText}", TextFormats.Markdown)
-                    .Build(),
+                new MessageActivityInput()
+                    .WithText($"**OAuth status**\n{statusText}", TextFormats.Markdown),
                 ct).ConfigureAwait(false);
             return true;
         }

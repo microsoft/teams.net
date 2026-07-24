@@ -143,7 +143,7 @@ public class PromptPreviewTests
         public CoreActivityInput? Value { get; set; }
     }
 
-    private static MessageActivity BuildInbound(bool targetedInbound, string inboundId, string convType)
+    private static MessageActivity BuildInbound(bool targetedInbound, string inboundId, ConversationType convType)
     {
         return new MessageActivity("inbound text")
         {

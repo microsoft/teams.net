@@ -103,7 +103,7 @@ public class SuggestedActionSubmitHandlerTests
         CoreActivity coreActivity = CoreActivity.FromJsonString(json);
         InvokeActivity activity = InvokeActivity.FromActivity(coreActivity);
 
-        Assert.Equal("suggestedActions/submit", activity.Name);
+        Assert.Equal("suggestedActions/submit", activity.Name!.ToString());
         Assert.NotNull(activity.Value);
         Assert.Equal("reject", activity.Value!["vote"]!.GetValue<string>());
     }

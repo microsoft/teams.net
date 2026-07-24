@@ -50,9 +50,9 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class with the specified name.
     /// </summary>
     /// <param name="name">The invoke operation name.</param>
-    internal InvokeActivity(string name) : base(TeamsActivityTypes.Invoke)
+    internal InvokeActivity(InvokeName name) : base(TeamsActivityTypes.Invoke)
     {
-        Name = new InvokeName(name);
+        Name = name;
     }
 
     /// <summary>

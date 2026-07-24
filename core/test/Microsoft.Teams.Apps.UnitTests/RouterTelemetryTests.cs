@@ -45,7 +45,7 @@ public class RouterTelemetryTests
             HandlerWithReturn = (_, _) => Task.FromResult(new InvokeResponse(200)),
         });
 
-        InvokeResponse response = await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity { Type = TeamsActivityTypes.Invoke, Name = "tab/fetch" }));
+        InvokeResponse response = await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity(InvokeNames.TaskFetch)));
         Assert.Equal(200, response.Status);
 
         Activity span = Assert.Single(capture.Stopped, a => a.OperationName == "handler");
@@ -60,15 +60,15 @@ public class RouterTelemetryTests
         Router router = new(NullLogger.Instance);
         router.Register(new Route<InvokeActivity>
         {
-            Name = $"{TeamsActivityTypes.Invoke}/tab/fetch",
+            Name = $"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}",
             Selector = _ => true,
             HandlerWithReturn = (_, _) => Task.FromResult(new InvokeResponse(200)),
         });
 
-        await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity { Type = TeamsActivityTypes.Invoke, Name = "tab/fetch" }));
+        await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity(InvokeNames.TaskFetch)));
 
         Activity span = Assert.Single(capture.Stopped, a => a.OperationName == "handler");
-        Assert.Equal($"{TeamsActivityTypes.Invoke}/tab/fetch", span.GetTagItem("handler.type"));
+        Assert.Equal($"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}", span.GetTagItem("handler.type"));
     }
 
     [Fact]
@@ -171,19 +171,19 @@ public class RouterTelemetryTests
         Router router = new(NullLogger.Instance);
         router.Register(new Route<InvokeActivity>
         {
-            Name = $"{TeamsActivityTypes.Invoke}/tab/fetch",
+            Name = $"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}",
             Selector = _ => true,
             HandlerWithReturn = (_, _) => Task.FromResult(new InvokeResponse(200)),
         });
 
-        await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity { Type = TeamsActivityTypes.Invoke, Name = "tab/fetch" }));
+        await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity(InvokeNames.TaskFetch)));
 
         Assert.Equal(1, metrics.GetCounterTotal("teams.handler.dispatched"));
         Assert.Equal(1, metrics.HistogramSampleCount("teams.handler.duration"));
         Assert.Equal(0, metrics.GetCounterTotal("teams.handler.failures"));
 
         IReadOnlyList<KeyValuePair<string, object?>> dispatchedTags = metrics.GetCounterTags("teams.handler.dispatched");
-        Assert.Contains(new KeyValuePair<string, object?>("handler.type", $"{TeamsActivityTypes.Invoke}/tab/fetch"), dispatchedTags);
+        Assert.Contains(new KeyValuePair<string, object?>("handler.type", $"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}"), dispatchedTags);
     }
 
     [Fact]
@@ -194,13 +194,13 @@ public class RouterTelemetryTests
         Router router = new(NullLogger.Instance);
         router.Register(new Route<InvokeActivity>
         {
-            Name = $"{TeamsActivityTypes.Invoke}/tab/fetch",
+            Name = $"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}",
             Selector = _ => true,
             HandlerWithReturn = (_, _) => throw new InvalidOperationException("invoke failed"),
         });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity { Type = TeamsActivityTypes.Invoke, Name = "tab/fetch" })));
+            router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity(InvokeNames.TaskFetch))));
 
         Assert.Equal(1, metrics.GetCounterTotal("teams.handler.dispatched"));
         Assert.Equal(1, metrics.GetCounterTotal("teams.handler.failures"));
@@ -215,12 +215,12 @@ public class RouterTelemetryTests
         Router router = new(NullLogger.Instance);
         router.Register(new Route<InvokeActivity>
         {
-            Name = $"{TeamsActivityTypes.Invoke}/tab/fetch",
+            Name = $"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}",
             Selector = _ => false,
             HandlerWithReturn = (_, _) => Task.FromResult(new InvokeResponse(200)),
         });
 
-        InvokeResponse response = await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity { Type = TeamsActivityTypes.Invoke, Name = "tab/fetch" }));
+        InvokeResponse response = await router.DispatchWithReturnAsync(BuildCtx(new InvokeActivity(InvokeNames.TaskFetch)));
 
         Assert.Equal(501, response.Status);
         Assert.Equal(1, metrics.GetCounterTotal("teams.handler.unmatched"));
@@ -228,7 +228,7 @@ public class RouterTelemetryTests
 
         IReadOnlyList<KeyValuePair<string, object?>> unmatchedTags = metrics.GetCounterTags("teams.handler.unmatched");
         Assert.Contains(new KeyValuePair<string, object?>("activity.type", "invoke"), unmatchedTags);
-        Assert.Contains(new KeyValuePair<string, object?>("invoke.name", "tab/fetch"), unmatchedTags);
+        Assert.Contains(new KeyValuePair<string, object?>("invoke.name", InvokeNames.TaskFetch.Value), unmatchedTags);
     }
 
     private static Context<TeamsActivity> BuildCtx(TeamsActivity activity) => new(null!, activity);

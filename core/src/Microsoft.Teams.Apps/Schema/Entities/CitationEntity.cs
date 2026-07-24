@@ -293,6 +293,8 @@ public class EncodingFormat(string value) : StringEnum(value)
 {
     /// <summary>Adaptive card encoding format.</summary>
     public static readonly EncodingFormat AdaptiveCard = new("application/vnd.microsoft.card.adaptive");
+    /// <summary>text/plain encoding format.</summary>
+    public static readonly EncodingFormat TextPlain = new("text/plain");
 }
 
 /// <summary>
@@ -302,6 +304,9 @@ public static class EncodingFormats
 {
     /// <summary>Adaptive card encoding format.</summary>
     public static EncodingFormat AdaptiveCard => EncodingFormat.AdaptiveCard;
+
+    /// <summary>text/plain encoding format.</summary>
+    public static EncodingFormat TextPlain => EncodingFormat.TextPlain;
 }
 
 /// <summary>

@@ -35,6 +35,11 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
         if (raw is T typed)
             return typed;
 
+        if (raw is string rawString)
+        {
+            return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(rawString));
+        }
+
         if (raw is System.Text.Json.JsonElement element)
             return System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
 
@@ -52,6 +57,13 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
 
         if (raw is T typed)
             return typed;
+
+        if (raw is string rawString)
+        {
+            T? deserialized = System.Text.Json.JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(rawString));
+            this[key] = deserialized;
+            return deserialized;
+        }
 
         if (raw is System.Text.Json.JsonElement element)
         {
