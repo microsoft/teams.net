@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -233,6 +234,12 @@ public static class InvokeNames
     /// Message submit action invoke name.
     /// </summary>
     public static InvokeName MessageSubmitAction => InvokeName.MessageSubmitAction;
+
+    /// <summary>
+    /// HTML widget call tool invoke name.
+    /// </summary>
+    [Experimental("ExperimentalTeamsHtmlWidget")]
+    public const string HtmlWidgetCallTool = "htmlwidget/calltool";
 
     /// <summary>
     /// Suggested action submit invoke name.
