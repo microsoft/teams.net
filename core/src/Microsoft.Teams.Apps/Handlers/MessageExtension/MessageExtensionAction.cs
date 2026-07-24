@@ -105,14 +105,14 @@ public class MessageExtensionAction
     /// Id of the command assigned by the bot.
     /// </summary>
     [JsonPropertyName("commandId")]
-    public required string CommandId { get; set; }
+    public string CommandId { get; set; } = string.Empty;
 
     /// <summary>
     /// The context from which the command originates.
     /// See <see cref="MessageExtensionCommandContexts"/> for common values.
     /// </summary>
     [JsonPropertyName("commandContext")]
-    public required MessageExtensionCommandContext CommandContext { get; set; }
+    public MessageExtensionCommandContext CommandContext { get; set; } = MessageExtensionCommandContext.Message;
 
     /// <summary>
     /// Bot message preview action taken by user.

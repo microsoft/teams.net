@@ -16,7 +16,7 @@ public class AgentLifecycleEventActivity : EventActivity
     /// Gets or sets the lifecycle value payload type. See <see cref="AgentLifecycleEventValueTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("valueType")]
-    public AgentLifecycleEventValueType? ValueType { get; internal set; }
+    public AgentLifecycleEventValueType? ValueType { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentLifecycleEventActivity"/> class.

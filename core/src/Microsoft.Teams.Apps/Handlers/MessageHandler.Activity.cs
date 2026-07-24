@@ -75,13 +75,13 @@ public class MessageActivity : TeamsActivity
     /// Gets the attachments for the message.
     /// </summary>
     [JsonPropertyName("attachments")]
-    public IList<TeamsAttachment>? Attachments { get; internal set; }
+    public IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// Gets the text content of the message.
     /// </summary>
     [JsonPropertyName("text")]
-    public string? Text { get; internal set; }
+    public string? Text { get; set; }
 
     /// <summary>
     /// Gets the message text with the bot (recipient) @mention removed and trimmed.
@@ -110,13 +110,13 @@ public class MessageActivity : TeamsActivity
     /// Gets the text format. See <see cref="TextFormats"/> for common values (plain, markdown, xml, extendedmarkdown).
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public TextFormat? TextFormat { get; internal set; }
+    public TextFormat? TextFormat { get; set; }
 
     /// <summary>
     /// Gets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public AttachmentLayoutType? AttachmentLayout { get; internal set; }
+    public AttachmentLayoutType? AttachmentLayout { get; set; }
 
 }
 

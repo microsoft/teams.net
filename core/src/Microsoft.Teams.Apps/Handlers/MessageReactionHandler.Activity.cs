@@ -48,13 +48,13 @@ public class MessageReactionActivity : TeamsActivity
     /// Gets or sets the reactions added to the message.
     /// </summary>
     [JsonPropertyName("reactionsAdded")]
-    public IList<MessageReaction>? ReactionsAdded { get; internal set; }
+    public IList<MessageReaction>? ReactionsAdded { get; set; }
 
     /// <summary>
     /// Gets or sets the reactions removed from the message.
     /// </summary>
     [JsonPropertyName("reactionsRemoved")]
-    public IList<MessageReaction>? ReactionsRemoved { get; internal set; }
+    public IList<MessageReaction>? ReactionsRemoved { get; set; }
 }
 
 /// <summary>
@@ -67,7 +67,7 @@ public class MessageReaction
     /// See <see cref="ReactionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
-    public ReactionType? Type { get; internal set; }
+    public ReactionType? Type { get; set; }
 }
 
 /// <summary>

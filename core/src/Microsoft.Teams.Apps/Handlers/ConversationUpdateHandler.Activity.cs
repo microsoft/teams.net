@@ -63,13 +63,13 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Gets or sets the collection of members added to the conversation.
     /// </summary>
     [JsonPropertyName("membersAdded")]
-    public IList<TeamsChannelAccount>? MembersAdded { get; internal set; }
+    public IList<TeamsChannelAccount>? MembersAdded { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of members removed from the conversation.
     /// </summary>
     [JsonPropertyName("membersRemoved")]
-    public IList<TeamsChannelAccount>? MembersRemoved { get; internal set; }
+    public IList<TeamsChannelAccount>? MembersRemoved { get; set; }
 }
 
 /// <summary>

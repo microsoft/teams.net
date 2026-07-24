@@ -46,7 +46,7 @@ public class InstallUpdateActivity : TeamsActivity
     /// Gets or sets the action for the installation update. See <see cref="InstallUpdateActions"/> for known values.
     /// </summary>
     [JsonPropertyName("action")]
-    public InstallUpdateAction? Action { get; internal set; }
+    public InstallUpdateAction? Action { get; set; }
 }
 
 /// <summary>

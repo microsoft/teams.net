@@ -28,13 +28,13 @@ public class EventActivity : TeamsActivity
     /// Gets or sets the name of the event. See <see cref="EventNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public EventName? Name { get; internal set; }
+    public EventName? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the value payload of the event activity.
     /// </summary>
     [JsonPropertyName("value")]
-    public JsonNode? Value { get; internal set; }
+    public JsonNode? Value { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
