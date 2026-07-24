@@ -3,8 +3,11 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
+using Microsoft.Teams.Core.Diagnostics;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 using CoreUserTokenClient = Microsoft.Teams.Core.UserTokenClient;
@@ -172,5 +175,41 @@ public class ApiClient
         Uri serviceUrl = activity.ServiceUrl
             ?? throw new InvalidOperationException("Activity.ServiceUrl is required to create a scoped API client.");
         return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, activity.Recipient?.GetAgenticIdentity());
+    }
+
+    internal static async Task<T?> ExecuteClientAsync<T>(
+        string serviceUrl,
+        AgenticIdentity? agenticIdentity,
+        string client,
+        string operation,
+        Func<BotRequestOptions?, Activity?, Task<T?>> action)
+    {
+        BotRequestContext? context = BotRequestContext.FromAgenticIdentity(agenticIdentity);
+        BotRequestOptions? options = context is { } c ? new() { RequestContext = c } : null;
+
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Client, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(AppsTelemetry.Tags.Client, client);
+            span.SetTag(AppsTelemetry.Tags.ClientOperation, operation);
+            span.SetTag(AppsTelemetry.Tags.ServiceUrl, serviceUrl);
+        }
+
+        long start = Stopwatch.GetTimestamp();
+        try
+        {
+            T? result = await action(options, span).ConfigureAwait(false);
+            OutboundTelemetry.RecordCall(client, operation);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            OutboundTelemetry.RecordError(span, ex, client, operation);
+            throw;
+        }
+        finally
+        {
+            OutboundTelemetry.RecordDuration(start, client, operation);
+        }
     }
 }

@@ -224,7 +224,6 @@ public class BotApplication
 
         long startTimestamp = Stopwatch.GetTimestamp();
 
-        // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
             // Use a dedicated timeout instead of the HTTP request's cancellation token.

@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Diagnostics;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
@@ -30,7 +32,13 @@ public class TeamClient
     public async Task<Team?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}";
-        return await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Team,
+            AppsTelemetry.ClientOperations.GetTeamById,
+            async (options, _) => await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -39,14 +47,17 @@ public class TeamClient
     public async Task<List<TeamsChannel>?> GetConversationsAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}/conversations";
-        ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(), cancellationToken).ConfigureAwait(false);
-        return response?.Conversations;
+        return await ApiClient.ExecuteClientAsync(
+            _serviceUrl,
+            _agenticIdentity,
+            AppsTelemetry.Clients.Team,
+            AppsTelemetry.ClientOperations.GetTeamConversations,
+            async (options, _) =>
+            {
+                ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false);
+                return response?.Conversations;
+            }).ConfigureAwait(false);
     }
-
-    private BotRequestContext? AgenticContext => BotRequestContext.FromAgenticIdentity(_agenticIdentity);
-
-    private BotRequestOptions? CreateRequestOptions() =>
-        AgenticContext is { } context ? new() { RequestContext = context } : null;
 
     private sealed class ConversationListResponse
     {

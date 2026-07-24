@@ -104,7 +104,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthGetToken, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.GetToken);
 
@@ -155,7 +155,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthSignIn, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.SignIn);
 
@@ -237,7 +237,6 @@ public class OAuthFlow
             // Use user state when available (distributed); fall back to in-memory otherwise.
             SetPendingSignIn(context, userId, ssoOffered);
 
-            span?.AddEvent(new ActivityEvent(AppsTelemetry.OAuthEvents.CardSent));
             result = AppsTelemetry.OAuthResults.CardSent;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
             return null;
@@ -267,7 +266,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthSignOut, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.SignOut);
 
@@ -321,7 +320,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthConnectionStatus, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, AppsTelemetry.OAuthAllConnections);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.ConnectionStatus);
 
@@ -354,7 +353,7 @@ public class OAuthFlow
     {
         string exchangeId = string.IsNullOrEmpty(exchangeValue.Id) ? Guid.NewGuid().ToString("N") : exchangeValue.Id;
         string connectionName = exchangeValue.ConnectionName ?? _connectionName;
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthTokenExchange, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.TokenExchange);
 
@@ -485,7 +484,7 @@ public class OAuthFlow
     /// </summary>
     internal async Task<InvokeResponse> HandleVerifyStateAsync(Context<InvokeActivity> context, SignInVerifyStateValue verifyValue, CancellationToken cancellationToken)
     {
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthVerifyState, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.VerifyState);
 
@@ -590,7 +589,7 @@ public class OAuthFlow
     /// </summary>
     internal async Task<InvokeResponse> HandleSignInFailureAsync(Context<InvokeActivity> context, SignInFailureValue failureValue, CancellationToken cancellationToken)
     {
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthSignInFailure, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.SignInFailure);
         if (!string.IsNullOrEmpty(failureValue.Code))

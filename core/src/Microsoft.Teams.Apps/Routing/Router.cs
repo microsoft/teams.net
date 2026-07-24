@@ -100,11 +100,9 @@ internal sealed class Router
                 _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
             }
 
-            (string handlerType, string dispatch) = GetHandlerTags(route.Name);
             TagList handlerTags = new()
             {
-                { AppsTelemetry.Tags.HandlerType, handlerType },
-                { AppsTelemetry.Tags.HandlerDispatch, dispatch },
+                { AppsTelemetry.Tags.HandlerType, route.Name },
             };
 
             AppsTelemetry.HandlerDispatched.Add(1, handlerTags);
@@ -112,8 +110,7 @@ internal sealed class Router
             using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
             if (span is not null)
             {
-                span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
-                span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+                span.SetTag(AppsTelemetry.Tags.HandlerType, route.Name);
             }
 
             long startTimestamp = Stopwatch.GetTimestamp();
@@ -181,11 +178,9 @@ internal sealed class Router
             _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
         }
 
-        (string handlerType, string dispatch) = GetHandlerTags(matchingRoutes[0].Name);
         TagList handlerTags = new()
         {
-            { AppsTelemetry.Tags.HandlerType, handlerType },
-            { AppsTelemetry.Tags.HandlerDispatch, dispatch },
+            { AppsTelemetry.Tags.HandlerType, matchingRoutes[0].Name },
         };
 
         AppsTelemetry.HandlerDispatched.Add(1, handlerTags);
@@ -193,8 +188,7 @@ internal sealed class Router
         using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
         if (span is not null)
         {
-            span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
-            span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+            span.SetTag(AppsTelemetry.Tags.HandlerType, matchingRoutes[0].Name);
         }
 
         long startTimestamp = Stopwatch.GetTimestamp();
@@ -220,17 +214,4 @@ internal sealed class Router
         return response;
     }
 
-    private static (string handlerType, string dispatch) GetHandlerTags(string routeName)
-    {
-        const string invokePrefix = TeamsActivityTypes.Invoke + "/";
-        if (string.Equals(routeName, TeamsActivityTypes.Invoke, StringComparison.Ordinal))
-        {
-            return (routeName, "catchall");
-        }
-        if (routeName.StartsWith(invokePrefix, StringComparison.Ordinal))
-        {
-            return (routeName[invokePrefix.Length..], "invoke");
-        }
-        return (routeName, "type");
-    }
 }

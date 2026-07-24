@@ -60,29 +60,30 @@ internal static class AppsTelemetry
     public static readonly Counter<long> OAuthErrors =
         Meter.CreateCounter<long>(Metrics.OAuthErrors, description: "Total OAuth flow operations that failed with an unexpected exception. Expected protocol fallbacks (HTTP 404/400/412 from the Token Service) are not counted here; they are recorded as oauth.result=failure on teams.oauth.operations instead.");
 
+    /// <summary>
+    /// Span names used in the <see cref="AppsTelemetry"/> source.
+    /// </summary>
     public static class Spans
     {
         public const string Handler = "handler";
-        public const string StateLoad = "state.load";
-        public const string StateSave = "state.save";
-        public const string StateDelete = "state.delete";
-
-        // OAuth spans
-        public const string OAuthSignIn = "oauth.signin";
-        public const string OAuthSignOut = "oauth.signout";
-        public const string OAuthGetToken = "oauth.get_token";
-        public const string OAuthTokenExchange = "oauth.token_exchange";
-        public const string OAuthVerifyState = "oauth.verify_state";
-        public const string OAuthSignInFailure = "oauth.signin_failure";
-        public const string OAuthConnectionStatus = "oauth.connection_status";
+        public const string State = "state";
+        public const string OAuth = "oauth";
+        public const string Client = "client";
     }
 
+    /// <summary>
+    /// Custom tag names used in the <see cref="AppsTelemetry"/> source and instruments.
+    /// </summary>
     public static class Tags
     {
         public const string HandlerType = "handler.type";
-        public const string HandlerDispatch = "handler.dispatch";
         public const string ActivityType = "activity.type";
         public const string InvokeName = "invoke.name";
+        public const string Client = "client.name";
+        public const string ServiceUrl = "service.url";
+
+        // Client tags
+        public const string ClientOperation = "client.operation";
 
         // State tags
         public const string StateConversationHit = "state.conversation.hit";
@@ -91,7 +92,7 @@ internal static class AppsTelemetry
         public const string StateUserDirty = "state.user.dirty";
         public const string StateBytesRead = "state.bytes.read";
         public const string StateBytesWritten = "state.bytes.written";
-        public const string Operation = "operation";
+        public const string StateOperation = "state.operation";
 
         // OAuth tags
         public const string OAuthConnection = "oauth.connection";
@@ -109,7 +110,6 @@ internal static class AppsTelemetry
         public const string HandlerDuration = "teams.handler.duration";
         public const string HandlerFailures = "teams.handler.failures";
         public const string HandlerUnmatched = "teams.handler.unmatched";
-
         // State metrics
         public const string StateLoadDuration = "teams.state.load.duration";
         public const string StateSaveDuration = "teams.state.save.duration";
@@ -121,6 +121,36 @@ internal static class AppsTelemetry
         public const string OAuthOperations = "teams.oauth.operations";
         public const string OAuthOperationDuration = "teams.oauth.operation.duration";
         public const string OAuthErrors = "teams.oauth.errors";
+    }
+
+    /// <summary>
+    /// Values used for the <see cref="Tags.ClientOperation"/> tag.
+    /// </summary>
+    public static class ClientOperations
+    {
+        public const string GetTeamById = "getTeamById";
+        public const string GetTeamConversations = "getTeamConversations";
+        public const string GetMeetingById = "getMeetingById";
+        public const string GetMeetingParticipant = "getMeetingParticipant";
+    }
+
+    /// <summary>
+    /// Values used for the <see cref="Tags.Client"/> tag.
+    /// </summary>
+    public static class Clients
+    {
+        public const string Team = "team";
+        public const string Meeting = "meeting";
+    }
+
+    /// <summary>
+    /// Values used for the <see cref="Tags.StateOperation"/> tag.
+    /// </summary>
+    public static class StateOperations
+    {
+        public const string Load = "load";
+        public const string Save = "save";
+        public const string Delete = "delete";
     }
 
     /// <summary>
@@ -144,23 +174,23 @@ internal static class AppsTelemetry
     public static class OAuthResults
     {
         /// <summary>SignIn returned a cached token without sending an OAuthCard.</summary>
-        public const string Cached = "cached";
+        public const string Cached = "token_cached";
         /// <summary>SignIn sent an OAuthCard because no cached token was found.</summary>
-        public const string CardSent = "card_sent";
+        public const string CardSent = "signin_card_sent";
         /// <summary>GetToken found a cached token in the Token Store.</summary>
-        public const string Hit = "hit";
+        public const string Hit = "token_found";
         /// <summary>GetToken found no cached token in the Token Store.</summary>
-        public const string Miss = "miss";
+        public const string Miss = "token_not_found";
         /// <summary>Operation completed successfully.</summary>
-        public const string Success = "success";
+        public const string Success = "operation_succeeded";
         /// <summary>Expected protocol failure (e.g., Token Service returned 404/400/412, or null state).</summary>
-        public const string Failure = "failure";
+        public const string Failure = "operation_failed";
         /// <summary>Duplicate signin/tokenExchange invoke; deduplicated to a 200 no-op.</summary>
-        public const string Duplicate = "duplicate";
+        public const string Duplicate = "request_deduplicated";
         /// <summary>verify_state attempted on a flow whose connection didn't match the code.</summary>
-        public const string NoToken = "no_token";
+        public const string NoToken = "connection_not_matched";
         /// <summary>signin_failure invoke acknowledged and forwarded to the OnSignInFailure callback.</summary>
-        public const string Notified = "notified";
+        public const string Notified = "failure_callback_notified";
     }
 
     /// <summary>
@@ -172,14 +202,6 @@ internal static class AppsTelemetry
         public const string HttpError = "http_error";
         public const string InvalidOperation = "invalid_op";
         public const string EmptyToken = "empty_token";
-    }
-
-    /// <summary>
-    /// Names of low-cardinality span events emitted by OAuth flows.
-    /// </summary>
-    public static class OAuthEvents
-    {
-        public const string CardSent = "oauth.card.sent";
     }
 
     /// <summary>
