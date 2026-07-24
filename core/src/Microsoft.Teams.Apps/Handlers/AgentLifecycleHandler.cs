@@ -94,7 +94,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            EventNames.AgentLifecycle.Value,
+            valueType: null,
             activity => new AgentLifecycleEventActivity(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -109,7 +109,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserIdentityCreated.Value,
+            AgentLifecycleEventValueTypes.AgenticUserIdentityCreated,
             activity => new AgentLifecycleEventActivity<AgenticUserIdentityCreatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -124,7 +124,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated.Value,
+            AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated,
             activity => new AgentLifecycleEventActivity<AgenticUserIdentityUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -139,7 +139,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserManagerUpdated.Value,
+            AgentLifecycleEventValueTypes.AgenticUserManagerUpdated,
             activity => new AgentLifecycleEventActivity<AgenticUserManagerUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -154,7 +154,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserEnabled.Value,
+            AgentLifecycleEventValueTypes.AgenticUserEnabled,
             activity => new AgentLifecycleEventActivity<AgenticUserEnabledValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -169,7 +169,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserDisabled.Value,
+            AgentLifecycleEventValueTypes.AgenticUserDisabled,
             activity => new AgentLifecycleEventActivity<AgenticUserDisabledValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -184,7 +184,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserDeleted.Value,
+            AgentLifecycleEventValueTypes.AgenticUserDeleted,
             activity => new AgentLifecycleEventActivity<AgenticUserDeletedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -199,7 +199,7 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserUndeleted.Value,
+            AgentLifecycleEventValueTypes.AgenticUserUndeleted,
             activity => new AgentLifecycleEventActivity<AgenticUserUndeletedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
@@ -214,42 +214,31 @@ public static class AgentLifecycleExtensions
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         return app.RegisterAgentLifecycleRoute(
-            AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated.Value,
+            AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated,
             activity => new AgentLifecycleEventActivity<AgenticUserWorkloadOnboardingUpdatedValue>(activity),
             (ctx, cancellationToken) => handler(ctx, cancellationToken));
     }
 
     private static TeamsBotApplication RegisterAgentLifecycleRoute<TActivity>(
         this TeamsBotApplication app,
-        string valueType,
-        Func<EventActivity, TActivity> createActivity,
-        Func<Context<TActivity>, CancellationToken, Task> handler) where TActivity : AgentLifecycleEventActivity
-    {
-        return app.RegisterAgentLifecycleRoute(valueType, valueType, createActivity, handler);
-    }
-
-    private static TeamsBotApplication RegisterAgentLifecycleRoute<TActivity>(
-        this TeamsBotApplication app,
-        string routeSuffix,
-        string? valueType,
+        AgentLifecycleEventValueType? valueType,
         Func<EventActivity, TActivity> createActivity,
         Func<Context<TActivity>, CancellationToken, Task> handler) where TActivity : AgentLifecycleEventActivity
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
-        ArgumentException.ThrowIfNullOrWhiteSpace(routeSuffix);
         ArgumentNullException.ThrowIfNull(createActivity, nameof(createActivity));
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
 
         string routeName = valueType is null
-            ? string.Join("/", TeamsActivityTypes.Event, routeSuffix)
-            : string.Join("/", TeamsActivityTypes.Event, EventNames.AgentLifecycle.Value, routeSuffix);
+            ? string.Join("/", TeamsActivityTypes.Event, EventNames.AgentLifecycle)
+            : string.Join("/", TeamsActivityTypes.Event, EventNames.AgentLifecycle, valueType);
 
         app.Router.Register(new Route<EventActivity>
         {
             Name = routeName,
             Selector = activity =>
                 activity.Name == EventNames.AgentLifecycle
-                && (valueType is null || activity.Properties.Get<string>("valueType") == valueType),
+                && (valueType is null || activity.Properties.Get<AgentLifecycleEventValueType>("valueType") == valueType),
             Handler = async (ctx, cancellationToken) =>
             {
                 TActivity typedActivity = createActivity(ctx.Activity);
