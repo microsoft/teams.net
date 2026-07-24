@@ -31,7 +31,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         internal string? ServiceUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the per-request properties captured from the incoming activity (agentic identity,
+        /// Gets or sets the per-request properties captured from the incoming activity (agentic user,
         /// bot app id). Threaded into each outbound conversation operation and stamped onto the request's
         /// options for the authentication handler to read.
         /// </summary>

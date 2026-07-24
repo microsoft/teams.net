@@ -35,7 +35,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     {
         CoreActivityInput activity = CreateMessageActivity($"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`");
 
-        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
@@ -48,13 +48,13 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     {
         CoreActivityInput activity = CreateMessageActivity($"[ConversationClient] Original at `{DateTime.UtcNow:s}`");
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         Assert.NotNull(sent?.Id);
 
         CoreActivityInput updated = CreateMessageActivity($"[ConversationClient] Updated at `{DateTime.UtcNow:s}`");
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
-            _f.ConversationId, sent.Id, updated, _f.ServiceUrl, false, BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, updated, _f.ServiceUrl, false, BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(res?.Id);
         _output.WriteLine($"Updated activity: {res.Id}");
@@ -66,13 +66,13 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     {
         CoreActivityInput activity = CreateMessageActivity($"[ConversationClient] To delete at `{DateTime.UtcNow:s}`");
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         Assert.NotNull(sent?.Id);
 
         await Task.Delay(2000);
 
         await _f.ConversationClient.DeleteActivityAsync(
-            _f.ConversationId, sent.Id, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
@@ -82,7 +82,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task GetConversationMembers()
     {
         IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
@@ -100,7 +100,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         ChannelAccount member = await _f.ConversationClient.GetConversationMemberAsync<ChannelAccount>(
-            _f.ConversationId, memberId, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, memberId, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
@@ -111,11 +111,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task GetPagedMembers()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Paged members returns 500 with agentic user — service limitation");
         Skip.If(_f.IsCanary, "Paged members returns empty on canary — service limitation");
 
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, pageSize: 5, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, _f.ServiceUrl, pageSize: 5, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(result?.Members);
         Assert.NotEmpty(result.Members);
@@ -130,22 +130,22 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task AddAndDeleteReaction()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Reactions API returns 404 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Reactions API returns 404 with agentic user — service limitation");
         Skip.If(_f.IsCanary, "Reactions API returns 404 on canary — service limitation");
 
         CoreActivityInput activity = CreateMessageActivity($"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`");
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(_f.ConversationId, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         Assert.NotNull(sent?.Id);
 
         await _f.ConversationClient.AddReactionAsync(
-            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         _output.WriteLine("Added 'like' reaction");
 
         await Task.Delay(1000);
 
         await _f.ConversationClient.DeleteReactionAsync(
-            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            _f.ConversationId, sent.Id, "like", _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         _output.WriteLine("Removed 'like' reaction");
     }
 }

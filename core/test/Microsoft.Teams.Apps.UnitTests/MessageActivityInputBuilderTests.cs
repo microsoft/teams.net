@@ -62,18 +62,18 @@ public class MessageActivityInputBuilderTests
             Id = "user-id",
             Name = "User Name",
             TenantId = "tenant-abc",
-            AgenticAppId = "app-1",
+            AgenticAppInstanceId = "app-1",
             AgenticUserId = "user-1",
-            AgenticAppBlueprintId = "bp-1",
+            AgenticBlueprintId = "bp-1",
         };
 
         TeamsChannelAccount? result = TeamsChannelAccount.FromChannelAccount(source);
 
         Assert.NotNull(result);
         Assert.Equal("tenant-abc", result.TenantId);
-        Assert.Equal("app-1", result.AgenticAppId);
+        Assert.Equal("app-1", result.AgenticAppInstanceId);
         Assert.Equal("user-1", result.AgenticUserId);
-        Assert.Equal("bp-1", result.AgenticAppBlueprintId);
+        Assert.Equal("bp-1", result.AgenticBlueprintId);
     }
 
     [Fact]

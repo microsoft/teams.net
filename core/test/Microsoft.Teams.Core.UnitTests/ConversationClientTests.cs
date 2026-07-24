@@ -251,7 +251,7 @@ public class ConversationClientTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_WithChannelAccountFrom_ExtractsAgenticIdentity()
+    public async Task SendActivityAsync_WithChannelAccountFrom_ExtractsAgenticUser()
     {
         Mock<HttpMessageHandler> mockHttpMessageHandler = new();
         mockHttpMessageHandler
@@ -269,7 +269,7 @@ public class ConversationClientTests
         HttpClient httpClient = new(mockHttpMessageHandler.Object);
         ConversationClient conversationClient = new(httpClient);
 
-        ChannelAccount from = new() { Id = "bot1", AgenticAppId = "app-123", AgenticUserId = "user-456" };
+        ChannelAccount from = new() { Id = "bot1", AgenticAppInstanceId = "app-123", AgenticUserId = "user-456" };
 
         SendActivityResponse? result = await conversationClient.SendActivityAsync("conv123", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).WithProperty("from", from).Build(), new Uri("https://test.service.url/"));
 

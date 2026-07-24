@@ -16,13 +16,13 @@ public class MeetingClient
 {
     private readonly BotHttpClient _http;
     private readonly string _serviceUrl;
-    private readonly AgenticIdentity? _agenticIdentity;
+    private readonly AgenticUser? _agenticUser;
 
-    internal MeetingClient(string serviceUrl, BotHttpClient http, AgenticIdentity? agenticIdentity = null)
+    internal MeetingClient(string serviceUrl, BotHttpClient http, AgenticUser? agenticUser = null)
     {
         _serviceUrl = serviceUrl.TrimEnd('/');
         _http = http;
-        _agenticIdentity = agenticIdentity;
+        _agenticUser = agenticUser;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class MeetingClient
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(id)}";
         return await ApiClient.ExecuteClientAsync(
             _serviceUrl,
-            _agenticIdentity,
+            _agenticUser,
             AppsTelemetry.Clients.Meeting,
             AppsTelemetry.ClientOperations.GetMeetingById,
             async (options, _) => await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
@@ -48,7 +48,7 @@ public class MeetingClient
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}";
         return await ApiClient.ExecuteClientAsync(
             _serviceUrl,
-            _agenticIdentity,
+            _agenticUser,
             AppsTelemetry.Clients.Meeting,
             AppsTelemetry.ClientOperations.GetMeetingParticipant,
             async (options, _) => await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))

@@ -43,9 +43,9 @@ public class TeamsChannelAccount : ChannelAccount
         result.Id = channelAccount.Id;
         result.Name = channelAccount.Name;
         result.IsTargeted = channelAccount.IsTargeted;
-        result.AgenticAppId = channelAccount.AgenticAppId;
+        result.AgenticAppInstanceId = channelAccount.AgenticAppInstanceId;
         result.AgenticUserId = channelAccount.AgenticUserId;
-        result.AgenticAppBlueprintId = channelAccount.AgenticAppBlueprintId;
+        result.AgenticBlueprintId = channelAccount.AgenticBlueprintId;
         result.Properties = new ExtendedPropertiesDictionary(channelAccount.Properties);
         result.AadObjectId = result.Properties.Extract<string>("aadObjectId");
         result.ObjectId = result.Properties.Extract<string>("objectId");

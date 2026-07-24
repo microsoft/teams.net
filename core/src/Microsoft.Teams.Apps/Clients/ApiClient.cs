@@ -44,11 +44,11 @@ public class ApiClient
     public virtual Uri ServiceUrl { get; }
 
     /// <summary>
-    /// The agentic identity used by this client for all operations, or null.
-    /// Set once at the client level (like <see cref="ServiceUrl"/>) via <see cref="ForAgenticIdentity"/>
+    /// The agentic user used by this client for all operations, or null.
+    /// Set once at the client level (like <see cref="ServiceUrl"/>) via <see cref="ForAgenticUser"/>
     /// rather than per method call.
     /// </summary>
-    public virtual AgenticIdentity? AgenticIdentity { get; }
+    public virtual AgenticUser? AgenticUser { get; }
 
     /// <summary>
     /// Client for conversation operations (activities, members, reactions).
@@ -77,7 +77,7 @@ public class ApiClient
     /// Creates a new <see cref="ApiClient"/> without a service URL (DI-friendly).
     /// Use <see cref="ForServiceUrl"/> to create a scoped instance bound to a specific service URL.
     /// </summary>
-    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <see cref="Microsoft.Teams.Core.Hosting.BotAuthenticationHandler"/>).</param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
@@ -94,7 +94,7 @@ public class ApiClient
 
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
-        AgenticIdentity = null;
+        AgenticUser = null;
         Conversations = null!;
         Teams = null!;
         Meetings = null!;
@@ -104,12 +104,12 @@ public class ApiClient
     /// Creates a new <see cref="ApiClient"/> bound to a specific service URL.
     /// </summary>
     /// <param name="serviceUrl">The Bot Framework service URL.</param>
-    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <see cref="Microsoft.Teams.Core.Hosting.BotAuthenticationHandler"/>).</param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
-    /// <param name="agenticIdentity">Optional agentic identity used for all operations on this client.</param>
-    internal ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null, AgenticIdentity? agenticIdentity = null)
+    /// <param name="agenticUser">Optional agentic user used for all operations on this client.</param>
+    internal ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null, AgenticUser? agenticUser = null)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentNullException.ThrowIfNull(httpClient);
@@ -120,71 +120,71 @@ public class ApiClient
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
-        AgenticIdentity = agenticIdentity;
-        Conversations = new ConversationApiClient(serviceUrl, conversationClient, agenticIdentity);
-        Teams = new TeamClient(serviceUrl.ToString(), _http, agenticIdentity);
-        Meetings = new MeetingClient(serviceUrl.ToString(), _http, agenticIdentity);
+        AgenticUser = agenticUser;
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient, agenticUser);
+        Teams = new TeamClient(serviceUrl.ToString(), _http, agenticUser);
+        Meetings = new MeetingClient(serviceUrl.ToString(), _http, agenticUser);
     }
 
-    // Private constructor for ForServiceUrl/ForAgenticIdentity — shares BotHttpClient, ConversationClient, and UserTokenClient
-    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl, AgenticIdentity? agenticIdentity)
+    // Private constructor for ForServiceUrl/ForAgenticUser — shares BotHttpClient, ConversationClient, and UserTokenClient
+    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl, AgenticUser? agenticUser)
     {
         _http = http;
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
-        AgenticIdentity = agenticIdentity;
-        Conversations = new ConversationApiClient(serviceUrl, conversationClient, agenticIdentity);
-        Teams = new TeamClient(serviceUrl.ToString(), http, agenticIdentity);
-        Meetings = new MeetingClient(serviceUrl.ToString(), http, agenticIdentity);
+        AgenticUser = agenticUser;
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient, agenticUser);
+        Teams = new TeamClient(serviceUrl.ToString(), http, agenticUser);
+        Meetings = new MeetingClient(serviceUrl.ToString(), http, agenticUser);
     }
 
     /// <summary>
     /// Creates a new <see cref="ApiClient"/> scoped to the specified service URL,
-    /// sharing the underlying HTTP client, authentication, and agentic identity.
+    /// sharing the underlying HTTP client, authentication, and agentic user.
     /// </summary>
     /// <param name="serviceUrl">The Bot Framework service URL for this scope.</param>
     /// <returns>A new <see cref="ApiClient"/> bound to the given service URL.</returns>
     public virtual ApiClient ForServiceUrl(Uri serviceUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, AgenticIdentity);
+        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, AgenticUser);
     }
 
     /// <summary>
-    /// Creates a new <see cref="ApiClient"/> scoped to the specified agentic identity,
+    /// Creates a new <see cref="ApiClient"/> scoped to the specified agentic user,
     /// used for all operations on the returned client (like <see cref="ServiceUrl"/>).
     /// </summary>
-    /// <param name="agenticIdentity">The agentic identity to authenticate as, or null.</param>
-    /// <returns>A new <see cref="ApiClient"/> bound to the given agentic identity.</returns>
-    public virtual ApiClient ForAgenticIdentity(AgenticIdentity? agenticIdentity)
+    /// <param name="agenticUser">The agentic user to authenticate as, or null.</param>
+    /// <returns>A new <see cref="ApiClient"/> bound to the given agentic user.</returns>
+    public virtual ApiClient ForAgenticUser(AgenticUser? agenticUser)
     {
-        return new ApiClient(_http, ConversationClient, UserTokenClient, ServiceUrl, agenticIdentity);
+        return new ApiClient(_http, ConversationClient, UserTokenClient, ServiceUrl, agenticUser);
     }
 
     /// <summary>
     /// Creates a new <see cref="ApiClient"/> scoped to an inbound activity, binding both the
-    /// service URL and the agentic identity (from the activity's <see cref="CoreActivity.Recipient"/>) in one call.
+    /// service URL and the agentic user (from the activity's <c>Recipient</c>) in one call.
     /// </summary>
     /// <param name="activity">The inbound activity to derive routing and identity from.</param>
-    /// <returns>A new <see cref="ApiClient"/> bound to the activity's service URL and agentic identity.</returns>
+    /// <returns>A new <see cref="ApiClient"/> bound to the activity's service URL and agentic user.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the activity has no service URL.</exception>
     public virtual ApiClient ForActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         Uri serviceUrl = activity.ServiceUrl
             ?? throw new InvalidOperationException("Activity.ServiceUrl is required to create a scoped API client.");
-        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, activity.Recipient?.GetAgenticIdentity());
+        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl, activity.Recipient?.GetAgenticUser());
     }
 
     internal static async Task<T?> ExecuteClientAsync<T>(
         string serviceUrl,
-        AgenticIdentity? agenticIdentity,
+        AgenticUser? agenticUser,
         string client,
         string operation,
         Func<BotRequestOptions?, Activity?, Task<T?>> action)
     {
-        BotRequestContext? context = BotRequestContext.FromAgenticIdentity(agenticIdentity);
+        BotRequestContext? context = BotRequestContext.FromAgenticUser(agenticUser);
         BotRequestOptions? options = context is { } c ? new() { RequestContext = c } : null;
 
         using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Client, ActivityKind.Client);

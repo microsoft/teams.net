@@ -19,7 +19,7 @@ ApiClient (top-level facade)
 
 | Sub-client | Backed by | Why |
 |---|---|---|
-| Conversations, Users | core `ConversationClient` / `UserTokenClient` | Single source of truth for URL construction, auth, agents-channel handling, agentic identity, headers, and logging |
+| Conversations, Users | core `ConversationClient` / `UserTokenClient` | Single source of truth for URL construction, auth, agents-channel handling, agentic user, headers, and logging |
 | Teams, Meetings | `BotHttpClient` directly | No core client exists for these endpoints |
 
 **Experimental APIs:** `ReactionClient` (`ExperimentalTeamsReactions`); `ActivityClient.CreateTargetedAsync` / `UpdateTargetedAsync` / `DeleteTargetedAsync` (`ExperimentalTeamsTargeted`, not supported in team channels).

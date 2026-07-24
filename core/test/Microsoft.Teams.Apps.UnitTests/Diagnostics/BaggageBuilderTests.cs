@@ -21,9 +21,9 @@ public class TeamsBaggageBuilderTests
         {
             Id = "agent-id",
             Name = "Agent",
-            AgenticAppId = "agentic-app-1",
+            AgenticAppInstanceId = "agent-app-instance-1",
             AgenticUserId = "auid-1",
-            AgenticAppBlueprintId = "blueprint-1",
+            AgenticBlueprintId = "blueprint-1",
             TenantId = "tenant-1",
         };
         recipient.UserRole = "agent";
@@ -52,7 +52,7 @@ public class TeamsBaggageBuilderTests
         Assert.Equal("conv-1", baggage["gen_ai.conversation.id"]);
         Assert.Equal("https://smba.example/", baggage["microsoft.conversation.item.link"]);
         Assert.Equal("msteams", baggage["microsoft.channel.name"]);
-        Assert.Equal("agentic-app-1", baggage["gen_ai.agent.id"]);
+        Assert.Equal("agent-app-instance-1", baggage["gen_ai.agent.id"]);
         Assert.Equal("Agent", baggage["gen_ai.agent.name"]);
         Assert.Equal("auid-1", baggage["microsoft.agent.user.id"]);
         Assert.Equal("blueprint-1", baggage["microsoft.a365.agent.blueprint.id"]);

@@ -144,7 +144,7 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
         }
 
         // Stamp the per-request properties onto the request so a DelegatingHandler can read the
-        // values (e.g. agentic identity, bot app id) from request.Options.
+        // values (e.g. agentic user, bot app id) from request.Options.
         if (options.RequestContext is { } properties)
         {
             foreach (KeyValuePair<string, object?> property in properties.ToOptions())

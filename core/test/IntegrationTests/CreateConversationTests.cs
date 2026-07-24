@@ -59,7 +59,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -80,7 +80,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(response?.Id);
 
@@ -89,7 +89,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             .WithProperty("text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(response.Id, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(response.Id, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created 1:1 conversation {response.Id} and sent activity {sent.Id}");
     }
@@ -112,7 +112,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -149,7 +149,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -181,7 +181,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(response?.Id);
 
@@ -190,7 +190,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             .WithProperty("text", $"[Core] Group message at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(response.Id, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(response.Id, activity, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created group {response.Id} and sent activity {sent.Id}");
     }
@@ -215,7 +215,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
-            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity));
+            parameters, _f.ServiceUrl, requestContext: BotRequestContext.FromAgenticUser(_f.AgenticUser));
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
