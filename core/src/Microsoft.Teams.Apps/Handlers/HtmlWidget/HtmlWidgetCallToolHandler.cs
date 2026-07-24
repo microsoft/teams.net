@@ -3,12 +3,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-using Microsoft.Teams.Apps.Handlers;
-using Microsoft.Teams.Apps.HtmlWidget;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps.HtmlWidget;
 
 /// <summary>
 /// Delegate for handling <c>htmlwidget/calltool</c> invoke activities.
