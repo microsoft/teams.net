@@ -38,7 +38,6 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
                  ]
         })
         ;
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(helpActivity, cancellationToken);
 });
@@ -56,7 +55,6 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
         .WithText(replyText)
         .AddMention(context.Activity.From)
         ;
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
     await context.SendAsync(ta, cancellationToken);
 });
 
@@ -119,7 +117,6 @@ public class Example
 > It can span multiple lines
 """, TextFormats.Markdown)
         ;
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(markdownMessage, cancellationToken);
 });
@@ -146,7 +143,6 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
         .AddAIGenerated()
         .AddFeedback()
         ;
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(reply, cancellationToken);
 });
@@ -159,7 +155,7 @@ teamsApp.OnMessage("(?i)^feedback$", async (context, cancellationToken) =>
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
             .Build();
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
+
     MessageActivityInput feedbackActivity = new MessageActivityInput().AddAttachment(feedbackCard);
     await context.SendAsync(feedbackActivity, cancellationToken);
 });
@@ -199,7 +195,6 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
             .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
             .Build()
         );
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(reply, cancellationToken);
 

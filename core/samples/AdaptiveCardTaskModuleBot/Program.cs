@@ -20,7 +20,7 @@ bot.OnMessage(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnMessage");
 
-    JsonObject card = Cards.CreateWelcomeCard();
+    JsonElement card = Cards.CreateWelcomeCard();
 
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(card)
@@ -55,7 +55,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
 
     string? message = data != null && data.TryGetValue("message", out object? msgValue) ? msgValue?.ToString() : null;
 
-    JsonObject adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
+    JsonElement adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
     await context.SendAsync(new MessageActivityInput().AddAttachment(adaptiveActionCardResponse), cancellationToken);
 
