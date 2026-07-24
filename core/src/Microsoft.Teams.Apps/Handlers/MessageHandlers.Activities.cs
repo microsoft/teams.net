@@ -790,3 +790,73 @@ public static class MessageActivityExtensions
         return messageEntity;
     }
 }
+
+/// <summary>
+/// Represents a message update activity.
+/// </summary>
+public class MessageUpdateActivity : MessageActivity
+{
+    /// <summary>
+    /// Convenience method to create a MessageUpdateActivity from a CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    /// <returns>A MessageUpdateActivity instance.</returns>
+    public static new MessageUpdateActivity FromActivity(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return new MessageUpdateActivity(activity);
+    }
+
+    /// <summary>
+    /// Default constructor.
+    /// </summary>
+    [JsonConstructor]
+#pragma warning disable CS0618 // Inbound subclass legitimately uses the base parameterless ctor.
+    internal MessageUpdateActivity() : base()
+#pragma warning restore CS0618
+    {
+        Type = TeamsActivityTypes.MessageUpdate;
+    }
+
+    /// <summary>
+    /// Internal constructor to create MessageUpdateActivity from CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    internal MessageUpdateActivity(CoreActivity activity) : base(activity)
+    {
+        Type = TeamsActivityTypes.MessageUpdate;
+    }
+}
+
+/// <summary>
+/// Represents a message delete activity.
+/// </summary>
+public class MessageDeleteActivity : TeamsActivity
+{
+    /// <summary>
+    /// Convenience method to create a MessageDeleteActivity from a CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    /// <returns>A MessageDeleteActivity instance.</returns>
+    public static new MessageDeleteActivity FromActivity(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return new MessageDeleteActivity(activity);
+    }
+
+    /// <summary>
+    /// Default constructor.
+    /// </summary>
+    [JsonConstructor]
+    internal MessageDeleteActivity() : base(TeamsActivityTypes.MessageDelete)
+    {
+    }
+
+    /// <summary>
+    /// Internal constructor to create MessageDeleteActivity from CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    internal MessageDeleteActivity(CoreActivity activity) : base(activity)
+    {
+    }
+}

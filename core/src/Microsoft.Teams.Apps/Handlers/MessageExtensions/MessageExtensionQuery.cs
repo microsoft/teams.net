@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.MessageExtension;
+namespace Microsoft.Teams.Apps.Handlers.MessagingExtensions;
 
 /// <summary>
 /// Messaging extension query payload.

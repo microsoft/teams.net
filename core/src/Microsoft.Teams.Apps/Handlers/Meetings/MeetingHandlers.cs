@@ -3,8 +3,9 @@
 
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps;
 
-namespace Microsoft.Teams.Apps;
+namespace Microsoft.Teams.Apps.Meetings;
 
 /// <summary>
 /// Delegate for handling meeting start event activities.

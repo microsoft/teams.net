@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AdaptiveCardTaskModuleBot;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Files;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.TaskModules;
 using Microsoft.Teams.Core.Hosting;
