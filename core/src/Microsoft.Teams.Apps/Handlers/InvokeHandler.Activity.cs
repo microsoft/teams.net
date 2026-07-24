@@ -142,6 +142,8 @@ public class InvokeName(string value) : StringEnum(value)
     public static readonly InvokeName MessageSubmitAction = new("message/submitAction");
     /// <summary>Suggested action submit invoke name.</summary>
     public static readonly InvokeName SuggestedActionSubmit = new("suggestedActions/submit");
+    /// <summary>HTML widget tool call invoke name.</summary>
+    public static readonly InvokeName HtmlWidgetCallTool = new("htmlwidget/calltool");
 }
 
 /// <summary>
@@ -239,12 +241,12 @@ public static class InvokeNames
     /// HTML widget call tool invoke name.
     /// </summary>
     [Experimental("ExperimentalTeamsHtmlWidget")]
-    public const string HtmlWidgetCallTool = "htmlwidget/calltool";
+    public static InvokeName HtmlWidgetCallTool => InvokeName.HtmlWidgetCallTool;
 
     /// <summary>
     /// Suggested action submit invoke name.
     /// Sent when the user clicks a suggested action of type <c>Action.Submit</c>.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    [Experimental("ExperimentalTeamsSuggestedAction")]
     public static InvokeName SuggestedActionSubmit => InvokeName.SuggestedActionSubmit;
 }

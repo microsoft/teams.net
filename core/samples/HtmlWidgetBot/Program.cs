@@ -229,9 +229,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                         Before = $"**Validation found {warnings.Count} warning(s):**\n\n{warningText}\n\nPolicy was corrected before sending:",
                     });
                 await context.SendAsync(
-                    MessageActivityInput.CreateBuilder()
-                        .WithText(markdown, TextFormats.ExtendedMarkdown)
-                        .Build(),
+                    new MessageActivityInput()
+                        .WithText(markdown, TextFormats.ExtendedMarkdown),
                     cancellationToken);
                 break;
             }
@@ -239,7 +238,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         case "/help":
             {
                 await context.SendAsync(
-                    MessageActivityInput.CreateBuilder()
+                    new MessageActivityInput()
                         .WithText(
                             "**HTML Widget Test Commands:**\n\n" +
                             "- `/simple` - Static widget (no callbacks)\n" +
@@ -252,8 +251,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                             "- `/hostcontext` - Inspect hostContext from initialize\n" +
                             "- `/validate` - Security policy validation demo\n" +
                             "- `/help` - This message",
-                            TextFormats.Markdown)
-                        .Build(),
+                            TextFormats.Markdown),
                     cancellationToken);
                 break;
             }
