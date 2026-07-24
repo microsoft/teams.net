@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Apps;
 
 namespace Microsoft.Teams.Apps.Files;
 

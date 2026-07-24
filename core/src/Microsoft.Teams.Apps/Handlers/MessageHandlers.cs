@@ -34,7 +34,7 @@ public delegate Task MessageDeleteHandler(Context<MessageDeleteActivity> context
 /// <summary>
 /// Extension methods for registering message activity handlers.
 /// </summary>
-public static class MessageExtensions
+public static class MessageHandlerExtensions
 {
     /// <summary>
     /// Registers a handler for message activities.

@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using Microsoft.Teams.Apps.Diagnostics;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
-using Microsoft.Teams.Core.Diagnostics;
-
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 using CoreUserTokenClient = Microsoft.Teams.Core.UserTokenClient;
 

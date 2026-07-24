@@ -6,7 +6,7 @@ using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Apps.Utils;
 
-namespace Microsoft.Teams.Apps.Handlers.MessagingExtensions;
+namespace Microsoft.Teams.Apps.MessageExtensions;
 
 /// <summary>
 /// Message extension command context values.

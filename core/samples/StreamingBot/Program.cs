@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.ClientModel;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Cards;
-
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Cards;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddTeamsBotApplication();

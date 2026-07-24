@@ -3,7 +3,6 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Diagnostics;
-using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 

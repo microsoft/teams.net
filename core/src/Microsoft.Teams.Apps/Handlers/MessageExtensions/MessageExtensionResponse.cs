@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Utils;
 
-namespace Microsoft.Teams.Apps.Handlers.MessagingExtensions;
+namespace Microsoft.Teams.Apps.MessageExtensions;
 
 /// <summary>
 /// Messaging extension response types.

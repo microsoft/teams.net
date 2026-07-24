@@ -4,7 +4,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.TaskModules;
 
-namespace Microsoft.Teams.Apps.Handlers.MessagingExtensions;
+namespace Microsoft.Teams.Apps.MessageExtensions;
 
 /// <summary>
 /// Represents a response from a message extension action that can contain either a task module or compose extension response.

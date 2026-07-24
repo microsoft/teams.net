@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
 
 namespace Microsoft.Teams.Apps.Routing;

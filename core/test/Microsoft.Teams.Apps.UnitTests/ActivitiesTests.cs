@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
@@ -81,7 +80,7 @@ public class ActivitiesTests
     public void InstallUpdate_FromActivityConvertsCorrectly()
     {
         CoreActivity coreActivity = new()
-            {
+        {
             Type = TeamsActivityTypes.InstallationUpdate
         };
         coreActivity.Properties["action"] = "remove";

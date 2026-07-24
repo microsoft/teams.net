@@ -4,7 +4,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema.Entities;
-using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.Schema;
