@@ -46,13 +46,13 @@ public class StreamingActivityInput : TeamsActivityInput
     /// Creates a new <see cref="StreamingActivityInputBuilder"/> to construct an outbound streaming activity.
     /// </summary>
     /// <returns>A new <see cref="StreamingActivityInputBuilder"/> instance.</returns>
-    public static new StreamingActivityInputBuilder CreateBuilder() => new();
+    internal static new StreamingActivityInputBuilder CreateBuilder() => new();
 }
 
 /// <summary>
 /// Fluent builder for <see cref="StreamingActivityInput"/>.
 /// </summary>
-public class StreamingActivityInputBuilder : TeamsActivityInputBuilder<StreamingActivityInput, StreamingActivityInputBuilder>
+internal class StreamingActivityInputBuilder : TeamsActivityInputBuilder<StreamingActivityInput, StreamingActivityInputBuilder>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingActivityInputBuilder"/> class.
