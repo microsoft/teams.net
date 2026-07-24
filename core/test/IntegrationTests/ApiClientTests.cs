@@ -32,9 +32,9 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     private static MessageActivityInput CreateMessageActivity(string text) =>
-        MessageActivityInput.CreateBuilder()
+        new MessageActivityInput()
             .WithText(text)
-            .Build();
+            ;
 
     private static MessageActivityInput CreateMessageActivity(string text, ChannelAccount recipient)
     {

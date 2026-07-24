@@ -28,14 +28,13 @@ namespace Microsoft.Teams.Apps;
 /// </code>
 ///
 /// To attach entities, attachments, suggested actions, or feedback to the final message,
-/// build a <see cref="MessageActivityInput"/> using <see cref="MessageActivityInput.CreateBuilder"/> and pass it in.
+/// build a <see cref="MessageActivityInput"/> using its fluent methods and pass it in.
 /// If its <see cref="MessageActivityInput.Text"/> is null the writer fills in the accumulated streamed text.
 /// <code>
-///     MessageActivityInput final = MessageActivityInput.CreateBuilder()
+///     MessageActivityInput final = new MessageActivityInput()
 ///         .AddAttachment(card)
 ///         .AddEntity(citation)
-///         .AddFeedback(FeedbackTypes.Default)
-///         .Build();
+///         .AddFeedback(FeedbackTypes.Default);
 ///     await writer.FinalizeResponseAsync(final);
 /// </code>
 ///
@@ -211,9 +210,7 @@ public sealed class TeamsStreamingWriter
         StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
-        MessageActivityInput activity = new MessageActivityInputBuilder(final)
-            .AddEntity(streamInfo)
-            .Build();
+        MessageActivityInput activity = final.AddEntity(streamInfo);
 
         _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).",
             _streamId, final.Text?.Length ?? 0, _sequence);
@@ -347,8 +344,7 @@ public sealed class TeamsStreamingWriter
             channelData.StreamSequence = null;
         }
 
-        MessageActivityInput activity = new MessageActivityInputBuilder(final)
-            .Build();
+        MessageActivityInput activity = final;
 
         if (_streamId != null)
         {

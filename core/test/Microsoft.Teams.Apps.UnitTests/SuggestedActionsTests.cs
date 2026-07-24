@@ -194,10 +194,10 @@ public class SuggestedActionsTests
     {
         SuggestedActions suggestedActions = new();
 
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
-            .Build();
+            ;
 
         Assert.NotNull(activity.SuggestedActions);
         Assert.Same(suggestedActions, activity.SuggestedActions);
@@ -212,10 +212,10 @@ public class SuggestedActionsTests
         SuggestedActions suggestedActions = new SuggestedActions()
             .AddAction(new SuggestedAction(ActionTypes.IMBack, "Option 1", "opt1"));
 
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
-            .Build();
+            ;
 
         Assert.NotNull(activity.SuggestedActions);
         Assert.Same(suggestedActions, activity.SuggestedActions);

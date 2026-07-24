@@ -262,9 +262,9 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
         Assert.NotNull(response?.Id);
 
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
             .WithText($"[ApiClient] 1:1 via Activities.Create at `{DateTime.UtcNow:s}`")
-            .Build();
+            ;
 
         SendActivityResponse? sent = await _api.Conversations.CreateActivityAsync(response.Id, activity);
         Assert.NotNull(sent?.Id);
@@ -353,9 +353,9 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(response.ActivityId);
 
         // Reply to the thread
-        MessageActivityInput reply = MessageActivityInput.CreateBuilder()
+        MessageActivityInput reply = new MessageActivityInput()
             .WithText($"[ApiClient] Thread reply at `{DateTime.UtcNow:s}`")
-            .Build();
+            ;
 
         SendActivityResponse? replyResponse = await _api.Conversations.ReplyToActivityAsync(
             response.Id, response.ActivityId, reply);

@@ -109,7 +109,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
-        => ReplyAsync(MessageActivityInput.CreateBuilder().WithText(text).Build(), cancellationToken);
+        => ReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
     /// Sends an activity to the conversation. When the inbound activity has an id, the response
@@ -153,7 +153,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
     public Task<SendActivityResponse?> QuoteAsync(string messageId, string text, CancellationToken cancellationToken = default)
-        => QuoteAsync(messageId, MessageActivityInput.CreateBuilder().WithText(text).Build(), cancellationToken);
+        => QuoteAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
     /// Send a message to the conversation with a quoted message reference prepended to the text.
@@ -169,7 +169,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
         if (activity is MessageActivityInput message)
         {
-            new MessageActivityInputBuilder(message).PrependQuote(messageId);
+            message.PrependQuote(messageId);
         }
         return SendAsync(activity, cancellationToken);
     }
@@ -180,7 +180,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => SendAsync(text, cancellationToken);
 
     /// <inheritdoc cref="SendAsync(MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Use SendActivityAsync with a TeamsActivityInput built via MessageActivityInput.CreateBuilder() instead.")]
+    [Obsolete("Use SendActivityAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Send(MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -197,7 +197,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => ReplyAsync(text, cancellationToken);
 
     /// <inheritdoc cref="ReplyAsync(MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Use ReplyAsync with a TeamsActivityInput built via MessageActivityInput.CreateBuilder() instead.")]
+    [Obsolete("Use ReplyAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Reply(MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -224,7 +224,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => QuoteAsync(messageId, text, cancellationToken);
 
     /// <inheritdoc cref="QuoteAsync(string, MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Use QuoteAsync with a TeamsActivityInput built via MessageActivityInput.CreateBuilder() instead.")]
+    [Obsolete("Use QuoteAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Quote(string messageId, MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -244,7 +244,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendAsync(string text, CancellationToken cancellationToken = default)
-        => SendAsync(MessageActivityInput.CreateBuilder().WithText(text).Build(), cancellationToken);
+        => SendAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
     /// Sends an activity to the conversation. When the activity carries a recipient marked as targeted

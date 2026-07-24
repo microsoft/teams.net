@@ -224,10 +224,9 @@ public class OAuthFlow
                 .WithContent(oauthCardJson)
                 .Build();
 
-            MessageActivityInput oauthActivity = MessageActivityInput.CreateBuilder()
+            MessageActivityInput oauthActivity = new MessageActivityInput()
                 .AddAttachment(attachment)
-                .WithRecipient(context.Activity.From!, isChannelOrGroup) // dont remove, required for sso flow
-                .Build();
+                .WithRecipient(context.Activity.From!, isChannelOrGroup); // dont remove, required for sso flow
 
             await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 

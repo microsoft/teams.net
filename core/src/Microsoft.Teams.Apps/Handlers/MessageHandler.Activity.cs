@@ -32,7 +32,7 @@ public class MessageActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use new MessageActivityInput() instead.")]
     public MessageActivity() : base(TeamsActivityTypes.Message)
     {
     }
@@ -41,7 +41,7 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text">The text content of the message.</param>
-    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use new MessageActivityInput() instead.")]
     public MessageActivity(string text) : base(TeamsActivityTypes.Message)
     {
         Text = text;
@@ -52,7 +52,7 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="attachments">The list of attachments for the message.</param>
-    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.")]
+    [Obsolete("MessageActivity is an inbound (received) activity. To construct and send a message, use new MessageActivityInput() instead.")]
     public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityTypes.Message)
     {
         Attachments = attachments;
@@ -188,13 +188,13 @@ public static class TextFormats
 /// <para>
 /// These are retained only for backward compatibility. <see cref="MessageActivity"/> is an inbound
 /// (received) activity type. To construct and send a message, use
-/// <see cref="MessageActivityInput.CreateBuilder"/> and its builder instead.
+/// <see cref="MessageActivityInput"/> with fluent methods instead.
 /// </para>
 /// </summary>
 public static class MessageActivityExtensions
 {
     private const string ObsoleteMessage =
-        "MessageActivity is an inbound (received) activity. To construct and send a message, use MessageActivityInput.CreateBuilder() instead.";
+        "MessageActivity is an inbound (received) activity. To construct and send a message, use new MessageActivityInput() instead.";
 
     private static readonly Regex QuotedPlaceholderRegex = new("<quoted messageId=\"[^\"]*\"/>", RegexOptions.Compiled);
 

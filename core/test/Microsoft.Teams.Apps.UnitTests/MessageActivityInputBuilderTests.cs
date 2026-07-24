@@ -7,20 +7,20 @@ using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
-public class MessageActivityInputBuilderTests
+public class MessageActivityInputTests
 {
-    private readonly MessageActivityInputBuilder builder;
-    private readonly MessageActivityInputBuilder messageBuilder;
-    public MessageActivityInputBuilderTests()
+    private readonly MessageActivityInput builder;
+    private readonly MessageActivityInput messageBuilder;
+    public MessageActivityInputTests()
     {
-        builder = MessageActivityInput.CreateBuilder();
-        messageBuilder = MessageActivityInput.CreateBuilder();
+        builder = new MessageActivityInput();
+        messageBuilder = new MessageActivityInput();
     }
 
     [Fact]
     public void Constructor_DefaultConstructor_CreatesNewActivity()
     {
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder().Build();
+        MessageActivityInput activity = new MessageActivityInput();
 
         Assert.NotNull(activity);
     }
@@ -29,8 +29,7 @@ public class MessageActivityInputBuilderTests
     public void WithId_SetsActivityId()
     {
         MessageActivityInput activity = builder
-            .WithId("test-activity-id")
-            .Build();
+            .WithId("test-activity-id");
 
         Assert.Equal("test-activity-id", activity.Id);
     }
@@ -38,8 +37,7 @@ public class MessageActivityInputBuilderTests
     [Fact]
     public void Build_DefaultsToMessageType()
     {
-        MessageActivityInput activity = builder
-            .Build();
+        MessageActivityInput activity = builder;
 
         Assert.Equal(TeamsActivityTypes.Message, activity.Type);
     }
@@ -48,8 +46,7 @@ public class MessageActivityInputBuilderTests
     public void WithText_SetsTextContent()
     {
         MessageActivityInput activity = builder
-            .WithText("Hello, World!")
-            .Build();
+            .WithText("Hello, World!");
 
         Assert.Equal("Hello, World!", activity.Text);
     }
@@ -86,8 +83,7 @@ public class MessageActivityInputBuilderTests
         };
 
         MessageActivityInput activity = builder
-            .WithText("hi")
-            .Build();
+            .WithText("hi");
         activity.ChannelData = channelData;
 
         Assert.NotNull(activity.ChannelData);
@@ -108,8 +104,7 @@ public class MessageActivityInputBuilderTests
         ];
 
         MessageActivityInput activity = builder
-            .WithEntities(entities)
-            .Build();
+            .WithEntities(entities);
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -128,8 +123,7 @@ public class MessageActivityInputBuilderTests
         ];
 
         MessageActivityInput activity = messageBuilder
-            .WithAttachments(attachments)
-            .Build();
+            .WithAttachments(attachments);
 
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
@@ -147,8 +141,7 @@ public class MessageActivityInputBuilderTests
         };
 
         MessageActivityInput activity = messageBuilder
-            .AddAttachment(attachment)
-            .Build();
+            .AddAttachment(attachment);
 
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
@@ -165,8 +158,7 @@ public class MessageActivityInputBuilderTests
         };
 
         MessageActivityInput activity = builder
-            .AddEntity(entity)
-            .Build();
+            .AddEntity(entity);
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -178,8 +170,7 @@ public class MessageActivityInputBuilderTests
     {
         MessageActivityInput activity = builder
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
-            .AddEntity(new ProductInfoEntity { Id = "product-123" })
-            .Build();
+            .AddEntity(new ProductInfoEntity { Id = "product-123" });
 
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities?.Count);
@@ -189,8 +180,7 @@ public class MessageActivityInputBuilderTests
     public void AddClientInfo_AddsClientInfoEntity()
     {
         MessageActivityInput activity = builder
-            .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
-            .Build();
+            .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US");
 
         ClientInfoEntity? entity = activity.Entities?.OfType<ClientInfoEntity>().SingleOrDefault();
         Assert.NotNull(entity);
@@ -204,8 +194,7 @@ public class MessageActivityInputBuilderTests
     public void AddProductInfo_AddsProductInfoEntity()
     {
         MessageActivityInput activity = builder
-            .AddProductInfo("product-123")
-            .Build();
+            .AddProductInfo("product-123");
 
         ProductInfoEntity? entity = activity.Entities?.OfType<ProductInfoEntity>().SingleOrDefault();
         Assert.NotNull(entity);
@@ -216,8 +205,7 @@ public class MessageActivityInputBuilderTests
     public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
     {
         MessageActivityInput activity = builder
-            .AddFeedback(FeedbackTypes.Custom)
-            .Build();
+            .AddFeedback(FeedbackTypes.Custom);
 
         Assert.NotNull(activity.ChannelData);
         Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
@@ -235,8 +223,7 @@ public class MessageActivityInputBuilderTests
         };
 
         MessageActivityInput activity = messageBuilder
-            .AddAttachment(attachment)
-            .Build();
+            .AddAttachment(attachment);
 
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
@@ -248,8 +235,7 @@ public class MessageActivityInputBuilderTests
     {
         MessageActivityInput activity = messageBuilder
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
-            .AddAttachment(new TeamsAttachment { ContentType = "application/json" })
-            .Build();
+            .AddAttachment(new TeamsAttachment { ContentType = "application/json" });
 
         Assert.NotNull(activity.Attachments);
         Assert.Equal(2, activity.Attachments?.Count);
@@ -261,8 +247,7 @@ public class MessageActivityInputBuilderTests
         var adaptiveCard = new { type = "AdaptiveCard", version = "1.2" };
 
         MessageActivityInput activity = messageBuilder
-            .AddAdaptiveCardAttachment(adaptiveCard)
-            .Build();
+            .AddAdaptiveCardAttachment(adaptiveCard);
 
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
@@ -276,8 +261,7 @@ public class MessageActivityInputBuilderTests
         var adaptiveCard = new { type = "AdaptiveCard" };
 
         MessageActivityInput activity = messageBuilder
-            .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
-            .Build();
+            .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"));
 
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
@@ -307,8 +291,7 @@ public class MessageActivityInputBuilderTests
 
         MessageActivityInput activity = builder
             .WithText("said hello")
-            .AddMention(account)
-            .Build();
+            .AddMention(account);
 
         Assert.Equal("<at>John Doe</at> said hello", activity.Text);
         Assert.NotNull(activity.Entities);
@@ -332,8 +315,7 @@ public class MessageActivityInputBuilderTests
 
         MessageActivityInput activity = builder
             .WithText("replied")
-            .AddMention(account, "CustomName")
-            .Build();
+            .AddMention(account, "CustomName");
 
         Assert.Equal("<at>CustomName</at> replied", activity.Text);
 
@@ -354,7 +336,7 @@ public class MessageActivityInputBuilderTests
         MessageActivityInput activity = builder
             .WithText("original text")
             .AddMention(account, addText: false)
-            .Build();
+            ;
 
         Assert.Equal("original text", activity.Text);
         Assert.NotNull(activity.Entities);
@@ -371,7 +353,7 @@ public class MessageActivityInputBuilderTests
             .WithText("message")
             .AddMention(account1)
             .AddMention(account2)
-            .Build();
+            ;
 
         Assert.Equal("<at>User Two</at> <at>User One</at> message", activity.Text);
         Assert.NotNull(activity.Entities);
@@ -387,7 +369,7 @@ public class MessageActivityInputBuilderTests
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
             .AddMention(new ChannelAccount { Id = "user-1", Name = "User" })
-            .Build();
+            ;
 
         Assert.Equal(TeamsActivityTypes.Message, activity.Type);
         Assert.Equal("activity-123", activity.Id);
@@ -407,9 +389,9 @@ public class MessageActivityInputBuilderTests
     public void FluentAPI_MethodChaining_ReturnsBuilderInstance()
     {
 
-        MessageActivityInputBuilder result1 = builder.WithId("id");
-        MessageActivityInputBuilder result2 = builder.WithText("text");
-        MessageActivityInputBuilder result3 = builder.AddText("!");
+        MessageActivityInput result1 = builder.WithId("id");
+        MessageActivityInput result2 = builder.WithText("text");
+        MessageActivityInput result3 = builder.AddText("!");
 
         Assert.Same(builder, result1);
         Assert.Same(builder, result2);
@@ -422,8 +404,8 @@ public class MessageActivityInputBuilderTests
         builder
             .WithId("test-id");
 
-        MessageActivityInput activity1 = builder.Build();
-        MessageActivityInput activity2 = builder.Build();
+        MessageActivityInput activity1 = builder;
+        MessageActivityInput activity2 = builder;
 
         Assert.Same(activity1, activity2);
     }
@@ -431,10 +413,9 @@ public class MessageActivityInputBuilderTests
     [Fact]
     public void Builder_ModifyingExistingActivity_PreservesOriginalData()
     {
-        MessageActivityInput modified = MessageActivityInput.CreateBuilder()
+        MessageActivityInput modified = new MessageActivityInput()
             .WithId("original-id")
-            .WithText("modified text")
-            .Build();
+            .WithText("modified text");
 
         Assert.Equal("original-id", modified.Id);
         Assert.Equal("modified text", modified.Text);
@@ -452,7 +433,7 @@ public class MessageActivityInputBuilderTests
 
         MessageActivityInput activity = builder
             .AddMention(account)
-            .Build();
+            ;
 
         // Entities are on TeamsActivity, not CoreActivity; verify via TeamsActivity
         Assert.NotNull(activity.Entities);
@@ -463,7 +444,7 @@ public class MessageActivityInputBuilderTests
     public void WithChannelData_NullValue_SetsToNull()
     {
         MessageActivityInput activity = builder
-            .Build();
+            ;
 
         Assert.Null(activity.ChannelData);
     }
@@ -471,14 +452,14 @@ public class MessageActivityInputBuilderTests
     [Fact]
     public void AddEntity_NullEntitiesCollection_InitializesCollection()
     {
-        MessageActivityInput activity = builder.Build();
+        MessageActivityInput activity = builder;
 
         Assert.Null(activity.Entities);
 
         ClientInfoEntity entity = new() { Locale = "en-US" };
         builder.AddEntity(entity);
 
-        MessageActivityInput result = builder.Build();
+        MessageActivityInput result = builder;
         Assert.NotNull(result.Entities);
         Assert.Single(result.Entities);
     }
@@ -486,14 +467,14 @@ public class MessageActivityInputBuilderTests
     [Fact]
     public void AddAttachment_NullAttachmentsCollection_InitializesCollection()
     {
-        MessageActivityInput activity = messageBuilder.Build();
+        MessageActivityInput activity = messageBuilder;
 
         Assert.Null(activity.Attachments);
 
         TeamsAttachment attachment = new() { ContentType = "text/html" };
         messageBuilder.AddAttachment(attachment);
 
-        MessageActivityInput result = messageBuilder.Build();
+        MessageActivityInput result = messageBuilder;
         Assert.NotNull(result.Attachments);
         Assert.Single(result.Attachments);
     }
@@ -509,7 +490,7 @@ public class MessageActivityInputBuilderTests
 
         MessageActivityInput activity = builder
             .AddMention(account)
-            .Build();
+            ;
 
         Assert.Equal("<at>User</at> ", activity.Text);
     }
@@ -520,7 +501,7 @@ public class MessageActivityInputBuilderTests
         MessageActivityInput activity = builder
             .WithEntities([new ClientInfoEntity()])
             .WithEntities(null!)
-            .Build();
+            ;
 
         Assert.Null(activity.Entities);
     }
@@ -531,7 +512,7 @@ public class MessageActivityInputBuilderTests
         MessageActivityInput activity = messageBuilder
             .WithAttachments([new()])
             .WithAttachments(null!)
-            .Build();
+            ;
 
         Assert.Null(activity.Attachments);
     }
@@ -548,7 +529,7 @@ public class MessageActivityInputBuilderTests
         MessageActivityInput activity = builder
             .WithText("message")
             .AddMention(account)
-            .Build();
+            ;
 
         Assert.Equal("<at></at> message", activity.Text);
         Assert.NotNull(activity.Entities);
@@ -561,11 +542,11 @@ public class MessageActivityInputBuilderTests
         builder
             .AddEntity(new ClientInfoEntity { Locale = "en-US" });
 
-        MessageActivityInput activity1 = builder.Build();
+        MessageActivityInput activity1 = builder;
         Assert.NotNull(activity1.Entities);
 
         builder.AddEntity(new ProductInfoEntity { Id = "prod-1" });
-        MessageActivityInput activity2 = builder.Build();
+        MessageActivityInput activity2 = builder;
 
         Assert.Same(activity1, activity2);
         Assert.NotNull(activity2.Entities);
@@ -600,7 +581,7 @@ public class MessageActivityInputBuilderTests
                 Id = "manager-id",
                 Name = "Manager"
             }, "Manager")
-            .Build();
+            ;
         activity.ChannelData = channelData;
 
         // Verify all properties

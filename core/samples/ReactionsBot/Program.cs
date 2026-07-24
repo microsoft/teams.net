@@ -27,9 +27,9 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 {
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
 
-    MessageActivityInput message = MessageActivityInput.CreateBuilder()
+    MessageActivityInput message = new MessageActivityInput()
         .WithText("Adding and removing reactions on this message...")
-        .Build();
+        ;
 
     SendActivityResponse? response = await context.SendAsync(message, cancellationToken);
     string activityId = response?.Id ?? throw new InvalidOperationException("SendActivityResponse.Id is required.");
