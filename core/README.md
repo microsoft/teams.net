@@ -34,7 +34,7 @@ app.Run();
 - **Loose schema** &mdash; `CoreActivity` contains only strictly required fields; additional fields are captured via `JsonExtensionData`
 - **Simple serialization** &mdash; Standard `System.Text.Json` with source generation, no custom converters
 - **Extensible schema** &mdash; `ChannelData` and entities support extension properties; generics allow custom types
-- **MSAL-based auth** &mdash; Token acquisition built on Microsoft Identity Web, supporting client secrets, managed identities, and agentic (user-delegated) tokens
+- **MSAL-based auth** &mdash; Token acquisition built on Microsoft Identity Web, supporting client secrets, managed identities, and agentic user (user-delegated) tokens
 - **ASP.NET DI** &mdash; All dependencies configured via `IServiceCollection`, reusing the built-in `HttpClient` factory
 - **ILogger & IConfiguration** &mdash; Standard .NET logging and configuration throughout
 

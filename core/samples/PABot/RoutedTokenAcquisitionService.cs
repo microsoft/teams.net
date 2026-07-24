@@ -8,7 +8,7 @@ using Microsoft.Teams.Core.Schema;
 namespace PABot
 {
     /// <summary>
-    /// Token acquisition service that routes to either bot or agentic credentials based on context.
+    /// Token acquisition service that routes to either bot or agentic user credentials based on context.
     /// </summary>
     public interface IRoutedTokenAcquisitionService
     {
@@ -32,13 +32,13 @@ namespace PABot
         Task<string> AcquireTokenForBotAppIdAsync(string botAppId, string scope, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Acquires a token using agentic application credentials.
+        /// Acquires a token using agentic app instance credentials.
         /// </summary>
-        /// <param name="agenticIdentity">The agentic identity containing AgenticAppId and AgenticUserId.</param>
+        /// <param name="agenticUser">The agentic user containing AgenticAppInstanceId and AgenticUserId.</param>
         /// <param name="scope">The scope for the token request.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>An access token.</returns>
-        Task<string> AcquireTokenForAgenticAsync(AgenticIdentity agenticIdentity, string scope, CancellationToken cancellationToken = default);
+        Task<string> AcquireTokenForAgenticUserAsync(AgenticUser agenticUser, string scope, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ namespace PABot
             {
                 throw new InvalidOperationException(
                     "Bot identity (MsalBot) is not configured. Cannot acquire token using bot credentials. " +
-                    "Either configure MsalBot section in configuration or use AcquireTokenForAgenticAsync instead.");
+                    "Either configure MsalBot section in configuration or use AcquireTokenForAgenticUserAsync instead.");
             }
 
             _logger.LogDebug("Acquiring token for bot credentials using MsalBot configuration");
@@ -119,35 +119,35 @@ namespace PABot
                 cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<string> AcquireTokenForAgenticAsync(AgenticIdentity agenticIdentity, string scope, CancellationToken cancellationToken = default)
+        public async Task<string> AcquireTokenForAgenticUserAsync(AgenticUser agenticUser, string scope, CancellationToken cancellationToken = default)
         {
-            if (agenticIdentity is null)
+            if (agenticUser is null)
             {
-                throw new ArgumentNullException(nameof(agenticIdentity));
+                throw new ArgumentNullException(nameof(agenticUser));
             }
 
-            if (string.IsNullOrEmpty(agenticIdentity.AgenticAppId))
+            if (string.IsNullOrEmpty(agenticUser.AgenticAppInstanceId))
             {
-                throw new ArgumentException("AgenticAppId cannot be null or empty", nameof(agenticIdentity));
+                throw new ArgumentException("AgenticAppInstanceId cannot be null or empty", nameof(agenticUser));
             }
 
-            if (string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
+            if (string.IsNullOrEmpty(agenticUser.AgenticUserId))
             {
-                throw new ArgumentException("AgenticUserId cannot be null or empty", nameof(agenticIdentity));
+                throw new ArgumentException("AgenticUserId cannot be null or empty", nameof(agenticUser));
             }
 
             if (!_hasAgentIdentity)
             {
                 throw new InvalidOperationException(
                     "Agent identity (MsalAgent) is not configured. Cannot acquire token using agent credentials. " +
-                    "Configure MsalAgent section in configuration to use agentic authentication.");
+                    "Configure MsalAgent section in configuration to use agentic user authentication.");
             }
 
-            _logger.LogDebug("Acquiring token for agentic credentials with AppId '{AppId}' and UserId '{UserId}'",
-                agenticIdentity.AgenticAppId,
-                agenticIdentity.AgenticUserId);
+            _logger.LogDebug("Acquiring token for agentic user credentials with AppId '{AppId}' and UserId '{UserId}'",
+                agenticUser.AgenticAppInstanceId,
+                agenticUser.AgenticUserId);
 
-            // Use the agentic client credentials configuration
+            // Use the agentic user client credentials configuration
             AuthorizationHeaderProviderOptions options = new()
             {
                 AcquireTokenOptions = new AcquireTokenOptions
@@ -156,8 +156,8 @@ namespace PABot
                 }
             };
 
-            // Use WithAgentUserIdentity to acquire token with agentic identity
-            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, Guid.Parse(agenticIdentity.AgenticUserId));
+            // Use the Microsoft.Identity.Web boundary API to acquire token with agentic user.
+            options.WithAgentUserIdentity(agenticUser.AgenticAppInstanceId, Guid.Parse(agenticUser.AgenticUserId));
 
             return await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync(
                 [scope],

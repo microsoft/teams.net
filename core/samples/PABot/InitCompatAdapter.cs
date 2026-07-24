@@ -146,7 +146,7 @@ namespace PABot
         {
             // Register a token validation scheme per configured identity, each validating its own audience
             // (client id). The authorization policy succeeds if ANY scheme validates — so inbound tokens
-            // from any configured bot registration (or the agentic app) are accepted.
+            // from any configured bot registration (or the agentic app instance) are accepted.
 
             AuthenticationBuilder authBuilder = services.AddAuthentication();
 

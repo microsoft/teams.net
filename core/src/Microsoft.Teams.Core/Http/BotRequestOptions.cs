@@ -13,7 +13,7 @@ public record BotRequestOptions
     /// <summary>
     /// Gets the per-request properties to stamp onto the outbound request's options, where a
     /// <see cref="System.Net.Http.DelegatingHandler"/> can read them. See <see cref="BotRequestContext"/>
-    /// for well-known keys (agentic identity, bot app id) and helpers.
+    /// for well-known keys (agentic user, bot app id) and helpers.
     /// </summary>
     public BotRequestContext? RequestContext { get; init; }
 

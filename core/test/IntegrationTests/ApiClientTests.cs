@@ -116,7 +116,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_CreateTargetedAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Targeted activities return 500 with agentic user — service limitation");
 
         MessageActivityInput activity = CreateMessageActivity(
             $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`",
@@ -133,7 +133,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_UpdateTargetedAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Targeted activities return 500 with agentic user — service limitation");
         MessageActivityInput original = CreateMessageActivity(
             $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`",
             new ChannelAccount { Id = _f.MemberMri1 });
@@ -154,7 +154,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Activities")]
     public async Task Activities_DeleteTargetedAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Targeted activities return 500 with agentic user — service limitation");
         MessageActivityInput activity = CreateMessageActivity(
             $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`",
             new ChannelAccount { Id = _f.MemberMri1 });
@@ -191,7 +191,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Members")]
     public async Task Members_GetPagedAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Paged members returns 500 with agentic user — service limitation");
 
         PagedTeamsMembersResult paged = await _api.Conversations.GetMembersPagedAsync(_f.ConversationId);
 
@@ -241,7 +241,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Reactions")]
     public async Task Reactions_AddAndDelete()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Reactions API returns 404 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Reactions API returns 404 with agentic user — service limitation");
         Skip.If(_f.IsCanary, "Reactions API returns 404 on canary — service limitation");
 
         MessageActivityInput activity = CreateMessageActivity($"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`");
@@ -348,7 +348,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_GetSignInUrlAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+        Skip.If(_f.AgenticUser is not null, "UserTokenClient does not support agentic user");
 
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
@@ -375,7 +375,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_GetSignInResourceAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+        Skip.If(_f.AgenticUser is not null, "UserTokenClient does not support agentic user");
 
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
@@ -406,7 +406,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_Token_GetStatusAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+        Skip.If(_f.AgenticUser is not null, "UserTokenClient does not support agentic user");
 
         string userId = _f.MemberMri1!;
 
@@ -427,7 +427,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_Token_GetAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+        Skip.If(_f.AgenticUser is not null, "UserTokenClient does not support agentic user");
 
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
@@ -440,7 +440,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Users")]
     public async Task Users_Token_SignOutAsync()
     {
-        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+        Skip.If(_f.AgenticUser is not null, "UserTokenClient does not support agentic user");
 
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
@@ -457,7 +457,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Client")]
     public async Task ForServiceUrl_CreatesScopedClient()
     {
-        ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl).ForAgenticIdentity(_f.AgenticIdentity);
+        ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl).ForAgenticUser(_f.AgenticUser);
 
         Assert.NotNull(scoped.Conversations);
         Assert.NotNull(scoped.Teams);

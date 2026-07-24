@@ -24,6 +24,28 @@ public class MessageActivityInputBuilderTests
     }
 
     [Fact]
+    public void FromChannelAccount_PreservesTenantId()
+    {
+        TeamsChannelAccount source = new()
+        {
+            Id = "user-id",
+            Name = "User Name",
+            TenantId = "tenant-abc",
+            AgenticAppInstanceId = "app-1",
+            AgenticUserId = "user-1",
+            AgenticBlueprintId = "bp-1",
+        };
+
+        TeamsChannelAccount? result = TeamsChannelAccount.FromChannelAccount(source);
+
+        Assert.NotNull(result);
+        Assert.Equal("tenant-abc", result.TenantId);
+        Assert.Equal("app-1", result.AgenticAppInstanceId);
+        Assert.Equal("user-1", result.AgenticUserId);
+        Assert.Equal("bp-1", result.AgenticBlueprintId);
+    }
+
+    [Fact]
     public void WithAttachments_SetsAttachmentsCollection()
     {
         MessageActivityInput activity = new MessageActivityInput().WithAttachments([

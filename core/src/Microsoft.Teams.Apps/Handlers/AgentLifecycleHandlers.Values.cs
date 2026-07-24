@@ -77,16 +77,16 @@ public abstract class AgentLifecycleValueBase
     public string? AgenticUserId { get; set; }
 
     /// <summary>
-    /// Gets or sets the concrete agent app instance ID.
+    /// Gets or sets the concrete agentic app instance ID.
     /// </summary>
     [JsonPropertyName("agenticAppInstanceId")]
     public string? AgenticAppInstanceId { get; set; }
 
     /// <summary>
-    /// Gets or sets the agent identity blueprint app ID.
+    /// Gets or sets the agentic blueprint app ID.
     /// </summary>
     [JsonPropertyName("agentIdentityBlueprintId")]
-    public string? AgentIdentityBlueprintId { get; set; }
+    public string? AgenticBlueprintId { get; set; }
 
     /// <summary>
     /// Gets or sets the monotonic version of the agentic user state when provided by the service.

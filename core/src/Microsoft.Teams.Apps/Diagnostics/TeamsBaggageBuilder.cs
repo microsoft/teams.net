@@ -47,8 +47,8 @@ public sealed class TeamsBaggageBuilder
     /// <summary>Sets the agentic user id (<c>microsoft.agent.user.id</c>). Required for cert.</summary>
     public TeamsBaggageBuilder AgenticUserId(string? v) => Set(AgentObservabilityKeys.AgenticUserId, v);
 
-    /// <summary>Sets the agent blueprint id (<c>microsoft.a365.agent.blueprint.id</c>). Required for cert.</summary>
-    public TeamsBaggageBuilder AgentBlueprintId(string? v) => Set(AgentObservabilityKeys.AgentBlueprintId, v);
+    /// <summary>Sets the agentic blueprint id (<c>microsoft.a365.agent.blueprint.id</c>). Required for cert.</summary>
+    public TeamsBaggageBuilder AgenticBlueprintId(string? v) => Set(AgentObservabilityKeys.AgenticBlueprintId, v);
 
     /// <summary>Sets the human user name (<c>user.name</c>). Optional.</summary>
     public TeamsBaggageBuilder UserName(string? v) => Set(AgentObservabilityKeys.UserName, v);
@@ -117,10 +117,10 @@ public sealed class TeamsBaggageBuilder
         TeamsChannelAccount? recipient = activity.Recipient;
         if (recipient is not null)
         {
-            AgentId(string.IsNullOrWhiteSpace(recipient.AgenticAppId) ? recipient.Id : recipient.AgenticAppId);
+            AgentId(string.IsNullOrWhiteSpace(recipient.AgenticAppInstanceId) ? recipient.Id : recipient.AgenticAppInstanceId);
             AgentName(recipient.Name);
             AgenticUserId(recipient.AgenticUserId);
-            AgentBlueprintId(recipient.AgenticAppBlueprintId);
+            AgenticBlueprintId(recipient.AgenticBlueprintId);
             TenantId(recipient.TenantId);
             AgenticUserEmail(recipient.Email);
             AgentDescription(recipient.UserRole);

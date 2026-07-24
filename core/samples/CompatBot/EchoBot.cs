@@ -98,7 +98,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             //incomingCoreActivity.ServiceUrl!,
-            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
+            BotRequestContext.FromAgenticUser(AgenticUser.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -109,7 +109,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             res.Id,
             "sad",
             incomingCoreActivity.ServiceUrl!,
-            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
+            BotRequestContext.FromAgenticUser(AgenticUser.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 
@@ -121,7 +121,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
-            BotRequestContext.FromAgenticIdentity(AgenticIdentity.FromAccount(incomingRecipient)),
+            BotRequestContext.FromAgenticUser(AgenticUser.FromAccount(incomingRecipient)),
             null,
             cancellationToken);
 

@@ -34,7 +34,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     public string TenantId { get; }
     public string BotAppId { get; }
     public string? UserId2 { get; }
-    public AgenticIdentity? AgenticIdentity { get; }
+    public AgenticUser? AgenticUser { get; }
 
     /// <summary>
     /// True when running against the canary service endpoint.
@@ -99,19 +99,19 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
         BotAppId = Env("AzureAd__ClientId");
         UserId2 = Environment.GetEnvironmentVariable("TEST_USER_ID_2");
 
-        string? agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
+        string? agenticAppInstanceId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
         string? agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
 
-        if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
+        if (!string.IsNullOrEmpty(agenticAppInstanceId) && !string.IsNullOrEmpty(agenticUserId))
         {
             string appBlueprintId = Env("AzureAd__ClientId");
             ChannelAccount recipient = new()
             {
-                AgenticAppBlueprintId = appBlueprintId,
-                AgenticAppId = agenticAppId,
+                AgenticBlueprintId = appBlueprintId,
+                AgenticAppInstanceId = agenticAppInstanceId,
                 AgenticUserId = agenticUserId
             };
-            AgenticIdentity = AgenticIdentity.FromAccount(recipient);
+            AgenticUser = AgenticUser.FromAccount(recipient);
         }
     }
 
@@ -139,7 +139,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl).ForAgenticIdentity(AgenticIdentity);
+    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl).ForAgenticUser(AgenticUser);
 
     public void Dispose()
     {
@@ -152,11 +152,11 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
         ?? fallback
         ?? throw new InvalidOperationException($"{name} environment variable not set");
 
-    internal static ChannelAccount GetChannelAccountWithAgenticProperties()
+    internal static ChannelAccount GetChannelAccountWithAgenticUserProperties()
     {
         string agenticUserId = Env("TEST_AGENTIC_USERID");
-        string agenticAppId = Env("TEST_AGENTIC_APPID");
-        string agenticAppBlueprintId = Env("AzureAd__ClientId");
+        string agenticAppInstanceId = Env("TEST_AGENTIC_APPID");
+        string agenticBlueprintId = Env("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
@@ -166,30 +166,30 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
         ChannelAccount account = new()
         {
             Id = agenticUserId,
-            Name = "Agentic User",
-            AgenticAppBlueprintId = agenticAppBlueprintId,
-            AgenticAppId = agenticAppId,
+            Name = "Agent User",
+            AgenticBlueprintId = agenticBlueprintId,
+            AgenticAppInstanceId = agenticAppInstanceId,
             AgenticUserId = agenticUserId
         };
         return account;
     }
 
-    internal static AgenticIdentity GetAgenticIdentity()
+    internal static AgenticUser GetAgenticUser()
     {
         string agenticUserId = Env("TEST_AGENTIC_USERID");
-        string agenticAppId = Env("TEST_AGENTIC_APPID");
-        string agenticAppBlueprintId = Env("AzureAd__ClientId");
+        string agenticAppInstanceId = Env("TEST_AGENTIC_APPID");
+        string agenticBlueprintId = Env("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
             return null!;
         }
 
-        AgenticIdentity identity = new()
+        AgenticUser identity = new()
         {
             AgenticUserId = agenticUserId,
-            AgenticAppId = agenticAppId,
-            AgenticAppBlueprintId = agenticAppBlueprintId
+            AgenticAppInstanceId = agenticAppInstanceId,
+            AgenticBlueprintId = agenticBlueprintId
         };
         return identity;
     }

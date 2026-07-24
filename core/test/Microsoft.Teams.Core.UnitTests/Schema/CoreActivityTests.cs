@@ -332,15 +332,15 @@ public class CoreCoreActivityTests
     }
 
     [Fact]
-    public void AgenticIdentity_IncludesTenantId_FromRecipient()
+    public void AgenticUser_IncludesTenantId_FromRecipient()
     {
         string json = """
         {
             "type": "message",
             "recipient": {
                 "id": "28:bot-id",
-                "agenticAppId": "agentic-app",
-                "agenticUserId": "agentic-user",
+                "agenticAppId": "agent-app-instance",
+                "agenticUserId": "agent-user",
                 "agenticAppBlueprintId": "blueprint",
                 "tenantId": "tenant-abc"
             }
@@ -349,16 +349,16 @@ public class CoreCoreActivityTests
 
         CoreActivity activity = CoreActivity.FromJsonString(json);
 
-        AgenticIdentity? identity = activity.Recipient?.GetAgenticIdentity();
+        AgenticUser? identity = activity.Recipient?.GetAgenticUser();
         Assert.NotNull(identity);
-        Assert.Equal("agentic-app", identity!.AgenticAppId);
-        Assert.Equal("agentic-user", identity.AgenticUserId);
-        Assert.Equal("blueprint", identity.AgenticAppBlueprintId);
+        Assert.Equal("agent-app-instance", identity!.AgenticAppInstanceId);
+        Assert.Equal("agent-user", identity.AgenticUserId);
+        Assert.Equal("blueprint", identity.AgenticBlueprintId);
         Assert.Equal("tenant-abc", identity.TenantId);
     }
 
     [Fact]
-    public void AgenticIdentity_TenantIdAlone_DoesNotCreateIdentity()
+    public void AgenticUser_TenantIdAlone_DoesNotCreateIdentity()
     {
         string json = """
         {
@@ -373,6 +373,6 @@ public class CoreCoreActivityTests
         CoreActivity activity = CoreActivity.FromJsonString(json);
 
         Assert.Equal("tenant-abc", activity.Recipient?.TenantId);
-        Assert.Null(activity.Recipient?.GetAgenticIdentity());
+        Assert.Null(activity.Recipient?.GetAgenticUser());
     }
 }

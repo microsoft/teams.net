@@ -20,7 +20,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot.Connector.Authentication.UserTokenClient
 {
     /// <summary>
-    /// Gets or sets the per-request properties captured from the incoming activity (agentic identity,
+    /// Gets or sets the per-request properties captured from the incoming activity (agentic user,
     /// bot app id). Threaded into each outbound user token operation and stamped onto the request's
     /// options for the authentication handler to read.
     /// </summary>

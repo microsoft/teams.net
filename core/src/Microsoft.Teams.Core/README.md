@@ -3,7 +3,7 @@
 
 # Microsoft.Teams.Core
 
-The foundational .NET library for building Microsoft Teams bots. It implements the [Activity Protocol](https://github.com/microsoft/Agents/blob/main/specs/activity/protocol-activity.md), providing the core bot application framework, conversation client, user token client, middleware pipeline, and support for both Bot and Agentic identities.
+The foundational .NET library for building Microsoft Teams bots. It implements the [Activity Protocol](https://github.com/microsoft/Agents/blob/main/specs/activity/protocol-activity.md), providing the core bot application framework, conversation client, user token client, middleware pipeline, and support for both Bot and Agentic user identities.
 
 ## Key Features
 
@@ -11,7 +11,7 @@ The foundational .NET library for building Microsoft Teams bots. It implements t
 - **Conversation Client** &mdash; Send, update, and delete activities; manage conversation members and metadata
 - **User Token Client** &mdash; OAuth token management, sign-in flows, and token exchange (SSO)
 - **Middleware Pipeline** &mdash; Extensible `ITurnMiddleware` chain for cross-cutting concerns
-- **Flexible Authentication** &mdash; Client secrets, managed identities (system/user-assigned), federated identities, and agentic (user-delegated) tokens via MSAL
+- **Flexible Authentication** &mdash; Client secrets, managed identities (system/user-assigned), federated identities, and agentic user (user-delegated) tokens via MSAL
 - **Extensible Schema** &mdash; Loose `CoreActivity` model with `JsonExtensionData` for channel-specific properties
 - **AOT-Compatible** &mdash; Source-generated JSON serialization via `CoreActivityJsonContext`
 
@@ -157,5 +157,5 @@ When no MSAL configuration is provided, communication happens as anonymous REST 
 | `CoreActivity` | Activity data model following the Activity Protocol specification |
 | `CoreActivityBuilder` | Fluent builder for constructing `CoreActivity` instances |
 | `ITurnMiddleware` | Interface for middleware in the activity processing pipeline |
-| `AgenticIdentity` | Represents user-delegated token acquisition identity |
+| `AgenticUser` | Represents user-delegated token acquisition identity |
 | `BotHandlerException` | Exception wrapper preserving the activity that caused the error |
