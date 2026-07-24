@@ -31,9 +31,8 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
     private bool IsCanary => _f.ServiceUrl.ToString().Contains("canary", StringComparison.OrdinalIgnoreCase);
 
     private static MessageActivityInput CreateWidgetActivity(string markdown) =>
-        MessageActivityInput.CreateBuilder()
-            .WithText(markdown, TextFormats.ExtendedMarkdown)
-            .Build();
+        new MessageActivityInput()
+            .WithText(markdown, TextFormats.ExtendedMarkdown);
 
     [SkippableFact(Timeout = 5000)]
     public async Task SendWidgetMessage()
