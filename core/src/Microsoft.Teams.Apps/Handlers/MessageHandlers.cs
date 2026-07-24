@@ -32,6 +32,14 @@ public delegate Task MessageUpdateHandler(Context<MessageUpdateActivity> context
 public delegate Task MessageDeleteHandler(Context<MessageDeleteActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
+/// Delegate for handling message reaction activities.
+/// </summary>
+/// <param name="context">The context for the message reaction activity.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+/// <returns>A task representing the asynchronous operation.</returns>
+public delegate Task MessageReactionHandler(Context<MessageReactionActivity> context, CancellationToken cancellationToken = default);
+
+/// <summary>
 /// Extension methods for registering message activity handlers.
 /// </summary>
 public static class MessageHandlerExtensions
@@ -158,6 +166,81 @@ public static class MessageHandlerExtensions
         {
             Name = TeamsActivityTypes.MessageDelete,
             Selector = _ => true,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message reaction activities.
+    /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnMessageReaction(this TeamsBotApplication app, MessageReactionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageReactionActivity>
+        {
+            Name = TeamsActivityTypes.MessageReaction,
+            Selector = _ => true,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message reaction activities where reactions were added.
+    /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnMessageReactionAdded(this TeamsBotApplication app, MessageReactionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageReactionActivity>
+        {
+            Name = string.Join("/", [TeamsActivityTypes.MessageReaction, "reactionsAdded"]),
+            Selector = activity => activity.ReactionsAdded?.Count > 0,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message reaction activities where reactions were removed.
+    /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnMessageReactionRemoved(this TeamsBotApplication app, MessageReactionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageReactionActivity>
+        {
+            Name = string.Join("/", [TeamsActivityTypes.MessageReaction, "reactionsRemoved"]),
+            Selector = activity => activity.ReactionsRemoved?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
