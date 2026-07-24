@@ -80,10 +80,10 @@ public class ObservabilityBotApp : TeamsBotApplication
         // Build Agent365 scope contracts from the turn context.
         TeamsChannelAccount? recipient = context.Activity.Recipient;
         var agentDetails = new AgentDetails(
-            agentId: recipient?.AgenticAppId ?? recipient?.Id,
+            agentId: recipient?.AgenticAppInstanceId ?? recipient?.Id,
             agentName: recipient?.Name,
             agenticUserId: recipient?.AgenticUserId,
-            agentBlueprintId: recipient?.AgenticAppBlueprintId,
+            agentBlueprintId: recipient?.AgenticBlueprintId,
             tenantId: recipient?.TenantId);
 
         var request = new Request(

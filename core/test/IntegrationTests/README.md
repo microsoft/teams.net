@@ -1,13 +1,13 @@
 # Teams SDK Integration Tests
 
-This project runs integration tests against Teams Server (SMBA/APX) using bot and agentic identities.
+This project runs integration tests against Teams Server (SMBA/APX) using bot and agentic user identities.
 
 ## Prerequisites
 
 - .NET 10 SDK
 - A BAMI tenant with:
   - Bot app registration (client ID + secret)
-  - Agentic app registration (client ID + secret) — optional
+  - Agentic app instance registration (client ID + secret) — optional
   - A team with at least one channel
   - A scheduled meeting
   - At least 2 test users in the conversation
@@ -20,8 +20,8 @@ Tests are configured via `.runsettings` files that set environment variables. Fo
 |------|----------|-------------|
 | `botid-prod.runsettings` | Bot (app-only) | Production |
 | `botid-canary.runsettings` | Bot (app-only) | Canary |
-| `agenticid-prod.runsettings` | Agentic | Production |
-| `agenticid-canary.runsettings` | Agentic | Canary |
+| `agent-user-prod.runsettings` | Agent User | Production |
+| `agent-user-canary.runsettings` | Agent User | Canary |
 
 Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
 
@@ -47,7 +47,7 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
   <TEST_MEETINGID>MCM...</TEST_MEETINGID>
   <TEST_TENANTID>YOUR_TENANT_ID</TEST_TENANTID>
 
-  <!-- Agentic identity (optional — set both or neither) -->
+  <!-- Agentic user (optional — set both or neither) -->
   <TEST_AGENTIC_APPID></TEST_AGENTIC_APPID>
   <TEST_AGENTIC_USERID></TEST_AGENTIC_USERID>
 
@@ -104,9 +104,9 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
 
 ## Known Limitations
 
-- **Agentic identity**: Targeted activities, paged members, and reactions return 500/404 with agentic identity. These are service-side limitations pending investigation.
+- **Agentic user**: Targeted activities, paged members, and reactions return 500/404 with agentic user. These are service-side limitations pending investigation.
 - **Group chat creation**: Bot-only identity cannot create group chats with `IsGroup=true` + multiple members via the conversations API.
-- **User token tests**: `SignIn` and `Users` token tests are skipped when agentic identity is configured (not supported).
+- **User token tests**: `SignIn` and `Users` token tests are skipped when agentic user is configured (not supported).
 - **BAMI tenant expiration**: Test resources expire every few months. Re-provision and update runsettings when the tenant rotates.
 
 ## Cross-SDK Runbook

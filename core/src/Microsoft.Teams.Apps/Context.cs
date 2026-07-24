@@ -47,7 +47,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <summary>
     /// Gets the <see cref="ApiClient"/> scoped to the current activity's service URL and
-    /// the agentic identity derived from the inbound activity's recipient (the bot's own account).
+    /// the agentic user derived from the inbound activity's recipient (the bot's own account).
     /// </summary>
     public ApiClient Api => _api ??= TeamsBotApplication.Api.ForActivity(Activity);
 

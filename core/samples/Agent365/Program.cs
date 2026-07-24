@@ -110,24 +110,24 @@ static void LogTypedLifecycleEnvelope<TValue>(
 {
     TValue? value = activity.Value;
     logger.LogInformation(
-        "[Agent365 lifecycle:{HandlerName}] envelope name={Name} valueType={ValueType} channelId={ChannelId} from={FromId} agenticUserId={RecipientAgenticUserId} agenticAppId={RecipientAgenticAppId} agenticAppBlueprintId={RecipientAgenticAppBlueprintId} tenantId={RecipientTenantId}",
+        "[Agent365 lifecycle:{HandlerName}] envelope name={Name} valueType={ValueType} channelId={ChannelId} from={FromId} agenticUserId={RecipientAgenticUserId} agenticAppInstanceId={RecipientAgenticAppInstanceId} agenticBlueprintId={RecipientAgenticBlueprintId} tenantId={RecipientTenantId}",
         handlerName,
         activity.Name,
         activity.ValueType,
         activity.ChannelId,
         activity.From?.Id,
         activity.Recipient?.AgenticUserId,
-        activity.Recipient?.AgenticAppId,
-        activity.Recipient?.AgenticAppBlueprintId,
+        activity.Recipient?.AgenticAppInstanceId,
+        activity.Recipient?.AgenticBlueprintId,
         activity.Recipient?.TenantId);
 
     logger.LogInformation(
-        "[Agent365 lifecycle:{HandlerName}] value tenantId={TenantId} agenticUserId={AgenticUserId} agenticAppInstanceId={AgenticAppInstanceId} agentIdentityBlueprintId={AgentIdentityBlueprintId} version={Version}",
+        "[Agent365 lifecycle:{HandlerName}] value tenantId={TenantId} agenticUserId={AgenticUserId} agenticAppInstanceId={AgenticAppInstanceId} agenticBlueprintId={AgenticBlueprintId} version={Version}",
         handlerName,
         value?.TenantId,
         value?.AgenticUserId,
         value?.AgenticAppInstanceId,
-        value?.AgentIdentityBlueprintId,
+        value?.AgenticBlueprintId,
         value?.Version);
 }
 
@@ -137,14 +137,14 @@ static void LogLifecycleEnvelope(
     ILogger logger)
 {
     logger.LogInformation(
-        "[Agent365 lifecycle:{HandlerName}] envelope name={Name} valueType={ValueType} channelId={ChannelId} from={FromId} agenticUserId={RecipientAgenticUserId} agenticAppId={RecipientAgenticAppId} agenticAppBlueprintId={RecipientAgenticAppBlueprintId} tenantId={RecipientTenantId}",
+        "[Agent365 lifecycle:{HandlerName}] envelope name={Name} valueType={ValueType} channelId={ChannelId} from={FromId} agenticUserId={RecipientAgenticUserId} agenticAppInstanceId={RecipientAgenticAppInstanceId} agenticBlueprintId={RecipientAgenticBlueprintId} tenantId={RecipientTenantId}",
         handlerName,
         activity.Name,
         activity.ValueType,
         activity.ChannelId,
         activity.From?.Id,
         activity.Recipient?.AgenticUserId,
-        activity.Recipient?.AgenticAppId,
-        activity.Recipient?.AgenticAppBlueprintId,
+        activity.Recipient?.AgenticAppInstanceId,
+        activity.Recipient?.AgenticBlueprintId,
         activity.Recipient?.TenantId);
 }

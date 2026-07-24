@@ -34,11 +34,11 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     private ChannelAccount CreateFromAccount()
     {
         ChannelAccount from = new() { Id = "bot" };
-        if (_f.AgenticIdentity is not null)
+        if (_f.AgenticUser is not null)
         {
-            from.Properties.Add("agenticAppId", _f.AgenticIdentity.AgenticAppId);
-            from.Properties.Add("agenticUserId", _f.AgenticIdentity.AgenticUserId);
-            from.Properties.Add("agenticAppBlueprintId", _f.AgenticIdentity.AgenticAppBlueprintId);
+            from.Properties.Add("agenticAppId", _f.AgenticUser.AgenticAppInstanceId);
+            from.Properties.Add("agenticUserId", _f.AgenticUser.AgenticUserId);
+            from.Properties.Add("agenticAppBlueprintId", _f.AgenticUser.AgenticBlueprintId);
         }
 
         return from;
@@ -93,7 +93,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         CompatConversations compatConversations = new(_f.ConversationClient)
         {
             ServiceUrl = _f.ServiceUrl.ToString(),
-            RequestContext = BotRequestContext.FromAgenticIdentity(_f.AgenticIdentity)
+            RequestContext = BotRequestContext.FromAgenticUser(_f.AgenticUser)
         };
         CompatConnectorClient connectorClient = new(compatConversations);
         turnContext.TurnState.Add<IConnectorClient>(connectorClient);
@@ -142,7 +142,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Members")]
     public async Task GetPagedMembersAsync_ReturnsPaged()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Paged members returns 500 with agentic user — service limitation");
         Skip.If(_f.IsCanary, "Paged members returns empty on canary — service limitation");
 
         using TurnContext ctx = CreateTurnContext();
@@ -213,7 +213,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Members")]
     public async Task GetPagedTeamMembersAsync_ReturnsPaged()
     {
-        Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
+        Skip.If(_f.AgenticUser is not null, "Paged members returns 500 with agentic user — service limitation");
         Skip.If(_f.IsCanary, "Paged members returns empty on canary — service limitation");
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);

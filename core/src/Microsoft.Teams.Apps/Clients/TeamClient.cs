@@ -17,13 +17,13 @@ public class TeamClient
 {
     private readonly BotHttpClient _http;
     private readonly string _serviceUrl;
-    private readonly AgenticIdentity? _agenticIdentity;
+    private readonly AgenticUser? _agenticUser;
 
-    internal TeamClient(string serviceUrl, BotHttpClient http, AgenticIdentity? agenticIdentity = null)
+    internal TeamClient(string serviceUrl, BotHttpClient http, AgenticUser? agenticUser = null)
     {
         _serviceUrl = serviceUrl.TrimEnd('/');
         _http = http;
-        _agenticIdentity = agenticIdentity;
+        _agenticUser = agenticUser;
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public class TeamClient
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}";
         return await ApiClient.ExecuteClientAsync(
             _serviceUrl,
-            _agenticIdentity,
+            _agenticUser,
             AppsTelemetry.Clients.Team,
             AppsTelemetry.ClientOperations.GetTeamById,
             async (options, _) => await _http.SendAsync<Team>(HttpMethod.Get, url, body: null, options: options, cancellationToken).ConfigureAwait(false))
@@ -49,7 +49,7 @@ public class TeamClient
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}/conversations";
         return await ApiClient.ExecuteClientAsync(
             _serviceUrl,
-            _agenticIdentity,
+            _agenticUser,
             AppsTelemetry.Clients.Team,
             AppsTelemetry.ClientOperations.GetTeamConversations,
             async (options, _) =>

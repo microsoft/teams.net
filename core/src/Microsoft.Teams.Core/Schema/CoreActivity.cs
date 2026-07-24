@@ -176,9 +176,9 @@ public class CoreActivity
         BotId = source.BotId,
         Name = source.Name,
         IsTargeted = source.IsTargeted,
-        AgenticAppId = source.AgenticAppId,
+        AgenticAppInstanceId = source.AgenticAppInstanceId,
         AgenticUserId = source.AgenticUserId,
-        AgenticAppBlueprintId = source.AgenticAppBlueprintId,
+        AgenticBlueprintId = source.AgenticBlueprintId,
         TenantId = source.TenantId,
         Properties = new ExtendedPropertiesDictionary(source.Properties)
     };

@@ -38,10 +38,10 @@ public class ChannelAccount()
     public bool? IsTargeted { get; set; }
 
     /// <summary>
-    /// Gets or sets the agentic application ID for user-delegated token acquisition.
+    /// Gets or sets the agentic app instance ID for user-delegated token acquisition.
     /// </summary>
     [JsonPropertyName("agenticAppId")]
-    public string? AgenticAppId { get; set; }
+    public string? AgenticAppInstanceId { get; set; }
 
     /// <summary>
     /// Gets or sets the agentic user ID for user-delegated token acquisition.
@@ -50,10 +50,10 @@ public class ChannelAccount()
     public string? AgenticUserId { get; set; }
 
     /// <summary>
-    /// Gets or sets the agentic application blueprint ID.
+    /// Gets or sets the agentic blueprint ID.
     /// </summary>
     [JsonPropertyName("agenticAppBlueprintId")]
-    public string? AgenticAppBlueprintId { get; set; }
+    public string? AgenticBlueprintId { get; set; }
 
     /// <summary>
     /// Gets or sets the tenant ID associated with the account.
@@ -68,22 +68,22 @@ public class ChannelAccount()
     public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
     /// <summary>
-    /// Gets the agentic identity from the account's typed properties.
+    /// Gets the agentic user from the account's typed properties.
     /// </summary>
-    /// <returns>An AgenticIdentity instance if agentic identity information is present; otherwise, null.</returns>
+    /// <returns>An AgenticUser instance if agentic user information is present; otherwise, null.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate")]
-    public AgenticIdentity? GetAgenticIdentity()
+    public AgenticUser? GetAgenticUser()
     {
-        if (AgenticAppId is null && AgenticUserId is null && AgenticAppBlueprintId is null)
+        if (AgenticAppInstanceId is null && AgenticUserId is null && AgenticBlueprintId is null)
         {
             return null;
         }
 
-        return new AgenticIdentity
+        return new AgenticUser
         {
-            AgenticAppId = AgenticAppId,
+            AgenticAppInstanceId = AgenticAppInstanceId,
             AgenticUserId = AgenticUserId,
-            AgenticAppBlueprintId = AgenticAppBlueprintId,
+            AgenticBlueprintId = AgenticBlueprintId,
             TenantId = TenantId
         };
     }
