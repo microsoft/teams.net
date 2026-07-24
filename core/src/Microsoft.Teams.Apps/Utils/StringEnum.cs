@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.Utils;
@@ -12,22 +12,45 @@ namespace Microsoft.Teams.Apps.Utils;
 /// </summary>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Matches existing Teams API naming")]
 [JsonConverter(typeof(StringEnumJsonConverter<StringEnum>))]
-public class StringEnum(string value)
+public class StringEnum(string value) : IEquatable<StringEnum>
 {
     /// <summary>
-    /// Gets or sets the string value.
+    /// Gets the string value.
     /// </summary>
-    public string Value { get; set; } = value;
+    public string Value { get; } = value;
+
+    /// <inheritdoc />
+    public override string ToString() => Value;
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is StringEnum other
+        => Equals(obj as StringEnum);
+
+    /// <inheritdoc />
+    public bool Equals(StringEnum? other)
+        => other is not null
             && GetType() == other.GetType()
             && string.Equals(Value, other.Value, StringComparison.Ordinal);
 
     /// <inheritdoc />
     public override int GetHashCode()
         => HashCode.Combine(GetType(), Value);
+
+    /// <inheritdoc />
+    public static bool operator ==(StringEnum? left, StringEnum? right)
+        => Equals(left, right) || (left is not null && left.Equals(right));
+
+    /// <inheritdoc />
+    public static bool operator !=(StringEnum? left, StringEnum? right) => !(left == right);
+
+    /// <summary>
+    /// Converts the string-enum value to its underlying string.
+    /// </summary>
+    public static implicit operator string(StringEnum value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return value.Value;
+    }
 }
 
 /// <summary>
