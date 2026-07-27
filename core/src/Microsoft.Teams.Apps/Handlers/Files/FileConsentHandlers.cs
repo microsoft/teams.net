@@ -3,41 +3,43 @@
 
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Apps.TaskModules;
 
-namespace Microsoft.Teams.Apps;
+namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
-/// Delegate for handling message fetch task invoke activities.
+/// Delegate for handling file consent invoke activities.
 /// </summary>
 /// <param name="context">The context for the invoke activity, providing access to the activity data and bot application.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the invoke response.</returns>
-public delegate Task<InvokeResponse<TaskModuleResponse>> MessageFetchTaskHandler(Context<InvokeActivity<MessageFetchTaskInvokeValue>> context, CancellationToken cancellationToken = default);
+public delegate Task<InvokeResponse<AdaptiveCardResponse>> FileConsentValueHandler(Context<InvokeActivity<FileConsentValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Extension methods for registering message fetch task invoke handlers.
+/// Extension methods for registering file consent invoke handlers.
 /// </summary>
-public static class MessageFetchTaskExtensions
+public static class FileConsentExtensions
 {
+
     /// <summary>
-    /// Registers a handler for message fetch task invoke activities (message/fetchTask).
-    /// Triggered when the user clicks a feedback button on an AI-generated message.
+    /// Registers a handler for file consent invoke activities.
     /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMessageFetchTask(this TeamsBotApplication app, MessageFetchTaskHandler handler)
+    public static TeamsBotApplication OnFileConsent(this TeamsBotApplication app, FileConsentValueHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageFetchTask),
-            Selector = activity => activity.Name == InvokeNames.MessageFetchTask,
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.FileConsent),
+            Selector = activity => activity.Name == InvokeNames.FileConsent,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
-                InvokeActivity<MessageFetchTaskInvokeValue> typedActivity = new(ctx.Activity);
+                InvokeActivity<FileConsentValue> typedActivity = new(ctx.Activity);
                 var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }

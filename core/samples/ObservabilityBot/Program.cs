@@ -3,8 +3,6 @@
 
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
-using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web;
 using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;

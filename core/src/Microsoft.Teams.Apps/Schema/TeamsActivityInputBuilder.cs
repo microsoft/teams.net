@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
 

@@ -260,30 +260,6 @@ public static class ConversationUpdateExtensions
         return app;
     }
 
-    /*
-    /// <summary>
-    /// Registers a handler for channel restored events.
-    /// </summary>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<ConversationUpdateActivity>
-        {
-            Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
-            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelRestored) ?? false,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-    */
-
     // Team Event Handlers
 
     /// <summary>
@@ -435,49 +411,4 @@ public static class ConversationUpdateExtensions
 
         return app;
     }
-
-    /*
-    /// Registers a handler for team restored events.
-    /// </summary>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnTeamRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<ConversationUpdateActivity>
-        {
-            Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamRestored]),
-            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamRestored) ?? false,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-
-    /// <summary>
-    /// Registers a handler for team hard deleted events.
-    /// </summary>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnTeamHardDeleted(this TeamsBotApplication app, ConversationUpdateHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<ConversationUpdateActivity>
-        {
-            Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamHardDeleted]),
-            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamHardDeleted) ?? false,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-    */
 }

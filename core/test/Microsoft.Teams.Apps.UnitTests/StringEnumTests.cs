@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using Microsoft.Teams.Apps;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 

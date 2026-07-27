@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Core.Schema;
 using Microsoft.Teams.Apps.Utils;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.Schema;
 

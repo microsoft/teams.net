@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.MessageExtension;
+namespace Microsoft.Teams.Apps.MessageExtensions;
 
 /// <summary>
 /// Delegate for handling message extension query invoke activities.
@@ -44,17 +44,6 @@ public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionS
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQuerySettingUrlHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
 
-/*
-/// <summary>
-/// Delegate for handling message extension card button clicked invoke activities.
-/// </summary>
-public delegate Task<InvokeResponse> MessageExtensionCardButtonClickedHandler(Context<InvokeActivity<JsonElement>> context, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Delegate for handling message extension setting invoke activities.
-/// </summary>
-public delegate Task<InvokeResponse> MessageExtensionSettingHandler(Context<InvokeActivity<Query>> context, CancellationToken cancellationToken = default);
-*/
 
 /// <summary>
 /// Extension methods for registering message extension invoke handlers.

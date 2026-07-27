@@ -6,7 +6,6 @@ using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.OAuth;
