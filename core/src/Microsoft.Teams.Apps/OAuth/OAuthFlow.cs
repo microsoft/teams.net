@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Diagnostics;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Diagnostics;
@@ -51,6 +50,11 @@ public class OAuthFlow
     // In-memory fallback for pending sign-in tracking when turn state is not configured.
     // When UseState() is configured, user state is used instead (works across instances).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSignIns = new();
+
+    // In-memory fallback for SSO-capable pending sign-ins (i.e., a card with a non-null
+    // TokenExchangeResource was sent). Only these flows are candidates for signin/failure,
+    // which Teams only emits for silent SSO token-exchange attempts.
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSsoSignIns = new();
 
     internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
     {
@@ -100,7 +104,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthGetToken, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.GetToken);
 
@@ -151,7 +155,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthSignIn, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.SignIn);
 
@@ -193,6 +197,13 @@ public class OAuthFlow
                 .GetSignInResourceAsync(state, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
+            // SSO (silent token exchange) can't complete silently in a channel context, so omit the
+            // TokenExchangeResource there. Teams then goes straight to the interactive OAuth sign-in
+            // button instead of attempting (and failing) a silent SSO exchange first.
+            ConversationType? conversationType = context.Activity.Conversation?.ConversationType;
+            bool isChannel = conversationType?.Equals(ConversationTypes.Channel) ?? false;
+            bool isChannelOrGroup = isChannel || (conversationType?.Equals(ConversationTypes.GroupChat) ?? false);
+
             OAuthCard oauthCard = new()
             {
                 Text = options.OAuthCardText,
@@ -201,7 +212,7 @@ public class OAuthFlow
                 [
                     new SuggestedAction(ActionTypes.SignIn, options.SignInButtonText, signInResource.SignInLink)
                 ],
-                TokenExchangeResource = signInResource.TokenExchangeResource,
+                TokenExchangeResource = isChannel ? null : signInResource.TokenExchangeResource,
                 TokenPostResource = signInResource.TokenPostResource
             };
 
@@ -213,19 +224,19 @@ public class OAuthFlow
                 .WithContent(oauthCardJson)
                 .Build();
 
-            TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
-                .WithConversationReference(context.Activity)
-                .WithRecipient(context.Activity.From, false)
-                .WithAttachment(attachment)
-                .Build();
+            MessageActivityInput oauthActivity = new MessageActivityInput()
+                .AddAttachment(attachment)
+                .WithRecipient(context.Activity.From!, isChannelOrGroup); // dont remove, required for sso flow
 
-            await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
+            await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
+
+            // Whether this card actually offered silent SSO (a token-exchange resource was included).
+            bool ssoOffered = oauthCard.TokenExchangeResource is not null;
 
             // Track that this user has a pending sign-in for this flow.
             // Use user state when available (distributed); fall back to in-memory otherwise.
-            SetPendingSignIn(context, userId);
+            SetPendingSignIn(context, userId, ssoOffered);
 
-            span?.AddEvent(new ActivityEvent(AppsTelemetry.OAuthEvents.CardSent));
             result = AppsTelemetry.OAuthResults.CardSent;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
             return null;
@@ -255,7 +266,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthSignOut, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.SignOut);
 
@@ -309,7 +320,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthConnectionStatus, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, AppsTelemetry.OAuthAllConnections);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.ConnectionStatus);
 
@@ -342,7 +353,7 @@ public class OAuthFlow
     {
         string exchangeId = string.IsNullOrEmpty(exchangeValue.Id) ? Guid.NewGuid().ToString("N") : exchangeValue.Id;
         string connectionName = exchangeValue.ConnectionName ?? _connectionName;
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthTokenExchange, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.TokenExchange);
 
@@ -395,7 +406,6 @@ public class OAuthFlow
             }
             catch (HttpRequestException ex)
             {
-                ClearPendingSignIn(context, userId);
                 _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 response = await HandleTokenExchangeFailureAsync(context, exchangeValue, ex.StatusCode, ex.Message, cancellationToken).ConfigureAwait(false);
                 result = AppsTelemetry.OAuthResults.Failure;
@@ -403,6 +413,7 @@ public class OAuthFlow
                 span?.SetTag(AppsTelemetry.Tags.InvokeResponseStatus, response.Status);
                 if (IsUnexpectedHttpStatus(ex.StatusCode))
                 {
+                    ClearPendingSignIn(context, userId);
                     RecordOAuthError(span, AppsTelemetry.OAuthOperations.TokenExchange, AppsTelemetry.OAuthErrorTypes.HttpError, ex, connectionName);
                 }
                 return response;
@@ -453,12 +464,9 @@ public class OAuthFlow
 
         // For unexpected status codes (e.g., 401 Unauthorized, 403 Forbidden),
         // return the original status code so the caller can distinguish the failure.
-        if (statusCode.HasValue
-            && statusCode.Value != System.Net.HttpStatusCode.NotFound
-            && statusCode.Value != System.Net.HttpStatusCode.BadRequest
-            && statusCode.Value != System.Net.HttpStatusCode.PreconditionFailed)
+        if (IsUnexpectedHttpStatus(statusCode))
         {
-            return new InvokeResponse((int)statusCode.Value);
+            return new InvokeResponse((int)statusCode!.Value);
         }
 
         // 412 tells Teams to show the sign-in card as fallback.
@@ -476,7 +484,7 @@ public class OAuthFlow
     /// </summary>
     internal async Task<InvokeResponse> HandleVerifyStateAsync(Context<InvokeActivity> context, SignInVerifyStateValue verifyValue, CancellationToken cancellationToken)
     {
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthVerifyState, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.VerifyState);
 
@@ -577,43 +585,11 @@ public class OAuthFlow
     }
 
     /// <summary>
-    /// Whether this flow has a pending sign-in for the user in the given context.
-    /// Used to scope <c>signin/failure</c> notifications to flows that initiated a sign-in.
-    /// </summary>
-    /// <remarks>
-    /// When turn state is configured, checks user state (works across instances).
-    /// Falls back to in-memory tracking when state is not configured.
-    /// Callers should fall back to notifying all flows when no flow reports a pending sign-in
-    /// (e.g., multi-instance deployment without distributed state).
-    /// </remarks>
-    internal bool HasPendingSignIn(Context<InvokeActivity> context)
-    {
-        return GetPendingSignInTimestamp(context) is not null;
-    }
-
-    /// <summary>
-    /// Returns the timestamp when this flow's pending sign-in was initiated, or <c>null</c> if none.
-    /// Used to select the most recently initiated flow when multiple flows have pending sign-ins.
-    /// </summary>
-    internal DateTimeOffset? GetPendingSignInTimestamp(Context<InvokeActivity> context)
-    {
-        string pendingKey = $"__oauth:pending:{_connectionName}";
-        if (context.HasState && context.State.UserState is not null)
-        {
-            DateTimeOffset ts = context.State.UserState.Get<DateTimeOffset>(pendingKey);
-            return ts != default ? ts : null;
-        }
-
-        string userId = context.Activity.From?.Id ?? string.Empty;
-        return _pendingSignIns.TryGetValue(userId, out DateTimeOffset timestamp) ? timestamp : null;
-    }
-
-    /// <summary>
     /// Handles the signin/failure invoke activity sent by the Teams client when SSO fails client-side.
     /// </summary>
     internal async Task<InvokeResponse> HandleSignInFailureAsync(Context<InvokeActivity> context, SignInFailureValue failureValue, CancellationToken cancellationToken)
     {
-        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthSignInFailure, ActivityKind.Internal);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuth, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, _connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.SignInFailure);
         if (!string.IsNullOrEmpty(failureValue.Code))
@@ -669,6 +645,7 @@ public class OAuthFlow
     /// </summary>
     private bool IsDuplicateExchange(Context<InvokeActivity> context, string exchangeId)
     {
+        CleanupExpiredEntries();
         // Atomic same-instance check — catches concurrent duplicate requests on this node
         if (!_processedExchanges.TryAdd(exchangeId, DateTimeOffset.UtcNow))
         {
@@ -687,8 +664,60 @@ public class OAuthFlow
             context.State.ConversationState.Set(dedupKey, DateTimeOffset.UtcNow);
         }
 
-        CleanupExpiredEntries();
         return false;
+    }
+
+    /// <summary>
+    /// Whether this flow has a pending sign-in for the user in the given context.
+    /// Used to scope <c>signin/failure</c> notifications to flows that initiated a sign-in.
+    /// </summary>
+    /// <remarks>
+    /// When turn state is configured, checks user state (works across instances).
+    /// Falls back to in-memory tracking when state is not configured.
+    /// Callers should fall back to notifying all flows when no flow reports a pending sign-in
+    /// (e.g., multi-instance deployment without distributed state).
+    /// </remarks>
+    internal bool HasPendingSignIn(Context<InvokeActivity> context)
+    {
+        return GetPendingSignInTimestamp(context) is not null;
+    }
+
+    /// <summary>
+    /// Returns the timestamp when this flow's pending sign-in was initiated, or <c>null</c> if none.
+    /// Used to select the most recently initiated flow when multiple flows have pending sign-ins.
+    /// </summary>
+    internal DateTimeOffset? GetPendingSignInTimestamp(Context<InvokeActivity> context)
+    {
+        string pendingKey = $"__oauth:pending:{_connectionName}";
+        if (context.HasState && context.State.UserState is not null)
+        {
+            DateTimeOffset ts = context.State.UserState.Get<DateTimeOffset>(pendingKey);
+            return ts != default ? ts : null;
+        }
+
+        CleanupExpiredEntries();
+        string userId = context.Activity.From?.Id ?? string.Empty;
+        return _pendingSignIns.TryGetValue(userId, out DateTimeOffset timestamp) ? timestamp : null;
+    }
+
+    /// <summary>
+    /// Returns the timestamp when this flow initiated a pending sign-in that actually offered
+    /// silent SSO (an OAuth card with a non-null TokenExchangeResource), or <c>null</c> if none.
+    /// Used to attribute <c>signin/failure</c> — which Teams only emits for SSO attempts — to
+    /// the correct connection, avoiding firing the failure callback on non-SSO flows.
+    /// </summary>
+    internal DateTimeOffset? GetPendingSsoSignInTimestamp<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        string ssoPendingKey = $"__oauth:pending:sso:{_connectionName}";
+        if (context.HasState && context.State.UserState is not null)
+        {
+            DateTimeOffset ts = context.State.UserState.Get<DateTimeOffset>(ssoPendingKey);
+            return ts != default ? ts : null;
+        }
+
+        CleanupExpiredEntries();
+        string userId = context.Activity.From?.Id ?? string.Empty;
+        return _pendingSsoSignIns.TryGetValue(userId, out DateTimeOffset timestamp) ? timestamp : null;
     }
 
 
@@ -697,16 +726,26 @@ public class OAuthFlow
     /// Record that this user has a pending sign-in for this flow.
     /// Uses user state when available (distributed); falls back to in-memory.
     /// </summary>
-    private void SetPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
+    private void SetPendingSignIn<TActivity>(Context<TActivity> context, string userId, bool ssoOffered) where TActivity : TeamsActivity
     {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         string pendingKey = $"__oauth:pending:{_connectionName}";
+        string ssoPendingKey = $"__oauth:pending:sso:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
-            context.State.UserState.Set(pendingKey, DateTimeOffset.UtcNow);
+            context.State.UserState.Set(pendingKey, now);
+            if (ssoOffered)
+            {
+                context.State.UserState.Set(ssoPendingKey, now);
+            }
         }
         else
         {
-            _pendingSignIns[userId] = DateTimeOffset.UtcNow;
+            _pendingSignIns[userId] = now;
+            if (ssoOffered)
+            {
+                _pendingSsoSignIns[userId] = now;
+            }
         }
     }
 
@@ -717,12 +756,15 @@ public class OAuthFlow
     private void ClearPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
     {
         string pendingKey = $"__oauth:pending:{_connectionName}";
+        string ssoPendingKey = $"__oauth:pending:sso:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
             context.State.UserState.Remove(pendingKey);
+            context.State.UserState.Remove(ssoPendingKey);
         }
 
         _pendingSignIns.TryRemove(userId, out _);
+        _pendingSsoSignIns.TryRemove(userId, out _);
     }
 
     private void CleanupExpiredEntries()
@@ -740,6 +782,13 @@ public class OAuthFlow
             if (kvp.Value < cutoff)
             {
                 _pendingSignIns.TryRemove(kvp.Key, out _);
+            }
+        }
+        foreach (KeyValuePair<string, DateTimeOffset> kvp in _pendingSsoSignIns)
+        {
+            if (kvp.Value < cutoff)
+            {
+                _pendingSsoSignIns.TryRemove(kvp.Key, out _);
             }
         }
     }

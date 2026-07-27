@@ -159,7 +159,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             IsGroup = false,
             Members = [new() { Id = memberMri }],
             TenantId = _f.TenantId,
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "[Diagnostic] 1:1 with initial activity")
                 .Build()
@@ -233,7 +233,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             TenantId = _f.TenantId,
             TopicName = "Diagnostic group test",
             ChannelData = new { tenant = new { id = _f.TenantId } },
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "group chat init")
                 .Build()
@@ -301,7 +301,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         {
             IsGroup = true,
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "[Diagnostic] channel thread")
                 .Build(),
@@ -333,7 +333,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             IsGroup = true,
             Members = [new() { Id = memberMri }],
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = CoreActivity.CreateBuilder()
+            Activity = CoreActivityInput.CreateBuilder()
                 .WithType(ActivityType.Message)
                 .WithProperty("text", "[Diagnostic] channel thread with members")
                 .Build(),

@@ -5,9 +5,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents an event activity.
@@ -27,7 +28,7 @@ public class EventActivity : TeamsActivity
     /// Gets or sets the name of the event. See <see cref="EventNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public EventName? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the value payload of the event activity.
@@ -48,10 +49,15 @@ public class EventActivity : TeamsActivity
     /// </summary>
     internal EventActivity(CoreActivity activity) : base(activity)
     {
-        Name = activity.Properties.Extract<string>("name");
-        Value = activity is EventActivity evt
-            ? evt.Value
-            : activity.Properties.Extract<JsonNode>("value");
+        if (activity is EventActivity evt)
+        {
+            Name = evt.Name;
+            Value = evt.Value;
+            return;
+        }
+
+        Name = Properties.Extract<EventName>("name");
+        Value = Properties.Extract<JsonNode>("value");
     }
 }
 
@@ -89,17 +95,38 @@ public class EventActivity<TValue> : EventActivity
 /// <summary>
 /// String constants for event activity names.
 /// </summary>
-public static class EventNames
+[JsonConverter(typeof(StringEnumJsonConverter<EventName>))]
+public class EventName(string value) : StringEnum(value)
 {
+    /// <summary>Agent 365 lifecycle event name.</summary>
+    public static readonly EventName AgentLifecycle = new("agentLifecycle");
+
     /// <summary>Meeting start event name.</summary>
-    public const string MeetingStart = "application/vnd.microsoft.meetingStart";
+    public static readonly EventName MeetingStart = new("application/vnd.microsoft.meetingStart");
 
     /// <summary>Meeting end event name.</summary>
-    public const string MeetingEnd = "application/vnd.microsoft.meetingEnd";
+    public static readonly EventName MeetingEnd = new("application/vnd.microsoft.meetingEnd");
 
     /// <summary>Meeting participant join event name.</summary>
-    public const string MeetingParticipantJoin = "application/vnd.microsoft.meetingParticipantJoin";
+    public static readonly EventName MeetingParticipantJoin = new("application/vnd.microsoft.meetingParticipantJoin");
 
     /// <summary>Meeting participant leave event name.</summary>
-    public const string MeetingParticipantLeave = "application/vnd.microsoft.meetingParticipantLeave";
+    public static readonly EventName MeetingParticipantLeave = new("application/vnd.microsoft.meetingParticipantLeave");
+}
+
+/// <summary>
+/// Common event activity name values.
+/// </summary>
+public static class EventNames
+{
+    /// <summary>Agent 365 lifecycle event name.</summary>
+    public static EventName AgentLifecycle => EventName.AgentLifecycle;
+    /// <summary>Meeting start event name.</summary>
+    public static EventName MeetingStart => EventName.MeetingStart;
+    /// <summary>Meeting end event name.</summary>
+    public static EventName MeetingEnd => EventName.MeetingEnd;
+    /// <summary>Meeting participant join event name.</summary>
+    public static EventName MeetingParticipantJoin => EventName.MeetingParticipantJoin;
+    /// <summary>Meeting participant leave event name.</summary>
+    public static EventName MeetingParticipantLeave => EventName.MeetingParticipantLeave;
 }

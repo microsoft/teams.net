@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "CoreBot": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CustomAuth__Instance": "https://login.microsoftonline.com/",
+        "CustomAuth__TenantId": "",
+        "CustomAuth__ClientId": "",
+        "CustomAuth__ClientCredentials__0__SourceType": "ClientSecret",
+        "CustomAuth__ClientCredentials__0__ClientSecret": ""
+      },
+      "applicationUrl": "http://localhost:3978"
+    }
+  }
+}

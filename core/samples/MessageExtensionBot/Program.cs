@@ -4,9 +4,9 @@
 using System.Text.Json;
 using MessageExtensionBot;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers.MessageExtension;
-using Microsoft.Teams.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.TaskModules;
+using Microsoft.Teams.Apps.MessageExtensions;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
@@ -85,9 +85,9 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 });
 
 // Helper: Extract title and description from preview card
-static (string?, string?) GetDataFromPreview(TeamsActivity? preview)
+static (string?, string?) GetDataFromPreview(TeamsActivityInput? preview)
 {
-    if (preview is not MessageActivity msg || msg.Attachments == null) return (null, null);
+    if (preview is not MessageActivityInput msg || msg.Attachments == null) return (null, null);
 
     JsonElement cardData = JsonSerializer.Deserialize<JsonElement>(
         JsonSerializer.Serialize(msg.Attachments[0].Content));
@@ -155,7 +155,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
                 .WithType(MessageExtensionResponseTypes.BotMessagePreview)
-                .WithActivityPreview(new MessageActivity([attachment]))
+                .WithActivityPreview(new MessageActivityInput().AddAttachment(attachment))
                 )
             .Build();
 });
@@ -168,29 +168,6 @@ bot.OnQueryLink(async (context, cancellationToken) =>
     MessageExtensionQueryLink? queryLink = context.Activity.Value;
 
     object card = Cards.CreateLinkUnfurlCard(queryLink?.Url?.ToString());
-    TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-        .WithContent(card).WithContentType(AttachmentContentTypes.ThumbnailCard).Build();
-
-    return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseTypes.Result)
-        .WithAttachmentLayout(TeamsAttachmentLayouts.List)
-        .WithAttachments(attachment)
-        .Build();
-});
-
-// ==================== MESSAGE EXTENSION ANON QUERY LINK ====================
-//TODO : difficult to test, app must be published to catalog
-bot.OnAnonQueryLink(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnAnonQueryLink");
-
-    MessageExtensionQueryLink? anonQueryLink = context.Activity.Value;
-    if (anonQueryLink != null)
-    {
-        Console.WriteLine($"  URL: '{anonQueryLink.Url}'");
-    }
-
-    object card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentTypes.ThumbnailCard).Build();
 

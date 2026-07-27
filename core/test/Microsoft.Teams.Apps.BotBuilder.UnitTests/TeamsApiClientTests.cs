@@ -6,7 +6,6 @@ using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Http;
-using Microsoft.Teams.Core.Schema;
 using Moq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests;

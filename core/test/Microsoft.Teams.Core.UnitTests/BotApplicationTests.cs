@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.IO;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -165,13 +164,10 @@ public class BotApplicationTests
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
         BotApplication botApp = new(conversationClient, userTokenClient, logger);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/"),
-            Conversation = new("conv123")
-        };
-        SendActivityResponse? result = await botApp.SendActivityAsync(activity);
+        CoreActivityInput activity = CoreActivityInput.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .Build();
+        SendActivityResponse? result = await botApp.SendActivityAsync("conv123", activity, new Uri("https://test.service.url/"));
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result.Id);
@@ -183,7 +179,7 @@ public class BotApplicationTests
         BotApplication botApp = CreateBotApplication();
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            botApp.SendActivityAsync(null!));
+            botApp.SendActivityAsync("conv123", null!, new Uri("https://test.service.url/")));
     }
 
     [Fact]
@@ -215,7 +211,7 @@ public class BotApplicationTests
 
         Assert.True(onActivityCalled);
     }
-       
+
 
     [Fact]
     public async Task ProcessAsync_ServiceUrlClaimMismatch_ThrowsInvalidDataException()

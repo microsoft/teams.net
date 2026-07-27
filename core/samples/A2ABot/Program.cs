@@ -5,7 +5,7 @@ using A2A.AspNetCore;
 using A2ABot;
 using A2ABot.A2A;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
+
 using AgentCard = A2A.AgentCard;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
@@ -42,7 +42,7 @@ teamsApp.OnMessage(async (context, ct) =>
 
     string reply = await agent.RunAsync(convId, identity, text, ct);
     if (!string.IsNullOrWhiteSpace(reply))
-        await context.SendActivityAsync(reply, ct);
+        await context.SendAsync(reply, ct);
 });
 
 static string Required(string? value, string field) =>

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
@@ -89,6 +88,6 @@ public class ActivitiesTests
         InstallUpdateActivity activity = InstallUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
         Assert.Equal(TeamsActivityTypes.InstallationUpdate, activity.Type);
-        Assert.Equal("remove", activity.Action);
+        Assert.Equal(InstallUpdateActions.Remove, activity.Action);
     }
 }

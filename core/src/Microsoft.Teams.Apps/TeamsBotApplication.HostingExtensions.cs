@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;

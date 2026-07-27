@@ -167,8 +167,10 @@ public class TeamsStreamingWriterTests
 
         await writer.AppendResponseAsync("streamed text");
 
-        MessageActivity final = new("explicit text");
-        final.AddFeedback(FeedbackTypes.Custom);
+        MessageActivityInput final = new MessageActivityInput()
+            .WithText("explicit text")
+            .AddFeedback(FeedbackTypes.Custom)
+            ;
 
         await writer.FinalizeResponseAsync(final);
 
@@ -192,8 +194,9 @@ public class TeamsStreamingWriterTests
         await writer.AppendResponseAsync("world");
 
         // No Text set on the activity — writer should fill in the accumulated text.
-        MessageActivity final = new();
-        final.AddFeedback(FeedbackTypes.Default);
+        MessageActivityInput final = new MessageActivityInput()
+            .AddFeedback(FeedbackTypes.Default)
+            ;
 
         await writer.FinalizeResponseAsync(final);
 
@@ -209,12 +212,14 @@ public class TeamsStreamingWriterTests
 
         // Note: no AppendResponseAsync — the reply is the attachment only.
         TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-            .WithContentType("application/vnd.microsoft.card.adaptive")
+            .WithContentType(AttachmentContentType.AdaptiveCard)
             .WithContent(new JsonObject { ["type"] = "AdaptiveCard", ["version"] = "1.5" })
             .Build();
 
-        MessageActivity final = new() { Text = "" };
-        final.AddAttachment(attachment);
+        MessageActivityInput final = new MessageActivityInput()
+            .WithText("")
+            .AddAttachment(attachment)
+            ;
 
         await writer.FinalizeResponseAsync(final);
 
@@ -228,7 +233,7 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, _) = CreateWriter();
 
-        MessageActivity final = new();
+        MessageActivityInput final = new MessageActivityInput();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync(final));
     }
@@ -264,24 +269,21 @@ public class TeamsStreamingWriterTests
     // ── Error handling (HTTP 403) ─────────────────────────────────────────────
 
     [Fact]
-    public async Task AppendAsync_403NotAllowed_ThrowsStreamNotAllowedException()
+    public async Task AppendAsync_403NotAllowed_ThrowsHttpRequestException()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
         handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream is not allowed\"}}", HttpStatusCode.Forbidden);
 
-        StreamNotAllowedException ex = await Assert.ThrowsAsync<StreamNotAllowedException>(() => writer.AppendResponseAsync("hi"));
-        // The original HttpRequestException is preserved as the inner exception for diagnostics.
-        Assert.IsType<HttpRequestException>(ex.InnerException);
+        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
     }
 
     [Fact]
-    public async Task AppendAsync_403UnknownMessage_ThrowsTerminalStreamException()
+    public async Task AppendAsync_403UnknownMessage_ThrowsHttpRequestException()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
         handler.EnqueueResponse("{\"error\":{\"message\":\"Message size too large\"}}", HttpStatusCode.Forbidden);
 
-        TerminalStreamException ex = await Assert.ThrowsAsync<TerminalStreamException>(() => writer.AppendResponseAsync("hi"));
-        Assert.IsType<HttpRequestException>(ex.InnerException);
+        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
     }
 
     [Fact]

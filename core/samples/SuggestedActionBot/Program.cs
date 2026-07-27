@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -17,19 +16,19 @@ ILogger logger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogg
 // Reply to any user message with two Action.Submit suggested-action chips.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    MessageActivity reply = new("Approve or reject the request:")
-    {
-        SuggestedActions = new SuggestedActions()
+    MessageActivityInput reply = new MessageActivityInput()
+        .WithText("Approve or reject the request:")
+        .WithSuggestedActions(new SuggestedActions()
         {
             To = [context.Activity.From?.Id!],
             Actions = [
                 new SuggestedAction(ActionTypes.Submit, "Approve", new { vote = "approve" }),
                 new SuggestedAction(ActionTypes.Submit, "Reject", new { vote = "reject" }),
             ]
-        }
-    };
+        })
+        ;
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    await context.SendAsync(reply, cancellationToken);
 });
 
 // Handle the resulting suggestedActions/submit invoke when the user clicks a chip.
@@ -40,8 +39,8 @@ teamsApp.OnSuggestedActionSubmit(async (context, cancellationToken) =>
         : "<none>";
 
     logger.LogInformation("[SUGGESTED_ACTION_SUBMIT] value={Value}", serializedValue);
-    await context.SendActivityAsync(
-        new MessageActivity($"Got suggestedActions/submit with value: {serializedValue}"),
+    await context.SendAsync(
+        new MessageActivityInput().WithText($"Got suggestedActions/submit with value: {serializedValue}"),
         cancellationToken);
 
     return new InvokeResponse(200);

@@ -12,12 +12,9 @@ public class TurnStateOptions
 {
     /// <summary>
     /// Gets or sets the cache entry options applied when saving state.
-    /// Defaults to a 1-hour sliding expiration.
+    /// Defaults to no expiration.
     /// </summary>
-    public DistributedCacheEntryOptions CacheEntryOptions { get; set; } = new()
-    {
-        SlidingExpiration = TimeSpan.FromHours(1)
-    };
+    public DistributedCacheEntryOptions CacheEntryOptions { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the prefix for cache keys.

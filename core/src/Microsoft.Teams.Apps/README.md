@@ -24,7 +24,6 @@ dotnet add package Microsoft.Teams.Apps
 
 ```csharp
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTeamsBotApplication();
@@ -48,7 +47,6 @@ Handlers are registered as extension methods on `TeamsBotApplication` and can be
 ### Messages
 
 ```csharp
-using Microsoft.Teams.Apps.Handlers;
 // All messages
 teams.OnMessage(async (context, ct) => { ... });
 

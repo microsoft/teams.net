@@ -110,7 +110,7 @@ public class ConversationParameters
     /// Gets or sets the initial activity to send when creating the conversation.
     /// </summary>
     [JsonPropertyName("activity")]
-    public CoreActivity? Activity { get; set; }
+    public CoreActivityInput? Activity { get; set; }
 
     /// <summary>
     /// Gets or sets channel-specific payload for creating the conversation.

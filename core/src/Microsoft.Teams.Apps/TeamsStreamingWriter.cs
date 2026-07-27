@@ -28,12 +28,13 @@ namespace Microsoft.Teams.Apps;
 /// </code>
 ///
 /// To attach entities, attachments, suggested actions, or feedback to the final message,
-/// build a <see cref="MessageActivity"/> and pass it in. If its <c>Text</c> is null the
-/// writer fills in the accumulated streamed text.
+/// build a <see cref="MessageActivityInput"/> using its fluent methods and pass it in.
+/// If its <see cref="MessageActivityInput.Text"/> is null the writer fills in the accumulated streamed text.
 /// <code>
-///     MessageActivity final = new MessageActivity().AddAttachment(card);
-///     final.AddEntity(citation);
-///     final.AddFeedback(FeedbackTypes.Default);
+///     MessageActivityInput final = new MessageActivityInput()
+///         .AddAttachment(card)
+///         .AddEntity(citation)
+///         .AddFeedback(FeedbackTypes.Default);
 ///     await writer.FinalizeResponseAsync(final);
 /// </code>
 ///
@@ -43,8 +44,7 @@ namespace Microsoft.Teams.Apps;
 ///
 /// Streaming errors are surfaced per the Teams streaming error codes: cancellation and the
 /// two-minute timeout are handled gracefully (a timed-out stream finalizes by updating the
-/// original message in place), while <see cref="StreamNotAllowedException"/> and other
-/// <see cref="TerminalStreamException"/> errors propagate to the caller.
+/// original message in place), while other streaming errors propagate to the caller.
 /// </remarks>
 public sealed class TeamsStreamingWriter
 {
@@ -54,6 +54,7 @@ public sealed class TeamsStreamingWriter
     private readonly ConversationClient _client;
     private readonly TeamsActivity _reference;
     private readonly string _conversationId;
+    private readonly Uri _serviceUrl;
     private readonly ILogger _logger;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
@@ -80,6 +81,7 @@ public sealed class TeamsStreamingWriter
         _client = client;
         _reference = reference;
         _conversationId = reference.Conversation?.Id ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(reference));
+        _serviceUrl = reference.ServiceUrl ?? throw new ArgumentException("Activity must have a ServiceUrl.", nameof(reference));
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -180,7 +182,7 @@ public sealed class TeamsStreamingWriter
     /// <exception cref="InvalidOperationException">
     /// Thrown if the final activity has neither text nor attachments.
     /// </exception>
-    public async Task FinalizeResponseAsync(MessageActivity? final = null, CancellationToken cancellationToken = default)
+    public async Task FinalizeResponseAsync(MessageActivityInput? final = null, CancellationToken cancellationToken = default)
     {
         // Finalizing is idempotent until the next append/informative reopens the stream.
         if (_finalized)
@@ -189,7 +191,7 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        final ??= new MessageActivity();
+        final ??= new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
 
         if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
@@ -208,36 +210,35 @@ public sealed class TeamsStreamingWriter
         StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
-        TeamsActivity activity = new TeamsActivityBuilder(final)
-            .WithConversationReference(_reference)
-            .AddEntity(streamInfo)
-            .Build();
+        MessageActivityInput activity = final.AddEntity(streamInfo);
 
         _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).",
             _streamId, final.Text?.Length ?? 0, _sequence);
 
         try
         {
-            await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
-            try
+            if (TryHandleSoftStopStreamError(ex, out bool timedOut))
             {
-                ThrowIfStreamError(ex);
+                if (timedOut)
+                {
+                    // The final streamed send tripped the two-minute limit. Update the original
+                    // message in place with the buffered content: reuse the id and drop the
+                    // stream markers so this routes to an update, not a new streamed chunk.
+                    await SendFinalInPlaceAsync(final, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Cancelled during the final send; nothing more to send.
+                    _logger.LogDebug("Stream cancelled during finalize; no final message sent (streamId '{StreamId}').", _streamId);
+                }
+            }
+            else
+            {
                 throw;
-            }
-            catch (StreamTimedOutException)
-            {
-                // The final streamed send tripped the two-minute limit. Update the original
-                // message in place with the buffered content: reuse the id and drop the
-                // stream markers so this routes to an update, not a new streamed chunk.
-                await SendFinalInPlaceAsync(final, cancellationToken).ConfigureAwait(false);
-            }
-            catch (StreamCancelledException)
-            {
-                // Cancelled during the final send; nothing more to send.
-                _logger.LogDebug("Stream cancelled during finalize; no final message sent (streamId '{StreamId}').", _streamId);
             }
         }
 
@@ -247,31 +248,29 @@ public sealed class TeamsStreamingWriter
 
     /// <summary>
     /// Sends a streaming chunk, swallowing soft-stop conditions (cancellation and the
-    /// two-minute timeout) by flagging state and returning. Terminal streaming errors
-    /// (<see cref="StreamNotAllowedException"/>, <see cref="TerminalStreamException"/>) and
+    /// two-minute timeout) by flagging state and returning. Other streaming errors and
     /// non-streaming errors propagate.
     /// </summary>
-    private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivity activity, CancellationToken cancellationToken)
+    private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
     {
         try
         {
-            return await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
-            try
+            if (TryHandleSoftStopStreamError(ex, out bool timedOut))
             {
-                ThrowIfStreamError(ex);
-            }
-            catch (StreamCancelledException)
-            {
-                _logger.LogDebug("Chunk send stopped: stream cancelled (streamId '{StreamId}').", _streamId);
-                return null; // soft stop: FinalizeResponseAsync returns without sending.
-            }
-            catch (StreamTimedOutException)
-            {
-                _logger.LogDebug("Chunk send stopped: stream timed out (streamId '{StreamId}').", _streamId);
-                return null; // soft stop: FinalizeResponseAsync updates the message in place.
+                if (timedOut)
+                {
+                    _logger.LogDebug("Chunk send stopped: stream timed out (streamId '{StreamId}').", _streamId);
+                    return null; // soft stop: FinalizeResponseAsync updates the message in place.
+                }
+                else
+                {
+                    _logger.LogDebug("Chunk send stopped: stream cancelled (streamId '{StreamId}').", _streamId);
+                    return null; // soft stop: FinalizeResponseAsync returns without sending.
+                }
             }
 
             // Non-streaming error: rethrow the original exception.
@@ -280,13 +279,14 @@ public sealed class TeamsStreamingWriter
     }
 
     /// <summary>
-    /// Maps a failed streaming send to a typed streaming exception. Cancellation and the
+    /// Tries to map a failed streaming send to a soft-stop condition. Cancellation and the
     /// two-minute timeout also flag internal state so callers can stop the send loop.
-    /// Non-streaming failures fall through so the caller can rethrow the original exception.
+    /// Other failures return false so callers can rethrow the original exception.
     /// See https://learn.microsoft.com/en-us/microsoftteams/platform/bots/streaming-ux?tabs=csharp#error-codes.
     /// </summary>
-    private void ThrowIfStreamError(HttpRequestException ex)
+    private bool TryHandleSoftStopStreamError(HttpRequestException ex, out bool timedOut)
     {
+        timedOut = false;
         string message = ex.Message ?? string.Empty;
 
         if (ex.StatusCode == HttpStatusCode.Forbidden)
@@ -294,25 +294,26 @@ public sealed class TeamsStreamingWriter
             if (message.Contains("exceeded streaming time", StringComparison.OrdinalIgnoreCase))
             {
                 _timedOut = true;
+                timedOut = true;
                 _logger.LogWarning("The bot failed to complete streaming within the two-minute limit (streamId '{StreamId}').", _streamId);
-                throw new StreamTimedOutException(message, ex);
+                return true;
             }
 
             if (message.Contains("cancel", StringComparison.OrdinalIgnoreCase))
             {
                 _cancelled = true;
                 _logger.LogWarning("The streaming was stopped by the user (streamId '{StreamId}').", _streamId);
-                throw new StreamCancelledException(message, ex);
+                return true;
             }
 
             if (message.Contains("not allowed", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("The streaming API isn't allowed for the user or bot (streamId '{StreamId}').", _streamId);
-                throw new StreamNotAllowedException(message, ex);
+                return false;
             }
 
             _logger.LogWarning("Teams returned a streaming error (streamId '{StreamId}'): {Message}", _streamId, message);
-            throw new TerminalStreamException(message, ex);
+            return false;
         }
 
         // Preserve the historical treatment of Gone/NoContent as a user cancellation.
@@ -320,8 +321,10 @@ public sealed class TeamsStreamingWriter
         {
             _cancelled = true;
             _logger.LogWarning("The streaming was stopped by the user (streamId '{StreamId}').", _streamId);
-            throw new StreamCancelledException(message, ex);
+            return true;
         }
+
+        return false;
     }
 
     /// <summary>
@@ -330,30 +333,28 @@ public sealed class TeamsStreamingWriter
     /// send routes through the update path (reusing the streamId) instead of creating a
     /// duplicate streamed chunk.
     /// </summary>
-    private async Task SendFinalInPlaceAsync(MessageActivity final, CancellationToken cancellationToken)
+    private async Task SendFinalInPlaceAsync(MessageActivityInput final, CancellationToken cancellationToken)
     {
         // Drop streaming markers so Teams treats this as a normal message edit.
         final.Entities?.RemoveAll(e => e is StreamInfoEntity);
-        if (final.ChannelData?.Properties is { } props)
+        if (final.ChannelData is { } channelData)
         {
-            props.Remove("streamId");
-            props.Remove("streamType");
-            props.Remove("streamSequence");
+            channelData.StreamId = null;
+            channelData.StreamType = null;
+            channelData.StreamSequence = null;
         }
 
-        TeamsActivity activity = new TeamsActivityBuilder(final)
-            .WithConversationReference(_reference)
-            .Build();
+        MessageActivityInput activity = final;
 
         if (_streamId != null)
         {
             _logger.LogDebug("Updating original streamed message in place after timeout (streamId '{StreamId}').", _streamId);
-            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
             // No streamed message exists yet; send the buffered content as a normal message.
-            await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -371,16 +372,11 @@ public sealed class TeamsStreamingWriter
         _lastChunkSent = DateTime.MinValue;
     }
 
-    private TeamsActivity BuildActivity(string text, string streamType)
+    private StreamingActivityInput BuildActivity(string text, StreamType streamType)
     {
-        StreamingActivity streaming = new(text);
-        streaming.StreamInfo.StreamType = streamType;
-        streaming.StreamInfo.StreamSequence = _sequence;
-        if (_streamId != null)
-            streaming.StreamInfo.StreamId = _streamId;
-
-        return new TeamsActivityBuilder(streaming)
-            .WithConversationReference(_reference)
+        return StreamingActivityInput.CreateBuilder()
+            .WithText(text)
+            .WithStreamInfo(streamType, _streamId, _sequence)
             .Build();
     }
 }

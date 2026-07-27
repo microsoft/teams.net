@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
 

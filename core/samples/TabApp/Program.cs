@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Identity.Web;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
@@ -78,13 +79,10 @@ app.MapPost("/functions/post-to-chat", async (
         conversationId = cached!;
     }
 
-    TeamsActivity activity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
+    MessageActivityInput activity = new MessageActivityInput()
         .WithText("Hello from the tab!")
-        .WithServiceUrl(serviceUrl)
-        .WithConversation(new TeamsConversation { Id = conversationId! })
-        .Build();
-    await conversations.SendActivityAsync(activity, cancellationToken: ct);
+        ;
+    await conversations.SendActivityAsync(conversationId!, activity, serviceUrl, cancellationToken: ct);
 
     return Results.Json(new PostToChatResult(Ok: true));
 }).RequireAuthorization();

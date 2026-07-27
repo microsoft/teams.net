@@ -3,8 +3,6 @@
 
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
-using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web;
 using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;
@@ -20,10 +18,18 @@ string[] meterNames = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetr
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IServiceProvider? rootProvider = null;
-builder.Services.AddTeamsBotApplication<ObservabilityBotApp>(o => o.UseState());
+builder.Services.AddTeamsBotApplication<ObservabilityBotApp>(o =>
+{
+    o.UseState();
+    o.AddOAuthFlow("sso", flow =>
+    {
+        flow.OAuthCardText = "Sign in to continue.";
+        flow.SignInButtonText = "Sign In";
+    });
+});
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? throw new InvalidProgramException("Redis connection string not found");
 });
 
 builder.Services.AddOpenTelemetry()
@@ -36,10 +42,11 @@ builder.Services.AddOpenTelemetry()
         }))
     .UseMicrosoftOpenTelemetry(o =>
     {
-        o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
+        o.Exporters = ExportTarget.Otlp | ExportTarget.AzureMonitor; // | ExportTarget.Agent365
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
 
+        /*
         o.Agent365.ContextualTokenResolver = async trctx =>
         {
             IAuthorizationHeaderProvider provider = rootProvider!.GetRequiredService<IAuthorizationHeaderProvider>();
@@ -49,7 +56,7 @@ builder.Services.AddOpenTelemetry()
             var token = await provider.CreateAuthorizationHeaderAsync(
                 ["api://9b975845-388f-4429-889e-eab1ef63949c/.default"], options);
             return token.Substring("Bearer".Length).Trim();
-        };
+        };*/
     })
     .WithTracing(t => t.AddSource(activitySources))
     .WithMetrics(m => m.AddMeter(meterNames));

@@ -2,6 +2,13 @@
 
 Minimal Teams bot wired to the [`Microsoft.OpenTelemetry`](https://github.com/microsoft/opentelemetry-distro-dotnet) distro. Demonstrates how a consuming app subscribes to the Teams SDK's `ActivitySource` and `Meter` so that turn / middleware / handler / auth.outbound / conversation_client spans and the `teams.*` metrics flow to configured exporters alongside auto-instrumented HTTP server / client / Azure SDK spans.
 
+## Prerequisites
+
+- Bot registered and installed in Teams.
+- OpenTelemetry export target available (for local demo, Grafana LGTM).
+- Azure OpenAI configuration (required by the sample's AI path).
+- OAuth connection named `sso` configured on the bot resource.
+
 ## What it shows
 
 ```csharp
@@ -32,7 +39,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_SERVICE_NAME=teams-observability-bot
 export OTEL_RESOURCE_ATTRIBUTES="deployment.environment=local,service.version=dev"
 
-# Required for the AI chat client (Azure OpenAI)
+# Required for the AI chat client (Azure OpenAI):
 export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
 export AZURE_OPENAI_KEY=your-key
 export AZURE_OPENAI_DEPLOYMENT=your-deployment-name
@@ -50,6 +57,11 @@ To exercise the pipeline you need to POST a Bot Framework activity payload (with
 - Drive the bot from one of the harnesses under `core/test/IntegrationTests`.
 - Deploy the bot to a Teams tenant and chat with it.
 
+Then use these commands in chat:
+- `help`
+- `login` / `logout` / `status` (OAuth flow telemetry)
+- `team` (TeamClient telemetry)
+
 ## Export targets
 
 - Set `APPLICATIONINSIGHTS_CONNECTION_STRING` to additionally export to Azure Monitor / Application Insights.
@@ -65,7 +77,10 @@ HTTP server span                       (auto, OTel ASP.NET Core)
 └─ turn                                (Microsoft.Teams.Core)
    ├─ middleware [n times]             (Microsoft.Teams.Core)
    ├─ handler                          (Microsoft.Teams.Apps)
-   └─ conversation_client              (Microsoft.Teams.Core)
+   ├─ oauth                            (Microsoft.Teams.Apps, when login/status/logout runs)
+   │  └─ user_token_client             (Microsoft.Teams.Core)
+   ├─ team_client                      (Microsoft.Teams.Apps, when team runs)
+   └─ conversation_client              (Microsoft.Teams.Core, AI responses / sends)
       ├─ auth.outbound                 (Microsoft.Teams.Core)
       │  └─ HTTP client span           (auto — token endpoint)
       └─ HTTP client span              (auto — Bot Service API)
@@ -74,3 +89,8 @@ HTTP server span                       (auto, OTel ASP.NET Core)
 Metrics (Prometheus / Mimir names): `teams_activities_received_total`, `teams_turn_duration_milliseconds_bucket/sum/count`, `teams_handler_errors_total`, `teams_middleware_duration_milliseconds_*`, `teams_outbound_calls_total`, `teams_outbound_errors_total`.
 
 Logs: every `ILogger` record produced inside a turn carries the active `TraceId` / `SpanId` so Loki queries can pivot from a slow trace to its log lines.
+## Running the Sample
+
+~~~bash
+dotnet run --project samples/ObservabilityBot/ObservabilityBot.csproj
+~~~

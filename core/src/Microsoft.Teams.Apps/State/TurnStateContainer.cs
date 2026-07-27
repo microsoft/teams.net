@@ -43,9 +43,17 @@ public sealed class TurnStateContainer
     }
 
     /// <summary>
-    /// Deletes conversation and user state from the backing store.
-    /// The in-memory state remains accessible for the rest of the turn
-    /// but will not be persisted at end-of-turn unless new values are written.
+    /// Seals all scopes; subsequent access throws.
+    /// </summary>
+    internal void Complete()
+    {
+        ConversationState.Complete();
+        UserState?.Complete();
+    }
+
+    /// <summary>
+    /// Deletes conversation and user state from the backing store and clears in-memory scopes.
+    /// Scopes remain available for reads/writes afterward, but as empty state.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     public async Task DeleteAsync(CancellationToken cancellationToken = default)
@@ -57,6 +65,10 @@ public sealed class TurnStateContainer
         }
 
         await _deleteDelegate(cancellationToken).ConfigureAwait(false);
+
+        // Clear in-memory snapshots so state reflects deletion immediately in this turn.
+        ConversationState.Clear();
+        UserState?.Clear();
 
         // Clear dirty flags so end-of-turn save doesn't re-persist the deleted state.
         ConversationState.IsDirty = false;

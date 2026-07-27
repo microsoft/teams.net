@@ -12,6 +12,7 @@ namespace Microsoft.Teams.Core.Schema;
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(CoreActivity))]
+[JsonSerializable(typeof(CoreActivityInput))]
 [JsonSerializable(typeof(ChannelData))]
 [JsonSerializable(typeof(Conversation))]
 [JsonSerializable(typeof(ChannelAccount))]

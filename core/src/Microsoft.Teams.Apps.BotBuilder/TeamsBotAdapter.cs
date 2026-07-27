@@ -63,9 +63,9 @@ public class TeamsBotAdapter(
             conversationId,
             activityId,
             serviceUrl,
-            BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
+            requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             customHeaders: null,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -103,20 +103,23 @@ public class TeamsBotAdapter(
                 return [new ResourceResponse() { Id = null }];
             }
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-            // Ensure ServiceUrl is set from turn context if not already present
-            if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(inboundActivity.ServiceUrl))
-            {
-                coreActivity.ServiceUrl = new Uri(inboundActivity.ServiceUrl);
-            }
+            string serviceUrl = activity.ServiceUrl
+                ?? inboundActivity.ServiceUrl ?? throw new InvalidOperationException("Service URL is required to send activities.");
 
-            coreActivity.Conversation ??= new Microsoft.Teams.Core.Schema.Conversation(
-                inboundActivity.Conversation?.Id
-                ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
+            string conversationId = inboundActivity.Conversation?.Id
+                ?? throw new InvalidOperationException("Conversation ID is required to send activities.");
+
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+
             SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
-                coreActivity,
-                requestContext,
+                conversationId,
+                input,
+                new Uri(serviceUrl),
+                requestContext: requestContext,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.SendActivitiesResponse(resp?.Id);
@@ -141,18 +144,24 @@ public class TeamsBotAdapter(
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(turnContext);
 
-        CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+        CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-        // Ensure ServiceUrl is set from turn context if not already present
-        if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
+        string serviceUrl = activity.ServiceUrl
+            ?? turnContext.Activity.ServiceUrl ?? throw new InvalidOperationException("Service URL is required to send activities.");
+
+        // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+        // the property bag using the authoritative conversation id for downstream consumers.
+        string conversationId = activity.Conversation.Id;
+        if (!string.IsNullOrWhiteSpace(conversationId))
         {
-            coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
+            input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
         }
 
         UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
-            activity.Conversation.Id,
+            conversationId,
             activity.Id,
-            coreActivity,
+            input,
+            new Uri(serviceUrl),
             requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };

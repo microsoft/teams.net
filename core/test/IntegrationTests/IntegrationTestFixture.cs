@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
@@ -122,7 +122,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     public async Task InitializeAsync()
     {
         ApiClient scoped = ScopedApiClient;
-        IList<TeamsChannelAccount?> raw = await scoped.Conversations.Members.GetAsync(ConversationId, AgenticIdentity);
+        IList<TeamsChannelAccount?> raw = await scoped.Conversations.GetMembersAsync(ConversationId);
 
         string botMri = $"28:{BotAppId}";
         CachedMembers = raw
@@ -139,7 +139,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl);
+    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl).ForAgenticIdentity(AgenticIdentity);
 
     public void Dispose()
     {

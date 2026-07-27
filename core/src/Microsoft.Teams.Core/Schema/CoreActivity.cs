@@ -35,6 +35,11 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
         if (raw is T typed)
             return typed;
 
+        if (raw is string rawString)
+        {
+            return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(rawString));
+        }
+
         if (raw is System.Text.Json.JsonElement element)
             return System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
 
@@ -42,7 +47,7 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
     }
 
     /// <summary>
-    /// Gets and deserializes a value from the dictionary without removing it.
+    /// Gets and deserializes a value from the dictionary without removing it or caching it back.
     /// Handles <see cref="System.Text.Json.JsonElement"/> values that result from deserialization.
     /// </summary>
     public T? Get<T>(string key)
@@ -53,11 +58,14 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
         if (raw is T typed)
             return typed;
 
-        if (raw is System.Text.Json.JsonElement element)
+        if (raw is string rawString)
         {
-            T? deserialized = System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
-            this[key] = deserialized;
-            return deserialized;
+            return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(rawString));
+        }
+
+        if (raw is JsonElement element)
+        {
+            return JsonSerializer.Deserialize<T>(element.GetRawText());
         }
 
         return default;
@@ -128,9 +136,12 @@ public class CoreActivity
     /// </summary>
     /// <remarks>
     /// Uses reflection-based serialization to support custom activity types that extend CoreActivity.
-    /// This is used when serializing/deserializing types not registered in the source-generated context.
+    /// This is used when serializing/deserializing types not registered in the source-generated context,
+    /// and to serialize inbound (read-model) activities by their runtime type for logging/diagnostics.
+    /// Inbound activities are never serialized onto the wire; the outbound <c>*Input</c> types own the
+    /// AOT-safe serialization path.
     /// </remarks>
-    private static readonly JsonSerializerOptions ReflectionJsonOptions = new()
+    public static readonly JsonSerializerOptions ReflectionJsonOptions = new()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -250,10 +261,5 @@ public class CoreActivity
     public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default) where T : CoreActivity
         => JsonSerializer.DeserializeAsync<T>(stream, ReflectionJsonOptions, cancellationToken);
 
-    /// <summary>
-    /// Creates a new instance of the <see cref="CoreActivityBuilder"/> to construct activity instances.
-    /// </summary>
-    /// <returns>A new <see cref="CoreActivityBuilder"/> instance.</returns>
-    public static CoreActivityBuilder CreateBuilder() => new();
 
 }

@@ -1,62 +1,62 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+using Microsoft.Teams.Cards;
+
 namespace CompatBot;
 
 internal class Cards
 {
 
-    public static object ResponseCard(string? feedback) => new
+    public static JsonElement ResponseCard(string? feedback)
     {
-        type = "AdaptiveCard",
-        version = "1.4",
-        body = new object[]
+        AdaptiveCard card = new([
+            new TextBlock("Form Submitted Successfully! ✓")
             {
-                    new
-                    {
-                        type = "TextBlock",
-                        text = "Form Submitted Successfully! ✓",
-                        weight = "Bolder",
-                        size = "Large",
-                        color = "Good"
-                    },
-                    new
-                    {
-                        type = "TextBlock",
-                        text = $"You entered: **{feedback ?? "(empty)"}**",
-                        wrap = true
-                    }
-            }
-    };
-
-    public static readonly object FeedbackCardObj = new
-    {
-        type = "AdaptiveCard",
-        version = "1.4",
-        body = new object[]
-        {
-            new
-            {
-                type = "TextBlock",
-                text = "Please provide your feedback:",
-                weight = "Bolder",
-                size = "Medium"
+                Weight = TextWeight.Bolder,
+                Size = TextSize.Large,
+                Wrap = true
             },
-            new
+            new TextBlock($"You entered: **{feedback ?? "(empty)"}**")
             {
-                type = "Input.Text",
-                id = "feedback",
-                placeholder = "Enter your feedback here",
-                isMultiline = true
-            }
-        },
-        actions = new object[]
+                Wrap = true
+            }])
         {
-            new
+            Version = Microsoft.Teams.Cards.Version.Version1_4
+        };
+
+        return JsonSerializer.SerializeToElement(card);
+    }
+
+    public static readonly JsonElement FeedbackCardObj = CreateFeedbackCard();
+
+    private static JsonElement CreateFeedbackCard()
+    {
+        AdaptiveCard card = new([
+            new TextBlock("Please provide your feedback:")
             {
-                type = "Action.Execute",
-                title = "Submit Feedback"
-            }
-        }
-    };
+                Weight = TextWeight.Bolder,
+                Size = TextSize.Medium,
+                Wrap = true
+            },
+            new TextInput
+            {
+                Id = "feedback",
+                Placeholder = "Enter your feedback here",
+                IsMultiline = true
+            }])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new ExecuteAction
+                {
+                    Title = "Submit Feedback"
+                }
+            ]
+        };
+
+        return JsonSerializer.SerializeToElement(card);
+    }
 }

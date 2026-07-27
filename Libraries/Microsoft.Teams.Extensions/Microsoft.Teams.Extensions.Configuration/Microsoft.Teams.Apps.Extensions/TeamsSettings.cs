@@ -33,6 +33,12 @@ public class TeamsSettings
     /// <summary>Override the Microsoft Graph token scope.</summary>
     public string? GraphScope { get; set; }
 
+    /// <summary>
+    /// Allow the Teams messaging endpoint to accept unauthenticated requests.
+    /// Can be configured with the <c>Teams__DangerouslyAllowUnauthenticatedRequests</c> environment variable.
+    /// </summary>
+    public bool? DangerouslyAllowUnauthenticatedRequests { get; set; }
+
     public bool Empty
     {
         get { return ClientId == "" || ClientSecret == ""; }

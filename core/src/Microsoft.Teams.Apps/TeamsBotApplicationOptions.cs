@@ -38,8 +38,8 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     internal Action<TurnStateOptions>? StateConfiguration { get; private set; }
 
     /// <summary>
-    /// Enables per-turn state management backed by <c>IDistributedCache</c>.
-    /// An in-memory cache is used by default; register a custom <c>IDistributedCache</c>
+    /// Enables per-turn state management backed by <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/>.
+    /// An in-memory cache is used by default; register a custom <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/>
     /// (Redis, SQL Server, etc.) to persist state across restarts.
     /// </summary>
     /// <param name="configure">Optional delegate to configure <see cref="TurnStateOptions"/> (e.g. cache entry TTL).</param>

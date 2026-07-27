@@ -5,12 +5,13 @@ using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Api.Clients;
-using Microsoft.Teams.Apps.Handlers;
-using Microsoft.Teams.Apps.Handlers.MessageExtension;
-using Microsoft.Teams.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Clients;
+using Microsoft.Teams.Apps.Files;
+using Microsoft.Teams.Apps.MessageExtensions;
+using Microsoft.Teams.Apps.Meetings;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.State;
+using Microsoft.Teams.Apps.TaskModules;
 using Microsoft.Teams.Core;
 using Moq;
 
@@ -529,13 +530,13 @@ public class HandlerStatePropagationTests
         return new TurnStateContainer(convState, new TurnState());
     }
 
-    private static Context<TeamsActivity> CreateInvokeContext(TeamsBotApplication app, string invokeName)
+    private static Context<TeamsActivity> CreateInvokeContext(TeamsBotApplication app, InvokeName invokeName)
     {
-        InvokeActivity activity = new() { Type = TeamsActivityTypes.Invoke, Name = invokeName };
+        InvokeActivity activity = new(invokeName);
         return new Context<TeamsActivity>(app, activity);
     }
 
-    private static Context<TeamsActivity> CreateEventContext(TeamsBotApplication app, string eventName)
+    private static Context<TeamsActivity> CreateEventContext(TeamsBotApplication app, EventName eventName)
     {
         EventActivity activity = new() { Type = TeamsActivityTypes.Event, Name = eventName };
         return new Context<TeamsActivity>(app, activity);

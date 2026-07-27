@@ -6,7 +6,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
@@ -103,7 +102,7 @@ public class SuggestedActionSubmitHandlerTests
         CoreActivity coreActivity = CoreActivity.FromJsonString(json);
         InvokeActivity activity = InvokeActivity.FromActivity(coreActivity);
 
-        Assert.Equal("suggestedActions/submit", activity.Name);
+        Assert.Equal("suggestedActions/submit", activity.Name!.ToString());
         Assert.NotNull(activity.Value);
         Assert.Equal("reject", activity.Value!["vote"]!.GetValue<string>());
     }

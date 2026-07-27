@@ -96,9 +96,9 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl),
-                RequestContext,
-                ConvertHeaders(customHeaders),
-                cancellationToken).ConfigureAwait(false);
+                requestContext: RequestContext,
+                customHeaders: ConvertHeaders(customHeaders),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             return new HttpOperationResponse
             {
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -122,11 +122,12 @@ namespace Microsoft.Teams.Apps.BotBuilder
         public async Task<HttpOperationResponse<IList<Microsoft.Bot.Schema.ChannelAccount>>> GetActivityMembersWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
             IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetActivityMembersAsync(
                 conversationId,
                 activityId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 RequestContext,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -234,18 +235,17 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+            input.ReplyToId = activityId;
 
-            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
-            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
-            {
-                coreActivity.ServiceUrl = new Uri(ServiceUrl);
-            }
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            StampConversation(input, conversationId);
 
-            coreActivity.ReplyToId = activityId;
-            coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+            // Prefer the activity's own service url; fall back to the adapter's.
+            Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, input, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -305,17 +305,16 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
-            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
-            {
-                coreActivity.ServiceUrl = new Uri(ServiceUrl);
-            }
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            StampConversation(input, conversationId);
 
-            coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+            // Prefer the activity's own service url; fall back to the adapter's.
+            Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(conversationId, input, serviceUrl, requestContext: RequestContext, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -345,18 +344,20 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for updating activities
-            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
-            {
-                coreActivity.ServiceUrl = new Uri(ServiceUrl);
-            }
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            StampConversation(input, conversationId);
+
+            // Prefer the activity's own service url; fall back to the adapter's.
+            Uri serviceUrl = string.IsNullOrWhiteSpace(activity.ServiceUrl) ? new Uri(ServiceUrl!) : new Uri(activity.ServiceUrl);
 
             UpdateActivityResponse response = await _client.UpdateActivityAsync(
                 conversationId,
                 activityId,
-                coreActivity,
+                input,
+                serviceUrl,
                 requestContext: RequestContext,
                 customHeaders: convertedHeaders,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -404,6 +405,19 @@ namespace Microsoft.Teams.Apps.BotBuilder
                 Body = resourceResponse,
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
             };
+        }
+
+        /// <summary>
+        /// Stamps the conversation onto the outbound activity's property bag for backward compatibility.
+        /// <see cref="CoreActivityInput"/> does not expose a Conversation field, so the value is carried
+        /// through extension data and serialized as <c>"conversation": { "id": ... }</c> on the wire.
+        /// </summary>
+        private static void StampConversation(CoreActivityInput input, string conversationId)
+        {
+            if (!string.IsNullOrWhiteSpace(conversationId))
+            {
+                input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+            }
         }
 
         private static Dictionary<string, string>? ConvertHeaders(Dictionary<string, List<string>>? customHeaders)

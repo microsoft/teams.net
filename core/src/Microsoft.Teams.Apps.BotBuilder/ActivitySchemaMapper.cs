@@ -52,6 +52,21 @@ public static class ActivitySchemaMapper
         return CoreActivity.FromJsonString(jsonString);
     }
 
+    /// <summary>
+    /// Converts a Bot Framework <see cref="Activity"/> to an outbound <see cref="CoreActivityInput"/>.
+    /// </summary>
+    /// <param name="activity">The Bot Framework activity to convert.</param>
+    /// <returns>The equivalent outbound activity input.</returns>
+    public static CoreActivityInput FromBotFrameworkActivityInput(this Activity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        StringBuilder sb = new();
+        using StringWriter stringWriter = new(sb);
+        using JsonTextWriter json = new(stringWriter);
+        BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
+        return CoreActivityInput.FromJsonString(sb.ToString());
+    }
+
 
     /// <summary>
     /// Converts a <see cref="Microsoft.Teams.Core.Schema.ChannelAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
@@ -242,7 +257,7 @@ public static class ActivitySchemaMapper
             Bot = parameters.Bot?.FromCompatChannelAccount(),
             Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
             TopicName = parameters.TopicName,
-            Activity = parameters.Activity?.FromBotFrameworkActivity(),
+            Activity = parameters.Activity is null ? null : parameters.Activity.FromBotFrameworkActivityInput(),
             ChannelData = parameters.ChannelData,
             TenantId = parameters.TenantId,
         };

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
@@ -15,7 +15,8 @@ IConfiguration configuration = new ConfigurationBuilder()
 
 ServiceCollection services = new ServiceCollection();
 services.AddSingleton(configuration);
-services.AddLogging(c => {
+services.AddLogging(c =>
+{
     c.AddConfiguration(configuration.GetSection("Logging"));
     c.AddConsole();
 });
@@ -26,18 +27,18 @@ Console.WriteLine($"Running Teams Bot Application for appId '{teamsBotApplicatio
 
 
 var smba = new Uri("https://smba.trafficmanager.net/amer");
-var membersClient = teamsBotApplication.Api.ForServiceUrl(smba).Conversations.Members;
+var conversations = teamsBotApplication.Api.ForServiceUrl(smba).Conversations;
 
 int pages = 1;
 string cid = "19%3ALydFnezGKSkhYoiLNP6kZ8AuXQr36EDAkvG9CNJSPKc1%40thread.tacv2";
-var paged = await membersClient.GetPagedAsync(cid, 52);
+var paged = await conversations.GetMembersPagedAsync(cid, 52);
 
-List<TeamsChannelAccount?> members = [..paged.Members];
+List<TeamsChannelAccount?> members = [.. paged.Members];
 
 while (!string.IsNullOrEmpty(paged.ContinuationToken))
 {
     Console.WriteLine("Getting next page of members...");
-    paged = await membersClient.GetPagedAsync(cid, 52, paged.ContinuationToken);
+    paged = await conversations.GetMembersPagedAsync(cid, 52, paged.ContinuationToken);
     members.AddRange(paged.Members);
     pages++;
 }

@@ -25,7 +25,7 @@ public static class CitationEntityExtensions
     /// <summary>
     /// Internal helper to add a citation claim to an activity.
     /// </summary>
-    internal static CitationEntity AddToActivity(TeamsActivity activity, int position, CitationAppearance appearance)
+    internal static CitationEntity AddToActivity(TeamsActivityInput activity, int position, CitationAppearance appearance)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(appearance);

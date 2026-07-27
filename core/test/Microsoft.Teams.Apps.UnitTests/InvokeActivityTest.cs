@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
@@ -35,7 +34,7 @@ public class InvokeActivityTest
         InvokeActivity ia = InvokeActivity.FromActivity(coreActivity);
         Assert.NotNull(ia);
         Assert.Equal(TeamsActivityTypes.Invoke, ia.Type);
-        Assert.Equal("testName", ia.Name);
+        Assert.Equal("testName", ia.Name!.ToString());
         Assert.NotNull(ia.Value);
         Assert.Equal("convId", ia.Conversation?.Id);
         Assert.Equal("value", ia.Value?["key"]?.ToString());

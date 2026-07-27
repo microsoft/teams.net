@@ -25,7 +25,7 @@ public static class OMessageEntityExtensions
     /// <summary>
     /// Internal helper to get or create the root message entity for an activity.
     /// </summary>
-    internal static OMessageEntity GetOrCreateRootMessageEntity(TeamsActivity activity)
+    internal static OMessageEntity GetOrCreateRootMessageEntity(TeamsActivityInput activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
 
@@ -47,7 +47,7 @@ public static class OMessageEntityExtensions
     /// <summary>
     /// Internal helper to add AI-generated content label to the message entity.
     /// </summary>
-    internal static OMessageEntity AddAIGeneratedContent(TeamsActivity activity)
+    internal static OMessageEntity AddAIGeneratedContent(TeamsActivityInput activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
 

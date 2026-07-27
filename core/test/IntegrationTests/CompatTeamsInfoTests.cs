@@ -5,7 +5,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.BotBuilder;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Http;
@@ -307,14 +307,14 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
-        IList<Microsoft.Teams.Apps.Schema.TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<Microsoft.Teams.Apps.Schema.TeamsChannelAccount?> members = await api.Conversations.GetMembersAsync(_f.ConversationId);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;
         foreach (Microsoft.Teams.Apps.Schema.TeamsChannelAccount? m in members)
         {
             Microsoft.Teams.Apps.Schema.TeamsChannelAccount tm = await api.Conversations.Members
-                .GetByIdAsync<Microsoft.Teams.Apps.Schema.TeamsChannelAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
+                .GetByIdAsync<Microsoft.Teams.Apps.Schema.TeamsChannelAccount>(_f.ConversationId, m?.Id!);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {

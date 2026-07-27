@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using A2A;
+using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 
@@ -67,13 +68,10 @@ internal sealed class A2AServer(
         string greeting = await agent.GreetWithHandoffAsync(
             newConvId, handoff.From, handoff.UserName, handoff.Summary, ct);
 
-        TeamsActivity proactive = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityTypes.Message)
+        MessageActivityInput proactive = new MessageActivityInput()
             .WithText(greeting)
-            .WithServiceUrl(serviceUrl)
-            .WithConversation(new TeamsConversation { Id = newConvId })
-            .Build();
-        SendActivityResponse? sent = await conversations.SendActivityAsync(proactive, cancellationToken: ct);
+            ;
+        SendActivityResponse? sent = await conversations.SendActivityAsync(newConvId, proactive, serviceUrl, cancellationToken: ct);
         logger.LogInformation("[{Bot}/A2A] proactive greeting sent (conv={ConvId}, activityId={ActivityId})",
             config.Name, newConvId, sent?.Id ?? "<none>");
 

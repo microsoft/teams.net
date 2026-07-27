@@ -2,7 +2,7 @@
 
 A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dotnet/ai/ai-extensions) and Azure OpenAI. Demonstrates streaming responses, per-conversation memory, a local clarification tool, remote MCP server tools, inline citations, follow-up suggestions, and custom feedback.
 
-## Features
+## What it shows
 
 - **Streaming** — token-by-token replies via `TeamsStreamingWriter`
 - **Conversation memory** — each conversation keeps its own `List<ChatMessage>` so the bot remembers context across turns
@@ -70,7 +70,6 @@ When the user picks an option, Teams sends an `adaptiveCard/action` invoke. `OnA
 
 Every text reply is finalized with `FeedbackType.Custom`, which renders thumbs up/down on the bot bubble. Clicking either button sends a `message/fetchTask` invoke; `OnMessageFetchTask` returns a task module containing a follow-up text form built with `Microsoft.Teams.Cards`. On submit, the typed `OnMessageSubmitFeedback` route fires with `context.Activity.Value` already deserialized to `MessageSubmitFeedbackValue { Reaction, Feedback }`. (`Feedback` is the form payload as a JSON-encoded string — Teams wraps the inputs the bot defined in its task module.)
 
-
 ### How MCP tools are wired in
 
 At startup, `McpToolSet.CreateAsync` connects to the MS Learn MCP server using the Streamable HTTP transport and lists its tools. Each `McpClientTool` is an `AIFunction` that holds a reference to the client and calls the server when invoked.
@@ -89,3 +88,8 @@ ChatOptions options = new()
 ```
 
 `UseFunctionInvocation()` then handles all tool calls — local or remote — transparently during streaming.
+## Running the Sample
+
+~~~bash
+dotnet run --project samples/ExtAIBot/ExtAIBot.csproj
+~~~
