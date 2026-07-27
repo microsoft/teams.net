@@ -87,7 +87,7 @@ internal class ExtAIBotApp : TeamsBotApplication
 
         IList<Entity> entities = result.Citations.BuildEntities(result.FullText);
 
-        MessageActivityInputBuilder finalBuilder = MessageActivityInput.CreateBuilder();
+        MessageActivityInput finalBuilder = new MessageActivityInput();
 
         if (result.PendingCards.Count > 0)
         {
@@ -106,7 +106,7 @@ internal class ExtAIBotApp : TeamsBotApplication
         if (result.FollowUpActions.Count > 0)
             finalBuilder.WithSuggestedActions(new SuggestedActions().AddActions([.. result.FollowUpActions]));
 
-        MessageActivityInput final = finalBuilder.Build();
+        MessageActivityInput final = finalBuilder;
 
         await writer.FinalizeResponseAsync(final, cancellationToken);
     }

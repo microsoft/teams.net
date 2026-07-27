@@ -14,13 +14,13 @@ public class MessageExtensionQuery
     /// Id of the command assigned by the bot.
     /// </summary>
     [JsonPropertyName("commandId")]
-    public required string CommandId { get; set; }
+    public string CommandId { get; set; } = string.Empty;
 
     /// <summary>
     /// Parameters for the query.
     /// </summary>
     [JsonPropertyName("parameters")]
-    public required IList<QueryParameter> Parameters { get; set; }
+    public IList<QueryParameter> Parameters { get; set; } = [];
 
     /// <summary>
     /// Query options for pagination.
@@ -47,13 +47,13 @@ public class QueryParameter
     /// Name of the parameter.
     /// </summary>
     [JsonPropertyName("name")]
-    public required string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Value of the parameter.
     /// </summary>
     [JsonPropertyName("value")]
-    public required string Value { get; set; }
+    public string Value { get; set; } = string.Empty;
 }
 
 
@@ -74,4 +74,3 @@ public class QueryOptions
     [JsonPropertyName("count")]
     public int? Count { get; set; }
 }
-

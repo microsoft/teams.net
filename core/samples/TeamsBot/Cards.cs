@@ -1,65 +1,61 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Nodes;
+using System.Text.Json;
+using Microsoft.Teams.Cards;
 
 namespace TeamsBot;
 
 internal class Cards
 {
-    public static object ResponseCard(string? feedback) => new JsonObject
+    public static JsonElement ResponseCard(string? feedback)
     {
-        ["type"] = "AdaptiveCard",
-        ["version"] = "1.4",
-        ["body"] = new JsonArray
-        {
-            new JsonObject
+        AdaptiveCard card = new([
+            new TextBlock("Form Submitted Successfully! ✓")
             {
-                ["type"] = "TextBlock",
-                ["text"] = "Form Submitted Successfully! ✓",
-                ["weight"] = "Bolder",
-                ["size"] = "Large",
-                ["color"] = "Good"
+                Weight = TextWeight.Bolder,
+                Size = TextSize.Large,
+                Wrap = true
             },
-            new JsonObject
+            new TextBlock($"You entered: **{feedback ?? "(empty)"}**")
             {
-                ["type"] = "TextBlock",
-                ["text"] = $"You entered: **{feedback ?? "(empty)"}**",
-                ["wrap"] = true
-            }
-        }
-    };
+                Wrap = true
+            }])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4
+        };
 
-    public static readonly object FeedbackCardObj = new JsonObject
+        return JsonSerializer.SerializeToElement(card);
+    }
+
+    public static readonly JsonElement FeedbackCardObj = CreateFeedbackCard();
+
+    private static JsonElement CreateFeedbackCard()
     {
-        ["type"] = "AdaptiveCard",
-        ["version"] = "1.4",
-        ["body"] = new JsonArray
-        {
-            new JsonObject
+        AdaptiveCard card = new([
+            new TextBlock("Please provide your feedback:")
             {
-                ["type"] = "TextBlock",
-                ["text"] = "Please provide your feedback:",
-                ["weight"] = "Bolder",
-                ["size"] = "Medium"
+                Weight = TextWeight.Bolder,
+                Size = TextSize.Medium,
+                Wrap = true
             },
-            new JsonObject
+            new TextInput
             {
-                ["type"] = "Input.Text",
-                ["id"] = "feedback",
-                ["placeholder"] = "Enter your feedback here",
-                ["isMultiline"] = true
-            }
-        },
-        ["actions"] = new JsonArray
+                Id = "feedback",
+                Placeholder = "Enter your feedback here",
+                IsMultiline = true
+            }])
         {
-            new JsonObject
-            {
-                ["type"] = "Action.Execute",
-                ["title"] = "Submit Feedback"
-            }
-        }
-    };
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new ExecuteAction
+                {
+                    Title = "Submit Feedback"
+                }
+            ]
+        };
 
-
+        return JsonSerializer.SerializeToElement(card);
+    }
 }

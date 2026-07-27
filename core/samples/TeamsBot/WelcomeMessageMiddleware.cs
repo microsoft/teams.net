@@ -31,9 +31,9 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
     {
         if (!_hasSentWelcomeMessage)
         {
-            MessageActivityInput welcomeActivity = MessageActivityInput.CreateBuilder()
+            MessageActivityInput welcomeActivity = new MessageActivityInput()
                 .WithText(WelcomeMessage, TextFormats.Markdown)
-                .Build();
+                ;
 
             await botApplication.ConversationClient.SendActivityAsync(activity.Conversation!.Id!, welcomeActivity, activity.ServiceUrl!, cancellationToken: cancellationToken);
 

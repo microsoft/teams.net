@@ -91,7 +91,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         """;
 
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder().WithText(helpText, TextFormats.Markdown).Build(), ct);
+        new MessageActivityInput().WithText(helpText, TextFormats.Markdown), ct);
 });
 
 bot.OnMessage("(?i)^login$", async (context, ct) =>
@@ -138,9 +138,9 @@ bot.OnMessage("(?i)^status$", async (context, ct) =>
         $"{(s.HasToken == true ? "✅ connected" : "❌ not connected")}");
 
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder()
+        new MessageActivityInput()
             .WithText($"OAuth connections for {context.Activity.From?.Name} :\n" + string.Join("\n", lines), TextFormats.Markdown)
-            .Build(), ct);
+            , ct);
 });
 
 bot.OnMessage("(?i)^my ad user", async (context, ct) =>
@@ -208,9 +208,9 @@ bot.OnMessage("(?i)^logout github$", async (context, ct) =>
 bot.OnInstall(async (context, ct) =>
 {
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder()
+        new MessageActivityInput()
             .WithText("Welcome to the **OAuthFlow Bot**! Type `help` to see available commands.", TextFormats.Markdown)
-            .Build(), ct);
+            , ct);
 });
 
 webApp.Run();

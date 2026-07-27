@@ -160,12 +160,12 @@ public class ObservabilityBotApp : TeamsBotApplication
             // Record output on the top-level invoke_agent span before it closes.
             invokeScope.RecordOutputMessages([responseText]);
 
-            MessageActivityInputBuilder builder = MessageActivityInput.CreateBuilder()
+            MessageActivityInput msg = new MessageActivityInput()
                 .WithText(responseText, TextFormats.Markdown)
                 .AddMention(context.Activity?.From!)
                 .AddAIGenerated();
 
-            await context.SendAsync(builder.Build(), ct);
+            await context.SendAsync(msg, ct);
         }
         catch (Exception ex)
         {
@@ -190,7 +190,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         if (command == "help")
         {
             await context.SendAsync(
-                MessageActivityInput.CreateBuilder()
+                new MessageActivityInput()
                     .WithText(
                         """
                         **ObservabilityBot commands**
@@ -200,8 +200,7 @@ public class ObservabilityBotApp : TeamsBotApplication
                         - `team` - call TeamClient and show current team details
                         - anything else - AI response path
                         """,
-                        TextFormats.Markdown)
-                    .Build(),
+                        TextFormats.Markdown),
                 ct).ConfigureAwait(false);
             return true;
         }
@@ -231,9 +230,8 @@ public class ObservabilityBotApp : TeamsBotApplication
                 statuses.Select(s => $"- `{s.ConnectionName}`: {(s.HasToken == true ? "connected" : "not connected")}"));
 
             await context.SendAsync(
-                MessageActivityInput.CreateBuilder()
-                    .WithText($"**OAuth status**\n{statusText}", TextFormats.Markdown)
-                    .Build(),
+                new MessageActivityInput()
+                    .WithText($"**OAuth status**\n{statusText}", TextFormats.Markdown),
                 ct).ConfigureAwait(false);
             return true;
         }
@@ -258,7 +256,7 @@ public class ObservabilityBotApp : TeamsBotApplication
                 - channels: {{channels?.Count ?? 0}}
                 """;
 
-            await context.SendAsync(MessageActivityInput.CreateBuilder().WithText(response, TextFormats.Markdown).Build(), ct).ConfigureAwait(false);
+            await context.SendAsync(new MessageActivityInput().WithText(response, TextFormats.Markdown), ct).ConfigureAwait(false);
             return true;
         }
 

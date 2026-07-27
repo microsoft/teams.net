@@ -23,7 +23,7 @@ public class AgentLifecycleHandlerTests
     private const string BlueprintId = "00000000-0000-0000-0000-000000000005";
     private const string ManagerId = "3c22b565-74f3-48b0-aa18-1dc03b8ec270";
 
-    public static TheoryData<string, Type> VariantTypes => new()
+    public static TheoryData<AgentLifecycleEventValueType, Type> VariantTypes => new()
     {
         { AgentLifecycleEventValueTypes.AgenticUserIdentityCreated, typeof(AgentLifecycleEventActivity<AgenticUserIdentityCreatedValue>) },
         { AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated, typeof(AgentLifecycleEventActivity<AgenticUserIdentityUpdatedValue>) },
@@ -37,21 +37,21 @@ public class AgentLifecycleHandlerTests
 
     [Theory]
     [MemberData(nameof(VariantTypes))]
-    public void FromActivity_ParsesAgentLifecycleEventEnvelope(string valueType, Type _)
+    public void FromActivity_ParsesAgentLifecycleEventEnvelope(AgentLifecycleEventValueType valueType, Type _)
     {
         TeamsActivity activity = ParseLifecycleActivity(valueType);
 
         EventActivity eventActivity = Assert.IsType<EventActivity>(activity);
         Assert.Equal(TeamsActivityTypes.Event, eventActivity.Type);
         Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
-        Assert.Equal(valueType, eventActivity.Properties.Get<string>("valueType"));
+        Assert.Equal(valueType, eventActivity.Properties.Get<AgentLifecycleEventValueType>("valueType"));
         Assert.NotNull(eventActivity.Value);
     }
 
     [Fact]
     public void FromActivity_KeepsUnknownAgentLifecycleValueTypeAsBaseLifecycleActivity()
     {
-        TeamsActivity activity = ParseLifecycleActivity("UnknownLifecycleValueType", CommonValue("unknownLifecycleEvent"));
+        TeamsActivity activity = ParseLifecycleActivity(new AgentLifecycleEventValueType("UnknownLifecycleValueType"), CommonValue(new AgentLifecycleEventType("unknownLifecycleEvent")));
 
         EventActivity eventActivity = Assert.IsType<EventActivity>(activity);
         Assert.Equal(EventNames.AgentLifecycle, eventActivity.Name);
@@ -70,7 +70,7 @@ public class AgentLifecycleHandlerTests
             called = true;
             Assert.IsType<EventActivity>(ctx.Activity);
             Assert.Equal(EventNames.AgentLifecycle, ctx.Activity.Name);
-            Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserEnabled, ctx.Activity.Properties.Get<string>("valueType"));
+            Assert.Equal(AgentLifecycleEventValueTypes.AgenticUserEnabled, ctx.Activity.Properties.Get<AgentLifecycleEventValueType>("valueType"));
             return Task.CompletedTask;
         });
 
@@ -81,7 +81,7 @@ public class AgentLifecycleHandlerTests
 
     [Theory]
     [MemberData(nameof(VariantTypes))]
-    public async Task VariantHandlers_DispatchTypedContextAndPropagateState(string valueType, Type expectedType)
+    public async Task VariantHandlers_DispatchTypedContextAndPropagateState(AgentLifecycleEventValueType valueType, Type expectedType)
     {
         TeamsBotApplication app = CreateApp();
         TurnStateContainer state = CreateState();
@@ -93,7 +93,7 @@ public class AgentLifecycleHandlerTests
             lifecycleHandlerCalls++;
             Assert.Same(state, ctx.State);
             Assert.Equal(typeof(AgentLifecycleEventActivity), ctx.Activity.GetType());
-            Assert.Equal(valueType, ctx.Activity.ValueType);
+            Assert.Equal(valueType, ctx.Activity.ValueType!);
             Assert.False(ctx.Activity.Properties.ContainsKey("valueType"));
             return Task.CompletedTask;
         });
@@ -125,92 +125,90 @@ public class AgentLifecycleHandlerTests
 
     private static void RegisterVariantHandler(
         TeamsBotApplication app,
-        string valueType,
+        AgentLifecycleEventValueType valueType,
         Type expectedType,
         TurnStateContainer state,
         Action onCalled)
     {
-        switch (valueType)
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserIdentityCreated)
         {
-            case AgentLifecycleEventValueTypes.AgenticUserIdentityCreated:
-                app.OnAgenticUserIdentityCreated((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal(ManagerId, ctx.Activity.Value?.Manager?.UserId);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated:
-                app.OnAgenticUserIdentityUpdated((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal("Mail", ctx.Activity.Value?.UpdatedProperty.PropertyName);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserManagerUpdated:
-                app.OnAgenticUserManagerUpdated((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal(ManagerId, ctx.Activity.Value?.Manager?.ManagerId);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserEnabled:
-                app.OnAgenticUserEnabled((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal(6, ctx.Activity.Value?.Version);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserDisabled:
-                app.OnAgenticUserDisabled((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal(7, ctx.Activity.Value?.Version);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserDeleted:
-                app.OnAgenticUserDeleted((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal("UserSoftDelete", ctx.Activity.Value?.DeletionReason);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserUndeleted:
-                app.OnAgenticUserUndeleted((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal(9, ctx.Activity.Value?.Version);
-                    return Task.CompletedTask;
-                });
-                break;
-
-            case AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated:
-                app.OnAgenticUserWorkloadOnboardingUpdated((ctx, _) =>
-                {
-                    AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
-                    Assert.Equal("Teams", ctx.Activity.Value?.WorkloadName);
-                    Assert.Equal("succeeded", ctx.Activity.Value?.WorkloadOnboardingState);
-                    return Task.CompletedTask;
-                });
-                break;
+            app.OnAgenticUserIdentityCreated((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal(ManagerId, ctx.Activity.Value?.Manager?.UserId);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated)
+        {
+            app.OnAgenticUserIdentityUpdated((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal("Mail", ctx.Activity.Value?.UpdatedProperty.PropertyName);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserManagerUpdated)
+        {
+            app.OnAgenticUserManagerUpdated((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal(ManagerId, ctx.Activity.Value?.Manager?.ManagerId);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserEnabled)
+        {
+            app.OnAgenticUserEnabled((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal(6, ctx.Activity.Value?.Version);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserDisabled)
+        {
+            app.OnAgenticUserDisabled((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal(7, ctx.Activity.Value?.Version);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserDeleted)
+        {
+            app.OnAgenticUserDeleted((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal("UserSoftDelete", ctx.Activity.Value?.DeletionReason);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserUndeleted)
+        {
+            app.OnAgenticUserUndeleted((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal(9, ctx.Activity.Value?.Version);
+                return Task.CompletedTask;
+            });
+        }
+        else if (valueType == AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated)
+        {
+            app.OnAgenticUserWorkloadOnboardingUpdated((ctx, _) =>
+            {
+                AssertVariantContext(ctx, expectedType, valueType, state, onCalled);
+                Assert.Equal("Teams", ctx.Activity.Value?.WorkloadName);
+                Assert.Equal("succeeded", ctx.Activity.Value?.WorkloadOnboardingState);
+                return Task.CompletedTask;
+            });
         }
     }
 
     private static void AssertVariantContext<TActivity>(
         Context<TActivity> context,
         Type expectedType,
-        string valueType,
+        AgentLifecycleEventValueType valueType,
         TurnStateContainer state,
         Action onCalled) where TActivity : AgentLifecycleEventActivity
     {
@@ -222,7 +220,7 @@ public class AgentLifecycleHandlerTests
         Assert.False(context.Activity.Properties.ContainsKey("valueType"));
     }
 
-    private static Task DispatchAsync(TeamsBotApplication app, string valueType, TurnStateContainer? state = null)
+    private static Task DispatchAsync(TeamsBotApplication app, AgentLifecycleEventValueType valueType, TurnStateContainer? state = null)
     {
         EventActivity activity = Assert.IsAssignableFrom<EventActivity>(ParseLifecycleActivity(valueType));
         Context<TeamsActivity> context = new(app, activity);
@@ -234,10 +232,10 @@ public class AgentLifecycleHandlerTests
         return app.Router.DispatchAsync(context);
     }
 
-    private static TeamsActivity ParseLifecycleActivity(string valueType)
+    private static TeamsActivity ParseLifecycleActivity(AgentLifecycleEventValueType valueType)
         => ParseLifecycleActivity(valueType, ValueFor(valueType));
 
-    private static TeamsActivity ParseLifecycleActivity(string valueType, string valueJson)
+    private static TeamsActivity ParseLifecycleActivity(AgentLifecycleEventValueType valueType, string valueJson)
     {
         string json = $$"""
             {
@@ -267,10 +265,11 @@ public class AgentLifecycleHandlerTests
         return TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
     }
 
-    private static string ValueFor(string valueType)
-        => valueType switch
+    private static string ValueFor(AgentLifecycleEventValueType valueType)
+    {
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserIdentityCreated)
         {
-            AgentLifecycleEventValueTypes.AgenticUserIdentityCreated => CommonValue(
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserIdentityCreated,
                 $$"""
                   "expirationDateTime": "0001-01-01T00:00:00+00:00",
@@ -279,8 +278,12 @@ public class AgentLifecycleHandlerTests
                     "userId": "{{ManagerId}}",
                     "email": "manager@example.test"
                   }
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserIdentityUpdated)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserIdentityUpdated,
                 """
                   "updatedProperty": {
@@ -288,44 +291,70 @@ public class AgentLifecycleHandlerTests
                     "propertyValue": "newinstance4@teamssdk.onmicrosoft.com"
                   },
                   "version": 4
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserManagerUpdated => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserManagerUpdated)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserManagerUpdated,
                 $$"""
                   "manager": { "managerId": "{{ManagerId}}" },
                   "version": 6
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserEnabled => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserEnabled)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserEnabled,
                 """
                   "version": 6
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserDisabled => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserDisabled)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserDisabled,
                 """
                   "version": 7
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserDeleted => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserDeleted)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserDeleted,
                 """
                   "deletionReason": "UserSoftDelete",
                   "version": 8
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserUndeleted => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserUndeleted)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserUndeleted,
                 """
                   "version": 9
-                """),
-            AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated => CommonValue(
+                """);
+        }
+
+        if (valueType == AgentLifecycleEventValueTypes.AgenticUserWorkloadOnboardingUpdated)
+        {
+            return CommonValue(
                 AgentLifecycleEventTypes.AgenticUserWorkloadOnboardingUpdated,
                 """
                   "workloadName": "Teams",
                   "workloadOnboardingState": "succeeded"
-                """),
-            _ => CommonValue("unknownLifecycleEvent"),
-        };
+                """);
+        }
 
-    private static string CommonValue(string eventType, string additionalJson = "")
+        return CommonValue(new AgentLifecycleEventType("unknownLifecycleEvent"));
+    }
+
+    private static string CommonValue(AgentLifecycleEventType eventType, string additionalJson = "")
     {
         string separator = string.IsNullOrWhiteSpace(additionalJson) ? string.Empty : "," + Environment.NewLine + additionalJson;
         return $$"""

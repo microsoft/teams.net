@@ -1,66 +1,56 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Teams.Cards;
+using Microsoft.Teams.Common;
 
 namespace AdaptiveCardTaskModuleBot;
 
 public static class Cards
 {
-    public static JsonObject CreateWelcomeCard()
+    public static JsonElement CreateWelcomeCard()
     {
-        return new JsonObject
-        {
-            ["type"] = "AdaptiveCard",
-            ["version"] = "1.4",
-            ["body"] = new JsonArray
+        AdaptiveCard card = new([
+            new TextBlock("Welcome to InvokesBot!")
             {
-                new JsonObject
-                {
-                    ["type"] = "TextBlock",
-                    ["text"] = "Welcome to InvokesBot!",
-                    ["size"] = "Large",
-                    ["weight"] = "Bolder"
-                },
-                new JsonObject
-                {
-                    ["type"] = "TextBlock",
-                    ["text"] = "Click the buttons below to test different invoke handlers:"
-                }
+                Size = TextSize.Large,
+                Weight = TextWeight.Bolder
             },
-            ["actions"] = new JsonArray
-            {
-                new JsonObject
+            new TextBlock("Click the buttons below to test different invoke handlers:")])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new ExecuteAction
                 {
-                    ["type"] = "Action.Execute",
-                    ["id"] = "1234",
-                    ["title"] = "Test Adaptive Card Action",
-                    ["verb"] = "testAction",
-                    ["data"] = new JsonObject
-                    {
-                        ["message"] = "Button clicked!"
-                    }
+                    Title = "Test Adaptive Card Action",
+                    Verb = "testAction"
                 },
-                new JsonObject
+                new SubmitAction
                 {
-                    ["type"] = "Action.Submit",
-                    ["title"] = "Open Task Module",
-                    ["data"] = new JsonObject
+                    Title = "Open Task Module",
+                    Data = new Union<string, SubmitActionData>(new SubmitActionData
                     {
-                        ["msteams"] = new JsonObject
+                        NonSchemaProperties = new Dictionary<string, object?>
                         {
-                            ["type"] = "task/fetch"
+                            ["msteams"] = new
+                            {
+                                type = "task/fetch"
+                            }
                         }
-                    }
+                    })
                 },
-                new JsonObject
+                new ExecuteAction
                 {
-                    ["type"] = "Action.Execute",
-                    ["title"] = "Request File Upload",
-                    ["verb"] = "requestFileUpload"
+                    Title = "Request File Upload",
+                    Verb = "requestFileUpload"
                 }
-            }
+            ]
         };
+
+        return JsonSerializer.SerializeToElement(card);
     }
 
     public static JsonObject CreateFileConsentCard()
@@ -80,53 +70,40 @@ public static class Cards
         };
     }
 
-    public static JsonObject CreateAdaptiveActionResponseCard(string? verb, string? message)
+    public static JsonElement CreateAdaptiveActionResponseCard(string? verb, string? message)
     {
-        return new JsonObject
-        {
-            ["type"] = "AdaptiveCard",
-            ["version"] = "1.4",
-            ["body"] = new JsonArray
+        AdaptiveCard card = new([
+            new TextBlock($"Action '{verb}' executed")
             {
-                new JsonObject
-                {
-                    ["type"] = "TextBlock",
-                    ["text"] = $"Action '{verb}' executed",
-                    ["weight"] = "Bolder"
-                },
-                new JsonObject
-                {
-                    ["type"] = "TextBlock",
-                    ["text"] = $"Message: {message}",
-                    ["wrap"] = true
-                }
-            }
+                Weight = TextWeight.Bolder
+            },
+            new TextBlock($"Message: {message}")
+            {
+                Wrap = true
+            }])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4
         };
+
+        return JsonSerializer.SerializeToElement(card);
     }
 
-    public static JsonObject CreateTaskModuleCard()
+    public static JsonElement CreateTaskModuleCard()
     {
-        return new JsonObject
+        AdaptiveCard card = new([
+            new TextBlock("Task Module")])
         {
-            ["type"] = "AdaptiveCard",
-            ["version"] = "1.4",
-            ["body"] = new JsonArray
-            {
-                new JsonObject
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new SubmitAction
                 {
-                    ["type"] = "TextBlock",
-                    ["text"] = "Task Module"
+                    Title = "Submit"
                 }
-            },
-            ["actions"] = new JsonArray
-            {
-                new JsonObject
-                {
-                    ["type"] = "Action.Submit",
-                    ["title"] = "Submit"
-                }
-            }
+            ]
         };
+
+        return JsonSerializer.SerializeToElement(card);
     }
 
     public static JsonObject CreateFileInfoCard(string? uniqueId, string? fileType)

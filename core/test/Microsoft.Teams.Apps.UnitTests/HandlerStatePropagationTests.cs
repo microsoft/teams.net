@@ -529,13 +529,13 @@ public class HandlerStatePropagationTests
         return new TurnStateContainer(convState, new TurnState());
     }
 
-    private static Context<TeamsActivity> CreateInvokeContext(TeamsBotApplication app, string invokeName)
+    private static Context<TeamsActivity> CreateInvokeContext(TeamsBotApplication app, InvokeName invokeName)
     {
-        InvokeActivity activity = new() { Type = TeamsActivityTypes.Invoke, Name = invokeName };
+        InvokeActivity activity = new(invokeName);
         return new Context<TeamsActivity>(app, activity);
     }
 
-    private static Context<TeamsActivity> CreateEventContext(TeamsBotApplication app, string eventName)
+    private static Context<TeamsActivity> CreateEventContext(TeamsBotApplication app, EventName eventName)
     {
         EventActivity activity = new() { Type = TeamsActivityTypes.Event, Name = eventName };
         return new Context<TeamsActivity>(app, activity);

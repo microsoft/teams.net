@@ -25,7 +25,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     if (quote.ValidatedMessageReference == true) info += "\n(validated)";
 
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder().WithText($"You sent a message with a quoted reply:\n\n{info}", TextFormats.Markdown).Build(),
+        new MessageActivityInput().WithText($"You sent a message with a quoted reply:\n\n{info}", TextFormats.Markdown),
         cancellationToken);
 });
 
@@ -51,9 +51,9 @@ teamsApp.OnMessage("(?i)^quote add$", async (context, cancellationToken) =>
     SendActivityResponse? sent = await context.SendAsync("Please review the latest PR before end of day.", cancellationToken);
     if (sent?.Id != null)
     {
-        MessageActivityInput msg = MessageActivityInput.CreateBuilder()
+        MessageActivityInput msg = new MessageActivityInput()
             .AddQuote(sent.Id, "Done! Left my comments on the PR.")
-            .Build();
+            ;
         await context.SendAsync(msg, cancellationToken);
     }
 });
@@ -67,11 +67,11 @@ teamsApp.OnMessage("(?i)^quote batch$", async (context, cancellationToken) =>
 
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
-        MessageActivityInput msg = MessageActivityInput.CreateBuilder()
+        MessageActivityInput msg = new MessageActivityInput()
             .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
             .AddQuote(sentB.Id, "Looks great, approved!")
             .AddQuote(sentC.Id)
-            .Build();
+            ;
         await context.SendAsync(msg, cancellationToken);
     }
 });
@@ -114,7 +114,7 @@ teamsApp.OnMessage("(?i)^thread manual$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder()
+        new MessageActivityInput()
             .WithText(
             "**QuotingAndThreadingBot**\n\n" +
             "**Commands:**\n" +
@@ -126,7 +126,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             "- `thread reply` - send a threaded reply using `teamsApp.ReplyAsync()`\n" +
             "- `thread manual` - manually build a threaded conversation id and send to it\n" +
             "Quote any message to me to see the parsed metadata!", TextFormats.Markdown)
-            .Build(),
+            ,
         cancellationToken);
 });
 

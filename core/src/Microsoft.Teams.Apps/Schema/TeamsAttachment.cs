@@ -5,69 +5,88 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Core.Schema;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
-/// Teams attachment content types.
+/// String enum for Teams attachment content types.
 /// </summary>
-public static class AttachmentContentTypes
+[JsonConverter(typeof(StringEnumJsonConverter<AttachmentContentType>))]
+public class AttachmentContentType(string value) : StringEnum(value)
 {
-    /// <summary>
-    /// Adaptive Card content type.
-    /// </summary>
-    public const string AdaptiveCard = "application/vnd.microsoft.card.adaptive";
+    /// <summary>Adaptive card content type.</summary>
+    public static readonly AttachmentContentType AdaptiveCard = new("application/vnd.microsoft.card.adaptive");
+    /// <summary>Hero card content type.</summary>
+    public static readonly AttachmentContentType HeroCard = new("application/vnd.microsoft.card.hero");
+    /// <summary>Thumbnail card content type.</summary>
+    public static readonly AttachmentContentType ThumbnailCard = new("application/vnd.microsoft.card.thumbnail");
+    /// <summary>O365 connector card content type.</summary>
+    public static readonly AttachmentContentType O365ConnectorCard = new("application/vnd.microsoft.teams.card.o365connector");
+    /// <summary>File consent card content type.</summary>
+    public static readonly AttachmentContentType FileConsentCard = new("application/vnd.microsoft.teams.card.file.consent");
+    /// <summary>File info card content type.</summary>
+    public static readonly AttachmentContentType FileInfoCard = new("application/vnd.microsoft.teams.card.file.info");
+    /// <summary>OAuth card content type.</summary>
+    public static readonly AttachmentContentType OAuthCard = new("application/vnd.microsoft.card.oauth");
 
-    /// <summary>
-    /// Hero Card content type.
-    /// </summary>
-    public const string HeroCard = "application/vnd.microsoft.card.hero";
-
-    /// <summary>
-    /// Thumbnail Card content type.
-    /// </summary>
-    public const string ThumbnailCard = "application/vnd.microsoft.card.thumbnail";
-
-    /// <summary>
-    /// Office 365 Connector Card content type.
-    /// </summary>
-    public const string O365ConnectorCard = "application/vnd.microsoft.teams.card.o365connector";
-
-    /// <summary>
-    /// File consent card content type.
-    /// </summary>
-    public const string FileConsentCard = "application/vnd.microsoft.teams.card.file.consent";
-
-    /// <summary>
-    /// File info card content type.
-    /// </summary>
-    public const string FileInfoCard = "application/vnd.microsoft.teams.card.file.info";
-
-    /// <summary>
-    /// OAuth Card content type, used for initiating OAuth sign-in flows.
-    /// </summary>
-    public const string OAuthCard = "application/vnd.microsoft.card.oauth";
 }
 
 /// <summary>
-/// Attachment layout types.
+/// Common Teams attachment content types.
+/// </summary>
+public static class AttachmentContentTypes
+{
+    /// <summary>Gets the adaptive card content type.</summary>
+    public static AttachmentContentType AdaptiveCard => AttachmentContentType.AdaptiveCard;
+
+    /// <summary>Gets the hero card content type.</summary>
+    public static AttachmentContentType HeroCard => AttachmentContentType.HeroCard;
+
+    /// <summary>Gets the thumbnail card content type.</summary>
+    public static AttachmentContentType ThumbnailCard => AttachmentContentType.ThumbnailCard;
+
+    /// <summary>Gets the O365 connector card content type.</summary>
+    public static AttachmentContentType O365ConnectorCard => AttachmentContentType.O365ConnectorCard;
+
+    /// <summary>Gets the file consent card content type.</summary>
+    public static AttachmentContentType FileConsentCard => AttachmentContentType.FileConsentCard;
+
+    /// <summary>Gets the file info card content type.</summary>
+    public static AttachmentContentType FileInfoCard => AttachmentContentType.FileInfoCard;
+
+    /// <summary>Gets the OAuth card content type.</summary>
+    public static AttachmentContentType OAuthCard => AttachmentContentType.OAuthCard;
+}
+
+/// <summary>
+/// String enum for attachment layouts.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<AttachmentLayoutType>))]
+public class AttachmentLayoutType(string value) : StringEnum(value)
+{
+    /// <summary>List layout.</summary>
+    public static readonly AttachmentLayoutType List = new("list");
+    /// <summary>Grid layout.</summary>
+    public static readonly AttachmentLayoutType Grid = new("grid");
+    /// <summary>Carousel layout.</summary>
+    public static readonly AttachmentLayoutType Carousel = new("carousel");
+
+}
+
+/// <summary>
+/// Common Teams attachment layout values.
 /// </summary>
 public static class TeamsAttachmentLayouts
 {
-    /// <summary>
-    /// List layout - displays attachments in a vertical list.
-    /// </summary>
-    public const string List = "list";
+    /// <summary>Gets the list layout.</summary>
+    public static AttachmentLayoutType List => AttachmentLayoutType.List;
 
-    /// <summary>
-    /// Grid layout - displays attachments in a grid.
-    /// </summary>
-    public const string Grid = "grid";
+    /// <summary>Gets the grid layout.</summary>
+    public static AttachmentLayoutType Grid => AttachmentLayoutType.Grid;
 
-    /// <summary>
-    /// Carousel layout - displays attachments in a horizontal carousel.
-    /// </summary>
-    public const string Carousel = "carousel";
+    /// <summary>Gets the carousel layout.</summary>
+    public static AttachmentLayoutType Carousel => AttachmentLayoutType.Carousel;
 }
 
 /// <summary>
@@ -109,7 +128,7 @@ public class TeamsAttachment
     /// <summary>
     /// Content of the attachment.
     /// </summary>
-    [JsonPropertyName("contentType")] public string ContentType { get; set; } = string.Empty;
+    [JsonPropertyName("contentType")] public AttachmentContentType ContentType { get; set; } = AttachmentContentType.AdaptiveCard;
 
     /// <summary>
     /// Content URL of the attachment.

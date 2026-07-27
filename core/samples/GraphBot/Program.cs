@@ -44,9 +44,9 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         """;
 
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder()
+        new MessageActivityInput()
             .WithText(helpText, TextFormats.Markdown)
-            .Build(), ct);
+            , ct);
 });
 
 bot.OnMessage("(?i)^users$", async (context, ct) =>
@@ -75,9 +75,9 @@ bot.OnMessage("(?i)^users$", async (context, ct) =>
         }
 
         await context.SendAsync(
-            MessageActivityInput.CreateBuilder()
+            new MessageActivityInput()
                 .WithText(string.Join("\n", lines), TextFormats.Markdown)
-                .Build(), ct);
+                , ct);
     }
     catch (Exception ex)
     {
@@ -107,9 +107,9 @@ bot.OnMessage("(?i)^org$", async (context, ct) =>
         }
 
         await context.SendAsync(
-            MessageActivityInput.CreateBuilder()
+            new MessageActivityInput()
                 .WithText(string.Join("\n", lines), TextFormats.Markdown)
-                .Build(), ct);
+                , ct);
     }
     catch (Exception ex)
     {
@@ -120,9 +120,9 @@ bot.OnMessage("(?i)^org$", async (context, ct) =>
 bot.OnInstall(async (context, ct) =>
 {
     await context.SendAsync(
-        MessageActivityInput.CreateBuilder()
+        new MessageActivityInput()
             .WithText("Welcome to **Graph Bot** (app-only)! Type `help` to see available commands.", TextFormats.Markdown)
-            .Build(), ct);
+            , ct);
 });
 
 webApp.Run();

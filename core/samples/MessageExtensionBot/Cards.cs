@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+using Microsoft.Teams.Cards;
+
 namespace MessageExtensionBot;
 
 public static class Cards
@@ -42,72 +45,118 @@ public static class Cards
         };
     }
 
-    public static object CreateSelectItemCard(string? itemId, string? title, string? description)
+    public static JsonElement CreateSelectItemCard(string? itemId, string? title, string? description)
     {
-        return new
-        {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
+        AdaptiveCard card = new([
+            new TextBlock(title ?? string.Empty)
             {
-                new { type = "TextBlock", text = title, size = "large", weight = "bolder" },
-                new { type = "TextBlock", text = description, wrap = true },
-                new { type = "FactSet", facts = new[]
-                    {
-                        new { title = "Item ID:", value = itemId }
-                    }
-                }
-            }
-        };
-    }
-
-    public static object CreateFetchTaskCard(string? commandId)
-    {
-        return new
-        {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
-            {
-                new { type = "TextBlock", text = $"Fetch Task for: {commandId}", size = "large", weight = "bolder" },
-                new { type = "Input.Text", id = "title", label = "Title", placeholder = "Enter a title" },
-                new { type = "Input.Text", id = "description", label = "Description", placeholder = "Enter a description", isMultiline = true }
+                Size = TextSize.Large,
+                Weight = TextWeight.Bolder
             },
-            actions = new object[]
+            new TextBlock(description ?? string.Empty)
             {
-                new { type = "Action.Submit", title = "Submit" }
-            }
-        };
-    }
-
-    public static object CreateEditFormCard(string? previewTitle, string? previewDescription)
-    {
-        return new
-        {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
-            {
-                new { type = "TextBlock", text = "Edit Your Card", size = "large", weight = "bolder" },
-                new { type = "Input.Text", id = "title", label = "Title", placeholder = "Enter a title", value = previewTitle },
-                new { type = "Input.Text", id = "description", label = "Description", placeholder = "Enter a description", isMultiline = true, value = previewDescription }
+                Wrap = true
             },
-            actions = new object[] { new { type = "Action.Submit", title = "Submit" } }
+            new FactSet(new List<Fact>
+            {
+                new("Item ID:", itemId ?? string.Empty)
+            })])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4
         };
+
+        return JsonSerializer.SerializeToElement(card);
     }
 
-    public static object CreateSubmitActionCard(string? title, string? description)
+    public static JsonElement CreateFetchTaskCard(string? commandId)
     {
-        return new
+        AdaptiveCard card = new([
+            new TextBlock($"Fetch Task for: {commandId}")
+            {
+                Size = TextSize.Large,
+                Weight = TextWeight.Bolder
+            },
+            new TextInput
+            {
+                Id = "title",
+                Label = "Title",
+                Placeholder = "Enter a title"
+            },
+            new TextInput
+            {
+                Id = "description",
+                Label = "Description",
+                Placeholder = "Enter a description",
+                IsMultiline = true
+            }])
         {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new SubmitAction
                 {
-                    new { type = "TextBlock", text = title ?? "Untitled", size = "large", weight = "bolder", color = "accent" },
-                    new { type = "TextBlock", text = description ?? "No description", wrap = true }
+                    Title = "Submit"
                 }
+            ]
         };
+
+        return JsonSerializer.SerializeToElement(card);
+    }
+
+    public static JsonElement CreateEditFormCard(string? previewTitle, string? previewDescription)
+    {
+        AdaptiveCard card = new([
+            new TextBlock("Edit Your Card")
+            {
+                Size = TextSize.Large,
+                Weight = TextWeight.Bolder
+            },
+            new TextInput
+            {
+                Id = "title",
+                Label = "Title",
+                Placeholder = "Enter a title",
+                Value = previewTitle
+            },
+            new TextInput
+            {
+                Id = "description",
+                Label = "Description",
+                Placeholder = "Enter a description",
+                IsMultiline = true,
+                Value = previewDescription
+            }])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new SubmitAction
+                {
+                    Title = "Submit"
+                }
+            ]
+        };
+
+        return JsonSerializer.SerializeToElement(card);
+    }
+
+    public static JsonElement CreateSubmitActionCard(string? title, string? description)
+    {
+        AdaptiveCard card = new([
+            new TextBlock(title ?? "Untitled")
+            {
+                Size = TextSize.Large,
+                Weight = TextWeight.Bolder
+            },
+            new TextBlock(description ?? "No description")
+            {
+                Wrap = true
+            }])
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4
+        };
+
+        return JsonSerializer.SerializeToElement(card);
     }
 
     public static object CreateLinkUnfurlCard(string? url)

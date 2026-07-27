@@ -8,8 +8,6 @@ namespace Microsoft.Teams.Apps.Schema;
 /// </summary>
 public class TeamsAttachmentBuilder
 {
-    private const string AdaptiveCardContentType = "application/vnd.microsoft.card.adaptive";
-
     private readonly TeamsAttachment _attachment;
 
     internal TeamsAttachmentBuilder() : this(new TeamsAttachment())
@@ -24,12 +22,9 @@ public class TeamsAttachmentBuilder
     /// <summary>
     /// Sets the content type for the attachment. See <see cref="AttachmentContentTypes"/> for known values.
     /// </summary>
-    public TeamsAttachmentBuilder WithContentType(string contentType)
+    public TeamsAttachmentBuilder WithContentType(AttachmentContentType contentType)
     {
-        if (string.IsNullOrWhiteSpace(contentType))
-        {
-            throw new ArgumentException("Content type cannot be null or whitespace.", nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
 
         _attachment.ContentType = contentType;
         return this;
@@ -100,7 +95,7 @@ public class TeamsAttachmentBuilder
     public TeamsAttachmentBuilder WithAdaptiveCard(object adaptiveCard)
     {
         ArgumentNullException.ThrowIfNull(adaptiveCard);
-        _attachment.ContentType = AdaptiveCardContentType;
+        _attachment.ContentType = AttachmentContentType.AdaptiveCard;
         _attachment.Content = adaptiveCard;
         _attachment.ContentUrl = null;
         return this;

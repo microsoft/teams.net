@@ -46,13 +46,13 @@ public class StreamingActivityInput : TeamsActivityInput
     /// Creates a new <see cref="StreamingActivityInputBuilder"/> to construct an outbound streaming activity.
     /// </summary>
     /// <returns>A new <see cref="StreamingActivityInputBuilder"/> instance.</returns>
-    public static new StreamingActivityInputBuilder CreateBuilder() => new();
+    internal static new StreamingActivityInputBuilder CreateBuilder() => new();
 }
 
 /// <summary>
 /// Fluent builder for <see cref="StreamingActivityInput"/>.
 /// </summary>
-public class StreamingActivityInputBuilder : TeamsActivityInputBuilder<StreamingActivityInput, StreamingActivityInputBuilder>
+internal class StreamingActivityInputBuilder : TeamsActivityInputBuilder<StreamingActivityInput, StreamingActivityInputBuilder>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingActivityInputBuilder"/> class.
@@ -84,7 +84,7 @@ public class StreamingActivityInputBuilder : TeamsActivityInputBuilder<Streaming
     /// <param name="streamType">The stream type. See <see cref="StreamTypes"/>.</param>
     /// <param name="streamId">Optional stream identifier.</param>
     /// <param name="streamSequence">Optional monotonically increasing sequence number.</param>
-    public StreamingActivityInputBuilder WithStreamInfo(string streamType, string? streamId = null, int? streamSequence = null)
+    public StreamingActivityInputBuilder WithStreamInfo(StreamType streamType, string? streamId = null, int? streamSequence = null)
     {
         _activity.StreamInfo = StreamInfoEntityExtensions.AddToActivity(_activity, streamType, streamId, streamSequence);
         return this;

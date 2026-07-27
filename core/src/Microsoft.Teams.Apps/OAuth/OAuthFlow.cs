@@ -200,9 +200,9 @@ public class OAuthFlow
             // SSO (silent token exchange) can't complete silently in a channel context, so omit the
             // TokenExchangeResource there. Teams then goes straight to the interactive OAuth sign-in
             // button instead of attempting (and failing) a silent SSO exchange first.
-            string? conversationType = context.Activity.Conversation?.ConversationType;
-            bool isChannel = conversationType == ConversationTypes.Channel;
-            bool isChannelOrGroup = isChannel || conversationType == ConversationTypes.GroupChat;
+            ConversationType? conversationType = context.Activity.Conversation?.ConversationType;
+            bool isChannel = conversationType?.Equals(ConversationTypes.Channel) ?? false;
+            bool isChannelOrGroup = isChannel || (conversationType?.Equals(ConversationTypes.GroupChat) ?? false);
 
             OAuthCard oauthCard = new()
             {
@@ -224,10 +224,9 @@ public class OAuthFlow
                 .WithContent(oauthCardJson)
                 .Build();
 
-            MessageActivityInput oauthActivity = MessageActivityInput.CreateBuilder()
+            MessageActivityInput oauthActivity = new MessageActivityInput()
                 .AddAttachment(attachment)
-                .WithRecipient(context.Activity.From!, isChannelOrGroup) // dont remove, required for sso flow
-                .Build();
+                .WithRecipient(context.Activity.From!, isChannelOrGroup); // dont remove, required for sso flow
 
             await context.SendAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 

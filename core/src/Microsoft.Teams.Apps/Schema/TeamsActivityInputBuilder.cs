@@ -17,7 +17,7 @@ namespace Microsoft.Teams.Apps.Schema;
 /// </summary>
 /// <typeparam name="TActivity">The concrete <see cref="TeamsActivityInput"/> type being built.</typeparam>
 /// <typeparam name="TBuilder">The concrete builder type (for fluent chaining).</typeparam>
-public abstract class TeamsActivityInputBuilder<TActivity, TBuilder> : CoreActivityInputBuilder<TActivity, TBuilder>
+internal abstract class TeamsActivityInputBuilder<TActivity, TBuilder> : CoreActivityInputBuilder<TActivity, TBuilder>
     where TActivity : TeamsActivityInput
     where TBuilder : TeamsActivityInputBuilder<TActivity, TBuilder>
 {

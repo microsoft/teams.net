@@ -32,9 +32,9 @@ bot.OnMessage(async (context, cancellationToken) =>
             """;
 
         await context.SendAsync(
-            MessageActivityInput.CreateBuilder()
+            new MessageActivityInput()
                 .WithText(helpText, TextFormats.Markdown)
-                .Build(),
+                ,
             cancellationToken);
         return;
     }

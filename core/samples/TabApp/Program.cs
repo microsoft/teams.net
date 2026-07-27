@@ -79,9 +79,9 @@ app.MapPost("/functions/post-to-chat", async (
         conversationId = cached!;
     }
 
-    MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+    MessageActivityInput activity = new MessageActivityInput()
         .WithText("Hello from the tab!")
-        .Build();
+        ;
     await conversations.SendActivityAsync(conversationId!, activity, serviceUrl, cancellationToken: ct);
 
     return Results.Json(new PostToChatResult(Ok: true));

@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Utils;
 
 namespace Microsoft.Teams.Apps.Schema;
 
@@ -25,7 +26,7 @@ public class SuggestedAction
     /// <param name="type">The type of action. See <see cref="ActionTypes"/> for common values.</param>
     /// <param name="title">The text description displayed on the button.</param>
     /// <param name="value">The value sent when the button is clicked. Accepts strings, anonymous objects, or <see cref="JsonNode"/> instances. Defaults to <paramref name="title"/> when not specified.</param>
-    public SuggestedAction(string type, string title, object? value = null)
+    public SuggestedAction(ActionType type, string title, object? value = null)
     {
         Type = type;
         Title = title;
@@ -42,7 +43,7 @@ public class SuggestedAction
     /// See <see cref="ActionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public ActionType? Type { get; set; }
 
     /// <summary>
     /// Gets or sets the text description which appears on the button.
@@ -89,59 +90,67 @@ public class SuggestedAction
 }
 
 /// <summary>
-/// String constants for card action types.
+/// String enum for card action types.
+/// </summary>
+[JsonConverter(typeof(StringEnumJsonConverter<ActionType>))]
+public class ActionType(string value) : StringEnum(value)
+{
+    /// <summary>Gets the <c>openUrl</c> action type.</summary>
+    public static readonly ActionType OpenUrl = new("openUrl");
+    /// <summary>Gets the <c>imBack</c> action type.</summary>
+    public static readonly ActionType IMBack = new("imBack");
+    /// <summary>Gets the <c>postBack</c> action type.</summary>
+    public static readonly ActionType PostBack = new("postBack");
+    /// <summary>Gets the <c>playAudio</c> action type.</summary>
+    public static readonly ActionType PlayAudio = new("playAudio");
+    /// <summary>Gets the <c>playVideo</c> action type.</summary>
+    public static readonly ActionType PlayVideo = new("playVideo");
+    /// <summary>Gets the <c>showImage</c> action type.</summary>
+    public static readonly ActionType ShowImage = new("showImage");
+    /// <summary>Gets the <c>downloadFile</c> action type.</summary>
+    public static readonly ActionType DownloadFile = new("downloadFile");
+    /// <summary>Gets the <c>signin</c> action type.</summary>
+    public static readonly ActionType SignIn = new("signin");
+    /// <summary>Gets the <c>call</c> action type.</summary>
+    public static readonly ActionType Call = new("call");
+    /// <summary>Gets the experimental <c>Action.Submit</c> action type.</summary>
+    public static readonly ActionType Submit = new("Action.Submit");
+
+}
+
+/// <summary>
+/// Common card action type values.
 /// </summary>
 public static class ActionTypes
 {
-    /// <summary>
-    /// Opens the specified URL in the browser.
-    /// </summary>
-    public const string OpenUrl = "openUrl";
+    /// <summary>Gets the <c>openUrl</c> action type.</summary>
+    public static ActionType OpenUrl => ActionType.OpenUrl;
 
-    /// <summary>
-    /// Sends a message back to the bot as if the user typed it (visible to all conversation members).
-    /// </summary>
-    public const string IMBack = "imBack";
+    /// <summary>Gets the <c>imBack</c> action type.</summary>
+    public static ActionType IMBack => ActionType.IMBack;
 
-    /// <summary>
-    /// Sends a message back to the bot privately (not visible to other conversation members).
-    /// </summary>
-    public const string PostBack = "postBack";
+    /// <summary>Gets the <c>postBack</c> action type.</summary>
+    public static ActionType PostBack => ActionType.PostBack;
 
-    /// <summary>
-    /// Plays the specified audio content.
-    /// </summary>
-    public const string PlayAudio = "playAudio";
+    /// <summary>Gets the <c>playAudio</c> action type.</summary>
+    public static ActionType PlayAudio => ActionType.PlayAudio;
 
-    /// <summary>
-    /// Plays the specified video content.
-    /// </summary>
-    public const string PlayVideo = "playVideo";
+    /// <summary>Gets the <c>playVideo</c> action type.</summary>
+    public static ActionType PlayVideo => ActionType.PlayVideo;
 
-    /// <summary>
-    /// Displays the specified image.
-    /// </summary>
-    public const string ShowImage = "showImage";
+    /// <summary>Gets the <c>showImage</c> action type.</summary>
+    public static ActionType ShowImage => ActionType.ShowImage;
 
-    /// <summary>
-    /// Downloads the specified file.
-    /// </summary>
-    public const string DownloadFile = "downloadFile";
+    /// <summary>Gets the <c>downloadFile</c> action type.</summary>
+    public static ActionType DownloadFile => ActionType.DownloadFile;
 
-    /// <summary>
-    /// Initiates a sign-in flow.
-    /// </summary>
-    public const string SignIn = "signin";
+    /// <summary>Gets the <c>signin</c> action type.</summary>
+    public static ActionType SignIn => ActionType.SignIn;
 
-    /// <summary>
-    /// Initiates a phone call.
-    /// </summary>
-    public const string Call = "call";
+    /// <summary>Gets the <c>call</c> action type.</summary>
+    public static ActionType Call => ActionType.Call;
 
-    /// <summary>
-    /// Suggested action of type Action.Submit. The action's Value is delivered to the bot
-    /// as a <c>suggestedActions/submit</c> invoke without sending a chat-visible message.
-    /// </summary>
+    /// <summary>Gets the experimental <c>Action.Submit</c> action type.</summary>
     [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
-    public const string Submit = "Action.Submit";
+    public static ActionType Submit => ActionType.Submit;
 }

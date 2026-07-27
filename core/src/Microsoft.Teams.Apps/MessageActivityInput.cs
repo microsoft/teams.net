@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
-using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
 
@@ -19,7 +18,7 @@ public class MessageActivityInput : TeamsActivityInput
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    internal MessageActivityInput() : base(TeamsActivityTypes.Message)
+    public MessageActivityInput() : base(TeamsActivityTypes.Message)
     {
     }
 
@@ -33,7 +32,7 @@ public class MessageActivityInput : TeamsActivityInput
     /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; set; }
+    public TextFormat? TextFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the attachments for the message.
@@ -45,7 +44,7 @@ public class MessageActivityInput : TeamsActivityInput
     /// Gets or sets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
+    public AttachmentLayoutType? AttachmentLayout { get; set; }
 
     /// <summary>
     /// Serializes the current activity to a JSON string using the outbound message serializer context.
@@ -54,17 +53,183 @@ public class MessageActivityInput : TeamsActivityInput
     public override string ToJson()
         => JsonSerializer.Serialize(this, TeamsActivityInputJsonContext.Default.MessageActivityInput);
 
+    internal static new MessageActivityInputBuilder CreateBuilder() => new();
+
+    private MessageActivityInput Apply(Action<MessageActivityInputBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        configure(new MessageActivityInputBuilder(this));
+        return this;
+    }
+
     /// <summary>
-    /// Creates a new <see cref="MessageActivityInputBuilder"/> to construct an outbound message activity.
+    /// Sets the entities collection.
     /// </summary>
-    /// <returns>A new <see cref="MessageActivityInputBuilder"/> instance.</returns>
-    public static new MessageActivityInputBuilder CreateBuilder() => new();
+    public MessageActivityInput WithEntities(EntityList entities)
+        => Apply(builder => builder.WithEntities(entities));
+
+    /// <summary>
+    /// Adds one or more entities to the activity.
+    /// </summary>
+    public MessageActivityInput AddEntity(params Entity[] entities)
+        => Apply(builder => builder.AddEntity(entities));
+
+    /// <summary>
+    /// Replaces an existing entity with a new entity.
+    /// </summary>
+    public MessageActivityInput UpdateEntity(Entity oldEntity, Entity newEntity)
+        => Apply(builder => builder.UpdateEntity(oldEntity, newEntity));
+
+    /// <summary>
+    /// Sets the text content (and optional default plain text format) of the message.
+    /// </summary>
+    public MessageActivityInput WithText(string text)
+        => Apply(builder => builder.WithText(text));
+
+    /// <summary>
+    /// Sets the text content and format of the message.
+    /// </summary>
+    public MessageActivityInput WithText(string text, TextFormat textFormat)
+        => Apply(builder => builder.WithText(text, textFormat));
+
+    /// <summary>
+    /// Appends text to the current message text.
+    /// </summary>
+    public MessageActivityInput AddText(string text)
+        => Apply(builder => builder.AddText(text));
+
+    /// <summary>
+    /// Sets the text format. See <see cref="TextFormats"/>.
+    /// </summary>
+    public MessageActivityInput WithTextFormat(TextFormat textFormat)
+        => Apply(builder => builder.WithTextFormat(textFormat));
+
+    /// <summary>
+    /// Sets the attachments collection.
+    /// </summary>
+    public MessageActivityInput WithAttachments(IList<TeamsAttachment> attachments)
+        => Apply(builder => builder.WithAttachments(attachments));
+
+    /// <summary>
+    /// Adds one or more attachments to the message.
+    /// </summary>
+    public MessageActivityInput AddAttachment(params TeamsAttachment[] attachments)
+        => Apply(builder => builder.AddAttachment(attachments));
+
+    /// <summary>
+    /// Sets the attachment layout (e.g., "list", "carousel").
+    /// </summary>
+    public MessageActivityInput WithAttachmentLayout(AttachmentLayoutType attachmentLayout)
+        => Apply(builder => builder.WithAttachmentLayout(attachmentLayout));
+
+    /// <summary>
+    /// Adds an Adaptive Card attachment to the message.
+    /// </summary>
+    public MessageActivityInput AddAdaptiveCardAttachment(object adaptiveCard, Action<TeamsAttachmentBuilder>? configure = null)
+        => Apply(builder => builder.AddAdaptiveCardAttachment(adaptiveCard, configure));
+
+    /// <summary>
+    /// Sets the attachments collection to a single Adaptive Card attachment.
+    /// </summary>
+    public MessageActivityInput WithAdaptiveCardAttachment(object adaptiveCard, Action<TeamsAttachmentBuilder>? configure = null)
+        => Apply(builder => builder.WithAdaptiveCardAttachment(adaptiveCard, configure));
+
+    /// <summary>
+    /// Prepends a quoted message placeholder before existing text.
+    /// </summary>
+    public MessageActivityInput PrependQuote(string messageId)
+        => Apply(builder => builder.PrependQuote(messageId));
+
+    /// <summary>
+    /// Marks the message as a final streaming message by adding a <see cref="StreamInfoEntity"/>
+    /// with <see cref="StreamTypes.Final"/>.
+    /// </summary>
+    public MessageActivityInput AddStreamFinal()
+        => Apply(builder => builder.AddStreamFinal());
+
+    /// <summary>
+    /// Sets the suggested actions.
+    /// </summary>
+    public MessageActivityInput WithSuggestedActions(SuggestedActions suggestedActions)
+        => Apply(builder => builder.WithSuggestedActions(suggestedActions));
+
+    /// <summary>
+    /// Adds a mention (@mention) entity and optionally prepends mention text.
+    /// </summary>
+    public MessageActivityInput AddMention(TeamsChannelAccount account, string? text = null, bool addText = true)
+        => Apply(builder => builder.AddMention(account, text, addText));
+
+    /// <summary>
+    /// Adds a quoted message reference and appends a placeholder to the activity text.
+    /// </summary>
+    public MessageActivityInput AddQuote(string messageId, string? text = null)
+        => Apply(builder => builder.AddQuote(messageId, text));
+
+    /// <summary>
+    /// Adds a targetedMessageInfo entity for Prompt Preview, referencing the inbound targeted-message id.
+    /// </summary>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public MessageActivityInput WithTargetedMessageInfo(string messageId)
+        => Apply(builder => builder.WithTargetedMessageInfo(messageId));
+
+    /// <summary>
+    /// Adds a clientInfo entity to the activity.
+    /// </summary>
+    public MessageActivityInput AddClientInfo(string? platform, string? country, string? timezone, string? locale)
+        => Apply(builder => builder.AddClientInfo(platform, country, timezone, locale));
+
+    /// <summary>
+    /// Adds a productInfo entity to the activity.
+    /// </summary>
+    public MessageActivityInput AddProductInfo(string? id)
+        => Apply(builder => builder.AddProductInfo(id));
+
+    /// <summary>
+    /// Adds the AI-generated content label to the root message entity.
+    /// </summary>
+    public MessageActivityInput AddAIGenerated()
+        => Apply(builder => builder.AddAIGenerated());
+
+    /// <summary>
+    /// Enables/disables the feedback loop on the activity.
+    /// </summary>
+    public MessageActivityInput AddFeedback(bool value = true)
+        => Apply(builder => builder.AddFeedback(value));
+
+    /// <summary>
+    /// Configures the feedback loop mode on the activity.
+    /// </summary>
+    public MessageActivityInput AddFeedback(FeedbackType mode)
+        => Apply(builder => builder.AddFeedback(mode));
+
+    /// <summary>
+    /// Adds a citation claim to the activity.
+    /// </summary>
+    public MessageActivityInput AddCitation(int position, CitationAppearance appearance)
+        => Apply(builder => builder.AddCitation(position, appearance));
+
+    /// <summary>
+    /// Adds a content sensitivity label to the activity.
+    /// </summary>
+    public MessageActivityInput AddSensitivityLabel(string name, string? description = null, DefinedTerm? pattern = null)
+        => Apply(builder => builder.AddSensitivityLabel(name, description, pattern));
+
+    /// <summary>
+    /// Sets the recipient account for the activity and marks whether the recipient is targeted
+    /// (for example, a targeted message visible only to that recipient).
+    /// </summary>
+    /// <param name="account">The recipient account.</param>
+    /// <param name="isTargeted">Whether the recipient is targeted.</param>
+    /// <returns>The activity instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public MessageActivityInput WithRecipient(TeamsChannelAccount account, bool isTargeted)
+        => Apply(builder => builder.WithRecipient(account, isTargeted));
 }
 
 /// <summary>
 /// Provides a fluent API for building outbound <see cref="MessageActivityInput"/> instances.
 /// </summary>
-public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActivityInput, MessageActivityInputBuilder>
+internal class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActivityInput, MessageActivityInputBuilder>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageActivityInputBuilder"/> class.
@@ -84,7 +249,17 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Sets the text content (and optional text format) of the message.
     /// </summary>
-    public MessageActivityInputBuilder WithText(string text, string textFormat = TextFormats.Plain)
+    public MessageActivityInputBuilder WithText(string text)
+    {
+        _activity.Text = text;
+        _activity.TextFormat = TextFormats.Plain;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the text content and format of the message.
+    /// </summary>
+    public MessageActivityInputBuilder WithText(string text, TextFormat textFormat)
     {
         _activity.Text = text;
         _activity.TextFormat = textFormat;
@@ -103,7 +278,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Sets the text format. See <see cref="TextFormats"/>.
     /// </summary>
-    public MessageActivityInputBuilder WithTextFormat(string textFormat)
+    public MessageActivityInputBuilder WithTextFormat(TextFormat textFormat)
     {
         _activity.TextFormat = textFormat;
         return this;
@@ -135,7 +310,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Sets the attachment layout (e.g., "list", "carousel").
     /// </summary>
-    public MessageActivityInputBuilder WithAttachmentLayout(string attachmentLayout)
+    public MessageActivityInputBuilder WithAttachmentLayout(AttachmentLayoutType attachmentLayout)
     {
         _activity.AttachmentLayout = attachmentLayout;
         return this;
@@ -193,7 +368,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Adds a mention (@mention) entity and optionally prepends mention text.
     /// </summary>
-    public MessageActivityInputBuilder AddMention(ChannelAccount account, string? text = null, bool addText = true)
+    public MessageActivityInputBuilder AddMention(TeamsChannelAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(account);
         MentionEntityExtensions.AddToActivity(_activity, account, text, addText);
@@ -261,7 +436,7 @@ public class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageActi
     /// <summary>
     /// Configures the feedback loop mode on the activity.
     /// </summary>
-    public MessageActivityInputBuilder AddFeedback(string mode)
+    public MessageActivityInputBuilder AddFeedback(FeedbackType mode)
     {
         _activity.ChannelData ??= new TeamsOutboundChannelData();
         _activity.ChannelData.FeedbackLoop = new FeedbackLoop(mode);

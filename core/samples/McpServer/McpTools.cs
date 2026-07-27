@@ -22,9 +22,9 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         CancellationToken cancellationToken = default)
     {
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
-        MessageActivityInput notifyActivity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput notifyActivity = new MessageActivityInput()
             .WithText(message)
-            .Build();
+            ;
         await app.ConversationClient.SendActivityAsync(conversationId, notifyActivity, state.ServiceUrl, cancellationToken: cancellationToken);
         return new NotifyResult(Notified: true, UserId: userId);
     }
@@ -41,9 +41,9 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
 
         // Record the pending ask before sending, so a fast reply is never lost.
         state.PendingAsks[requestId] = new PendingAsk(userId);
-        MessageActivityInput askActivity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput askActivity = new MessageActivityInput()
             .WithAdaptiveCardAttachment(Cards.AskCard(requestId, question))
-            .Build();
+            ;
         try
         {
             await app.ConversationClient.SendActivityAsync(conversationId, askActivity, state.ServiceUrl, cancellationToken: cancellationToken);
@@ -122,9 +122,9 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         string approvalId = Guid.NewGuid().ToString();
 
-        MessageActivityInput activity = MessageActivityInput.CreateBuilder()
+        MessageActivityInput activity = new MessageActivityInput()
             .WithAdaptiveCardAttachment(Cards.ApprovalCard(approvalId, title, description))
-            .Build();
+            ;
 
         state.Approvals[approvalId] = ApprovalStatus.Pending;
         try

@@ -111,7 +111,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelCreated]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelCreated,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelCreated) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -136,7 +136,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelDeleted]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelDeleted,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelDeleted) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -161,7 +161,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelRenamed]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRenamed,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelRenamed) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -183,7 +183,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelShared]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelShared,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelShared) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -205,7 +205,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelUnShared]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelUnShared,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelUnShared) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -228,7 +228,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelMemberAdded]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelMemberAdded,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelMemberAdded) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -250,7 +250,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelMemberRemoved]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelMemberRemoved,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelMemberRemoved) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -273,7 +273,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRestored,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelRestored) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -301,7 +301,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamMemberAdded]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamMemberAdded,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamMemberAdded) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -326,7 +326,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamMemberRemoved]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamMemberRemoved,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamMemberRemoved) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -351,7 +351,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamArchived]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamArchived,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamArchived) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -376,7 +376,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamDeleted]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamDeleted,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamDeleted) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -401,7 +401,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamRenamed]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamRenamed,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamRenamed) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -426,7 +426,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamUnarchived]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamUnarchived,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamUnarchived) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -448,7 +448,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamRestored]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamRestored,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamRestored) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -470,7 +470,7 @@ public static class ConversationUpdateExtensions
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamHardDeleted]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamHardDeleted,
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamHardDeleted) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);

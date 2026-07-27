@@ -19,7 +19,7 @@ namespace Microsoft.Teams.Apps.Clients;
 public class ActivityClient
 {
     private const string ObsoleteInboundMessage =
-        "Sending an inbound TeamsActivity (read-model) is obsolete. Use the overload that accepts a TeamsActivityInput built via MessageActivityInput.CreateBuilder().";
+        "Sending an inbound TeamsActivity (read-model) is obsolete. Use the overload that accepts a TeamsActivityInput built via new MessageActivityInput().";
 
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
