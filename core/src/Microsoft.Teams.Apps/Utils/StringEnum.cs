@@ -38,7 +38,7 @@ public class StringEnum(string value) : IEquatable<StringEnum>
 
     /// <inheritdoc />
     public static bool operator ==(StringEnum? left, StringEnum? right)
-        => Equals(left, right) || (left is not null && left.Equals(right));
+        => Equals(left, right);
 
     /// <inheritdoc />
     public static bool operator !=(StringEnum? left, StringEnum? right) => !(left == right);
