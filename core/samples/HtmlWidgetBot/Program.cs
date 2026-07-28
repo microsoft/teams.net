@@ -18,6 +18,27 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
+    // Handle ui/update-model-context requests from the update-context widget.
+    // These arrive as a normal message activity (fire-and-forget); the SDK helper
+    // parses the typed request off activity.Value.
+    var modelContext = HtmlWidgetHelpers.TryGetWidgetModelContext(context.Activity);
+    if (modelContext != null)
+    {
+        await context.SendAsync(
+            $"Received model context update: {JsonSerializer.Serialize(modelContext.Params)}",
+            cancellationToken);
+        return;
+    }
+
+    // Handle messageBack values from the messageback widget.
+    if (context.Activity.Properties.TryGetValue("value", out var messageBackValue) && messageBackValue != null)
+    {
+        await context.SendAsync(
+            $"Received messageBack value: {JsonSerializer.Serialize(messageBackValue)}",
+            cancellationToken);
+        return;
+    }
+
     var text = context.Activity.Text?.Trim().ToLowerInvariant() ?? "";
 
     switch (text)
