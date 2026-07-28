@@ -4,10 +4,8 @@
 namespace HtmlWidgetBot;
 
 /// <summary>
-/// HTML widget strings ported verbatim from the TS/PY html-widgets examples.
-/// These are browser-side HTML/JavaScript strings and are intentionally identical
-/// across all three SDKs so the widgets render and behave the same in Teams.
-/// Source: teams.ts/examples/html-widgets/src/widgets/*.ts
+/// Browser-side HTML/JavaScript markup for the example widgets. Each constant is
+/// the self-contained document rendered inside the widget iframe in Teams.
 /// </summary>
 public static class Widgets
 {
