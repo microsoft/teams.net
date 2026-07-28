@@ -900,13 +900,13 @@ public class MessageDeleteActivity : TeamsActivity
         /// Gets or sets the reactions added to the message.
         /// </summary>
         [JsonPropertyName("reactionsAdded")]
-        public IList<MessageReaction>? ReactionsAdded { get;  set; }
+        public IList<MessageReaction>? ReactionsAdded { get; set; }
 
         /// <summary>
         /// Gets or sets the reactions removed from the message.
         /// </summary>
         [JsonPropertyName("reactionsRemoved")]
-        public IList<MessageReaction>? ReactionsRemoved { get;  set; }
+        public IList<MessageReaction>? ReactionsRemoved { get; set; }
     }
 
     /// <summary>

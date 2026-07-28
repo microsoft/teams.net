@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
@@ -71,7 +73,16 @@ bot.OnMembersAdded(async (context, cancellationToken) =>
 
 bot.OnMembersRemoved(async (context, cancellationToken) =>
 {
+    string? botId = context.Activity.Recipient?.Id;
+    bool botWasRemoved = context.Activity.MembersRemoved?.Any(member => member.Id == botId) == true;
     string memberNames = string.Join(", ", context.Activity.MembersRemoved?.Select(m => m.Name ?? m.Id) ?? []);
+
+    if (botWasRemoved)
+    {
+        Console.WriteLine($"[OnMembersRemoved] Bot '{botId}' was removed from the conversation. Members removed: {memberNames}");
+        return;
+    }
+
     await context.SendAsync($"Goodbye! Members removed: {memberNames}", cancellationToken);
 });
 
