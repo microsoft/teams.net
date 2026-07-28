@@ -107,41 +107,41 @@ public class TeamsActivity : CoreActivity
     /// Gets the Teams-specific channel data associated with this activity.
     /// </summary>
     [JsonPropertyName("channelData")]
-    public TeamsChannelData? ChannelData { get; internal set; }
+    public TeamsChannelData? ChannelData { get; set; }
 
     /// <summary>
     /// Gets the entities specific to Teams.
     /// </summary>
     [JsonPropertyName("entities")]
-    public EntityList? Entities { get; internal set; }
+    public EntityList? Entities { get; set; }
 
     /// <summary>
     /// UTC timestamp of when the activity was sent.
     /// </summary>
     [JsonPropertyName("timestamp")]
-    public string? Timestamp { get; internal set; }
+    public string? Timestamp { get; set; }
 
     /// <summary>
     /// Local timestamp of when the activity was sent, including timezone offset.
     /// </summary>
     [JsonPropertyName("localTimestamp")]
-    public string? LocalTimestamp { get; internal set; }
+    public string? LocalTimestamp { get; set; }
 
     /// <summary>
     /// Locale of the activity set by the client (e.g., "en-US").
     /// </summary>
     [JsonPropertyName("locale")]
-    public string? Locale { get; internal set; }
+    public string? Locale { get; set; }
 
     /// <summary>
     /// Local timezone of the client (e.g., "America/Los_Angeles").
     /// </summary>
     [JsonPropertyName("localTimezone")]
-    public string? LocalTimezone { get; internal set; }
+    public string? LocalTimezone { get; set; }
 
     /// <summary>
     /// Gets the suggested actions for the message.
     /// </summary>
     [JsonPropertyName("suggestedActions")]
-    public SuggestedActions? SuggestedActions { get; internal set; }
+    public SuggestedActions? SuggestedActions { get; set; }
 }

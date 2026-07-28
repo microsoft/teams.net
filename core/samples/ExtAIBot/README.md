@@ -17,33 +17,13 @@ A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dot
 - .NET 10 SDK
 - Azure OpenAI resource with a deployed model (e.g. `gpt-4o`)
 - Teams bot registration (App ID + client secret)
-
-## Setup
-
-Fill in `appsettings.json` with your Azure OpenAI details:
+- Azure Open AI configured
 
 ```json
-{
-  "AzureOpenAI": {
-    "Endpoint": "https://<your-resource>.openai.azure.com",
-    "ApiKey":   "<your-api-key>",
-    "ModelId":  "<deployment-name>"
-  }
-}
+"AzureOpenAI__Endpoint": "",
+"AzureOpenAI__ApiKey": "",
+"AzureOpenAI__Deployment": ""
 ```
-
-`ModelId` is the **deployment name**, not the base model name.
-
-Configure bot credentials via environment variables (or `launchSettings.json`):
-
-```
-AzureAD__TenantId=<tenant-id>
-AzureAD__ClientId=<app-id>
-AzureAD__ClientCredentials__0__SourceType=ClientSecret
-AzureAD__ClientCredentials__0__ClientSecret=<client-secret>
-```
-
-Then point your bot's messaging endpoint at this service (e.g. using [Dev Tunnels](https://learn.microsoft.com/azure/developer/dev-tunnels/overview) for local development).
 
 ## Running
 
