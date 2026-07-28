@@ -235,7 +235,7 @@ p{margin:0 0 12px 0;color:#666}
 html,body{height:100%;overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px}
-button{margin:4px 4px 4px 0;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;color:#242424;cursor:pointer;font-size:12px}
+button{margin:4px 4px 4px 0;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;color:inherit;cursor:pointer;font-size:12px}
 button:hover{background:#e0e0e0}
 #status{margin-top:12px;padding:8px;background:#f0f9ff;border-radius:4px;white-space:pre-wrap;font-family:monospace;font-size:11px}
 </style></head><body>
@@ -254,7 +254,9 @@ const pending = {};
 window.addEventListener('message', (event) => {
   const data = event.data;
   if (data?.id && pending[data.id]) {
-    pending[data.id](data);
+    const cb = pending[data.id];
+    delete pending[data.id];
+    cb(data);
   }
 });
 
@@ -293,7 +295,7 @@ async function openLink(url) {
 html,body{height:100%;overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px}
-button{margin:4px 4px 4px 0;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;color:#242424;cursor:pointer;font-size:12px}
+button{margin:4px 4px 4px 0;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;color:inherit;cursor:pointer;font-size:12px}
 button:hover{background:#e0e0e0}
 textarea{width:100%;height:60px;margin:8px 0;padding:8px;border:1px solid #ccc;border-radius:4px;font-family:monospace;font-size:11px;resize:vertical}
 #status{margin-top:12px;padding:8px;background:#f0f9ff;border-radius:4px;white-space:pre-wrap;font-family:monospace;font-size:11px}
@@ -314,7 +316,9 @@ const pending = {};
 window.addEventListener('message', (event) => {
   const data = event.data;
   if (data?.id && pending[data.id]) {
-    pending[data.id](data);
+    const cb = pending[data.id];
+    delete pending[data.id];
+    cb(data);
   }
 });
 
@@ -388,6 +392,7 @@ h3{margin:0 0 8px}
 .section h4{margin:0 0 4px;font-size:12px;color:#333}
 pre{white-space:pre-wrap;word-break:break-all;font-family:monospace;font-size:11px;color:#555}
 .update{margin-top:8px;padding:6px;background:#fff3cd;border-radius:4px;font-size:11px}
+#updates{max-height:250px;overflow-y:auto}
 </style></head><body>
 <h3>Host Context Inspector</h3>
 <p>Displays the <code>hostContext</code> from <code>ui/initialize</code> response and listens for changes.</p>
@@ -414,7 +419,9 @@ window.addEventListener('message', (event) => {
 
   // Handle responses to our requests
   if (data.id && pending[data.id]) {
-    pending[data.id](data);
+    const cb = pending[data.id];
+    delete pending[data.id];
+    cb(data);
     return;
   }
 
@@ -470,6 +477,10 @@ async function init() {
 function notifySize() {
   window.parent.postMessage({ jsonrpc: '2.0', method: 'ui/notifications/size-changed', params: { height: document.body.scrollHeight } }, '*');
 }
+
+// Re-report size when content changes (e.g. host-context updates) so the host keeps
+// the iframe fit to content. The #updates log is capped, so the height stays bounded.
+if (window.ResizeObserver) new ResizeObserver(notifySize).observe(document.body);
 
 init();
 </script>
