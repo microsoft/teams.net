@@ -266,6 +266,60 @@ public class TeamsStreamingWriterTests
         Assert.Equal(streamIds[1], streamIds[2]);
     }
 
+    // ── replyToId threading ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task AllSends_ThreadUnderInboundActivity_WhenReferenceHasId()
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "inbound-activity-id";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference);
+
+        await writer.SendInformativeUpdateAsync("Thinking…"); // informative update
+        await writer.AppendResponseAsync("hello ");           // streaming chunk
+        await writer.AppendResponseAsync("world");            // accumulated (rate-limited)
+        await writer.FinalizeResponseAsync();                 // final message
+
+        Assert.NotEmpty(handler.RequestBodies);
+
+        // Informative, streaming, and final sends are all threaded to the inbound message.
+        Assert.All(
+            handler.RequestBodies,
+            body => Assert.Contains("\"replyToId\": \"inbound-activity-id\"", body, StringComparison.Ordinal));
+
+        // And specifically the final message.
+        string finalBody = handler.RequestBodies.Last();
+        Assert.Contains("\"streamType\": \"final\"", finalBody);
+        Assert.Contains("\"replyToId\": \"inbound-activity-id\"", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_AfterTimeout_ThreadsInPlaceUpdateUnderInboundActivity()
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "inbound-activity-id";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference);
+
+        // Informative send assigns the streamId that the in-place update will target.
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        // The next chunk trips the two-minute limit, forcing the in-place update path.
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        await writer.AppendResponseAsync("Final answer");
+
+        Assert.True(writer.TimedOut);
+
+        await writer.FinalizeResponseAsync();
+
+        // The in-place update (PUT) is still threaded under the inbound message.
+        HttpRequestMessage lastRequest = handler.Requests.Last();
+        Assert.Equal(HttpMethod.Put, lastRequest.Method);
+        Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies.Last());
+    }
+
     // ── Error handling (HTTP 403) ─────────────────────────────────────────────
 
     [Fact]
