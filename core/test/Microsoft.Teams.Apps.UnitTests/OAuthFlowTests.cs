@@ -4,11 +4,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Api.Clients;
-using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
@@ -47,14 +47,61 @@ public class OAuthFlowTests
         SignInFailureValue failureValue = new() { Code = "tokenmissing", Message = "Token acquisition failed." };
 
         // The route handler filters by HasPendingSignIn, so verify the flags
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
-        Assert.False(harness.GitHubFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+        Assert.False(harness.GitHubFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         await harness.GraphFlow.HandleSignInFailureAsync(failureCtx, failureValue, CancellationToken.None);
 
         // Assert - only Graph callback fired
         Assert.True(graphFailureFired);
         Assert.False(githubFailureFired);
+    }
+
+    [Fact]
+    public async Task SignInFailure_BothFlowsPending_OnlyMostRecentNotified()
+    {
+        // When both flows have pending sign-ins, only the most recently initiated
+        // flow should receive the signin/failure callback (not both).
+        TestHarness harness = CreateHarness(GraphConnection, GitHubConnection);
+        bool graphFailureFired = false;
+        bool githubFailureFired = false;
+
+        harness.GraphFlow!.OnSignInFailure((_, _, _) => { graphFailureFired = true; return Task.CompletedTask; });
+        harness.GitHubFlow!.OnSignInFailure((_, _, _) => { githubFailureFired = true; return Task.CompletedTask; });
+
+        // Initiate sign-in for Graph first
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GraphConnection);
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GitHubConnection);
+        SetupGetSignInResource(harness.MockUserTokenClient);
+        SetupSendActivity(harness);
+
+        Context<MessageActivity> ctx1 = CreateMessageContext(harness, TestUserId);
+        await harness.GraphFlow.SignInAsync(ctx1);
+
+        // Then initiate sign-in for GitHub (most recent)
+        Context<MessageActivity> ctx2 = CreateMessageContext(harness, TestUserId);
+        await harness.GitHubFlow!.SignInAsync(ctx2);
+
+        // Both flows should report pending
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+        Assert.True(harness.GitHubFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+
+        // Dispatch signin/failure through the route — should only hit GitHub (most recent)
+        InvokeActivity failureActivity = new()
+        {
+            Name = InvokeName.SignInFailure,
+            ChannelId = TestChannelId,
+            From = new TeamsChannelAccount { Id = TestUserId },
+            Recipient = new TeamsChannelAccount { Id = "bot-id" },
+            Conversation = new TeamsConversation { Id = "conv-1" },
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
+        };
+        Context<TeamsActivity> failureCtx = new(harness.App, failureActivity);
+        await harness.App.Router.DispatchWithReturnAsync(failureCtx);
+
+        // Assert — only GitHub (most recent) callback fired
+        Assert.False(graphFailureFired);
+        Assert.True(githubFailureFired);
     }
 
     [Fact]
@@ -69,14 +116,14 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Act
         Context<InvokeActivity> failureCtx = CreateInvokeContext(harness, TestUserId);
         await harness.GraphFlow.HandleSignInFailureAsync(failureCtx, new SignInFailureValue { Code = "invokeerror" }, CancellationToken.None);
 
         // Assert
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -91,11 +138,11 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Arrange exchange
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access-token", ConnectionName = GraphConnection });
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "exchange-1", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -106,11 +153,11 @@ public class OAuthFlowTests
 
         // Assert
         Assert.Equal(200, response.Status);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
-    public async Task TokenExchange_Failure_ClearsPendingSignIn()
+    public async Task TokenExchange_Non412Failure_ClearsPendingSignIn()
     {
         TestHarness harness = CreateHarness(GraphConnection);
 
@@ -121,11 +168,11 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Arrange exchange failure
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "bad-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "bad-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Unauthorized", null, System.Net.HttpStatusCode.Unauthorized));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "exchange-2", ConnectionName = GraphConnection, Token = "bad-token" };
@@ -136,7 +183,7 @@ public class OAuthFlowTests
 
         // Assert - 401 passed through (unexpected code)
         Assert.Equal(401, response.Status);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -151,11 +198,11 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Arrange verify state
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "123456", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "123456", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access-token", ConnectionName = GraphConnection });
 
         SignInVerifyStateValue verifyValue = new() { State = "123456" };
@@ -166,7 +213,7 @@ public class OAuthFlowTests
 
         // Assert
         Assert.Equal(200, response.Status);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     // ==================== No pending sign-in for unrelated user ====================
@@ -183,8 +230,8 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
-        Assert.False(harness.GraphFlow.HasPendingSignIn("other-user"));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, "other-user")));
     }
 
     // ==================== Token exchange error code mapping ====================
@@ -195,10 +242,28 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Not found", null, System.Net.HttpStatusCode.NotFound));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-1", ConnectionName = GraphConnection, Token = "sso-token" };
+        Context<InvokeActivity> invokeCtx = CreateInvokeContext(harness, TestUserId);
+
+        InvokeResponse response = await harness.GraphFlow!.HandleTokenExchangeAsync(invokeCtx, exchangeValue, CancellationToken.None);
+
+        Assert.Equal(412, response.Status);
+        Assert.NotNull(response.Body);
+    }
+
+    [Fact]
+    public async Task TokenExchange_PreconditionFailed_Returns412WithBody()
+    {
+        TestHarness harness = CreateHarness(GraphConnection);
+
+        harness.MockUserTokenClient
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("Precondition failed", null, System.Net.HttpStatusCode.PreconditionFailed));
+
+        SignInTokenExchangeValue exchangeValue = new() { Id = "ex-412", ConnectionName = GraphConnection, Token = "sso-token" };
         Context<InvokeActivity> invokeCtx = CreateInvokeContext(harness, TestUserId);
 
         InvokeResponse response = await harness.GraphFlow!.HandleTokenExchangeAsync(invokeCtx, exchangeValue, CancellationToken.None);
@@ -213,7 +278,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Forbidden", null, System.Net.HttpStatusCode.Forbidden));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-2", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -232,7 +297,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "access-token", ConnectionName = GraphConnection });
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "dup-1", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -248,7 +313,7 @@ public class OAuthFlowTests
 
         // ExchangeTokenAsync only called once
         harness.MockUserTokenClient.Verify(
-            c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()),
+            c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -275,7 +340,7 @@ public class OAuthFlowTests
         harness.GraphFlow!.OnSignInFailure((_, _, _) => { failureFired = true; return Task.CompletedTask; });
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "badcode", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "badcode", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
 
         SignInVerifyStateValue verifyValue = new() { State = "badcode" };
@@ -294,7 +359,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest));
 
         SignInVerifyStateValue verifyValue = new() { State = "code" };
@@ -311,7 +376,7 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "code", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Forbidden", null, System.Net.HttpStatusCode.Forbidden));
 
         SignInVerifyStateValue verifyValue = new() { State = "code" };
@@ -357,7 +422,7 @@ public class OAuthFlowTests
         });
 
         harness.MockUserTokenClient
-            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", It.IsAny<CancellationToken>()))
+            .Setup(c => c.ExchangeTokenAsync(TestUserId, GraphConnection, TestChannelId, "sso-token", null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest));
 
         SignInTokenExchangeValue exchangeValue = new() { Id = "ex-fail", ConnectionName = GraphConnection, Token = "sso-token" };
@@ -377,14 +442,14 @@ public class OAuthFlowTests
         TestHarness harness = CreateHarness(GraphConnection);
 
         harness.MockUserTokenClient
-            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetTokenResult { Token = "cached-token", ConnectionName = GraphConnection });
 
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         string? token = await harness.GraphFlow!.SignInAsync(ctx);
 
         Assert.Equal("cached-token", token);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -400,7 +465,46 @@ public class OAuthFlowTests
         string? token = await harness.GraphFlow!.SignInAsync(ctx);
 
         Assert.Null(token);
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+    }
+
+    // ==================== Channel omits TokenExchangeResource (SSO), personal keeps it ====================
+
+    [Fact]
+    public async Task SignInAsync_InChannel_OmitsTokenExchangeResourceForOAuthFallback()
+    {
+        TestHarness harness = CreateHarness(GraphConnection);
+
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GraphConnection);
+        SetupGetSignInResource(harness.MockUserTokenClient);
+        CoreActivityInput? sent = null;
+        SetupSendActivityCapture(harness, a => sent = a);
+
+        Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId, ConversationTypes.Channel);
+        await harness.GraphFlow!.SignInAsync(ctx);
+
+        Assert.NotNull(sent);
+        // SSO can't complete silently in a channel, so the card must not carry a token exchange resource.
+        Assert.DoesNotContain("tokenExchangeResource", sent.ToJson());
+        // The interactive sign-in button (OAuth fallback) is still present.
+        Assert.Contains("signin", sent.ToJson(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SignInAsync_InPersonalChat_IncludesTokenExchangeResourceForSso()
+    {
+        TestHarness harness = CreateHarness(GraphConnection);
+
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GraphConnection);
+        SetupGetSignInResource(harness.MockUserTokenClient);
+        CoreActivityInput? sent = null;
+        SetupSendActivityCapture(harness, a => sent = a);
+
+        Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId, ConversationTypes.Personal);
+        await harness.GraphFlow!.SignInAsync(ctx);
+
+        Assert.NotNull(sent);
+        Assert.Contains("tokenExchangeResource", sent.ToJson());
     }
 
     // ==================== Helpers ====================
@@ -459,14 +563,14 @@ public class OAuthFlowTests
             NullLogger<UserTokenClient>.Instance);
     }
 
-    private static Context<MessageActivity> CreateMessageContext(TestHarness harness, string userId)
+    private static Context<MessageActivity> CreateMessageContext(TestHarness harness, string userId, ConversationType? conversationType = null)
     {
         MessageActivity activity = new("hello")
         {
             ChannelId = TestChannelId,
-            From = new TeamsConversationAccount { Id = userId },
-            Recipient = new TeamsConversationAccount { Id = "bot-id" },
-            Conversation = new TeamsConversation { Id = "conv-1" },
+            From = new TeamsChannelAccount { Id = userId },
+            Recipient = new TeamsChannelAccount { Id = "bot-id" },
+            Conversation = new TeamsConversation { Id = "conv-1", ConversationType = conversationType },
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
         };
 
@@ -478,8 +582,8 @@ public class OAuthFlowTests
         InvokeActivity activity = new()
         {
             ChannelId = TestChannelId,
-            From = new TeamsConversationAccount { Id = userId },
-            Recipient = new TeamsConversationAccount { Id = "bot-id" },
+            From = new TeamsChannelAccount { Id = userId },
+            Recipient = new TeamsChannelAccount { Id = "bot-id" },
             Conversation = new TeamsConversation { Id = "conv-1" },
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
         };
@@ -489,13 +593,13 @@ public class OAuthFlowTests
 
     private static void SetupSilentTokenReturnsNull(Mock<UserTokenClient> mock, string connectionName)
     {
-        mock.Setup(c => c.GetTokenAsync(TestUserId, connectionName, TestChannelId, null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetTokenAsync(TestUserId, connectionName, TestChannelId, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetTokenResult?)null);
     }
 
     private static void SetupGetSignInResource(Mock<UserTokenClient> mock)
     {
-        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, null, null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, (Uri?)null, (Uri?)null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetSignInResourceResult
             {
                 SignInLink = "https://login.microsoftonline.com/test",
@@ -507,7 +611,15 @@ public class OAuthFlowTests
     private static void SetupSendActivity(TestHarness harness)
     {
         harness.MockConversationClient
-            .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SendActivityResponse { Id = "activity-1" });
+    }
+
+    private static void SetupSendActivityCapture(TestHarness harness, Action<CoreActivityInput> capture)
+    {
+        harness.MockConversationClient
+            .Setup(c => c.SendActivityAsync(It.IsAny<string>(), It.IsAny<CoreActivityInput>(), It.IsAny<Uri>(), It.IsAny<bool>(), It.IsAny<BotRequestContext?>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>, CancellationToken>((_, activity, _, _, _, _, _) => capture(activity))
             .ReturnsAsync(new SendActivityResponse { Id = "activity-1" });
     }
 }

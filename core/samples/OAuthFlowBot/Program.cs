@@ -12,9 +12,7 @@
 // | GitHubConnection  | GitHub       | repo read:user            |
 
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
-using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -34,6 +32,14 @@ webAppBuilder.Services.AddTeamsBotApplication(options =>
     });
 });
 
+// Configure distributed cache for turn state persistence. This is optional, but recommended for production scenarios.
+// The sample below uses Redis, but you can use any IDistributedCache implementation.
+/*
+webAppBuilder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis") ?? throw new InvalidProgramException("Redis connection string not found");
+});*/
+
 WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
@@ -46,22 +52,22 @@ OAuthFlow githubAuth = bot.GetOAuthFlow("gh");
 
 graphAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
-    await context.SendActivityAsync($"User {context.Activity.From?.Name} connected to Microsoft Graph ({tokenResponse.ConnectionName})!", ct);
+    await context.SendAsync($"User {context.Activity.From?.Name} connected to Microsoft Graph ({tokenResponse.ConnectionName})!", ct);
 });
 
 graphAuth.OnSignInFailure(async (context, failure, ct) =>
 {
-    await context.SendActivityAsync($"User {context.Activity.From?.Name} failed to connect to Microsoft Graph. {failure?.Message}", ct);
+    await context.SendAsync($"User {context.Activity.From?.Name} failed to connect to Microsoft Graph. {failure?.Message}", ct);
 });
 
 githubAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
-    await context.SendActivityAsync($"User {context.Activity.From?.Name} connected to GitHub ({tokenResponse.ConnectionName})!", ct);
+    await context.SendAsync($"User {context.Activity.From?.Name} connected to GitHub ({tokenResponse.ConnectionName})!", ct);
 });
 
 githubAuth.OnSignInFailure(async (context, failure, ct) =>
 {
-    await context.SendActivityAsync($"User {context.Activity.From?.Name} failed to connect to GitHub. {failure?.Message}", ct);
+    await context.SendAsync($"User {context.Activity.From?.Name} failed to connect to GitHub. {failure?.Message}", ct);
 });
 
 // ==================== MESSAGE HANDLERS ====================
@@ -84,8 +90,8 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         - `help` - Show this message
         """;
 
-    await context.SendActivityAsync(
-        new MessageActivity(helpText) { TextFormat = TextFormats.Markdown }, ct);
+    await context.SendAsync(
+        new MessageActivityInput().WithText(helpText, TextFormats.Markdown), ct);
 });
 
 bot.OnMessage("(?i)^login$", async (context, ct) =>
@@ -94,12 +100,12 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
     string? tokenGraph = await graphAuth.SignInAsync(context, ct);
     if (tokenGraph is not null)
     {
-        await context.SendActivityAsync("Already signed in to Graph.", ct);
+        await context.SendAsync("Already signed in to Graph.", ct);
     }
 
     if (tokenGitHub is not null)
     {
-        await context.SendActivityAsync("Already signed in to GitHub.", ct);
+        await context.SendAsync("Already signed in to GitHub.", ct);
     }
 
 });
@@ -109,7 +115,7 @@ bot.OnMessage("(?i)^login graph$", async (context, ct) =>
     string? tokenGraph = await graphAuth.SignInAsync(context, ct);
     if (tokenGraph is not null)
     {
-        await context.SendActivityAsync("Already signed in to Graph.", ct);
+        await context.SendAsync("Already signed in to Graph.", ct);
     }
     // else: OAuthCard sent, SSO in progress
 });
@@ -119,23 +125,22 @@ bot.OnMessage("(?i)^login github$", async (context, ct) =>
     string? tokenGitHub = await githubAuth.SignInAsync(context, ct);
     if (tokenGitHub is not null)
     {
-        await context.SendActivityAsync("Already signed in to GitHub.", ct);
+        await context.SendAsync("Already signed in to GitHub.", ct);
     }
 });
 
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
     // GetConnectionStatusAsync returns ALL connections -- no names needed
-    IList<GetTokenStatusResult> statuses = await graphAuth.GetConnectionStatusAsync(context, ct);
+    IList<GetTokenStatusResult> statuses = await context.GetConnectionStatusAsync(ct);
     IEnumerable<string> lines = statuses.Select(s =>
         $"- **{s.ConnectionName}** ({s.ServiceProviderDisplayName}): " +
         $"{(s.HasToken == true ? "✅ connected" : "❌ not connected")}");
 
-    await context.SendActivityAsync(
-        new MessageActivity($"OAuth connections for {context.Activity.From?.Name} :\n" + string.Join("\n", lines))
-        {
-            TextFormat = TextFormats.Markdown
-        }, ct);
+    await context.SendAsync(
+        new MessageActivityInput()
+            .WithText($"OAuth connections for {context.Activity.From?.Name} :\n" + string.Join("\n", lines), TextFormats.Markdown)
+            , ct);
 });
 
 bot.OnMessage("(?i)^my ad user", async (context, ct) =>
@@ -150,11 +155,11 @@ bot.OnMessage("(?i)^my ad user", async (context, ct) =>
     {
         string response = await http.GetStringAsync(
             "https://graph.microsoft.com/v1.0/me", ct);
-        await context.SendActivityAsync($"Your Azure AD user :\n```json\n{response}\n```", ct);
+        await context.SendAsync($"Your Azure AD user :\n```json\n{response}\n```", ct);
     }
     catch (HttpRequestException ex)
     {
-        await context.SendActivityAsync($"Failed to fetch Azure AD user: {ex.Message}", ct);
+        await context.SendAsync($"Failed to fetch Azure AD user: {ex.Message}", ct);
     }
 });
 
@@ -171,11 +176,11 @@ bot.OnMessage("(?i)^my gh user$", async (context, ct) =>
     {
         string response = await http.GetStringAsync(
             "https://api.github.com/user", ct);
-        await context.SendActivityAsync($"Your GitHub user :\n```json\n{response}\n```", ct);
+        await context.SendAsync($"Your GitHub user :\n```json\n{response}\n```", ct);
     }
     catch (HttpRequestException ex)
     {
-        await context.SendActivityAsync($"Failed to fetch GitHub user: {ex.Message}", ct);
+        await context.SendAsync($"Failed to fetch GitHub user: {ex.Message}", ct);
     }
 });
 
@@ -183,30 +188,29 @@ bot.OnMessage("(?i)^logout$", async (context, ct) =>
 {
     await graphAuth.SignOutAsync(context, ct);
     await githubAuth.SignOutAsync(context, ct);
-    await context.SendActivityAsync("Signed out from all services.", ct);
+    await context.SendAsync("Signed out from all services.", ct);
 });
 
 bot.OnMessage("(?i)^logout graph$", async (context, ct) =>
 {
     await graphAuth.SignOutAsync(context, ct);
-    await context.SendActivityAsync("Signed out from Graph.", ct);
+    await context.SendAsync("Signed out from Graph.", ct);
 });
 
 bot.OnMessage("(?i)^logout github$", async (context, ct) =>
 {
     await githubAuth.SignOutAsync(context, ct);
-    await context.SendActivityAsync("Signed out from GitHub.", ct);
+    await context.SendAsync("Signed out from GitHub.", ct);
 });
 
 // ==================== INSTALL HANDLER ====================
 
 bot.OnInstall(async (context, ct) =>
 {
-    await context.SendActivityAsync(
-        new MessageActivity("Welcome to the **OAuthFlow Bot**! Type `help` to see available commands.")
-        {
-            TextFormat = TextFormats.Markdown
-        }, ct);
+    await context.SendAsync(
+        new MessageActivityInput()
+            .WithText("Welcome to the **OAuthFlow Bot**! Type `help` to see available commands.", TextFormats.Markdown)
+            , ct);
 });
 
 webApp.Run();

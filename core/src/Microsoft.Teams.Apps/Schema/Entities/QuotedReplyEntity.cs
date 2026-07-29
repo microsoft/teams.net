@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
@@ -9,7 +8,6 @@ namespace Microsoft.Teams.Apps.Schema.Entities;
 /// <summary>
 /// Represents a quoted reply entity in a Teams activity.
 /// </summary>
-[Experimental("ExperimentalTeamsQuotedReplies")]
 public class QuotedReplyEntity : Entity
 {
     /// <summary>
@@ -41,7 +39,6 @@ public class QuotedReplyEntity : Entity
 /// <summary>
 /// Data for a quoted reply entity.
 /// </summary>
-[Experimental("ExperimentalTeamsQuotedReplies")]
 public class QuotedReplyData
 {
     /// <summary>

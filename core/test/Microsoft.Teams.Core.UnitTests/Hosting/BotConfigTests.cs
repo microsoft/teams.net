@@ -131,6 +131,34 @@ public class BotConfigTests
     }
 
     [Fact]
+    public void Resolve_DangerouslyAllowUnauthenticatedRequests_HonorsConfiguredSection()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:DangerouslyAllowUnauthenticatedRequests"] = "true",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.True(config.DangerouslyAllowUnauthenticatedRequests);
+    }
+
+    [Fact]
+    public void Resolve_DangerouslyAllowUnauthenticatedRequests_IgnoresTeamsSection()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["Teams:DangerouslyAllowUnauthenticatedRequests"] = "true",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.False(config.DangerouslyAllowUnauthenticatedRequests);
+    }
+
+    [Fact]
     public void Resolve_ThrowsInvalidOperationException_WhenOpenIdMetadataUrlIsNotAbsoluteUri()
     {
         ServiceCollection services = BuildServices(new Dictionary<string, string?>
@@ -167,6 +195,19 @@ public class BotConfigTests
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => BotConfig.Resolve(services));
         Assert.Contains("AzureAd:Instance", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Resolve_ThrowsInvalidOperationException_WhenDangerouslyAllowUnauthenticatedRequestsIsNotBoolean()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:DangerouslyAllowUnauthenticatedRequests"] = "not-a-bool",
+        });
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => BotConfig.Resolve(services));
+        Assert.Contains("AzureAd:DangerouslyAllowUnauthenticatedRequests", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]

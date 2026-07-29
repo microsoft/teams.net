@@ -2,44 +2,77 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Utils;
 
-namespace Microsoft.Teams.Apps.Handlers.TaskModules;
+namespace Microsoft.Teams.Apps.TaskModules;
 
 /// <summary>
 /// Task module response types.
 /// </summary>
-public static class TaskModuleResponseType
+[JsonConverter(typeof(StringEnumJsonConverter<TaskModuleResponseType>))]
+public class TaskModuleResponseType(string value) : StringEnum(value)
 {
     /// <summary>
     /// Continue type - displays a card or URL in the task module.
     /// </summary>
-    public const string Continue = "continue";
+    public static readonly TaskModuleResponseType Continue = new("continue");
 
     /// <summary>
     /// Message type - displays a plain text message.
     /// </summary>
-    public const string Message = "message";
+    public static readonly TaskModuleResponseType Message = new("message");
+}
+
+/// <summary>
+/// Task module response types.
+/// </summary>
+public static class TaskModuleResponseTypes
+{
+    /// <summary>
+    /// Continue type - displays a card or URL in the task module.
+    /// </summary>
+    public static TaskModuleResponseType Continue => TaskModuleResponseType.Continue;
+
+    /// <summary>
+    /// Message type - displays a plain text message.
+    /// </summary>
+    public static TaskModuleResponseType Message => TaskModuleResponseType.Message;
 }
 
 /// <summary>
 /// Task module size constants.
 /// </summary>
-public static class TaskModuleSize
+[JsonConverter(typeof(StringEnumJsonConverter<TaskModuleSize>))]
+public class TaskModuleSize(string value) : StringEnum(value)
+{
+    /// <summary>Small task module size.</summary>
+    public static readonly TaskModuleSize Small = new("small");
+    /// <summary>Medium task module size.</summary>
+    public static readonly TaskModuleSize Medium = new("medium");
+    /// <summary>Large task module size.</summary>
+    public static readonly TaskModuleSize Large = new("large");
+}
+
+/// <summary>
+/// Task module size constants.
+/// </summary>
+public static class TaskModuleSizes
 {
     /// <summary>
     /// Small size.
     /// </summary>
-    public const string Small = "small";
+    public static TaskModuleSize Small => TaskModuleSize.Small;
 
     /// <summary>
     /// Medium size.
     /// </summary>
-    public const string Medium = "medium";
+    public static TaskModuleSize Medium => TaskModuleSize.Medium;
 
     /// <summary>
     /// Large size.
     /// </summary>
-    public const string Large = "large";
+    public static TaskModuleSize Large => TaskModuleSize.Large;
 }
 
 /// <summary>
@@ -67,20 +100,17 @@ public class TaskModuleResponse
 /// </summary>
 public class TaskModuleResponseBuilder
 {
-    private string? _type;
+    private TaskModuleResponseType? _type;
     private string? _title;
-    private object? _card;
-    private object _height = TaskModuleSize.Small;
-    private object _width = TaskModuleSize.Small;
+    private TeamsAttachment? _card;
+    private object _height = TaskModuleSizes.Small;
+    private object _width = TaskModuleSizes.Small;
     private string? _message;
-    //private string? _url;
-    //private string? _fallbackUrl;
-    //private string? _completionBotId;
 
     /// <summary>
-    /// Sets the type of the response. Use TaskModuleResponseType constants.
+    /// Sets the type of the response. Use <see cref="TaskModuleResponseTypes"/> constants.
     /// </summary>
-    public TaskModuleResponseBuilder WithType(string type)
+    public TaskModuleResponseBuilder WithType(TaskModuleResponseType type)
     {
         _type = type;
         return this;
@@ -96,16 +126,16 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Sets the card content for continue type.
+    /// Sets the card content for <see cref="TaskModuleResponseTypes.Continue"/> responses.
     /// </summary>
-    public TaskModuleResponseBuilder WithCard(object card)
+    public TaskModuleResponseBuilder WithCard(TeamsAttachment card)
     {
         _card = card;
         return this;
     }
 
     /// <summary>
-    /// Sets the height. Can be a number (pixels) or use TaskModuleSize constants.
+    /// Sets the height. Can be a number (pixels) or use <see cref="TaskModuleSizes"/> constants.
     /// </summary>
     public TaskModuleResponseBuilder WithHeight(object height)
     {
@@ -114,7 +144,7 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Sets the width. Can be a number (pixels) or use TaskModuleSize constants.
+    /// Sets the width. Can be a number (pixels) or use <see cref="TaskModuleSizes"/> constants.
     /// </summary>
     public TaskModuleResponseBuilder WithWidth(object width)
     {
@@ -123,7 +153,7 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Sets the message for message type.
+    /// Sets the message for <see cref="TaskModuleResponseTypes.Message"/> responses.
     /// </summary>
     public TaskModuleResponseBuilder WithMessage(string message)
     {
@@ -131,49 +161,20 @@ public class TaskModuleResponseBuilder
         return this;
     }
 
-    /*
-     /// <summary>
-    /// Sets the URL for continue type.
-    /// </summary>
-    public TaskModuleResponseBuilder WithUrl(string url)
-    {
-        _url = url;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the fallback URL if the card cannot be displayed.
-    /// </summary>
-    public TaskModuleResponseBuilder WithFallbackUrl(string fallbackUrl)
-    {
-        _fallbackUrl = fallbackUrl;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the completion bot ID.
-    /// </summary>
-    public TaskModuleResponseBuilder WithCompletionBotId(string completionBotId)
-    {
-        _completionBotId = completionBotId;
-        return this;
-    }
-    */
-
     /// <summary>
     /// Builds the TaskModuleResponse.
     /// </summary>
     internal TaskModuleResponse Validate()
     {
-        if (string.IsNullOrEmpty(_type))
+        if (_type is null)
         {
-            throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseType.Continue or TaskModuleResponseType.Message.");
+            throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseTypes.Continue or TaskModuleResponseTypes.Message.");
         }
 
-        object? value = _type switch
+        object? value = _type.Value switch
         {
-            TaskModuleResponseType.Continue => ValidateContinueType(),
-            TaskModuleResponseType.Message => ValidateMessageType(),
+            "continue" => ValidateContinueType(),
+            "message" => ValidateMessageType(),
             _ => throw new InvalidOperationException($"Unknown task module response type: {_type}")
         };
 
@@ -204,10 +205,7 @@ public class TaskModuleResponseBuilder
             title = _title,
             height = _height,
             width = _width,
-            card = _card,
-            //url = _url,
-            //fallbackUrl = _fallbackUrl,
-            //completionBotId = _completionBotId
+            card = _card
         };
     }
 
@@ -247,10 +245,10 @@ public class TaskModuleResponseBuilder
 public class Response
 {
     /// <summary>
-    /// Type of result.
+    /// Type of result. See <see cref="TaskModuleResponseTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("type")]
-    public required string Type { get; set; }
+    public required TaskModuleResponseType Type { get; set; }
 
     /// <summary>
     /// The result value.

@@ -18,6 +18,13 @@ public class App
     public string? Id { get; set; }
 
     /// <summary>
+    /// Version of the app.
+    /// </summary>
+    [JsonPropertyName("version")]
+    [JsonPropertyOrder(1)]
+    public string? Version { get; set; }
+
+    /// <summary>
     /// All extra data present
     /// </summary>
     [JsonExtensionData]

@@ -4,7 +4,7 @@
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Delegate for handling any event activity.
@@ -33,7 +33,7 @@ public static class EventExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = TeamsActivityType.Event,
+            Name = TeamsActivityTypes.Event,
             Selector = _ => true,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -43,27 +43,4 @@ public static class EventExtensions
 
         return app;
     }
-
-    /*
-    /// <summary>
-    /// Registers a handler for read receipt event activities.
-    /// Fired by Teams when a user reads a message sent by the bot in a 1:1 chat.
-    /// No value payload — the event itself is the notification.
-    /// </summary>
-    public static TeamsBotApplication OnReadReceipt(this TeamsBotApplication app, EventActivityHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<EventActivity>
-        {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.ReadReceipt),
-            Selector = activity => activity.Name == EventNames.ReadReceipt,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-    */
 }

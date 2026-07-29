@@ -3,8 +3,6 @@
 
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
-using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web;
 using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;
@@ -16,11 +14,23 @@ using OpenTelemetry.Resources;
 
 
 string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotApplicationTelemetry.ActivitySourceName, "Experimental.Microsoft.Extensions.AI", "ModelContextProtocol"];
-string[] meterNames      = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName, "Experimental.Microsoft.Agents.AI", "ModelContextProtocol"];
+string[] meterNames = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName, "Experimental.Microsoft.Agents.AI", "ModelContextProtocol"];
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IServiceProvider? rootProvider = null;
-builder.Services.AddTeamsBotApplication<ObservabilityBotApp>();
+builder.Services.AddTeamsBotApplication<ObservabilityBotApp>(o =>
+{
+    o.UseState();
+    o.AddOAuthFlow("sso", flow =>
+    {
+        flow.OAuthCardText = "Sign in to continue.";
+        flow.SignInButtonText = "Sign In";
+    });
+});
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? throw new InvalidProgramException("Redis connection string not found");
+});
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r
@@ -30,22 +40,24 @@ builder.Services.AddOpenTelemetry()
             ["deployment.environment"] = builder.Environment.EnvironmentName,
             ["service.namespace"] = "Microsoft.Teams"
         }))
-    .UseMicrosoftOpenTelemetry(o => {
-        o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
+    .UseMicrosoftOpenTelemetry(o =>
+    {
+        o.Exporters = ExportTarget.Otlp | ExportTarget.AzureMonitor; // | ExportTarget.Agent365
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
 
+        /*
         o.Agent365.ContextualTokenResolver = async trctx =>
         {
-            var provider = rootProvider!.GetRequiredService<IAuthorizationHeaderProvider>();
-            var options = new AuthorizationHeaderProviderOptions { AcquireTokenOptions = new() { AuthenticationOptionsName = "AzureAd", Tenant = trctx.TenantId } };
+            IAuthorizationHeaderProvider provider = rootProvider!.GetRequiredService<IAuthorizationHeaderProvider>();
+            AuthorizationHeaderProviderOptions options = new() { AcquireTokenOptions = new() { AuthenticationOptionsName = "AzureAd", Tenant = trctx.TenantId } };
             ArgumentNullException.ThrowIfNull(trctx.Identity.AgenticUserId);
             options.WithAgentUserIdentity(trctx.Identity.AgentId, new Guid(trctx.Identity.AgenticUserId));
             var token = await provider.CreateAuthorizationHeaderAsync(
                 ["api://9b975845-388f-4429-889e-eab1ef63949c/.default"], options);
             return token.Substring("Bearer".Length).Trim();
-        };
-     })
+        };*/
+    })
     .WithTracing(t => t.AddSource(activitySources))
     .WithMetrics(m => m.AddMeter(meterNames));
 
@@ -78,14 +90,14 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 
 builder.Services.AddSingleton<ChatOptions>(sp =>
 {
-    var msdocsClient = sp.GetRequiredKeyedService<Task<McpClient>>("msdocs").GetAwaiter().GetResult();
-    var msdocsTools = msdocsClient.ListToolsAsync().GetAwaiter().GetResult();
+    McpClient msdocsClient = sp.GetRequiredKeyedService<Task<McpClient>>("msdocs").GetAwaiter().GetResult();
+    IList<McpClientTool> msdocsTools = msdocsClient.ListToolsAsync().GetAwaiter().GetResult();
 
     return new ChatOptions
     {
         AllowMultipleToolCalls = true,
         Instructions = "Use the following tools to answer the user's question. If you don't know the answer, use the 'Search Microsoft Docs' tool to find relevant information. Use calendar tools for scheduling-related queries.",
-        Tools = [..msdocsTools]
+        Tools = [.. msdocsTools]
     };
 });
 

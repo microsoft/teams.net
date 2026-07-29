@@ -559,6 +559,16 @@ public class MessageActivityTests
     }
 
     [Fact]
+    public void TextFormat_ExtendedMarkdown_HasCorrectValue()
+    {
+#pragma warning disable ExperimentalTeamsExtendedMarkdown
+        Assert.Equal("extendedmarkdown", TextFormat.ExtendedMarkdown.ToString());
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
+        Assert.True(new TextFormat("extendedmarkdown").IsExtendedMarkdown);
+        Assert.False(new TextFormat("markdown").IsExtendedMarkdown);
+    }
+
+    [Fact]
     public void AddStreamFinal_OverridesExistingStreamType()
     {
         var activity = new MessageActivity("done")

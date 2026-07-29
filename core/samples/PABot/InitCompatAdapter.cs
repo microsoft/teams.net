@@ -16,6 +16,7 @@ namespace PABot
     {
         private const string DefaultScope = "https://api.botframework.com/.default";
         private const string AdapterKeyName = "BotAdapter";
+        private const string DefaultInstance = "https://login.microsoftonline.com/";
 
         /// <summary>
         /// Configuration values for MSAL identity (bot or agent).
@@ -27,15 +28,21 @@ namespace PABot
             public required string TenantId { get; init; }
             public required string Scope { get; init; }
             public required string Instance { get; init; }
+
+            /// <summary>The ASP.NET authentication scheme name used to validate inbound tokens for this identity.</summary>
+            public required string Scheme { get; init; }
         }
 
         /// <summary>
-        /// Configuration values for a bot adapter.
+        /// Configuration values for a bot adapter. Supports multiple bot registrations on one endpoint.
         /// </summary>
         private sealed record AdapterConfig
         {
-            public MsalIdentityConfig? BotIdentity { get; init; }
+            public required IReadOnlyList<MsalIdentityConfig> BotIdentities { get; init; }
             public MsalIdentityConfig? AgentIdentity { get; init; }
+
+            /// <summary>The first configured bot, used for default (non app-id-specific) operations.</summary>
+            public MsalIdentityConfig? PrimaryBot => BotIdentities.Count > 0 ? BotIdentities[0] : null;
         }
 
         public static IServiceCollection AddTeamsBotApplications(this IServiceCollection services)
@@ -47,7 +54,7 @@ namespace PABot
             services.AddAgentIdentities();
             services.AddHttpContextAccessor();
 
-            // Register adapter using standard MsalBot/MsalAgent configuration
+            // Register adapter using MsalBot/MsalBots/MsalAgent configuration
             RegisterTeamsBotApplication(services);
 
             return services;
@@ -79,83 +86,86 @@ namespace PABot
             IConfiguration configuration = services.BuildServiceProvider()
                 .GetRequiredService<IConfiguration>();
 
-            IConfigurationSection msalBotSection = configuration.GetSection("MsalBot");
-            IConfigurationSection msalAgentSection = configuration.GetSection("MsalAgent");
+            // Collect bot identities from the single "MsalBot" section (backward compatible) and the
+            // "MsalBots" array (multiple bot registrations on one endpoint).
+            List<MsalIdentityConfig> botIdentities = [];
 
-            // Read bot identity configuration if provided
-            MsalIdentityConfig? botIdentity = null;
-            string? botClientId = msalBotSection["ClientId"];
-            if (!string.IsNullOrEmpty(botClientId))
+            void AddBot(IConfigurationSection section)
             {
-                botIdentity = new MsalIdentityConfig
+                string? clientId = section["ClientId"];
+                if (!string.IsNullOrEmpty(clientId) &&
+                    !botIdentities.Any(b => string.Equals(b.ClientId, clientId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    ConfigSection = msalBotSection,
-                    ClientId = botClientId,
-                    TenantId = msalBotSection["TenantId"] ?? string.Empty,
-                    Scope = msalBotSection["Scope"] ?? DefaultScope,
-                    Instance = msalBotSection["Instance"] ?? "https://login.microsoftonline.com/"
-                };
+                    botIdentities.Add(BuildIdentity(section, clientId, $"MsalBot-{clientId}"));
+                }
+            }
+
+            AddBot(configuration.GetSection("MsalBot"));
+            foreach (IConfigurationSection botSection in configuration.GetSection("MsalBots").GetChildren())
+            {
+                AddBot(botSection);
             }
 
             // Read agent identity configuration if provided
             MsalIdentityConfig? agentIdentity = null;
+            IConfigurationSection msalAgentSection = configuration.GetSection("MsalAgent");
             string? agentClientId = msalAgentSection["ClientId"];
             if (!string.IsNullOrEmpty(agentClientId))
             {
-                agentIdentity = new MsalIdentityConfig
-                {
-                    ConfigSection = msalAgentSection,
-                    ClientId = agentClientId,
-                    TenantId = msalAgentSection["TenantId"] ?? string.Empty,
-                    Scope = msalAgentSection["Scope"] ?? DefaultScope,
-                    Instance = msalAgentSection["Instance"] ?? botIdentity?.Instance ?? "https://login.microsoftonline.com/"
-                };
+                agentIdentity = BuildIdentity(
+                    msalAgentSection,
+                    agentClientId,
+                    "MsalAgent");
             }
 
             // At least one identity must be configured
-            if (botIdentity is null && agentIdentity is null)
+            if (botIdentities.Count == 0 && agentIdentity is null)
             {
-                throw new InvalidOperationException("At least one identity (MsalBot or MsalAgent) must be configured with a ClientId");
+                throw new InvalidOperationException("At least one identity (MsalBot, MsalBots, or MsalAgent) must be configured with a ClientId");
             }
 
             return new AdapterConfig
             {
-                BotIdentity = botIdentity,
+                BotIdentities = botIdentities,
                 AgentIdentity = agentIdentity
             };
         }
 
+        private static MsalIdentityConfig BuildIdentity(IConfigurationSection section, string clientId, string scheme) =>
+            new()
+            {
+                ConfigSection = section,
+                ClientId = clientId,
+                TenantId = section["TenantId"] ?? string.Empty,
+                Scope = section["Scope"] ?? DefaultScope,
+                Instance = section["Instance"] ?? DefaultInstance,
+                Scheme = scheme
+            };
+
         private static void ConfigureTokenValidation(IServiceCollection services, AdapterConfig config)
         {
-            // This demonstrates an edge case scenario where two token validation schemes are registered
-            // with different audiences (client IDs). The authorization policy will succeed if EITHER
-            // scheme validates successfully - only one token needs to pass, not both.
-            // Use case: When a bot is also registered as an agentic application and needs to accept
-            // tokens from both the bot registration AND the agentic application registration.
+            // Register a token validation scheme per configured identity, each validating its own audience
+            // (client id). The authorization policy succeeds if ANY scheme validates — so inbound tokens
+            // from any configured bot registration (or the agentic app) are accepted.
 
             AuthenticationBuilder authBuilder = services.AddAuthentication();
 
-            // Configure authentication schemes for bot identity if present
-            string? botScheme = null;
-            if (config.BotIdentity is not null)
+            // One JWT bearer scheme per bot registration.
+            foreach (MsalIdentityConfig bot in config.BotIdentities)
             {
-                botScheme = "MsalBot";
-                authBuilder.AddBotAuthentication(config.BotIdentity.ClientId, config.BotIdentity.TenantId, botScheme);
+                authBuilder.AddBotAuthentication(bot.ClientId, bot.TenantId, bot.Scheme);
             }
 
-            // Configure authentication schemes for agent identity if present
-            string? agentScheme = null;
+            // Agent identity scheme if present.
             if (config.AgentIdentity is not null)
             {
-                agentScheme = "MsalAgent";
-                authBuilder.AddBotAuthentication(config.AgentIdentity.ClientId, config.AgentIdentity.TenantId, agentScheme);
+                authBuilder.AddBotAuthentication(config.AgentIdentity.ClientId, config.AgentIdentity.TenantId, config.AgentIdentity.Scheme);
             }
 
-            // Create policy scheme that routes based on token audience
+            // Create policy scheme that routes to the matching scheme based on token audience.
             authBuilder.AddPolicyScheme(AdapterKeyName, AdapterKeyName, options =>
             {
-                options.ForwardDefaultSelector = context =>
-                    SelectAuthenticationScheme(context, config, botScheme, agentScheme);
+                options.ForwardDefaultSelector = context => SelectAuthenticationScheme(context, config);
             });
 
             // Create authorization policy
@@ -167,14 +177,12 @@ namespace PABot
                 });
         }
 
-        private static string SelectAuthenticationScheme(
-            HttpContext context,
-            AdapterConfig config,
-            string? botScheme,
-            string? agentScheme)
+        private static string SelectAuthenticationScheme(HttpContext context, AdapterConfig config)
         {
-            // Default to first available scheme
-            string defaultScheme = botScheme ?? agentScheme ?? throw new InvalidOperationException("No authentication scheme configured");
+            // Default to the first available scheme.
+            string defaultScheme = config.PrimaryBot?.Scheme
+                ?? config.AgentIdentity?.Scheme
+                ?? throw new InvalidOperationException("No authentication scheme configured");
 
             string? authHeader = context.Request.Headers.Authorization.ToString();
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -188,18 +196,19 @@ namespace PABot
                 JsonWebToken jwt = new(token);
                 string? audience = jwt.GetClaim("aud")?.Value;
 
-                // Check bot identity
-                if (config.BotIdentity is not null && botScheme is not null &&
-                    (audience == config.BotIdentity.ClientId || audience == $"api://{config.BotIdentity.ClientId}"))
+                // Match the token audience against any configured bot registration.
+                MsalIdentityConfig? matchingBot = config.BotIdentities
+                    .FirstOrDefault(b => audience == b.ClientId || audience == $"api://{b.ClientId}");
+                if (matchingBot is not null)
                 {
-                    return botScheme;
+                    return matchingBot.Scheme;
                 }
 
-                // Check agent identity
-                if (config.AgentIdentity is not null && agentScheme is not null &&
+                // Otherwise check the agent identity.
+                if (config.AgentIdentity is not null &&
                     (audience == config.AgentIdentity.ClientId || audience == $"api://{config.AgentIdentity.ClientId}"))
                 {
-                    return agentScheme;
+                    return config.AgentIdentity.Scheme;
                 }
             }
             catch
@@ -212,13 +221,20 @@ namespace PABot
 
         private static void ConfigureMsalOptions(IServiceCollection services, AdapterConfig config)
         {
-            // Configure MSAL options for bot identity if present - bind directly from MsalBot configuration section
-            if (config.BotIdentity is not null)
+            // Default bot credentials ("MsalBot") map to the primary bot, used by the fallback acquisition path.
+            if (config.PrimaryBot is not null)
             {
-                services.Configure<MicrosoftIdentityApplicationOptions>("MsalBot", config.BotIdentity.ConfigSection);
+                services.Configure<MicrosoftIdentityApplicationOptions>("MsalBot", config.PrimaryBot.ConfigSection);
             }
 
-            // Configure MSAL options for agent identity if present - bind directly from MsalAgent configuration section
+            // Register each bot's credentials under a named options keyed by its app (client) id, so
+            // PACustomAuthHandler can mint a token AS that specific bot based on the incoming activity.
+            foreach (MsalIdentityConfig bot in config.BotIdentities)
+            {
+                services.Configure<MicrosoftIdentityApplicationOptions>(bot.ClientId, bot.ConfigSection);
+            }
+
+            // Configure MSAL options for agent identity if present.
             if (config.AgentIdentity is not null)
             {
                 services.Configure<MicrosoftIdentityApplicationOptions>("MsalAgent", config.AgentIdentity.ConfigSection);
@@ -227,11 +243,15 @@ namespace PABot
 
         private static void RegisterRoutedTokenService(IServiceCollection services, AdapterConfig config)
         {
+            // Every configured bot app id is trusted to be minted as, based on the incoming activity.
+            string[] trustedBotAppIds = [.. config.BotIdentities.Select(b => b.ClientId)];
+
             services.AddSingleton<IRoutedTokenAcquisitionService>(sp =>
             {
                 return new RoutedTokenAcquisitionService(
-                    config.BotIdentity is not null,
+                    config.BotIdentities.Count > 0,
                     config.AgentIdentity is not null,
+                    trustedBotAppIds,
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<RoutedTokenAcquisitionService>>());
             });
@@ -285,7 +305,7 @@ namespace PABot
         private static DelegatingHandler CreatePACustomAuthHandler(IServiceProvider sp, AdapterConfig config)
         {
             // Use bot scope if available, otherwise use agent scope
-            string? botScope = config.BotIdentity?.Scope;
+            string? botScope = config.PrimaryBot?.Scope;
             string? agentScope = config.AgentIdentity?.Scope;
 
             return new PACustomAuthHandler(

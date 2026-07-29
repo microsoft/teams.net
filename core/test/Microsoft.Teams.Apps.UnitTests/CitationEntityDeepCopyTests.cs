@@ -26,7 +26,7 @@ public class CitationEntityDeepCopyTests
                     Name = "Source A",
                     Abstract = "Extract from Source A",
                     Url = new Uri("https://example.com/a"),
-                    EncodingFormat = "text/plain"
+                    EncodingFormat = EncodingFormat.TextPlain
                 }
             }
         ]

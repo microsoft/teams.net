@@ -15,6 +15,13 @@ In this sample:
   toy descriptions so the routing is obvious — ask Alice about dogs and
   watch Bob start a DM with you.)
 
+## What it shows
+
+- Multi-bot handoff over A2A from one Teams bot to another.
+- Proactive DM creation in the receiving bot after handoff.
+- LLM continuity by seeding the receiving bot's thread with handoff context.
+- Symmetric routing (Alice→Bob and Bob→Alice) with identical mechanics.
+
 ## Flow
 
 ```
@@ -65,21 +72,17 @@ The bots are symmetric — same flow runs in reverse from Bob to Alice.
 
 ## Configuration
 
-The sample uses ASP.NET's `appsettings.<Environment>.json` layering — set
-`ASPNETCORE_ENVIRONMENT` to `Alice` or `Bob` and the matching file is
-overlaid on top of the shared `appsettings.json`.
-
 Fill in:
 
-- `appsettings.json` — your shared `AzureOpenAI` credentials.
-- `appsettings.Alice.json` — Alice's `AzureAd` creds + `Bot:*` config.
-- `appsettings.Bob.json` — Bob's `AzureAd` creds + `Bot:*` config.
+- `appsettings.json` — shared logging only.
+- `Properties/launchSettings.TEMPLATE.json`:
+  - `Alice` profile — Alice `AzureAd` credentials + `Bot:*` + `AzureOpenAI:*`.
+  - `Bob` profile — Bob `AzureAd` credentials + `Bot:*` + `AzureOpenAI:*`.
 
 ## Run
 
-Two launch profiles in `Properties/launchSettings.json` set
-`ASPNETCORE_ENVIRONMENT` to `Alice` or `Bob`, picking which per-bot
-appsettings file gets layered on top of the shared one. In two terminals:
+Two launch profiles in `Properties/launchSettings.json` run Alice and Bob
+with their own per-profile credentials/config. In two terminals:
 
 ```bash
 dotnet run --launch-profile Alice

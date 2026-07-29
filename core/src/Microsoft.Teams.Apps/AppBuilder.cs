@@ -6,6 +6,7 @@ namespace Microsoft.Teams.Apps;
 /// <summary>
 /// Provides a static entry point for creating an <see cref="AppBuilder"/>.
 /// </summary>
+[Obsolete("App.Builder() is a backward-compatibility shim for the old library's App.Builder() pattern and will be removed. Configure OAuth flows via DI instead: builder.Services.AddTeamsBotApplication(options => options.AddOAuthFlow(\"connectionName\")).")]
 public static class App
 {
     /// <summary>
@@ -19,6 +20,7 @@ public static class App
 /// Fluent builder for configuring a Teams bot application.
 /// Wraps <see cref="TeamsBotApplicationOptions"/> for backward compatibility with the old <c>App.Builder()</c> pattern.
 /// </summary>
+[Obsolete("AppBuilder is a backward-compatibility shim for the old library's App.Builder() pattern and will be removed. Configure OAuth flows via DI instead: builder.Services.AddTeamsBotApplication(options => options.AddOAuthFlow(\"connectionName\")).")]
 public class AppBuilder
 {
     internal TeamsBotApplicationOptions Options { get; } = new();

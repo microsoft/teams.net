@@ -2,6 +2,14 @@
 
 A sample demonstrating a React/Vite tab served by the bot, with server functions and client-side Graph calls.
 
+## Prerequisites
+
+- Bot registered and installed in Teams.
+- Azure app registration configured for tab SSO.
+- Node.js and npm for building the web frontend.
+
+## What it shows
+
 | Feature | How it works |
 |---|---|
 | **Static tab** | Bot serves `Web/bin` via `app.WithTab("test", "./Web/bin")` at `/tabs/test` |
@@ -98,12 +106,11 @@ VITE_CLIENT_ID={YOUR_CLIENT_ID}
 
 ---
 
-## Build & Run
+## Running the Sample
 
 ```bash
-# Build the React app
-cd Web && npm install && npm run build
-
-# Run the bot
-dotnet run
+cd samples/TabApp/Web && npm install && npm run build
+dotnet run --project samples/TabApp/TabApp.csproj
 ```
+
+> **Microsoft-managed devices:** direct access to `registry.npmjs.org` is blocked, so `npm install` may fail. Your machine should already default to the Central Feed Services (CFS) proxy; if not, follow the setup instructions at [aka.ms/CFS](https://aka.ms/CFS). External contributors are unaffected.

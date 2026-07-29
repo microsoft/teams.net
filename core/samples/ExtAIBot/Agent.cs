@@ -142,8 +142,8 @@ internal sealed class Agent
         }
 
         return [
-            new SuggestedAction(ActionType.IMBack, followUps.Prompt1),
-            new SuggestedAction(ActionType.IMBack, followUps.Prompt2)
+            new SuggestedAction(ActionTypes.IMBack, followUps.Prompt1),
+            new SuggestedAction(ActionTypes.IMBack, followUps.Prompt2)
         ];
     }
 }

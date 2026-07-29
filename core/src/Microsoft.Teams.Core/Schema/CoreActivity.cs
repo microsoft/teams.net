@@ -35,6 +35,11 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
         if (raw is T typed)
             return typed;
 
+        if (raw is string rawString)
+        {
+            return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(rawString));
+        }
+
         if (raw is System.Text.Json.JsonElement element)
             return System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
 
@@ -42,7 +47,7 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
     }
 
     /// <summary>
-    /// Gets and deserializes a value from the dictionary without removing it.
+    /// Gets and deserializes a value from the dictionary without removing it or caching it back.
     /// Handles <see cref="System.Text.Json.JsonElement"/> values that result from deserialization.
     /// </summary>
     public T? Get<T>(string key)
@@ -53,11 +58,14 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
         if (raw is T typed)
             return typed;
 
-        if (raw is System.Text.Json.JsonElement element)
+        if (raw is string rawString)
         {
-            T? deserialized = System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
-            this[key] = deserialized;
-            return deserialized;
+            return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(rawString));
+        }
+
+        if (raw is JsonElement element)
+        {
+            return JsonSerializer.Deserialize<T>(element.GetRawText());
         }
 
         return default;
@@ -111,12 +119,12 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the sender account for this activity.
     /// </summary>
-    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
+    [JsonPropertyName("from")] public ChannelAccount? From { get; set; }
 
     /// <summary>
     /// Gets or sets the recipient account for this activity.
     /// </summary>
-    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
+    [JsonPropertyName("recipient")] public ChannelAccount? Recipient { get; set; }
 
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
@@ -124,21 +132,16 @@ public class CoreActivity
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
     /// <summary>
-    /// Gets the default JSON serializer options used for serializing and deserializing activities.
-    /// </summary>
-    /// <remarks>
-    /// Uses the source-generated JSON context for AOT-compatible serialization.
-    /// </remarks>
-    public static readonly JsonSerializerOptions DefaultJsonOptions = CoreActivityJsonContext.Default.Options;
-
-    /// <summary>
     /// Gets the JSON serializer options used for reflection-based serialization of extended activity types.
     /// </summary>
     /// <remarks>
     /// Uses reflection-based serialization to support custom activity types that extend CoreActivity.
-    /// This is used when serializing/deserializing types not registered in the source-generated context.
+    /// This is used when serializing/deserializing types not registered in the source-generated context,
+    /// and to serialize inbound (read-model) activities by their runtime type for logging/diagnostics.
+    /// Inbound activities are never serialized onto the wire; the outbound <c>*Input</c> types own the
+    /// AOT-safe serialization path.
     /// </remarks>
-    private static readonly JsonSerializerOptions ReflectionJsonOptions = new()
+    public static readonly JsonSerializerOptions ReflectionJsonOptions = new()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -169,20 +172,22 @@ public class CoreActivity
         ChannelId = activity.ChannelId;
         Type = activity.Type;
         Conversation = activity.Conversation is not null ? new Conversation(activity.Conversation.Id) { Properties = new ExtendedPropertiesDictionary(activity.Conversation.Properties) } : null;
-        From = activity.From is not null ? CloneConversationAccount(activity.From) : null;
-        Recipient = activity.Recipient is not null ? CloneConversationAccount(activity.Recipient) : null;
+        From = activity.From is not null ? CloneChannelAccount(activity.From) : null;
+        Recipient = activity.Recipient is not null ? CloneChannelAccount(activity.Recipient) : null;
         Properties = new ExtendedPropertiesDictionary(activity.Properties);
     }
 
 #pragma warning disable ExperimentalTeamsTargeted
-    private static ConversationAccount CloneConversationAccount(ConversationAccount source) => new()
+    private static ChannelAccount CloneChannelAccount(ChannelAccount source) => new()
     {
         Id = source.Id,
+        BotId = source.BotId,
         Name = source.Name,
         IsTargeted = source.IsTargeted,
         AgenticAppId = source.AgenticAppId,
         AgenticUserId = source.AgenticUserId,
         AgenticAppBlueprintId = source.AgenticAppBlueprintId,
+        TenantId = source.TenantId,
         Properties = new ExtendedPropertiesDictionary(source.Properties)
     };
 #pragma warning restore ExperimentalTeamsTargeted
@@ -198,16 +203,16 @@ public class CoreActivity
     /// Serializes the current activity to a JSON string using the specified <see cref="JsonTypeInfo{T}"/> for source-generated serialization.
     /// </summary>
     /// <typeparam name="T">The type of the activity to serialize. Must inherit from <see cref="CoreActivity"/>.</typeparam>
-    /// <param name="ops">The JSON type info that provides serialization metadata for type <typeparamref name="T"/>.</param>
+    /// <param name="jsonTypeInfo">The JSON type info that provides serialization metadata for type <typeparamref name="T"/>.</param>
     /// <returns>A JSON string representation of the activity.</returns>
-    public string ToJson<T>(JsonTypeInfo<T> ops) where T : CoreActivity
-        => JsonSerializer.Serialize(this, ops);
+    public string ToJson<T>(JsonTypeInfo<T> jsonTypeInfo) where T : CoreActivity
+        => JsonSerializer.Serialize(this, jsonTypeInfo);
 
     /// <summary>
-    /// Serializes the specified activity instance to a JSON string using the default serialization options.
+    /// Serializes the specified activity instance to a JSON string using reflection-based serialization.
     /// </summary>
-    /// <remarks>The serialization uses the default JSON options defined by DefaultJsonOptions. The resulting
-    /// JSON reflects the public properties of the activity instance.</remarks>
+    /// <remarks>Uses reflection-based serialization to support custom activity types that extend
+    /// <see cref="CoreActivity"/>. The resulting JSON reflects the public properties of the activity instance.</remarks>
     /// <typeparam name="T">The type of the activity to serialize. Must inherit from CoreActivity.</typeparam>
     /// <param name="instance">The activity instance to serialize. Cannot be null.</param>
     /// <returns>A JSON string representation of the specified activity instance.</returns>
@@ -236,11 +241,11 @@ public class CoreActivity
     /// </summary>
     /// <typeparam name="T">The type of the activity to deserialize. Must inherit from <see cref="CoreActivity"/>.</typeparam>
     /// <param name="stream">The stream containing JSON data to deserialize.</param>
-    /// <param name="ops">The JSON type info that provides deserialization metadata for type <typeparamref name="T"/>.</param>
+    /// <param name="jsonTypeInfo">The JSON type info that provides deserialization metadata for type <typeparamref name="T"/>.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask{T}"/> representing the asynchronous operation. The result contains the deserialized activity, or null if deserialization fails.</returns>
-    public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, JsonTypeInfo<T> ops, CancellationToken cancellationToken = default) where T : CoreActivity
-        => JsonSerializer.DeserializeAsync(stream, ops, cancellationToken);
+    public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, JsonTypeInfo<T> jsonTypeInfo, CancellationToken cancellationToken = default) where T : CoreActivity
+        => JsonSerializer.DeserializeAsync(stream, jsonTypeInfo, cancellationToken);
 
     /// <summary>
     /// Asynchronously deserializes a JSON value from the specified stream into an instance of type T.
@@ -256,10 +261,5 @@ public class CoreActivity
     public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default) where T : CoreActivity
         => JsonSerializer.DeserializeAsync<T>(stream, ReflectionJsonOptions, cancellationToken);
 
-    /// <summary>
-    /// Creates a new instance of the <see cref="CoreActivityBuilder"/> to construct activity instances.
-    /// </summary>
-    /// <returns>A new <see cref="CoreActivityBuilder"/> instance.</returns>
-    public static CoreActivityBuilder CreateBuilder() => new();
 
 }

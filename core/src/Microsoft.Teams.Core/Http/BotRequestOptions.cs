@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Core.Schema;
-
 namespace Microsoft.Teams.Core.Http;
 
 using CustomHeaders = Dictionary<string, string>;
@@ -13,20 +11,16 @@ using CustomHeaders = Dictionary<string, string>;
 public record BotRequestOptions
 {
     /// <summary>
-    /// Gets the agentic identity for authentication.
+    /// Gets the per-request properties to stamp onto the outbound request's options, where a
+    /// <see cref="System.Net.Http.DelegatingHandler"/> can read them. See <see cref="BotRequestContext"/>
+    /// for well-known keys (agentic identity, bot app id) and helpers.
     /// </summary>
-    public AgenticIdentity? AgenticIdentity { get; init; }
+    public BotRequestContext? RequestContext { get; init; }
 
     /// <summary>
     /// Gets the custom headers to include in the request.
-    /// These headers override default headers if the same key exists.
     /// </summary>
     public CustomHeaders? CustomHeaders { get; init; }
-
-    /// <summary>
-    /// Gets the default custom headers that will be included in all requests.
-    /// </summary>
-    public CustomHeaders? DefaultHeaders { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether to return null instead of throwing on 404 responses.

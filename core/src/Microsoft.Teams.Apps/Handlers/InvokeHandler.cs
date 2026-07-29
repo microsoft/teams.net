@@ -3,8 +3,9 @@
 
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.TaskModules;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Represents a method that handles an invocation request and returns a response asynchronously.
@@ -24,7 +25,7 @@ public static class InvokeExtensions
     /// <summary>
     /// Registers a catch-all handler for all invoke activities.
     /// Cannot be combined with specific invoke handlers such as <see cref="AdaptiveCardExtensions.OnAdaptiveCardAction"/>,
-    /// <see cref="TaskExtensions.OnTaskFetch"/>, etc.
+    /// <see cref="Microsoft.Teams.Apps.TaskModules.TaskExtensions.OnTaskFetch(TeamsBotApplication, TaskModuleHandler)"/>, etc.
     /// </summary>
     /// <remarks>
     /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
@@ -37,7 +38,7 @@ public static class InvokeExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = TeamsActivityType.Invoke,
+            Name = TeamsActivityTypes.Invoke,
             Selector = _ => true,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {

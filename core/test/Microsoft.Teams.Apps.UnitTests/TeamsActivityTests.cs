@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Apps.UnitTests;
@@ -17,23 +16,6 @@ public class TeamsActivityTests
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
 
-    }
-
-    [Fact]
-    public void DownCastTeamsActivity_To_CoreActivity_FromBuilder()
-    {
-
-        TeamsActivity teamsActivity = TeamsActivity
-            .CreateBuilder()
-            .WithConversation(new Conversation() { Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856" })
-            .Build();
-
-        static void AssertCid(CoreActivity a)
-        {
-            Assert.IsAssignableFrom<TeamsActivity>(a);
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", ((TeamsActivity)a).Conversation!.Id);
-        }
-        AssertCid(teamsActivity);
     }
 
     [Fact]
@@ -78,12 +60,10 @@ public class TeamsActivityTests
     [Fact]
     public void Serialize_TeamsActivity_WithEntities()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
-              .WithType(ActivityType.Message)
+        MessageActivityInput activity = new MessageActivityInput()
               .WithText("Hello World")
-              .WithChannelId("msteams")
               .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
-          .Build();
+          ;
 
         string jsonResult = activity.ToJson();
         Assert.Contains("clientInfo", jsonResult);
@@ -134,10 +114,10 @@ public class TeamsActivityTests
             }
             """;
 
-        TeamsActivity teamsActivity = TeamsActivity.CreateBuilder().Build();
+        MessageActivityInput teamsActivity = new MessageActivityInput();
         Assert.NotNull(teamsActivity);
         string json = teamsActivity.ToJson();
-        Assert.Equal(minActivityJson, json);
+        Assert.Equal(minActivityJson.Replace("\r\n", "\n"), json.Replace("\r\n", "\n"));
     }
 
     [Fact]
@@ -163,7 +143,7 @@ public class TeamsActivityTests
     }
 
     [Fact]
-    public void Serialize_DoesNotRepeat_ConversationAccount_Properties()
+    public void Serialize_DoesNotRepeat_ChannelAccount_Properties()
     {
         CoreActivity coreActivity = CoreActivity.FromJsonString("""
             {

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Teams.Core.Diagnostics;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core.Hosting;
@@ -50,7 +51,7 @@ internal sealed class BotAuthenticationHandler(
     /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
     /// </summary>
-    public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
+    public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new(BotRequestContext.AgenticIdentityKey);
 
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

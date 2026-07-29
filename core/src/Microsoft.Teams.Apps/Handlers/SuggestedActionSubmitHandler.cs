@@ -6,7 +6,7 @@
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Handlers;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Delegate for handling <c>suggestedActions/submit</c> invoke activities.
@@ -38,7 +38,7 @@ public static class SuggestedActionSubmitExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SuggestedActionSubmit),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SuggestedActionSubmit),
             Selector = activity => activity.Name == InvokeNames.SuggestedActionSubmit,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {

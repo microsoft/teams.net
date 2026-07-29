@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Security;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
@@ -9,7 +8,6 @@ namespace Microsoft.Teams.Apps.Schema.Entities;
 /// <summary>
 /// Quoted reply entity extension methods.
 /// </summary>
-[Experimental("ExperimentalTeamsQuotedReplies")]
 public static class QuotedReplyEntityExtensions
 {
     /// <summary>
@@ -35,7 +33,7 @@ public static class QuotedReplyEntityExtensions
     /// <summary>
     /// Internal helper to add a quoted-reply entity and append the quoted placeholder to activity text.
     /// </summary>
-    internal static void AddToActivity(TeamsActivity activity, string messageId, string? text = null)
+    internal static void AddToActivity(TeamsActivityInput activity, string messageId, string? text = null)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -44,7 +42,7 @@ public static class QuotedReplyEntityExtensions
         activity.Entities ??= [];
         activity.Entities.Add(entity);
 
-        string currentText = activity is MessageActivity message
+        string currentText = activity is MessageActivityInput message
             ? (message.Text ?? string.Empty)
             : (activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() ?? string.Empty : string.Empty);
 
@@ -54,7 +52,7 @@ public static class QuotedReplyEntityExtensions
             newText += $" {text}";
         }
 
-        if (activity is MessageActivity msg)
+        if (activity is MessageActivityInput msg)
         {
             msg.Text = newText;
         }

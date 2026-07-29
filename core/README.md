@@ -16,14 +16,14 @@ The core SDK for building Microsoft Teams bots in .NET. It implements the [Activ
 using Microsoft.Teams.Apps;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddTeams();
+builder.Services.AddTeamsBotApplication();
 
 var app = builder.Build();
-var teams = app.UseTeams(); // maps POST /api/messages
+var teams = app.UseTeamsBotApplication(); // maps POST /api/messages
 
 teams.OnMessage(async (context, ct) =>
 {
-    await context.Send($"You said: {context.Activity.Text}");
+    await context.SendAsync($"You said: {context.Activity.Text}");
 });
 
 app.Run();
@@ -94,20 +94,65 @@ dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
 
 ## Samples
 
+### Core and hosting
+
 | Sample | Description |
 |--------|-------------|
-| [TeamsBot](samples/TeamsBot/) | Basic Teams bot with message handling |
+| [CoreBot](samples/CoreBot/) | Lowest-level sample using `Microsoft.Teams.Core` directly |
+| [CustomHosting](samples/CustomHosting/) | Custom `TeamsBotApplication` subclass and hosting |
+
+### Messaging and lifecycle
+
+| Sample | Description |
+|--------|-------------|
+| [CommonHandlersBot](samples/CommonHandlersBot/) | Basic message and conversation lifecycle handlers |
+| [TeamsBot](samples/TeamsBot/) | Simple Teams bot sample with rich messaging and cards |
+| [ReactionsBot](samples/ReactionsBot/) | Add/remove message reactions via conversation APIs |
 | [TeamsChannelBot](samples/TeamsChannelBot/) | Channel-scoped messaging |
-| [AllInvokesBot](samples/AllInvokesBot/) | Handles all invoke activity types |
+| [TargetedMessages](samples/TargetedMessages/) | Targeted messages and targeted message lifecycle |
+| [QuotingAndThreadingBot](samples/QuotingAndThreadingBot/) | Quoting and threaded replies |
+
+### Cards, invokes, and tabs
+
+| Sample | Description |
+|--------|-------------|
+| [AdaptiveCardTaskModuleBot](samples/AdaptiveCardTaskModuleBot/) | Adaptive card actions and task module invoke handlers |
+| [SuggestedActionBot](samples/SuggestedActionBot/) | Suggested actions and submit handling |
 | [MessageExtensionBot](samples/MessageExtensionBot/) | Message extension search and actions |
 | [MeetingsBot](samples/MeetingsBot/) | Meeting events and participant APIs |
-| [OAuthFlowBot](samples/OAuthFlowBot/) | OAuth sign-in and token management |
-| [SsoBot](samples/SsoBot/) | Single sign-on (SSO) token exchange |
-| [StreamingBot](samples/StreamingBot/) | Progressive streaming responses |
-| [Proactive](samples/Proactive/) | Proactive messaging from external triggers |
 | [TabApp](samples/TabApp/) | Tab application with backend API |
-| [CompatBot](samples/CompatBot/) | Migrating a Bot Framework v4 bot |
-| [CoreBot](samples/CoreBot/) | Using Microsoft.Teams.Core directly |
+
+### OAuth, state, and observability
+
+| Sample | Description |
+|--------|-------------|
+| [OAuthFlowBot](samples/OAuthFlowBot/) | OAuth sign-in and token management |
+| [GraphBot](samples/GraphBot/) | App-only bot using the Microsoft Graph SDK with client credentials |
+| [CachingAuthTokens](samples/CachingAuthTokens/) | Redis-backed cache for auth/session data |
+| [StateBot](samples/StateBot/) | Conversation and user state backed by cache |
+| [ObservabilityBot](samples/ObservabilityBot/) | OpenTelemetry and AI observability |
+
+### AI integrations
+
+| Sample | Description |
+|--------|-------------|
+| [A2ABot](samples/A2ABot/) | Agent-to-agent handoff bot |
+| [ExtAIBot](samples/ExtAIBot/) | `Microsoft.Extensions.AI` integration |
+| [McpServer](samples/McpServer/) | MCP server with Teams and Graph tools |
+| [StreamingBot](samples/StreamingBot/) | Progressive streaming responses |
+
+### Compatibility and migration
+
+| Sample | Description |
+|--------|-------------|
+| [CompatBot](samples/CompatBot/) | Bot Framework compatibility sample |
+| [PABot](samples/PABot/) | Bot Framework compatibility with Teams auth |
+
+### Test utilities
+
+| Sample | Description |
+|--------|-------------|
+| [TeamsApisDemo](test/TeamsApisDemo/) | Console demo for member paging |
 
 ## Project Structure
 

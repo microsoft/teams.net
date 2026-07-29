@@ -2,11 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Api.Clients;
-using Microsoft.Teams.Apps.Handlers;
-using Microsoft.Teams.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.TaskModules;
 using Microsoft.Teams.Cards;
 
 namespace ExtAIBot;
@@ -56,10 +55,10 @@ internal class ExtAIBotApp : TeamsBotApplication
             string? reaction = context.Activity.Value?.Data?.ActionValue?.Reaction;
 
             return Task.FromResult(TaskModuleResponse.CreateBuilder()
-                .WithType(TaskModuleResponseType.Continue)
+                .WithType(TaskModuleResponseTypes.Continue)
                 .WithTitle("Feedback")
-                .WithHeight(TaskModuleSize.Small)
-                .WithWidth(TaskModuleSize.Small)
+                .WithHeight(TaskModuleSizes.Small)
+                .WithWidth(TaskModuleSizes.Small)
                 .WithCard(BuildFeedbackCard(reaction))
                 .Build());
         });
@@ -88,24 +87,26 @@ internal class ExtAIBotApp : TeamsBotApplication
 
         IList<Entity> entities = result.Citations.BuildEntities(result.FullText);
 
-        MessageActivity final = new();
+        MessageActivityInput finalBuilder = new MessageActivityInput();
 
         if (result.PendingCards.Count > 0)
         {
             // Card-only reply (e.g. clarification). No text and no feedback — the card IS the question.
-            final.Text = "";
-            final.AddAttachment([.. result.PendingCards.Select(c =>
-                TeamsAttachment.CreateBuilder().WithAdaptiveCard(c).Build())]);
+            finalBuilder.WithText("")
+                .AddAttachment([.. result.PendingCards.Select(c =>
+                    TeamsAttachment.CreateBuilder().WithAdaptiveCard(c).Build())]);
         }
         else
         {
-            final.AddFeedback(FeedbackType.Custom);
+            finalBuilder.AddFeedback(FeedbackTypes.Custom);
         }
 
-        foreach (Entity entity in entities) final.AddEntity(entity);
+        foreach (Entity entity in entities) finalBuilder.AddEntity(entity);
 
         if (result.FollowUpActions.Count > 0)
-            final.WithSuggestedActions(new SuggestedActions().AddActions([.. result.FollowUpActions]));
+            finalBuilder.WithSuggestedActions(new SuggestedActions().AddActions([.. result.FollowUpActions]));
+
+        MessageActivityInput final = finalBuilder;
 
         await writer.FinalizeResponseAsync(final, cancellationToken);
     }

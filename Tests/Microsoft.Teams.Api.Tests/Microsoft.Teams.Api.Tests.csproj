@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
-    <NoWarn>$(NoWarn);ExperimentalTeamsTargeted;ExperimentalTeamsQuotedReplies</NoWarn>
+    <NoWarn>$(NoWarn);ExperimentalTeamsTargeted</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

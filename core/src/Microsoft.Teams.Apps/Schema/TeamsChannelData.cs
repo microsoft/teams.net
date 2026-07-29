@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Utils;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.Schema;
@@ -49,6 +49,22 @@ public class TeamsChannelDataSettings
 }
 
 /// <summary>
+/// Information about the app sending an activity.
+/// </summary>
+public class AppInfo
+{
+    /// <summary>
+    /// Unique identifier representing an app.
+    /// </summary>
+    [JsonPropertyName("id")] public string? Id { get; set; }
+
+    /// <summary>
+    /// Version of the app.
+    /// </summary>
+    [JsonPropertyName("version")] public string? Version { get; set; }
+}
+
+/// <summary>
 /// Represents Teams-specific channel data.
 /// </summary>
 public class TeamsChannelData : ChannelData
@@ -81,6 +97,11 @@ public class TeamsChannelData : ChannelData
     [JsonPropertyName("channel")] public TeamsChannel? Channel { get; set; }
 
     /// <summary>
+    /// Information about the app sending this activity.
+    /// </summary>
+    [JsonPropertyName("app")] public AppInfo? App { get; set; }
+
+    /// <summary>
     /// Team information.
     /// </summary>
     [JsonPropertyName("team")] public Team? Team { get; set; }
@@ -93,7 +114,7 @@ public class TeamsChannelData : ChannelData
     /// <summary>
     /// Gets or sets the event type for conversation updates. See <see cref="ConversationEventTypes"/> for known values.
     /// </summary>
-    [JsonPropertyName("eventType")] public string? EventType { get; set; }
+    [JsonPropertyName("eventType")] public ConversationEventType? EventType { get; set; }
 
     /// <summary>
     /// Source information for the activity.
@@ -108,25 +129,35 @@ public class TeamsChannelData : ChannelData
     /// <summary>
     /// Feedback loop configuration. When set, takes precedence over
     /// <see cref="FeedbackLoopEnabled"/>. Set <c>Type</c> to
-    /// <see cref="FeedbackType.Custom"/> to trigger a <c>message/fetchTask</c>
+    /// <see cref="FeedbackTypes.Custom"/> to trigger a <c>message/fetchTask</c>
     /// invoke for a bot-provided task module dialog.
     /// </summary>
     [JsonPropertyName("feedbackLoop")] public FeedbackLoop? FeedbackLoop { get; set; }
 }
 
 /// <summary>
-/// Known values for <see cref="FeedbackLoop.Type"/>.
+/// String enum for <see cref="FeedbackLoop.Type"/>.
 /// </summary>
-public static class FeedbackType
+[JsonConverter(typeof(StringEnumJsonConverter<FeedbackType>))]
+public class FeedbackType(string value) : StringEnum(value)
 {
-    /// <summary>Teams' built-in thumbs up/down UI.</summary>
-    public const string Default = "default";
+    /// <summary>Gets the default feedback loop type.</summary>
+    public static readonly FeedbackType Default = new("default");
+    /// <summary>Gets the custom feedback loop type.</summary>
+    public static readonly FeedbackType Custom = new("custom");
 
-    /// <summary>
-    /// Triggers a <c>message/fetchTask</c> invoke so the bot can return its
-    /// own task module dialog when the user clicks thumbs up/down.
-    /// </summary>
-    public const string Custom = "custom";
+}
+
+/// <summary>
+/// Common feedback loop types.
+/// </summary>
+public static class FeedbackTypes
+{
+    /// <summary>Gets the default feedback loop type.</summary>
+    public static FeedbackType Default => FeedbackType.Default;
+
+    /// <summary>Gets the custom feedback loop type.</summary>
+    public static FeedbackType Custom => FeedbackType.Custom;
 }
 
 /// <summary>
@@ -138,18 +169,18 @@ public static class FeedbackType
 public class FeedbackLoop
 {
     /// <summary>
-    /// The feedback loop type. See <see cref="FeedbackType"/> for known values.
+    /// The feedback loop type. See <see cref="FeedbackTypes"/> for known values.
     /// </summary>
-    [JsonPropertyName("type")] public string Type { get; set; } = FeedbackType.Default;
+    [JsonPropertyName("type")] public FeedbackType Type { get; set; } = FeedbackTypes.Default;
 
     /// <summary>
-    /// Creates a new instance with the default <see cref="FeedbackType.Default"/> type.
+    /// Creates a new instance with the default <see cref="FeedbackTypes.Default"/> type.
     /// </summary>
     public FeedbackLoop() { }
 
     /// <summary>
     /// Creates a new instance with the specified type.
     /// </summary>
-    /// <param name="type">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
-    public FeedbackLoop(string type) { Type = type; }
+    /// <param name="type">The feedback loop type. See <see cref="FeedbackTypes"/> for known values.</param>
+    public FeedbackLoop(FeedbackType type) { Type = type; }
 }

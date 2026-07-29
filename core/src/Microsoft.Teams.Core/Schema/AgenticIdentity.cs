@@ -18,15 +18,20 @@ public sealed class AgenticIdentity
     public string? AgenticUserId { get; set; }
 
     /// <summary>
+    /// Tenant ID associated with the agentic identity.
+    /// </summary>
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// Agentic application blueprint ID.
     /// </summary>
     public string? AgenticAppBlueprintId { get; set; }
 
     /// <summary>
-    /// Creates an <see cref="AgenticIdentity"/> from a <see cref="ConversationAccount"/>'s typed agentic fields.
+    /// Creates an <see cref="AgenticIdentity"/> from a <see cref="ChannelAccount"/>'s typed agentic fields.
     /// Returns null if the account is null or has no agentic fields set.
     /// </summary>
-    public static AgenticIdentity? FromAccount(ConversationAccount? account)
+    public static AgenticIdentity? FromAccount(ChannelAccount? account)
     {
         if (account is null || (account.AgenticAppId is null && account.AgenticUserId is null && account.AgenticAppBlueprintId is null))
         {
@@ -37,7 +42,8 @@ public sealed class AgenticIdentity
         {
             AgenticAppId = account.AgenticAppId,
             AgenticUserId = account.AgenticUserId,
-            AgenticAppBlueprintId = account.AgenticAppBlueprintId
+            AgenticAppBlueprintId = account.AgenticAppBlueprintId,
+            TenantId = account.TenantId
         };
     }
 }

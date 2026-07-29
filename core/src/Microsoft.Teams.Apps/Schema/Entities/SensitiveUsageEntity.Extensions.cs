@@ -25,7 +25,7 @@ public static class SensitiveUsageEntityExtensions
     /// <summary>
     /// Internal helper to add a sensitivity label to an activity.
     /// </summary>
-    internal static void AddToActivity(TeamsActivity activity, string name, string? description, DefinedTerm? pattern)
+    internal static void AddToActivity(TeamsActivityInput activity, string name, string? description, DefinedTerm? pattern)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);

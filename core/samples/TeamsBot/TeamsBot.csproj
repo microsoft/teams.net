@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+		<ProjectReference Include="..\..\src\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Core.Schema;
 using OpenTelemetry;
 
 namespace Microsoft.Teams.Apps.UnitTests.Diagnostics;
@@ -11,13 +10,13 @@ namespace Microsoft.Teams.Apps.UnitTests.Diagnostics;
 public class TeamsBaggageBuilderTests
 {
     [Fact]
-    public void FromTeamsContext_PopulatesAppsOnlyKeysFromTeamsConversationAccount()
+    public void FromTeamsContext_PopulatesAppsOnlyKeysFromTeamsChannelAccount()
     {
-        TeamsConversationAccount from = new() { Id = "from-id", Name = "User One" };
+        TeamsChannelAccount from = new() { Id = "from-id", Name = "User One" };
         from.AadObjectId = "aad-from";
         from.Email = "user@contoso.com";
 
-        TeamsConversationAccount recipient = new()
+        TeamsChannelAccount recipient = new()
         {
             Id = "agent-id",
             Name = "Agent",
@@ -67,7 +66,7 @@ public class TeamsBaggageBuilderTests
             Id = "act-1",
             ChannelId = "msteams",
             Conversation = new TeamsConversation { Id = "conv-1" },
-            Recipient = new TeamsConversationAccount { Id = "agent" /* no TenantId */ },
+            Recipient = new TeamsChannelAccount { Id = "agent" /* no TenantId */ },
             ChannelData = new TeamsChannelData
             {
                 Tenant = new TeamsChannelDataTenant { Id = "tenant-from-channeldata" },
@@ -87,7 +86,7 @@ public class TeamsBaggageBuilderTests
             Id = "act-1",
             ChannelId = "msteams",
             Conversation = new TeamsConversation { Id = "conv-1" },
-            Recipient = new TeamsConversationAccount { Id = "agent", TenantId = "t" },
+            Recipient = new TeamsChannelAccount { Id = "agent", TenantId = "t" },
         };
 
         Dictionary<string, string?> baggage = ApplyAndCapture(b => b.FromTeamsContext(BuildCtx(activity)));

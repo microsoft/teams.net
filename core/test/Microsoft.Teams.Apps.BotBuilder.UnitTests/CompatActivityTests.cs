@@ -7,6 +7,7 @@ using AdaptiveCards;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
@@ -23,8 +24,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ServiceUrl = "https://smba.trafficmanager.net/teams",
                 ChannelId = "msteams",
                 Id = "test-id-123",
-                From = new ChannelAccount { Id = "user-123", Name = "Test User" },
-                Recipient = new ChannelAccount { Id = "bot-456", Name = "Test Bot" },
+                From = new Microsoft.Bot.Schema.ChannelAccount { Id = "user-123", Name = "Test User" },
+                Recipient = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-456", Name = "Test Bot" },
                 Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-789", Name = "Test Conversation" }
             };
 
@@ -305,10 +306,21 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Name = "Alice" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.Equal("user-1", result.Id);
             Assert.Equal("Alice", result.Name);
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_MapsBotId()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "bot-account-id" };
+            account.Properties["botId"] = "28:bot-app-id";
+
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
+
+            Assert.Equal("28:bot-app-id", result.BotId);
         }
 
         [Fact]
@@ -316,7 +328,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", AadObjectId = "aad-123" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.True(result.Properties.TryGetValue("aadObjectId", out object? val));
             Assert.Equal("aad-123", val?.ToString());
@@ -327,7 +339,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Role = "owner" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.True(result.Properties.TryGetValue("userRole", out object? val));
             Assert.Equal("owner", val?.ToString());
@@ -338,7 +350,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.False(result.Properties.ContainsKey("aadObjectId"));
             Assert.False(result.Properties.ContainsKey("userRole"));
@@ -349,6 +361,17 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount? account = null;
             Assert.Throws<ArgumentNullException>(() => account!.FromCompatChannelAccount());
+        }
+
+        [Fact]
+        public void ToCompatChannelAccount_MapsBotId()
+        {
+            Microsoft.Teams.Core.Schema.ChannelAccount account = new() { Id = "bot-account-id", BotId = "28:bot-app-id" };
+
+            Microsoft.Bot.Schema.ChannelAccount result = account.ToCompatChannelAccount();
+
+            Assert.True(result.Properties.TryGetValue("botId", out JToken? botId));
+            Assert.Equal("28:bot-app-id", botId?.ToString());
         }
     }
 
@@ -434,5 +457,138 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Microsoft.Bot.Schema.ConversationParameters? parameters = null;
             Assert.Throws<ArgumentNullException>(() => parameters!.FromCompatConversationParameters());
         }
+
+        #region FromBotFrameworkActivityInput Tests
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_PreservesTypedProperties()
+        {
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Id = "act-1",
+                ReplyToId = "reply-1",
+                Recipient = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-1", Name = "Bot" }
+            };
+
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            Assert.NotNull(input);
+            Assert.Equal(ActivityTypes.Message, input.Type);
+            Assert.Equal("act-1", input.Id);
+            Assert.Equal("reply-1", input.ReplyToId);
+            Assert.NotNull(input.Recipient);
+            Assert.Equal("bot-1", input.Recipient.Id);
+            Assert.Equal("Bot", input.Recipient.Name);
+        }
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_CarriesRoutingAndIdentityIntoPropertyBag()
+        {
+            // The outbound input models only type/id/replyToId/recipient as typed members; everything
+            // else (routing + body identity) is carried through the extension property bag.
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                ServiceUrl = "https://smba.trafficmanager.net/teams",
+                ChannelId = "msteams",
+                From = new Microsoft.Bot.Schema.ChannelAccount { Id = "user-1", Name = "User" },
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-1", Name = "Conv" }
+            };
+
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            Assert.Equal("https://smba.trafficmanager.net/teams", input.Properties["serviceUrl"]?.ToString());
+            Assert.Equal("msteams", input.Properties["channelId"]?.ToString());
+
+            JsonElement from = Assert.IsType<JsonElement>(input.Properties["from"]);
+            Assert.Equal("user-1", from.GetProperty("id").GetString());
+            Assert.Equal("User", from.GetProperty("name").GetString());
+
+            JsonElement conversation = Assert.IsType<JsonElement>(input.Properties["conversation"]);
+            Assert.Equal("conv-1", conversation.GetProperty("id").GetString());
+            Assert.Equal("Conv", conversation.GetProperty("name").GetString());
+        }
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_PreservesTextAndMetadata()
+        {
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Text = "Hello, this is a test message",
+                Locale = "en-US",
+                InputHint = "acceptingInput"
+            };
+
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            Assert.Equal("Hello, this is a test message", input.Properties["text"]?.ToString());
+            Assert.Equal("en-US", input.Properties["locale"]?.ToString());
+            Assert.Equal("acceptingInput", input.Properties["inputHint"]?.ToString());
+        }
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_PreservesAttachments()
+        {
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Attachments =
+                [
+                    new Attachment { ContentType = "text/plain", Content = "abc", Name = "f.txt" }
+                ]
+            };
+
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            JsonElement attachments = Assert.IsType<JsonElement>(input.Properties["attachments"]);
+            Assert.Equal(JsonValueKind.Array, attachments.ValueKind);
+            Assert.Equal(1, attachments.GetArrayLength());
+            JsonElement first = attachments[0];
+            Assert.Equal("text/plain", first.GetProperty("contentType").GetString());
+            Assert.Equal("abc", first.GetProperty("content").GetString());
+            Assert.Equal("f.txt", first.GetProperty("name").GetString());
+        }
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_RoundTripsConversationThroughJson()
+        {
+            // Backward compat: the serialized outbound body still surfaces the conversation.
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Text = "hi",
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-42" }
+            };
+
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+            string json = input.ToJson();
+
+            Assert.Contains("\"conversation\"", json);
+            Assert.Contains("\"conv-42\"", json);
+        }
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_MinimalActivity_MapsTypeOnly()
+        {
+            Activity activity = new() { Type = ActivityTypes.Typing };
+
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
+
+            Assert.Equal(ActivityTypes.Typing, input.Type);
+            Assert.Null(input.Id);
+            Assert.Null(input.ReplyToId);
+            Assert.Null(input.Recipient);
+        }
+
+        [Fact]
+        public void FromBotFrameworkActivityInput_ThrowsOnNull()
+        {
+            Activity? activity = null;
+            Assert.Throws<ArgumentNullException>(() => activity!.FromBotFrameworkActivityInput());
+        }
+
+        #endregion
     }
 }

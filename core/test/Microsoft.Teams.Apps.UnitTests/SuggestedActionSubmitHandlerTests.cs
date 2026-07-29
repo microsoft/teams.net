@@ -6,7 +6,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
@@ -27,7 +26,7 @@ public class SuggestedActionSubmitHandlerTests
         Router router = new(NullLogger.Instance);
         router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SuggestedActionSubmit),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SuggestedActionSubmit),
             Selector = activity => activity.Name == InvokeNames.SuggestedActionSubmit,
         });
 
@@ -77,7 +76,7 @@ public class SuggestedActionSubmitHandlerTests
             SuggestedActions = new SuggestedActions()
         };
         activity.SuggestedActions.AddAction(
-            new SuggestedAction(ActionType.Submit, "Approve", new { vote = "approve" })
+            new SuggestedAction(ActionTypes.Submit, "Approve", new { vote = "approve" })
         );
 
         string json = activity.ToJson();
@@ -103,7 +102,7 @@ public class SuggestedActionSubmitHandlerTests
         CoreActivity coreActivity = CoreActivity.FromJsonString(json);
         InvokeActivity activity = InvokeActivity.FromActivity(coreActivity);
 
-        Assert.Equal("suggestedActions/submit", activity.Name);
+        Assert.Equal("suggestedActions/submit", activity.Name!.ToString());
         Assert.NotNull(activity.Value);
         Assert.Equal("reject", activity.Value!["vote"]!.GetValue<string>());
     }

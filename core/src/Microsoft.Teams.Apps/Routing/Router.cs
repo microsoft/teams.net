@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Diagnostics;
-using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Diagnostics;
 
@@ -26,7 +25,7 @@ internal sealed class Router
     /// <summary>
     /// Routes registered in the router.
     /// </summary>
-    public IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
+    internal IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
 
     /// <summary>
     /// Registers a route. Routes are checked and invoked in registration order.
@@ -37,21 +36,21 @@ internal sealed class Router
     /// Thrown if a route with the same name is already registered, or if an invoke catch-all
     /// is mixed with specific invoke handlers.
     /// </exception>
-    public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
+    internal Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         if (_routes.Any(r => r.Name == route.Name))
         {
             throw new InvalidOperationException($"A route with name '{route.Name}' is already registered.");
         }
 
-        string invokePrefix = TeamsActivityType.Invoke + "/";
+        string invokePrefix = TeamsActivityTypes.Invoke + "/";
 
-        if (route.Name == TeamsActivityType.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
+        if (route.Name == TeamsActivityTypes.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Cannot register a catch-all invoke handler when specific invoke handlers are already registered. Use specific handlers or handle all invoke types inside OnInvoke.");
         }
 
-        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityType.Invoke))
+        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityTypes.Invoke))
         {
             throw new InvalidOperationException($"Cannot register '{route.Name}' when a catch-all invoke handler is already registered. Remove OnInvoke or use specific handlers exclusively.");
         }
@@ -63,7 +62,7 @@ internal sealed class Router
     /// <summary>
     /// Dispatches the activity to all matching routes in registration order.
     /// </summary>
-    public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
@@ -95,13 +94,14 @@ internal sealed class Router
         foreach (RouteBase route in matchingRoutes)
         {
             _logger.LogInformation("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
-            _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
+            }
 
-            (string handlerType, string dispatch) = GetHandlerTags(route.Name);
             TagList handlerTags = new()
             {
-                { AppsTelemetry.Tags.HandlerType, handlerType },
-                { AppsTelemetry.Tags.HandlerDispatch, dispatch },
+                { AppsTelemetry.Tags.HandlerType, route.Name },
             };
 
             AppsTelemetry.HandlerDispatched.Add(1, handlerTags);
@@ -109,8 +109,7 @@ internal sealed class Router
             using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
             if (span is not null)
             {
-                span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
-                span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+                span.SetTag(AppsTelemetry.Tags.HandlerType, route.Name);
             }
 
             long startTimestamp = Stopwatch.GetTimestamp();
@@ -141,11 +140,11 @@ internal sealed class Router
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a response object with the outcome
     /// of the invocation.</returns>
-    public async Task<InvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task<InvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
-        string? name = ctx.Activity is InvokeActivity inv ? inv.Name : null;
+        string? name = ctx.Activity is InvokeActivity inv ? inv.Name?.Value : null;
 
         _logger.LogDebug("Routing invoke activity with name '{Name}' against {RouteCount} registered routes.", name, _routes.Count);
 
@@ -173,13 +172,14 @@ internal sealed class Router
         }
 
         _logger.LogInformation("Dispatching invoke activity with name '{Name}' to route '{Route}'.", name, matchingRoutes[0].Name);
-        _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
+        }
 
-        (string handlerType, string dispatch) = GetHandlerTags(matchingRoutes[0].Name);
         TagList handlerTags = new()
         {
-            { AppsTelemetry.Tags.HandlerType, handlerType },
-            { AppsTelemetry.Tags.HandlerDispatch, dispatch },
+            { AppsTelemetry.Tags.HandlerType, matchingRoutes[0].Name },
         };
 
         AppsTelemetry.HandlerDispatched.Add(1, handlerTags);
@@ -187,8 +187,7 @@ internal sealed class Router
         using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
         if (span is not null)
         {
-            span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
-            span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+            span.SetTag(AppsTelemetry.Tags.HandlerType, matchingRoutes[0].Name);
         }
 
         long startTimestamp = Stopwatch.GetTimestamp();
@@ -214,17 +213,4 @@ internal sealed class Router
         return response;
     }
 
-    private static (string handlerType, string dispatch) GetHandlerTags(string routeName)
-    {
-        const string invokePrefix = TeamsActivityType.Invoke + "/";
-        if (string.Equals(routeName, TeamsActivityType.Invoke, StringComparison.Ordinal))
-        {
-            return (routeName, "catchall");
-        }
-        if (routeName.StartsWith(invokePrefix, StringComparison.Ordinal))
-        {
-            return (routeName[invokePrefix.Length..], "invoke");
-        }
-        return (routeName, "type");
-    }
 }

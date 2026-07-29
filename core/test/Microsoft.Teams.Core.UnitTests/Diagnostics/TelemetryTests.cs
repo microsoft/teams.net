@@ -109,16 +109,12 @@ public class TelemetryTests
 
         ConversationClient client = new(new HttpClient(handler.Object));
 
-        SendActivityResponse? response = await client.SendActivityAsync(new CoreActivity
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://smba.example/"),
-            Conversation = new("conv-1"),
-        });
+        SendActivityResponse? response = await client.SendActivityAsync("conv-1", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(), new Uri("https://smba.example/"));
 
         Assert.NotNull(response);
-        Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "conversation_client");
-        Assert.Equal("sendActivity", span.GetTagItem("operation"));
+        Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "client");
+        Assert.Equal("conversation", span.GetTagItem("client.name"));
+        Assert.Equal("sendActivity", span.GetTagItem("client.operation"));
         Assert.Equal("conv-1", span.GetTagItem("conversation.id"));
         Assert.Equal("sent-1", span.GetTagItem("activity.id"));
 
@@ -139,14 +135,11 @@ public class TelemetryTests
 
         ConversationClient client = new(new HttpClient(handler.Object));
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => client.SendActivityAsync(new CoreActivity
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://smba.example/"),
-            Conversation = new("conv-1"),
-        }));
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.SendActivityAsync("conv-1", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(), new Uri("https://smba.example/")));
 
-        Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "conversation_client");
+        Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "client");
+        Assert.Equal("conversation", span.GetTagItem("client.name"));
+        Assert.Equal("sendActivity", span.GetTagItem("client.operation"));
         Assert.Equal(ActivityStatusCode.Error, span.Status);
         Assert.Equal(1, metricCapture.GetCounterTotal("teams.outbound.errors"));
         Assert.Equal(0, metricCapture.GetCounterTotal("teams.outbound.calls"));

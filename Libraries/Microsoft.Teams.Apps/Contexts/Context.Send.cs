@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Teams.Api.Activities;
 
@@ -64,7 +63,6 @@ public partial interface IContext<TActivity>
     /// <param name="messageId">the ID of the message to quote</param>
     /// <param name="activity">the activity to send — a quote placeholder for messageId will be prepended to its text</param>
     /// <param name="cancellationToken">optional cancellation token</param>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<T> Quote<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
@@ -74,7 +72,6 @@ public partial interface IContext<TActivity>
     /// <param name="messageId">the ID of the message to quote</param>
     /// <param name="text">the response text, appended to the quoted message placeholder</param>
     /// <param name="cancellationToken">optional cancellation token</param>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<MessageActivity> Quote(string messageId, string text, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -91,12 +88,12 @@ public partial class Context<TActivity> : IContext<TActivity>
     {
         // Auto-populate targetedMessageInfo entity for prompt preview
         // when the incoming activity was a targeted message (reactive flow).
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         if (activity is MessageActivity messageActivity && Activity.Recipient?.IsTargeted == true && Activity.Id is not null)
         {
             messageActivity.AddTargetedMessageInfo(Activity.Id);
         }
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
 
         var res = await Sender.Send(activity, Ref, cancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
@@ -113,7 +110,6 @@ public partial class Context<TActivity> : IContext<TActivity>
         return Send(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
-#pragma warning disable ExperimentalTeamsQuotedReplies
     public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
         if (Activity.Id != null)
@@ -123,7 +119,6 @@ public partial class Context<TActivity> : IContext<TActivity>
 
         return Send(activity, cancellationToken);
     }
-#pragma warning restore ExperimentalTeamsQuotedReplies
 
     public Task<MessageActivity> Reply(string text, CancellationToken cancellationToken = default)
     {
@@ -135,8 +130,6 @@ public partial class Context<TActivity> : IContext<TActivity>
         return Reply(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
-    [Experimental("ExperimentalTeamsQuotedReplies")]
-#pragma warning disable ExperimentalTeamsQuotedReplies
     public Task<T> Quote<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
         if (activity is MessageActivity message)
@@ -146,9 +139,7 @@ public partial class Context<TActivity> : IContext<TActivity>
 
         return Send(activity, cancellationToken);
     }
-#pragma warning restore ExperimentalTeamsQuotedReplies
 
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<MessageActivity> Quote(string messageId, string text, CancellationToken cancellationToken = default)
     {
         return Quote(messageId, new MessageActivity(text), cancellationToken);

@@ -4,6 +4,7 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace PABot
@@ -27,14 +28,24 @@ namespace PABot
         /// Key used to store the agentic identity in HttpRequestMessage options.
         /// When set, agentic application credentials will be used instead of bot credentials.
         /// </summary>
-        public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
+        public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new(BotRequestContext.AgenticIdentityKey);
+
+        /// <summary>
+        /// Key used to read the bot app id from HttpRequestMessage options.
+        /// When set, a token is minted as that specific bot.
+        /// </summary>
+        public static readonly HttpRequestOptionsKey<string?> BotAppIdKey = new(BotRequestContext.BotAppIdKey);
 
         /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.Options.TryGetValue(AgenticIdentityKey, out AgenticIdentity? agenticIdentity);
 
-            string token = await GetAuthorizationHeaderAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);
+            // The per-request properties (bot app id, etc.) were derived from the activity by core and
+            // stamped onto request.Options — no ambient state in this handler. Read the bot app id here.
+            request.Options.TryGetValue(BotAppIdKey, out string? botAppId);
+
+            string token = await GetAuthorizationHeaderAsync(agenticIdentity, botAppId, cancellationToken).ConfigureAwait(false);
 
             string tokenValue = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
                 ? token["Bearer ".Length..]
@@ -50,9 +61,10 @@ namespace PABot
         /// Routes to either bot credentials or agentic application credentials based on the presence of AgenticIdentity.
         /// </summary>
         /// <param name="agenticIdentity">Optional agentic identity. When provided, agentic application credentials are used.</param>
+        /// <param name="botAppId">Optional bot application (client) id extracted from the incoming activity. When provided, a token is minted as that specific bot.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The authorization header value.</returns>
-        private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, CancellationToken cancellationToken)
+        private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, string? botAppId, CancellationToken cancellationToken)
         {
             // If agentic identity is provided, use agentic application credentials with agentic scope
             if (agenticIdentity is not null &&
@@ -67,8 +79,15 @@ namespace PABot
                 return await _routedTokenService.AcquireTokenForAgenticAsync(agenticIdentity, _agenticScope, cancellationToken).ConfigureAwait(false);
             }
 
-            // Otherwise, use bot credentials with bot scope
-            _logger.LogInformation("Acquiring token using bot credentials for scope: {Scope}", _botScope);
+            // If a bot app id was sourced from the activity, mint a token as that specific bot.
+            if (!string.IsNullOrEmpty(botAppId))
+            {
+                _logger.LogInformation("Acquiring token as BotAppId '{BotAppId}' for scope: {Scope}", botAppId, _botScope);
+                return await _routedTokenService.AcquireTokenForBotAppIdAsync(botAppId, _botScope, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Otherwise, use the default bot credentials with bot scope
+            _logger.LogInformation("Acquiring token using default bot credentials for scope: {Scope}", _botScope);
             return await _routedTokenService.AcquireTokenForBotAsync(_botScope, cancellationToken).ConfigureAwait(false);
         }
     }

@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.Handlers.TaskModules;
+namespace Microsoft.Teams.Apps.TaskModules;
 
 /// <summary>
 /// Task module invoke request value payload.

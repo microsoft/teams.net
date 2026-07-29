@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 
@@ -58,16 +59,13 @@ public class TeamsBotAdapter(
 
         Uri serviceUrl = new(serviceUrlString);
 
-        // Extract agentic identity from turn context if available
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromBotFrameworkActivity().From);
-
         await botApplication.ConversationClient.DeleteActivityAsync(
             conversationId,
             activityId,
             serviceUrl,
-            agenticIdentity,
+            requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             customHeaders: null,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -84,6 +82,9 @@ public class TeamsBotAdapter(
     {
         ArgumentNullException.ThrowIfNull(activities);
         ArgumentNullException.ThrowIfNull(turnContext);
+        Activity inboundActivity = turnContext.Activity
+            ?? throw new InvalidOperationException("Turn context activity is required to send activities.");
+        BotRequestContext? requestContext = BotRequestContext.FromInboundActivity(inboundActivity.FromBotFrameworkActivity());
 
         ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[activities.Length];
 
@@ -102,18 +103,24 @@ public class TeamsBotAdapter(
                 return [new ResourceResponse() { Id = null }];
             }
 
-            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+            CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-            // Ensure ServiceUrl is set from turn context if not already present
-            if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
-            {
-                coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
-            }
+            string serviceUrl = activity.ServiceUrl
+                ?? inboundActivity.ServiceUrl ?? throw new InvalidOperationException("Service URL is required to send activities.");
 
-            coreActivity.Conversation ??= new Microsoft.Teams.Core.Schema.Conversation(
-                turnContext.Activity.Conversation?.Id
-                ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
+            string conversationId = inboundActivity.Conversation?.Id
+                ?? throw new InvalidOperationException("Conversation ID is required to send activities.");
+
+            // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+            // the property bag using the authoritative conversation id for downstream consumers.
+            input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
+
+            SendActivityResponse? resp = await botApplication.ConversationClient.SendActivityAsync(
+                conversationId,
+                input,
+                new Uri(serviceUrl),
+                requestContext: requestContext,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.SendActivitiesResponse(resp?.Id);
 
@@ -137,18 +144,25 @@ public class TeamsBotAdapter(
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(turnContext);
 
-        CoreActivity coreActivity = activity.FromBotFrameworkActivity();
+        CoreActivityInput input = activity.FromBotFrameworkActivityInput();
 
-        // Ensure ServiceUrl is set from turn context if not already present
-        if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
+        string serviceUrl = activity.ServiceUrl
+            ?? turnContext.Activity.ServiceUrl ?? throw new InvalidOperationException("Service URL is required to send activities.");
+
+        // Backward compat: CoreActivityInput does not model the conversation, so carry it through
+        // the property bag using the authoritative conversation id for downstream consumers.
+        string conversationId = activity.Conversation.Id;
+        if (!string.IsNullOrWhiteSpace(conversationId))
         {
-            coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
+            input.Properties["conversation"] = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
         }
 
         UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
-            activity.Conversation.Id,
+            conversationId,
             activity.Id,
-            coreActivity,
+            input,
+            new Uri(serviceUrl),
+            requestContext: BotRequestContext.FromInboundActivity(turnContext.Activity?.FromBotFrameworkActivity()),
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };
     }
