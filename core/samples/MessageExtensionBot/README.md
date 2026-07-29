@@ -11,10 +11,10 @@ A sample bot demonstrating Teams message extension handlers.
 
 1. Configure bot credentials in `Properties/launchSettings.TEMPLATE.json` (or environment variables).
 2. Run the bot: `dotnet run`.
-3. Add the message extension manifest entries to your Teams app. Replace `<TEAMS_APP_ID>` with your Teams app ID. This command works in Bash and PowerShell; the Teams CLI will prompt for the app to update:
+3. Add the message extension manifest entries to your Teams app. Replace `<BOT_APP_ID>` with your bot's Microsoft App ID. This command works in Bash and PowerShell; the Teams CLI will prompt for the app to update:
 
 ~~~bash
-teams app manifest update --set-json 'composeExtensions=[{"botId":"<TEAMS_APP_ID>","commands":[{"id":"searchQuery","type":"query","title":"searchQuery","description":"Enter search text","initialRun":true,"fetchTask":false,"context":["commandBox","compose","message"],"parameters":[{"name":"searchText","title":"searchText","description":"Enter search text","inputType":"text"}]},{"id":"createAction","type":"action","title":"createAction","description":"Create a new item","initialRun":true,"fetchTask":true,"context":["commandBox","compose","message"],"parameters":[{"name":"createAction","title":"createAction","description":"Create a new item","inputType":"text"}]}],"canUpdateConfiguration":true,"messageHandlers":[{"type":"link","value":{"domains":["*.example.com"],"supportsAnonymizedPayloads":true}}]}]'
+teams app manifest update --set-json 'composeExtensions=[{"botId":"<BOT_APP_ID>","commands":[{"id":"searchQuery","type":"query","title":"searchQuery","description":"Enter search text","initialRun":true,"fetchTask":false,"context":["commandBox","compose","message"],"parameters":[{"name":"searchText","title":"searchText","description":"Enter search text","inputType":"text"}]},{"id":"createAction","type":"action","title":"createAction","description":"Create a new item","initialRun":true,"fetchTask":true,"context":["commandBox","compose","message"],"parameters":[{"name":"createAction","title":"createAction","description":"Create a new item","inputType":"text"}]}],"canUpdateConfiguration":true,"messageHandlers":[{"type":"link","value":{"domains":["*.example.com"],"supportsAnonymizedPayloads":true}}]}]'
 ~~~
 
 4. Reinstall the Teams app.
