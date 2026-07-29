@@ -184,4 +184,120 @@ public class BotConfigTests
 
         Assert.Null(caught);
     }
+
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_ResolvesClientIdAndTenantId()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("legacy-client-id", config.ClientId);
+        Assert.Equal("legacy-tenant-id", config.TenantId);
+    }
+
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_DefaultsEntraInstanceToPublicCloud()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("https://login.microsoftonline.com/", config.EntraInstance);
+    }
+
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_SectionNameRemainsAzureAd()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("AzureAd", config.SectionName);
+    }
+
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_MsalSectionHasClientCredentialsShape()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.NotNull(config.MsalConfigurationSection);
+        Assert.Equal("ClientSecret", config.MsalConfigurationSection["ClientCredentials:0:SourceType"]);
+        Assert.Equal("legacy-secret", config.MsalConfigurationSection["ClientCredentials:0:ClientSecret"]);
+    }
+
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_IsNotUserAssignedManagedIdentity()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.False(config.IsUserAssignedManagedIdentity);
+    }
+
+    [Fact]
+    public void Resolve_WhenBothSectionsExist_AzureAdTakesPrecedence()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "new-client-id",
+            ["AzureAd:TenantId"] = "new-tenant-id",
+            ["AzureAd:ClientCredentials:0:SourceType"] = "ClientSecret",
+            ["AzureAd:ClientCredentials:0:ClientSecret"] = "new-secret",
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("new-client-id", config.ClientId);
+        Assert.Equal("new-tenant-id", config.TenantId);
+    }
+
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_MsalSectionHasCorrectTenantIdAndClientId()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.NotNull(config.MsalConfigurationSection);
+        Assert.Equal("legacy-client-id", config.MsalConfigurationSection["ClientId"]);
+        Assert.Equal("legacy-tenant-id", config.MsalConfigurationSection["TenantId"]);
+        Assert.Equal("https://login.microsoftonline.com/", config.MsalConfigurationSection["Instance"]);
+    }
 }

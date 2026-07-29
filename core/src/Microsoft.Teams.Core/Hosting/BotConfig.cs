@@ -17,6 +17,8 @@ public sealed class BotConfig
 
     internal const string BotFrameworkSectionName = "BotFramework";
 
+    internal const string LegacySectionName = "Teams";
+
     internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
 
     internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
@@ -96,6 +98,16 @@ public sealed class BotConfig
 
         IConfigurationSection section = configuration.GetSection(sectionName);
         IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
+
+        // Backward compat: if the primary section has no ClientId, fall back to the legacy "Teams" section
+        // and remap it to the AzureAd shape so all downstream code sees a consistent configuration.
+        if (string.IsNullOrEmpty(section["ClientId"]))
+        {
+            IConfigurationSection teamsSection = configuration.GetSection(LegacySectionName);
+            if (!string.IsNullOrEmpty(teamsSection["ClientId"]))
+                section = MapLegacyTeamsSection(teamsSection, sectionName);
+        }
+
         BotConfig config = new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
@@ -117,6 +129,19 @@ public sealed class BotConfig
 
         return config;
     }
+
+    private static IConfigurationSection MapLegacyTeamsSection(IConfigurationSection teams, string targetSection) =>
+        new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{targetSection}:TenantId"]                          = teams["TenantId"],
+                [$"{targetSection}:ClientId"]                          = teams["ClientId"],
+                [$"{targetSection}:Instance"]                          = DefaultEntraInstance,
+                [$"{targetSection}:ClientCredentials:0:SourceType"]    = "ClientSecret",
+                [$"{targetSection}:ClientCredentials:0:ClientSecret"]  = teams["ClientSecret"],
+            })
+            .Build()
+            .GetSection(targetSection);
 
     private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
     {
