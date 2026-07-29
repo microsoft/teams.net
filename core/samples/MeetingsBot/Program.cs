@@ -42,27 +42,4 @@ teamsApp.OnMeetingLeave(async (context, cancellationToken) =>
     await context.SendAsync($"Participant(s) left: {names}", cancellationToken);
 });
 
-//TODO : review if we can trigger these
-// ==================== COMMAND HANDLERS ====================
-/*
-
-teamsApp.OnCommand(async (context, cancellationToken) =>
-{
-    var commandId = context.Activity.Value?.CommandId ?? "unknown";
-    Console.WriteLine($"[Command] CommandId: {commandId}");
-    await context.SendAsync($"Received command: **{commandId}**", cancellationToken);
-});
-
-teamsApp.OnCommandResult(async (context, cancellationToken) =>
-{
-    var commandId = context.Activity.Value?.CommandId ?? "unknown";
-    var error = context.Activity.Value?.Error;
-    Console.WriteLine($"[CommandResult] CommandId: {commandId}, HasError: {error is not null}");
-
-    if (error is not null)
-        await context.SendAsync($"Command **{commandId}** failed: {error.Message}", cancellationToken);
-    else
-        await context.SendAsync($"Command **{commandId}** completed successfully.", cancellationToken);
-});
-*/
 webApp.Run();
