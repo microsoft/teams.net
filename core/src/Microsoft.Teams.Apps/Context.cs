@@ -218,6 +218,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Typing(CancellationToken cancellationToken = default)
         => TypingAsync(cancellationToken);
 
+    /// <inheritdoc cref="TeamsStreamingWriter.CreateFromContext{TActivity}(Context{TActivity})"/>
+    [Obsolete("Use TeamsStreamingWriter.CreateFromContext(context) instead.")]
+    public TeamsStreamingWriter Stream()
+        => TeamsStreamingWriter.CreateFromContext(this);
+
     /// <inheritdoc cref="QuoteAsync(string, string, CancellationToken)"/>
     [Obsolete("Use QuoteAsync instead.")]
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
