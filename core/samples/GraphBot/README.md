@@ -22,24 +22,6 @@ Use the same Entra app registration as your bot (`AzureAd:ClientId`) and configu
 
 Without admin consent, app-only Graph calls fail with "Insufficient privileges to complete the operation."
 
-## Local config
-
-Set these values in `appsettings.Development.json` or environment variables:
-
-```json
-{
-  "AzureAd": {
-    "TenantId": "<tenant-id>",
-    "ClientId": "<client-id>",
-    "ClientCredentials": [
-      {
-        "SourceType": "ClientSecret",
-        "ClientSecret": "<client-secret>"
-      }
-    ]
-  }
-}
-```
 
 ## Run
 

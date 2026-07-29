@@ -18,12 +18,9 @@ A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dot
 - Azure OpenAI resource with a deployed model (e.g. `gpt-4o`)
 - Teams bot registration (App ID + client secret)
 - Azure Open AI configured
-
-```json
-"AzureOpenAI__Endpoint": "",
-"AzureOpenAI__ApiKey": "",
-"AzureOpenAI__Deployment": ""
-```
+  - `AzureOpenAI__Endpoint`
+  - `AzureOpenAI__ApiKey`
+  - `AzureOpenAI__Deployment`
 
 ## Running
 

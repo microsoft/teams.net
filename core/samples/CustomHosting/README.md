@@ -13,6 +13,7 @@ This sample shows how to use a custom `TeamsBotApplication` subclass. Instead of
 - Default message handling coming from the custom app instead of top-level setup code.
 
 This pattern is useful when you want to wrap shared bot behavior in a reusable application type and keep `Program.cs` small.
+
 ## Running the Sample
 
 ~~~bash

@@ -29,6 +29,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<ObservabilityBotApp> logger,
+        IConfiguration configuration,
         IChatClient chatClient,
         ChatOptions chatOptions,
         TeamsBotApplicationOptions? teamsOptions = null,
@@ -38,7 +39,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         _teamsApiClient = teamsApiClient;
         _chatClient = chatClient;
         _chatOptions = chatOptions;
-        _deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? "unknown";
+        _deploymentName = configuration["AzureOpenAI:Deployment"] ?? "unknown";
         _oauthFlow = this.GetOAuthFlow(OAuthConnectionName);
 
         _oauthFlow.OnSignInComplete(async (context, tokenResponse, ct) =>

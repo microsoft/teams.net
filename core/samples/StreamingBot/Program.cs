@@ -13,9 +13,9 @@ using Microsoft.Teams.Cards;
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddTeamsBotApplication();
 
-string endpoint = builder.Configuration["AZURE_OPENAI_ENDPOINT"] ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
-string apiKey = builder.Configuration["AZURE_OPENAI_KEY"] ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required.");
-string deployment = builder.Configuration["AZURE_OPENAI_DEPLOYMENT"] ?? throw new InvalidOperationException("AzureOpenAI:Deployment is required.");
+string endpoint = builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
+string apiKey = builder.Configuration["AzureOpenAI:ApiKey"] ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required.");
+string deployment = builder.Configuration["AzureOpenAI:Deployment"] ?? throw new InvalidOperationException("AzureOpenAI:Deployment is required.");
 
 builder.Services.AddSingleton<AzureOpenAIClient>(_ => new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey)));
 builder.Services.AddSingleton<IChatClient>(sp =>
