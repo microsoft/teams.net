@@ -341,4 +341,5 @@ public class BotConfigTests
         Assert.Equal("legacy-tenant-id", config.MsalConfigurationSection["TenantId"]);
         Assert.Equal("https://login.microsoftonline.com/", config.MsalConfigurationSection["Instance"]);
     }
+
 }

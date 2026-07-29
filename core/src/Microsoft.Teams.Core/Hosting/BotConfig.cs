@@ -172,7 +172,21 @@ public sealed class BotConfig
             .GetSection(targetSection);
 
     private static string BuildCurrentSectionExample(string sectionName) =>
-        $"'{sectionName}:Instance', '{sectionName}:TenantId', '{sectionName}:ClientId', '{sectionName}:ClientCredentials:0:SourceType', '{sectionName}:ClientCredentials:0:ClientSecret'";
+        $$"""
+              {
+          "{{sectionName}}": {
+            "Instance": "https://login.microsoftonline.com/",
+            "TenantId": "your-tenant-id",
+            "ClientId": "your-client-id",
+            "ClientCredentials": [
+              {
+                "SourceType": "ClientSecret",
+                "ClientSecret": "your-client-secret"
+              }
+            ]
+          }
+        }
+        """;
 
     private static bool? ResolveOptionalBoolean(IConfigurationSection section, string key)
     {
@@ -192,7 +206,6 @@ public sealed class BotConfig
         throw new InvalidOperationException(
             $"Configuration value '{section.Path}:{key}' is not a valid boolean: '{value}'.");
     }
-
     private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
     {
         ArgumentNullException.ThrowIfNull(section);
@@ -216,5 +229,5 @@ public sealed class BotConfig
         LoggerMessage.Define<string, string, string>(
             LogLevel.Warning,
             new(5),
-            "Configuration section '{LegacySectionName}' is deprecated. Please migrate to '{CurrentSectionName}' using the Microsoft.Identity.Web configuration structure: {CurrentSectionExample}.");
+            "Configuration section '{LegacySectionName}' is deprecated. Please migrate to '{CurrentSectionName}' using the Microsoft.Identity.Web configuration structure:\n{CurrentSectionExample}");
 }
