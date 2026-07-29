@@ -24,7 +24,7 @@
     "Bob": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:3979",
+      "applicationUrl": "http://localhost:3978",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Bob",
         "AzureAd__Instance": "https://login.microsoftonline.com/",
