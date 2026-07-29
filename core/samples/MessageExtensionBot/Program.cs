@@ -149,14 +149,14 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     string? title = data != null && data.Value.TryGetProperty("title", out JsonElement t) ? t.GetString() : "Untitled";
     string? description = data != null && data.Value.TryGetProperty("description", out JsonElement d) ? d.GetString() : "No description";
 
-    object previewCard = Cards.CreateSubmitActionCard(title, description);
-    TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(previewCard).Build();
+    object submitCard = Cards.CreateSubmitActionCard(title, description);
+    TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(submitCard).Build();
 
     return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
-                .WithType(MessageExtensionResponseTypes.BotMessagePreview)
-                .WithActivityPreview(new MessageActivityInput().AddAttachment(attachment))
-                )
+                .WithType(MessageExtensionResponseTypes.Result)
+                .WithAttachmentLayout(TeamsAttachmentLayouts.List)
+                .WithAttachments(attachment))
             .Build();
 });
 
