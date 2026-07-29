@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "GraphBot": {
+    "Agent365": {
       "commandName": "Project",
       "launchBrowser": false,
       "environmentVariables": {
