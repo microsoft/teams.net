@@ -165,6 +165,7 @@ public sealed class BotConfig
                 [$"{targetSection}:TenantId"]                          = teams["TenantId"],
                 [$"{targetSection}:ClientId"]                          = teams["ClientId"],
                 [$"{targetSection}:Instance"]                          = DefaultEntraInstance,
+                [$"{targetSection}:{DangerouslyAllowUnauthenticatedRequestsKey}"] = teams[DangerouslyAllowUnauthenticatedRequestsKey],
                 [$"{targetSection}:ClientCredentials:0:SourceType"]    = "ClientSecret",
                 [$"{targetSection}:ClientCredentials:0:ClientSecret"]  = teams["ClientSecret"],
             })

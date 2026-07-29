@@ -342,4 +342,20 @@ public class BotConfigTests
         Assert.Equal("https://login.microsoftonline.com/", config.MsalConfigurationSection["Instance"]);
     }
 
+    [Fact]
+    public void Resolve_WithLegacyTeamsSection_HonorsDangerouslyAllowUnauthenticatedRequests()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "legacy-client-id",
+            ["Teams:TenantId"] = "legacy-tenant-id",
+            ["Teams:ClientSecret"] = "legacy-secret",
+            ["Teams:DangerouslyAllowUnauthenticatedRequests"] = "true",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.True(config.DangerouslyAllowUnauthenticatedRequests);
+    }
+
 }
