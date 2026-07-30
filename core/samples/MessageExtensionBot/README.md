@@ -5,7 +5,6 @@ A sample bot demonstrating Teams message extension handlers.
 ## Prerequisites
 
 - Bot registered and installed in Teams.
-- Manifest package created from the inline manifest plus `color.png` / `outline.png`.
 
 ## Manifest Setup
 
