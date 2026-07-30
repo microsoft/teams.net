@@ -44,6 +44,12 @@ public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionS
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQuerySettingUrlHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
 
+/// <summary>
+/// Delegate for handling message extension setting invoke activities.
+/// Sent by Teams when the user saves settings after the config URL popup.
+/// </summary>
+public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionSettingsHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
+
 
 /// <summary>
 /// Extension methods for registering message extension invoke handlers.
@@ -243,6 +249,33 @@ public static class MessageExtensionExtensions
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
                 var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message extension setting invoke activities.
+    /// Called by Teams when the user saves settings after the config URL popup.
+    /// Must be paired with <see cref="OnQuerySettingUrl"/> to complete the settings flow.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnSetting(this TeamsBotApplication app, MessageExtensionSettingsHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<InvokeActivity>
+        {
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionSetting),
+            Selector = activity => activity.Name == InvokeNames.MessageExtensionSetting,
+            HandlerWithReturn = async (ctx, cancellationToken) =>
+            {
+                InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
+                await handler(typedContext, cancellationToken).ConfigureAwait(false);
+                return new InvokeResponse(200);
             }
         });
 

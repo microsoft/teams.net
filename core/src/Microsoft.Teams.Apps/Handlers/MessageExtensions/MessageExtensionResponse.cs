@@ -113,7 +113,7 @@ public class ComposeExtension
     /// Suggested actions for config type.
     /// </summary>
     [JsonPropertyName("suggestedActions")]
-    public MessageExtensionSuggestedAction? SuggestedActions { get; set; }
+    public SuggestedActions? SuggestedActions { get; set; }
 }
 
 
@@ -151,19 +151,6 @@ public class MessageExtensionActivityPreview
 }
 
 /// <summary>
-/// Suggested actions for messaging extension configuration.
-/// </summary>
-public class MessageExtensionSuggestedAction
-{
-    /// <summary>
-    /// Array of actions.
-    /// </summary>
-    [JsonPropertyName("actions")]
-    public IList<SuggestedAction>? Actions { get; set; }
-}
-
-
-/// <summary>
 /// Builder for MessageExtensionResponse.
 /// </summary>
 public class MessageExtensionResponseBuilder
@@ -172,7 +159,7 @@ public class MessageExtensionResponseBuilder
     private AttachmentLayoutType? _attachmentLayout;
     private TeamsAttachment[]? _attachments;
     private MessageExtensionActivityPreview? _activityPreview;
-    private SuggestedAction[]? _suggestedActions;
+    private SuggestedActions? _suggestedActions;
     private string? _text;
 
     /// <summary>
@@ -214,7 +201,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets suggested actions for <see cref="MessageExtensionResponseTypes.Config"/> responses.
     /// </summary>
-    public MessageExtensionResponseBuilder WithSuggestedActions(params SuggestedAction[] actions)
+    public MessageExtensionResponseBuilder WithSuggestedActions(SuggestedActions actions)
     {
         _suggestedActions = actions;
         return this;
@@ -354,7 +341,7 @@ public class MessageExtensionResponseBuilder
 
     private MessageExtensionResponse ValidateConfigType()
     {
-        if (_suggestedActions == null || _suggestedActions.Length == 0)
+        if (_suggestedActions == null)
         {
             throw new InvalidOperationException("SuggestedActions must be set for Config type. Use WithSuggestedActions().");
         }
@@ -384,7 +371,7 @@ public class MessageExtensionResponseBuilder
             ComposeExtension = new ComposeExtension
             {
                 Type = _type,
-                SuggestedActions = new MessageExtensionSuggestedAction { Actions = _suggestedActions }
+                SuggestedActions = _suggestedActions
             }
         };
     }

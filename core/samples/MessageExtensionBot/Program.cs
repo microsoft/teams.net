@@ -12,6 +12,14 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
 WebApplication webApp = webAppBuilder.Build();
 
+webApp.UseStaticFiles();
+webApp.MapGet("/tabs/settings", async context =>
+{
+    string html = await File.ReadAllTextAsync("wwwroot/settings.html");
+    context.Response.ContentType = "text/html";
+    await context.Response.WriteAsync(html);
+});
+
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 
 // ==================== MESSAGE EXTENSION QUERY ====================
@@ -184,14 +192,37 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnQuerySettingUrl");
 
-    MessageExtensionQuery? query = context.Activity.Value;
+    string botEndpoint = webAppBuilder.Configuration["BotEndpoint"] ?? "";
+    string settingsUrl = $"{botEndpoint}/tabs/settings";
 
-    var action = new SuggestedAction(ActionTypes.OpenUrl, "Open", "https://www.microsoft.com");
+    var action = new SuggestedAction(ActionTypes.OpenUrl, "Settings", settingsUrl);
 
     return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseTypes.Config)
-        .WithSuggestedActions([action])
+        .WithSuggestedActions(new SuggestedActions().AddAction(action))
         .Build();
+});
+
+// ==================== MESSAGE EXTENSION SETTINGS SAVED ====================
+bot.OnSetting(async (context, cancellationToken) =>
+{
+    string? state = context.Activity.Value?.State;
+    Console.WriteLine($"✓ OnSettings - state: {state}");
+
+    if (state == "CancelledByUser")
+    {
+        Console.WriteLine("User cancelled settings.");
+        return MessageExtensionResponse.CreateBuilder()
+            .WithType(MessageExtensionResponseTypes.Message)
+            .WithText("settings cancelled")
+            .Build();
+    }
+
+    Console.WriteLine($"User saved setting: {state}");
+    return MessageExtensionResponse.CreateBuilder()
+            .WithType(MessageExtensionResponseTypes.Message)
+            .WithText("settings saved")
+            .Build();
 });
 
 webApp.Run();

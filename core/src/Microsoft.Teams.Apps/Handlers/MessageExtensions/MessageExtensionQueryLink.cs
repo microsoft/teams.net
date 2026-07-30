@@ -15,13 +15,4 @@ public class MessageExtensionQueryLink
     /// </summary>
     [JsonPropertyName("url")]
     public Uri? Url { get; set; }
-
-    //TODO : review
-    /*
-    /// <summary>
-    /// State parameter for OAuth flow.
-    /// </summary>
-    [JsonPropertyName("state")]
-    public string? State { get; set; }
-    */
 }
