@@ -125,9 +125,8 @@ public class MessageExtensionAction
     /// The activity preview that was originally sent to Teams when showing the bot message preview.
     /// This is sent back by Teams when the user clicks 'edit' or 'send' on the preview.
     /// </summary>
-    // TODO : this needs to be activity type or something else - format is type, attachments[]
     [JsonPropertyName("botActivityPreview")]
-    public IList<TeamsActivityInput>? BotActivityPreview { get; set; }
+    public IList<MessageExtensionActivityPreview>? BotActivityPreview { get; set; }
 
     /// <summary>
     /// Data included with the submit action.

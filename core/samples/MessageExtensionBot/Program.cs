@@ -85,12 +85,12 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 });
 
 // Helper: Extract title and description from preview card
-static (string?, string?) GetDataFromPreview(TeamsActivityInput? preview)
+static (string?, string?) GetDataFromPreview(MessageExtensionActivityPreview? preview)
 {
-    if (preview is not MessageActivityInput msg || msg.Attachments == null) return (null, null);
+    if (preview?.Attachments == null) return (null, null);
 
     JsonElement cardData = JsonSerializer.Deserialize<JsonElement>(
-        JsonSerializer.Serialize(msg.Attachments[0].Content));
+        JsonSerializer.Serialize(preview.Attachments[0].Content));
 
     if (!cardData.TryGetProperty("body", out JsonElement body) || body.ValueKind != JsonValueKind.Array)
         return (null, null);
@@ -155,7 +155,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
                 .WithType(MessageExtensionResponseTypes.BotMessagePreview)
-                .WithActivityPreview(new MessageActivityInput().AddAttachment(attachment))
+                .WithActivityPreview(new MessageExtensionActivityPreview().AddAttachment(attachment))
                 )
             .Build();
 });

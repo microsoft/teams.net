@@ -106,15 +106,48 @@ public class ComposeExtension
     /// <summary>
     /// Activity preview for bot message preview.
     /// </summary>
-    //TODO : this needs to be activity type or something else - format is type, attachments[]
     [JsonPropertyName("activityPreview")]
-    public TeamsActivityInput? ActivityPreview { get; set; }
+    public MessageExtensionActivityPreview? ActivityPreview { get; set; }
 
     /// <summary>
     /// Suggested actions for config type.
     /// </summary>
     [JsonPropertyName("suggestedActions")]
     public MessageExtensionSuggestedAction? SuggestedActions { get; set; }
+}
+
+
+/// <summary>
+/// Represents an activity preview used in <see cref="MessageExtensionResponseTypes.BotMessagePreview"/> responses.
+/// Teams renders this as a card preview before the user confirms sending.
+/// On the inbound side, Teams echoes this back via <see cref="MessageExtensionAction.BotActivityPreview"/>
+/// when the user clicks 'send' or 'edit'.
+/// </summary>
+public class MessageExtensionActivityPreview
+{
+    /// <summary>
+    /// The activity type. Defaults to "message".
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "message";
+
+    /// <summary>
+    /// The attachments (cards) to show in the preview.
+    /// </summary>
+    [JsonPropertyName("attachments")]
+    public IList<TeamsAttachment>? Attachments { get; set; }
+
+    /// <summary>
+    /// Adds one or more attachments to the preview.
+    /// </summary>
+    public MessageExtensionActivityPreview AddAttachment(params TeamsAttachment[] attachments)
+    {
+        ArgumentNullException.ThrowIfNull(attachments);
+        Attachments ??= new List<TeamsAttachment>();
+        foreach (TeamsAttachment attachment in attachments)
+            Attachments.Add(attachment);
+        return this;
+    }
 }
 
 /// <summary>
@@ -138,7 +171,7 @@ public class MessageExtensionResponseBuilder
     private MessageExtensionResponseType? _type;
     private AttachmentLayoutType? _attachmentLayout;
     private TeamsAttachment[]? _attachments;
-    private TeamsActivityInput? _activityPreview;
+    private MessageExtensionActivityPreview? _activityPreview;
     private SuggestedAction[]? _suggestedActions;
     private string? _text;
 
@@ -172,7 +205,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Sets the activity preview for <see cref="MessageExtensionResponseTypes.BotMessagePreview"/> responses.
     /// </summary>
-    public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivityInput activityPreview)
+    public MessageExtensionResponseBuilder WithActivityPreview(MessageExtensionActivityPreview activityPreview)
     {
         _activityPreview = activityPreview;
         return this;
