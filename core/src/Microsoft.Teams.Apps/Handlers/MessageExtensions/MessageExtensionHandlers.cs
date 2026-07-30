@@ -48,7 +48,14 @@ public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQ
 /// Delegate for handling message extension setting invoke activities.
 /// Sent by Teams when the user saves settings after the config URL popup.
 /// </summary>
-public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionSettingsHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
+public delegate Task<InvokeResponse> MessageExtensionSettingsHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Delegate for handling message extension card button clicked invoke activities.
+/// Sent when a user clicks an <c>Action.Submit</c> button on a message extension result card.
+/// The activity value contains the data payload from the button.
+/// </summary>
+public delegate Task<InvokeResponse> OnCardButtonClickedHandler(Context<InvokeActivity<JsonElement>> context, CancellationToken cancellationToken = default);
 
 
 /// <summary>
@@ -274,8 +281,33 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
                 var typedContext = ctx.CreateDerivedContext(typedActivity);
-                await handler(typedContext, cancellationToken).ConfigureAwait(false);
-                return new InvokeResponse(200);
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message extension card button clicked invoke activities.
+    /// Called when a user clicks an <c>Action.Submit</c> button on a message extension result card.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnCardButtonClicked(this TeamsBotApplication app, OnCardButtonClickedHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<InvokeActivity>
+        {
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionCardButtonClicked),
+            Selector = activity => activity.Name == InvokeNames.MessageExtensionCardButtonClicked,
+            HandlerWithReturn = async (ctx, cancellationToken) =>
+            {
+                InvokeActivity<JsonElement> typedActivity = new(ctx.Activity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
 

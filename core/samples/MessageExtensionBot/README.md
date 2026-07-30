@@ -104,13 +104,20 @@ A sample bot demonstrating Teams message extension handlers.
 3. Type a search term
 4. Verify results display in list format
 5. Type "help" to test message response
-
 ### OnSelectItem
 **Manifest:** No specific requirement (works with OnQuery results)
 
 1. After running a search (OnQuery)
 2. Click on any search result
 3. Verify adaptive card preview appears
+
+
+### OnCardButtonClicked (Card Button)
+**Manifest:** No specific requirement (works with any message extension result card that has `Action` buttons)
+
+1. Click the **View Details** button on the adaptive card
+2. Verify `OnCardButtonClicked` fires — link opens)
+
 
 ### OnFetchTask (Action - Task Module)
 **Manifest:** `composeExtensions.commands` with `type: "action"` and `fetchTask: true`

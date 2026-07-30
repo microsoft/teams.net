@@ -74,6 +74,14 @@ bot.OnSelectItem(async (context, cancellationToken) =>
         .Build();
 });
 
+// ==================== MESSAGE EXTENSION CARD BUTTON CLICKED ====================
+bot.OnCardButtonClicked(async (context, cancellationToken) =>
+{
+    Console.WriteLine("✓ OnCardButtonClicked");
+    return new InvokeResponse(200);
+});
+
+
 // ==================== MESSAGE EXTENSION FETCH TASK ====================
 bot.OnFetchTask(async (context, cancellationToken) =>
 {
@@ -186,7 +194,6 @@ bot.OnQueryLink(async (context, cancellationToken) =>
         .Build();
 });
 
-
 // ==================== MESSAGE EXTENSION QUERY SETTING URL ====================
 bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 {
@@ -212,17 +219,11 @@ bot.OnSetting(async (context, cancellationToken) =>
     if (state == "CancelledByUser")
     {
         Console.WriteLine("User cancelled settings.");
-        return MessageExtensionResponse.CreateBuilder()
-            .WithType(MessageExtensionResponseTypes.Message)
-            .WithText("settings cancelled")
-            .Build();
+        return new InvokeResponse(200);
     }
 
     Console.WriteLine($"User saved setting: {state}");
-    return MessageExtensionResponse.CreateBuilder()
-            .WithType(MessageExtensionResponseTypes.Message)
-            .WithText("settings saved")
-            .Build();
+    return new InvokeResponse(200);
 });
 
 webApp.Run();
