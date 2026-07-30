@@ -66,11 +66,9 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
 
                 if (result == null || result.Count == 0)
                 {
-                    return new[] { new GetTokenStatusResult { HasToken = false } };
+                    return [new GetTokenStatusResult { HasToken = false }];
                 }
-                GetTokenStatusResult[] values = new GetTokenStatusResult[result.Count];
-                result.CopyTo(values, 0);
-                return values;
+                return [.. result];
             }).ConfigureAwait(false))!;
 
     }

@@ -14,23 +14,12 @@ A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dot
 
 ## Prerequisites
 
-- .NET 10 SDK
-- Azure OpenAI resource with a deployed model (e.g. `gpt-4o`)
-- Teams bot registration (App ID + client secret)
+- Bot registered and installed in Teams.
 - Azure Open AI configured
+  - `AzureOpenAI__Endpoint`
+  - `AzureOpenAI__ApiKey`
+  - `AzureOpenAI__Deployment`
 
-```json
-"AzureOpenAI__Endpoint": "",
-"AzureOpenAI__ApiKey": "",
-"AzureOpenAI__Deployment": ""
-```
-
-## Running
-
-```bash
-cd samples/ExtAIBot
-dotnet run
-```
 
 The bot initializes the MS Learn MCP tool set at startup before accepting messages. If the MCP server is unreachable the app will fail to start.
 

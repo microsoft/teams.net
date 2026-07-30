@@ -6,6 +6,7 @@
       "applicationUrl": "http://localhost:3978",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "BotEndpoint": "",
         "AzureAd__Instance": "https://login.microsoftonline.com/",
         "AzureAd__TenantId": "",
         "AzureAd__ClientId": "",

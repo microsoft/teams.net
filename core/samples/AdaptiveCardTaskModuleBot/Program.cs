@@ -54,9 +54,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         return AdaptiveCardResponse.CreateMessageResponse("File Consent requested!");
     }
 
-    string? message = data != null && data.TryGetValue("message", out object? msgValue) ? msgValue?.ToString() : null;
-
-    JsonElement adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
+    JsonElement adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb);
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
     await context.SendAsync(new MessageActivityInput().AddAttachment(adaptiveActionCardResponse), cancellationToken);
 

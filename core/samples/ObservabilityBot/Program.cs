@@ -43,6 +43,7 @@ builder.Services.AddOpenTelemetry()
     .UseMicrosoftOpenTelemetry(o =>
     {
         o.Exporters = ExportTarget.Otlp | ExportTarget.AzureMonitor; // | ExportTarget.Agent365
+        o.AzureMonitor.ConnectionString = builder.Configuration.GetConnectionString("AppInsights");
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
 
@@ -74,13 +75,13 @@ builder.Services.AddKeyedSingleton("msdocs", (sp, key) =>
         })));
 
 // Register IChatClient
-var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidDataException("AZURE_OPENAI_ENDPOINT not found");
-var azoai_key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") ?? throw new InvalidDataException("AZURE_OPENAI_KEY not found");
-var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? throw new InvalidDataException("AZURE_OPENAI_DEPLOYMENT not found");
+var endpoint = builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
+var apiKey = builder.Configuration["AzureOpenAI:ApiKey"] ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required.");
+var deploymentName = builder.Configuration["AzureOpenAI:Deployment"] ?? throw new InvalidOperationException("AzureOpenAI:Deployment is required.");
 
 builder.Services.AddSingleton<IChatClient>(sp =>
     new ChatClientBuilder(
-        new AzureOpenAIClient(new Uri(endpoint), new System.ClientModel.ApiKeyCredential(azoai_key))
+        new AzureOpenAIClient(new Uri(endpoint), new System.ClientModel.ApiKeyCredential(apiKey))
             .GetChatClient(deploymentName)
             .AsIChatClient())
     .UseFunctionInvocation()
