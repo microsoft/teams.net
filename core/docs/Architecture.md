@@ -53,6 +53,7 @@ graph TB
     subgraph "Schema Layer"
         CoreActivity[CoreActivity]
         AgenticUser[AgenticUser]
+        AgenticIdentity[AgenticIdentity]
         ConvAccount[ConversationAccount]
         JsonContext[CoreActivityJsonContext]
     end
@@ -180,7 +181,8 @@ internal partial class CoreActivityJsonContext : JsonSerializerContext
 | `BotHttpClient` | Centralized HTTP communication | Client |
 | `TurnMiddleware` | Executes middleware pipeline | Chain of Responsibility |
 | `CoreActivity` | Activity model with source generation | DTO |
-| `AgenticUser` | Authentication identity for API calls | DTO |
+| `AgenticUser` | Teams/activity-facing Agent 365 user identity | DTO |
+| `AgenticIdentity` | Canonical request/API scoping carrier created from `AgenticUser` today | DTO |
 | `BotAuthenticationHandler` | JWT authentication for ASP.NET Core | Authentication Handler |
 
 ### Configuration

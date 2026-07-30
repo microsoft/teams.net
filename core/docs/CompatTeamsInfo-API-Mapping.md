@@ -128,7 +128,7 @@ Key extension methods in `ActivitySchemaMapper.cs` and `TeamsApiClient.Models.cs
 
 ## Authentication
 
-All methods use `AgenticUser` extracted from the turn context activity properties for authentication with the Teams services. The identity is obtained by converting the Bot Framework `Activity` to a `CoreActivity` and extracting agentic user properties from `From.Properties`.
+Methods derive a Teams/activity-facing `AgenticUser` from the turn context activity properties, then convert it to `AgenticIdentity` for request scoping with Teams services. The concrete user identity is obtained by converting the Bot Framework `Activity` to a `CoreActivity` and extracting agentic user properties from `From.Properties`.
 
 ## Service URL
 

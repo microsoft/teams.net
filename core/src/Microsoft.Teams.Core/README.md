@@ -157,5 +157,6 @@ When no MSAL configuration is provided, communication happens as anonymous REST 
 | `CoreActivity` | Activity data model following the Activity Protocol specification |
 | `CoreActivityBuilder` | Fluent builder for constructing `CoreActivity` instances |
 | `ITurnMiddleware` | Interface for middleware in the activity processing pipeline |
-| `AgenticUser` | Represents user-delegated token acquisition identity |
+| `AgenticUser` | Represents the Teams/activity-facing Agent 365 user identity |
+| `AgenticIdentity` | Represents the request/proactive/API scoping carrier created from `AgenticUser` today |
 | `BotHandlerException` | Exception wrapper preserving the activity that caused the error |

@@ -16,16 +16,16 @@ public class ReactionClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
-    private readonly AgenticUser? _agenticUser;
+    private readonly AgenticIdentity? _agenticIdentity;
 
-    internal ReactionClient(Uri serviceUrl, CoreConversationClient client, AgenticUser? agenticUser = null)
+    internal ReactionClient(Uri serviceUrl, CoreConversationClient client, AgenticIdentity? agenticIdentity = null)
     {
         _serviceUrl = serviceUrl;
         _client = client;
-        _agenticUser = agenticUser;
+        _agenticIdentity = agenticIdentity;
     }
 
-    private BotRequestContext? AgenticUserContext => BotRequestContext.FromAgenticUser(_agenticUser);
+    private BotRequestContext? AgenticIdentityContext => _agenticIdentity is null ? null : BotRequestContext.FromAgenticIdentity(_agenticIdentity);
 
     /// <summary>
     /// Adds a reaction on an activity in a conversation.
@@ -37,7 +37,7 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task AddAsync(string conversationId, string activityId, string reactionType, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: AgenticUserContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: AgenticIdentityContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -50,6 +50,6 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task DeleteAsync(string conversationId, string activityId, string reactionType, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: AgenticUserContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestContext: AgenticIdentityContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

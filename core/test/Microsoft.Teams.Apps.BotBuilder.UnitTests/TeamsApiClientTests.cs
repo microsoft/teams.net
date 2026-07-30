@@ -27,9 +27,9 @@ public class TeamsApiClientTests
                 It.Is<BotRequestContext?>(c =>
                     c != null
                     && c.BotAppId == "recipient-bot-id"
-                    && c.AgenticUser != null
-                    && c.AgenticUser.AgenticAppInstanceId == "agent-app-instance-id"
-                    && c.AgenticUser.AgenticUserId == "agent-user-id"),
+                    && c.AgenticIdentity != null
+                    && c.AgenticIdentity.AgenticAppInstanceId == "agent-app-instance-id"
+                    && c.AgenticIdentity.AgenticUserId == "agent-user-id"),
                 null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Microsoft.Teams.Core.PagedMembersResult

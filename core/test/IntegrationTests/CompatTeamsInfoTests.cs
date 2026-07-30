@@ -93,7 +93,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         CompatConversations compatConversations = new(_f.ConversationClient)
         {
             ServiceUrl = _f.ServiceUrl.ToString(),
-            RequestContext = BotRequestContext.FromAgenticUser(_f.AgenticUser)
+            RequestContext = _f.AgenticIdentityContext
         };
         CompatConnectorClient connectorClient = new(compatConversations);
         turnContext.TurnState.Add<IConnectorClient>(connectorClient);

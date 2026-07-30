@@ -19,7 +19,7 @@ ApiClient (top-level facade)
 
 | Sub-client | Backed by | Why |
 |---|---|---|
-| Conversations, Users | core `ConversationClient` / `UserTokenClient` | Single source of truth for URL construction, auth, agents-channel handling, agentic user, headers, and logging |
+| Conversations, Users | core `ConversationClient` / `UserTokenClient` | Single source of truth for URL construction, auth, agents-channel handling, agentic identity scoping, headers, and logging |
 | Teams, Meetings | `BotHttpClient` directly | No core client exists for these endpoints |
 
 **Experimental APIs:** `ReactionClient` (`ExperimentalTeamsReactions`); `ActivityClient.CreateTargetedAsync` / `UpdateTargetedAsync` / `DeleteTargetedAsync` (`ExperimentalTeamsTargeted`, not supported in team channels).
@@ -42,6 +42,8 @@ botApp.OnMessage(async (ctx, ct) =>
 ```
 
 > ⚠️ On the **unscoped** base client, `Conversations`, `Teams`, and `Meetings` are `null!` — only `Users` is usable. Never call `ctx.TeamsBotApplication.Api.Conversations` directly (it throws `NullReferenceException`). Outside handlers (proactive messaging, compat layer), scope explicitly with `ForServiceUrl(activity.ServiceUrl)`.
+
+Agent 365 scoping is carried by `AgenticIdentity`. `AgenticUser` remains the Teams/activity-facing concrete model; use `AgenticIdentity.FromAgenticUser(user)` or the `ForAgenticUser(user)` convenience wrapper when scoping API calls for an inbound Agent 365 user. `ForAgenticIdentity(identity)` is the canonical API-client scoping method.
 
 Constructors: a DI constructor `(HttpClient, ConversationClient, UserTokenClient, ILogger?)` marked `[ActivatorUtilitiesConstructor]`, a fully-initialized `(Uri, …)` variant, a copy constructor, and a private `ForServiceUrl` constructor that shares the underlying clients.
 

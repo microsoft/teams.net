@@ -16,7 +16,7 @@ namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
 /// HTTP message handler that automatically acquires and attaches authentication tokens
-/// for Bot Framework API calls. Supports both app-only and agentic user (user-delegated) token acquisition.
+/// for Bot Framework API calls. Supports both app-only and agentic identity token acquisition.
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="BotAuthenticationHandler"/> class.
@@ -31,7 +31,7 @@ internal sealed class BotAuthenticationHandler(
     string? authenticationOptionsName = null,
     IOptionsMonitor<ManagedIdentityOptions>? managedIdentityOptions = null) : DelegatingHandler
 {
-    private const string AgenticUserScope = "https://botapi.skype.com/.default";
+    private const string AgenticIdentityScope = "https://botapi.skype.com/.default";
     private const string BotAppScope = "https://api.botframework.com/.default";
 
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
@@ -49,16 +49,16 @@ internal sealed class BotAuthenticationHandler(
         LoggerMessage.Define(LogLevel.Warning, new(6), "Failed to parse JWT token for trace logging.");
 
     /// <summary>
-    /// Key used to store the agentic user in HttpRequestMessage options.
+    /// Key used to store the agentic identity in HttpRequestMessage options.
     /// </summary>
-    public static readonly HttpRequestOptionsKey<AgenticUser?> AgenticUserKey = new(BotRequestContext.AgenticUserKey);
+    public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new(BotRequestContext.AgenticIdentityKey);
 
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        request.Options.TryGetValue(AgenticUserKey, out AgenticUser? agenticUser);
+        request.Options.TryGetValue(AgenticIdentityKey, out AgenticIdentity? agenticIdentity);
 
-        string token = await GetAuthorizationHeaderAsync(agenticUser, cancellationToken).ConfigureAwait(false);
+        string token = await GetAuthorizationHeaderAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);
 
         string tokenValue = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
             ? token["Bearer ".Length..]
@@ -73,12 +73,12 @@ internal sealed class BotAuthenticationHandler(
 
     /// <summary>
     /// Gets an authorization header for Bot Framework API calls.
-    /// Supports both app-only and agentic user (user-delegated) token acquisition.
+    /// Supports both app-only and agentic identity token acquisition.
     /// </summary>
-    /// <param name="agenticUser">Optional agentic user for user-delegated token acquisition. If not provided, acquires an app-only token.</param>
+    /// <param name="agenticIdentity">Optional agentic identity. If not provided, acquires an app-only token.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The authorization header value.</returns>
-    private async Task<string> GetAuthorizationHeaderAsync(AgenticUser? agenticUser, CancellationToken cancellationToken)
+    private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, CancellationToken cancellationToken)
     {
         string optionsName = authenticationOptionsName ?? BotConfig.DefaultSectionName;
         using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.AuthOutbound, ActivityKind.Client);
@@ -107,22 +107,20 @@ internal sealed class BotAuthenticationHandler(
                 }
             }
 
-            if (agenticUser is not null &&
-                !string.IsNullOrEmpty(agenticUser.AgenticAppInstanceId) &&
-                !string.IsNullOrEmpty(agenticUser.AgenticUserId))
+            if (agenticIdentity is { Kind: AgenticIdentityKind.AgenticUser, AgenticUserId: not null })
             {
-                span?.SetTag(Telemetry.Tags.AuthScope, AgenticUserScope);
-                _logAgenticUserToken(_logger, agenticUser.AgenticAppInstanceId, null);
+                span?.SetTag(Telemetry.Tags.AuthScope, AgenticIdentityScope);
+                _logAgenticUserToken(_logger, agenticIdentity.AgenticAppInstanceId, null);
 
-                if (!Guid.TryParse(agenticUser.AgenticUserId, out Guid agenticUserGuid))
+                if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
                 {
-                    _logInvalidAgenticUserId(_logger, agenticUser.AgenticUserId, null);
+                    _logInvalidAgenticUserId(_logger, agenticIdentity.AgenticUserId, null);
                 }
                 else
                 {
                     span?.SetTag(Telemetry.Tags.AuthFlow, "agentic");
-                    options.WithAgentUserIdentity(agenticUser.AgenticAppInstanceId, agenticUserGuid);
-                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticUserScope], options, null, cancellationToken).ConfigureAwait(false);
+                    options.WithAgentUserIdentity(agenticIdentity.AgenticAppInstanceId, agenticUserGuid);
+                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticIdentityScope], options, null, cancellationToken).ConfigureAwait(false);
                     return token;
                 }
             }

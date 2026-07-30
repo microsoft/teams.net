@@ -4,6 +4,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
@@ -57,9 +58,9 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
 
-        if (_f.AgenticUser is not null)
+        if (_f.AgenticIdentity is not null)
         {
-            request.Options.Set(new HttpRequestOptionsKey<AgenticUser?>("AgenticUser"), _f.AgenticUser);
+            request.Options.Set(new HttpRequestOptionsKey<AgenticIdentity?>(BotRequestContext.AgenticIdentityKey), _f.AgenticIdentity);
         }
 
         _output.WriteLine($"=== {label} ===");

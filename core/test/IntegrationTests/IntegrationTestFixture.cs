@@ -10,6 +10,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
@@ -35,6 +36,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     public string BotAppId { get; }
     public string? UserId2 { get; }
     public AgenticUser? AgenticUser { get; }
+    public AgenticIdentity? AgenticIdentity { get; }
 
     /// <summary>
     /// True when running against the canary service endpoint.
@@ -112,6 +114,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
                 AgenticUserId = agenticUserId
             };
             AgenticUser = AgenticUser.FromAccount(recipient);
+            AgenticIdentity = recipient.GetAgenticIdentity();
         }
     }
 
@@ -139,7 +142,9 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl).ForAgenticUser(AgenticUser);
+    public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl).ForAgenticIdentity(AgenticIdentity);
+
+    public BotRequestContext? AgenticIdentityContext => AgenticIdentity is null ? null : BotRequestContext.FromAgenticIdentity(AgenticIdentity);
 
     public void Dispose()
     {

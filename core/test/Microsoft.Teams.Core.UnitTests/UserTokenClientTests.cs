@@ -17,22 +17,22 @@ public class UserTokenClientTests
     {
         CapturingHandler handler = new();
         UserTokenClient client = CreateClient(handler);
-        AgenticUser identity = new()
+        AgenticIdentity identity = AgenticIdentity.FromAgenticUser(new AgenticUser
         {
             AgenticAppInstanceId = "agent-app-instance",
             AgenticUserId = "agent-user",
             AgenticBlueprintId = "agent-identity-blueprint",
-        };
+        });
         BotRequestContext requestContext = new()
         {
-            AgenticUser = identity,
+            AgenticIdentity = identity,
             BotAppId = "bot-app",
         };
 
         await client.GetTokenAsync("user", "connection", "msteams", code: null, requestContext);
 
         Assert.NotNull(handler.Request);
-        Assert.True(handler.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticUserKey), out object? identityValue));
+        Assert.True(handler.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticIdentityKey), out object? identityValue));
         Assert.Same(identity, identityValue);
         Assert.True(handler.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.BotAppIdKey), out object? botAppIdValue));
         Assert.Equal("bot-app", botAppIdValue);

@@ -76,6 +76,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         CoreActivity incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
         Microsoft.Teams.Core.Schema.ChannelAccount? incomingFrom = incomingCoreActivity.From;
         Microsoft.Teams.Core.Schema.ChannelAccount? incomingRecipient = incomingCoreActivity.Recipient;
+        AgenticIdentity? agenticIdentity = incomingRecipient?.GetAgenticIdentity();
 #pragma warning disable ExperimentalTeamsTargeted
         incomingFrom!.IsTargeted = true;
 #pragma warning restore ExperimentalTeamsTargeted
@@ -98,7 +99,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             //incomingCoreActivity.ServiceUrl!,
-            BotRequestContext.FromAgenticUser(AgenticUser.FromAccount(incomingRecipient)),
+            agenticIdentity is null ? null : BotRequestContext.FromAgenticIdentity(agenticIdentity),
             null,
             cancellationToken);
 
@@ -109,7 +110,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             res.Id,
             "sad",
             incomingCoreActivity.ServiceUrl!,
-            BotRequestContext.FromAgenticUser(AgenticUser.FromAccount(incomingRecipient)),
+            agenticIdentity is null ? null : BotRequestContext.FromAgenticIdentity(agenticIdentity),
             null,
             cancellationToken);
 
@@ -121,7 +122,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
-            BotRequestContext.FromAgenticUser(AgenticUser.FromAccount(incomingRecipient)),
+            agenticIdentity is null ? null : BotRequestContext.FromAgenticIdentity(agenticIdentity),
             null,
             cancellationToken);
 

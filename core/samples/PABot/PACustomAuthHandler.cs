@@ -25,10 +25,10 @@ namespace PABot
         private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
 
         /// <summary>
-        /// Key used to store the agentic user in HttpRequestMessage options.
+        /// Key used to store the agentic identity in HttpRequestMessage options.
         /// When set, agentic app instance credentials will be used instead of bot credentials.
         /// </summary>
-        public static readonly HttpRequestOptionsKey<AgenticUser?> AgenticUserKey = new(BotRequestContext.AgenticUserKey);
+        public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new(BotRequestContext.AgenticIdentityKey);
 
         /// <summary>
         /// Key used to read the bot app id from HttpRequestMessage options.
@@ -39,13 +39,13 @@ namespace PABot
         /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            request.Options.TryGetValue(AgenticUserKey, out AgenticUser? agenticUser);
+            request.Options.TryGetValue(AgenticIdentityKey, out AgenticIdentity? agenticIdentity);
 
             // The per-request properties (bot app id, etc.) were derived from the activity by core and
             // stamped onto request.Options — no ambient state in this handler. Read the bot app id here.
             request.Options.TryGetValue(BotAppIdKey, out string? botAppId);
 
-            string token = await GetAuthorizationHeaderAsync(agenticUser, botAppId, cancellationToken).ConfigureAwait(false);
+            string token = await GetAuthorizationHeaderAsync(agenticIdentity, botAppId, cancellationToken).ConfigureAwait(false);
 
             string tokenValue = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
                 ? token["Bearer ".Length..]
@@ -58,25 +58,23 @@ namespace PABot
 
         /// <summary>
         /// Gets an authorization header for API calls.
-        /// Routes to either bot credentials or agentic app instance credentials based on the presence of AgenticUser.
+        /// Routes to either bot credentials or agentic app instance credentials based on the presence of an agentic identity.
         /// </summary>
-        /// <param name="agenticUser">Optional agentic user. When provided, agentic app instance credentials are used.</param>
+        /// <param name="agenticIdentity">Optional agentic identity. When provided, agentic app instance credentials are used.</param>
         /// <param name="botAppId">Optional bot application (client) id extracted from the incoming activity. When provided, a token is minted as that specific bot.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The authorization header value.</returns>
-        private async Task<string> GetAuthorizationHeaderAsync(AgenticUser? agenticUser, string? botAppId, CancellationToken cancellationToken)
+        private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, string? botAppId, CancellationToken cancellationToken)
         {
-            // If agentic user is provided, use agentic app instance credentials with agentic user scope
-            if (agenticUser is not null &&
-                !string.IsNullOrEmpty(agenticUser.AgenticAppInstanceId) &&
-                !string.IsNullOrEmpty(agenticUser.AgenticUserId))
+            // If agentic identity is provided, use agentic app instance credentials with agentic user scope.
+            if (agenticIdentity is { Kind: AgenticIdentityKind.AgenticUser, AgenticUserId: not null })
             {
                 _logger.LogInformation("Acquiring token using agentic user credentials for scope '{Scope}' with AppId '{AppId}' and UserId '{UserId}'.",
                     _agenticUserScope,
-                    agenticUser.AgenticAppInstanceId,
-                    agenticUser.AgenticUserId);
+                    agenticIdentity.AgenticAppInstanceId,
+                    agenticIdentity.AgenticUserId);
 
-                return await _routedTokenService.AcquireTokenForAgenticUserAsync(agenticUser, _agenticUserScope, cancellationToken).ConfigureAwait(false);
+                return await _routedTokenService.AcquireTokenForAgenticIdentityAsync(agenticIdentity, _agenticUserScope, cancellationToken).ConfigureAwait(false);
             }
 
             // If a bot app id was sourced from the activity, mint a token as that specific bot.

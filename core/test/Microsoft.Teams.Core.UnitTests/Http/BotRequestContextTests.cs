@@ -9,7 +9,10 @@ namespace Microsoft.Teams.Core.UnitTests.Http;
 public class BotRequestContextTests
 {
     private static AgenticUser AgenticUser(string appId = "agent-app-instance", string userId = "agent-user")
-        => new() { AgenticAppInstanceId = appId, AgenticUserId = userId };
+        => new() { AgenticAppInstanceId = appId, AgenticUserId = userId, TenantId = "tenant" };
+
+    private static AgenticIdentity AgenticIdentity(string appId = "agent-app-instance", string userId = "agent-user")
+        => Microsoft.Teams.Core.Schema.AgenticIdentity.FromAgenticUser(AgenticUser(appId, userId));
 
     // ---- FromBotAppId ------------------------------------------------------
 
@@ -21,7 +24,7 @@ public class BotRequestContextTests
         Assert.NotNull(ctx);
         // FromBotAppId does NOT strip the channel prefix; the caller passes the id directly.
         Assert.Equal("28:abc", ctx!.BotAppId);
-        Assert.Null(ctx.AgenticUser);
+        Assert.Null(ctx.AgenticIdentity);
     }
 
     [Theory]
@@ -32,24 +35,42 @@ public class BotRequestContextTests
         Assert.Null(BotRequestContext.FromBotAppId(botAppId));
     }
 
-    // ---- FromAgenticUser ------------------------------------------------
+    // ---- FromAgenticIdentity -------------------------------------------
 
     [Fact]
-    public void FromAgenticUser_WithValue_CarriesOnlyAgenticUser()
+    public void FromAgenticIdentity_WithValue_CarriesOnlyAgenticIdentity()
     {
-        AgenticUser identity = AgenticUser();
+        AgenticIdentity identity = AgenticIdentity();
 
-        BotRequestContext? ctx = BotRequestContext.FromAgenticUser(identity);
+        BotRequestContext ctx = BotRequestContext.FromAgenticIdentity(identity);
 
-        Assert.NotNull(ctx);
-        Assert.Same(identity, ctx!.AgenticUser);
+        Assert.Same(identity, ctx.AgenticIdentity);
         Assert.Null(ctx.BotAppId);
     }
 
     [Fact]
-    public void FromAgenticUser_WithNull_ReturnsNull()
+    public void FromAgenticIdentity_WithNull_Throws()
     {
-        Assert.Null(BotRequestContext.FromAgenticUser(null));
+        Assert.Throws<ArgumentNullException>(() => BotRequestContext.FromAgenticIdentity(null!));
+    }
+
+    [Fact]
+    public void FromAgenticUser_WithValue_ConvertsToAgenticIdentity()
+    {
+        BotRequestContext ctx = BotRequestContext.FromAgenticUser(AgenticUser());
+
+        Assert.Equal(AgenticIdentityKind.AgenticUser, ctx.AgenticIdentity?.Kind);
+        Assert.Equal("agent-app-instance", ctx.AgenticIdentity?.AgenticAppInstanceId);
+        Assert.Equal("agent-user", ctx.AgenticIdentity?.AgenticUserId);
+        Assert.Equal("tenant", ctx.AgenticIdentity?.TenantId);
+        Assert.Null(ctx.BotAppId);
+    }
+
+    [Fact]
+    public void FromAgenticUser_WithNullOrIncompleteUser_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => BotRequestContext.FromAgenticUser(null!));
+        Assert.ThrowsAny<ArgumentException>(() => BotRequestContext.FromAgenticUser(new AgenticUser { AgenticUserId = "agent-user" }));
     }
 
     // ---- FromActivity (outbound: derive from From) -------------------------
@@ -65,6 +86,7 @@ public class BotRequestContextTests
                 Id = "28:bot-app-id",
                 AgenticAppInstanceId = "agent-app-instance",
                 AgenticUserId = "agent-user",
+                TenantId = "tenant",
             },
         };
 
@@ -72,7 +94,8 @@ public class BotRequestContextTests
 
         Assert.NotNull(ctx);
         Assert.Equal("bot-app-id", ctx!.BotAppId);
-        Assert.Equal("agent-app-instance", ctx.AgenticUser?.AgenticAppInstanceId);
+        Assert.Equal("agent-app-instance", ctx.AgenticIdentity?.AgenticAppInstanceId);
+        Assert.Equal("tenant", ctx.AgenticIdentity?.TenantId);
     }
 
     [Fact]
@@ -88,8 +111,8 @@ public class BotRequestContextTests
 
         Assert.NotNull(ctx);
         Assert.Equal("plain-bot-id", ctx!.BotAppId);
-        // No agentic user fields on the sender -> no agentic user.
-        Assert.Null(ctx.AgenticUser);
+        // No complete agentic user fields on the sender -> no agentic identity.
+        Assert.Null(ctx.AgenticIdentity);
     }
 
     [Fact]
@@ -145,14 +168,15 @@ public class BotRequestContextTests
         {
             Type = ActivityType.Message,
             From = new ChannelAccount { Id = "user-id" },
-            Recipient = new ChannelAccount { Id = "recipient-account-id", BotId = "28:recipient-bot-id", AgenticUserId = "agent-user" },
+            Recipient = new ChannelAccount { Id = "recipient-account-id", BotId = "28:recipient-bot-id", AgenticAppInstanceId = "agent-app-instance", AgenticUserId = "agent-user", TenantId = "tenant" },
         };
 
         BotRequestContext? ctx = BotRequestContext.FromInboundActivity(activity);
 
         Assert.NotNull(ctx);
         Assert.Equal("recipient-bot-id", ctx!.BotAppId);
-        Assert.Equal("agent-user", ctx.AgenticUser?.AgenticUserId);
+        Assert.Equal("agent-user", ctx.AgenticIdentity?.AgenticUserId);
+        Assert.Equal("tenant", ctx.AgenticIdentity?.TenantId);
     }
 
     [Fact]
@@ -170,7 +194,7 @@ public class BotRequestContextTests
 
         Assert.NotNull(ctx);
         Assert.Equal("recipient-bot-id", ctx!.BotAppId);
-        Assert.Null(ctx.AgenticUser);
+        Assert.Null(ctx.AgenticIdentity);
     }
 
     [Fact]
@@ -224,29 +248,29 @@ public class BotRequestContextTests
     [Fact]
     public void Merge_UnionsDistinctFields()
     {
-        AgenticUser identity = AgenticUser();
+        AgenticIdentity identity = AgenticIdentity();
         BotRequestContext? baseCtx = BotRequestContext.FromBotAppId("bot-1");
-        BotRequestContext? overrides = BotRequestContext.FromAgenticUser(identity);
+        BotRequestContext? overrides = BotRequestContext.FromAgenticIdentity(identity);
 
         BotRequestContext? merged = BotRequestContext.Merge(baseCtx, overrides);
 
         Assert.NotNull(merged);
         Assert.Equal("bot-1", merged!.BotAppId);
-        Assert.Same(identity, merged.AgenticUser);
+        Assert.Same(identity, merged.AgenticIdentity);
     }
 
     [Fact]
     public void Merge_OverridesNullField_DoesNotClobberBase()
     {
-        // overrides has only BotAppId set; its null AgenticUser must not wipe the base value.
-        BotRequestContext baseCtx = new() { AgenticUser = AgenticUser(), BotAppId = "base-bot" };
+        // overrides has only BotAppId set; its null AgenticIdentity must not wipe the base value.
+        BotRequestContext baseCtx = new() { AgenticIdentity = AgenticIdentity(), BotAppId = "base-bot" };
         BotRequestContext? overrides = BotRequestContext.FromBotAppId("override-bot");
 
         BotRequestContext? merged = BotRequestContext.Merge(baseCtx, overrides);
 
         Assert.NotNull(merged);
         Assert.Equal("override-bot", merged!.BotAppId);
-        Assert.Same(baseCtx.AgenticUser, merged.AgenticUser);
+        Assert.Same(baseCtx.AgenticIdentity, merged.AgenticIdentity);
     }
 
     [Fact]
@@ -280,8 +304,8 @@ public class BotRequestContextTests
     [Fact]
     public void ToOptions_YieldsWellKnownKeys()
     {
-        AgenticUser identity = AgenticUser();
-        BotRequestContext ctx = new() { AgenticUser = identity, BotAppId = "bot-1" };
+        AgenticIdentity identity = AgenticIdentity();
+        BotRequestContext ctx = new() { AgenticIdentity = identity, BotAppId = "bot-1" };
 
         Dictionary<string, object?> options = new(StringComparer.Ordinal);
         foreach (KeyValuePair<string, object?> entry in ctx.ToOptions())
@@ -289,7 +313,7 @@ public class BotRequestContextTests
             options[entry.Key] = entry.Value;
         }
 
-        Assert.Same(identity, options[BotRequestContext.AgenticUserKey]);
+        Assert.Same(identity, options[BotRequestContext.AgenticIdentityKey]);
         Assert.Equal("bot-1", options[BotRequestContext.BotAppIdKey]);
     }
 }

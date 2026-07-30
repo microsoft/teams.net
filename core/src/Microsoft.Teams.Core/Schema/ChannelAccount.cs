@@ -87,4 +87,12 @@ public class ChannelAccount()
             TenantId = TenantId
         };
     }
+
+    /// <summary>
+    /// Gets the request-scoping agentic identity from the account's typed agentic user properties.
+    /// </summary>
+    /// <returns>An <see cref="AgenticIdentity"/> if complete agentic user information is present; otherwise, null.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate")]
+    public AgenticIdentity? GetAgenticIdentity()
+        => AgenticIdentity.TryFromChannelRecipient(this);
 }

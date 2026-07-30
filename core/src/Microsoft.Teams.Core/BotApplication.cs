@@ -304,12 +304,12 @@ public class BotApplication
     /// <param name="conversationId">The id of the conversation to send the activity to.</param>
     /// <param name="activity">The activity to send. Cannot be null.</param>
     /// <param name="serviceUrl">The service url to send the activity to.</param>
-    /// <param name="agenticUser">Optional agentic user for user-delegated token acquisition.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for request scoping.</param>
     /// <param name="isTargeted">Optional flag indicating whether the activity is a targeted message (visible only to the recipient).</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="SendActivityResponse"/> with the ID of the sent activity, or null.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="activity"/> is null or the conversation client has not been initialized.</exception>
-    public async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivityInput activity, Uri serviceUrl, AgenticUser? agenticUser = null, bool isTargeted = false, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(string conversationId, CoreActivityInput activity, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
@@ -319,7 +319,7 @@ public class BotApplication
             activity,
             serviceUrl,
             isTargeted: isTargeted,
-            requestContext: Http.BotRequestContext.FromAgenticUser(agenticUser),
+            requestContext: agenticIdentity is null ? null : Http.BotRequestContext.FromAgenticIdentity(agenticIdentity),
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 

@@ -457,7 +457,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Client")]
     public async Task ForServiceUrl_CreatesScopedClient()
     {
-        ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl).ForAgenticUser(_f.AgenticUser);
+        ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl).ForAgenticIdentity(_f.AgenticIdentity);
 
         Assert.NotNull(scoped.Conversations);
         Assert.NotNull(scoped.Teams);

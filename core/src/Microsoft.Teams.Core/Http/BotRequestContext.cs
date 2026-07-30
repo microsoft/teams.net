@@ -11,16 +11,16 @@ namespace Microsoft.Teams.Core.Http;
 /// <see cref="System.Net.Http.DelegatingHandler"/> can read it (for example, to authenticate as a specific bot app).
 /// </summary>
 /// <remarks>
-/// The well-known values (agentic user, bot app id) are derived from the activity via the factory methods, or set
+/// The well-known values (agentic identity, bot app id) are derived from the activity via the factory methods, or set
 /// directly. The values flow as a parameter (no ambient state).
 /// </remarks>
 public record BotRequestContext
 {
     /// <summary>
-    /// Option key under which <see cref="AgenticUser"/> is stamped onto the request options. Matches the key the
+    /// Option key under which <see cref="AgenticIdentity"/> is stamped onto the request options. Matches the key the
     /// bot authentication handler reads.
     /// </summary>
-    public const string AgenticUserKey = "AgenticUser";
+    public const string AgenticIdentityKey = "AgenticIdentity";
 
     /// <summary>
     /// Option key under which <see cref="BotAppId"/> is stamped onto the request options.
@@ -28,9 +28,9 @@ public record BotRequestContext
     public const string BotAppIdKey = "botAppId";
 
     /// <summary>
-    /// Gets the agentic user to authenticate as, when the bot acts on behalf of an agentic app instance.
+    /// Gets the agentic identity to authenticate as, when the bot acts on behalf of an agentic app instance.
     /// </summary>
-    public AgenticUser? AgenticUser { get; init; }
+    public AgenticIdentity? AgenticIdentity { get; init; }
 
     /// <summary>
     /// Gets the bot application (client) id to mint a token as.
@@ -38,30 +38,42 @@ public record BotRequestContext
     public string? BotAppId { get; init; }
 
     /// <summary>
-    /// Builds context for an <b>outbound</b> activity: the bot is the sender, so the agentic user and bot app id
+    /// Builds context for an <b>outbound</b> activity: the bot is the sender, so the agentic identity and bot app id
     /// are both derived from <see cref="CoreActivity.From"/>.
     /// </summary>
     /// <param name="activity">The outbound activity, or null.</param>
     /// <returns>The context, or null when nothing could be derived.</returns>
     public static BotRequestContext? FromActivity(CoreActivity? activity)
-        => Build(Schema.AgenticUser.FromAccount(activity?.From), NormalizeAppId(activity?.From?.BotId ?? activity?.From?.Id));
+        => Build(AgenticIdentity.TryFromAgenticUser(Schema.AgenticUser.FromAccount(activity?.From)), NormalizeAppId(activity?.From?.BotId ?? activity?.From?.Id));
 
     /// <summary>
     /// Builds context for an <b>inbound</b> activity: the bot is the recipient, so both the bot app id and the
-    /// agentic user are derived from <see cref="CoreActivity.Recipient"/> (the bot's own account).
+    /// agentic identity are derived from <see cref="CoreActivity.Recipient"/> (the bot's own account).
     /// </summary>
     /// <param name="activity">The inbound activity, or null.</param>
     /// <returns>The context, or null when nothing could be derived.</returns>
     public static BotRequestContext? FromInboundActivity(CoreActivity? activity)
-        => Build(Schema.AgenticUser.FromAccount(activity?.Recipient), NormalizeAppId(activity?.Recipient?.BotId ?? activity?.Recipient?.Id));
+        => Build(AgenticIdentity.TryFromChannelRecipient(activity?.Recipient), NormalizeAppId(activity?.Recipient?.BotId ?? activity?.Recipient?.Id));
+
+    /// <summary>
+    /// Builds context carrying only the supplied agentic identity.
+    /// </summary>
+    /// <param name="agenticIdentity">The agentic identity.</param>
+    /// <returns>The context carrying <paramref name="agenticIdentity"/>.</returns>
+    public static BotRequestContext FromAgenticIdentity(AgenticIdentity agenticIdentity)
+    {
+        ArgumentNullException.ThrowIfNull(agenticIdentity);
+
+        return new BotRequestContext { AgenticIdentity = agenticIdentity };
+    }
 
     /// <summary>
     /// Builds context carrying only the supplied agentic user.
     /// </summary>
-    /// <param name="agenticUser">The agentic user, or null.</param>
-    /// <returns>The context, or null when <paramref name="agenticUser"/> is null.</returns>
-    public static BotRequestContext? FromAgenticUser(AgenticUser? agenticUser)
-        => agenticUser is null ? null : new BotRequestContext { AgenticUser = agenticUser };
+    /// <param name="agenticUser">The agentic user.</param>
+    /// <returns>The context carrying an <see cref="AgenticIdentity"/> created from <paramref name="agenticUser"/>.</returns>
+    public static BotRequestContext FromAgenticUser(AgenticUser agenticUser)
+        => FromAgenticIdentity(AgenticIdentity.FromAgenticUser(agenticUser));
 
     /// <summary>
     /// Builds context carrying only the supplied bot app id, used as-is (no channel-prefix stripping). Use for
@@ -92,7 +104,7 @@ public record BotRequestContext
 
         return new BotRequestContext
         {
-            AgenticUser = overrides.AgenticUser ?? baseContext.AgenticUser,
+            AgenticIdentity = overrides.AgenticIdentity ?? baseContext.AgenticIdentity,
             BotAppId = overrides.BotAppId ?? baseContext.BotAppId,
         };
     }
@@ -102,9 +114,9 @@ public record BotRequestContext
     /// </summary>
     internal IEnumerable<KeyValuePair<string, object?>> ToOptions()
     {
-        if (AgenticUser is not null)
+        if (AgenticIdentity is not null)
         {
-            yield return new KeyValuePair<string, object?>(AgenticUserKey, AgenticUser);
+            yield return new KeyValuePair<string, object?>(AgenticIdentityKey, AgenticIdentity);
         }
 
         if (!string.IsNullOrEmpty(BotAppId))
@@ -113,10 +125,10 @@ public record BotRequestContext
         }
     }
 
-    private static BotRequestContext? Build(AgenticUser? agenticUser, string? botAppId)
-        => agenticUser is null && string.IsNullOrEmpty(botAppId)
+    private static BotRequestContext? Build(AgenticIdentity? agenticIdentity, string? botAppId)
+        => agenticIdentity is null && string.IsNullOrEmpty(botAppId)
             ? null
-            : new BotRequestContext { AgenticUser = agenticUser, BotAppId = botAppId };
+            : new BotRequestContext { AgenticIdentity = agenticIdentity, BotAppId = botAppId };
 
     // Teams channel accounts carry the bot id as "28:<appId>"; strip the channel prefix when present.
     private static string? NormalizeAppId(string? id)
