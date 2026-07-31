@@ -27,7 +27,7 @@ dotnet add package Microsoft.Teams.Core
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
-builder.AddBotApplication();
+builder.Services.AddBotApplication();
 
 var app = builder.Build();
 var bot = app.UseBotApplication(); // maps POST /api/messages
@@ -36,14 +36,16 @@ bot.OnActivity = async (activity, ct) =>
 {
     if (activity.Type == ActivityType.Message)
     {
-        var reply = CoreActivity.CreateBuilder()
+        var reply = CoreActivityInput.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithConversation(activity.Conversation)
-            .WithServiceUrl(activity.ServiceUrl)
             .WithProperty("text", "Hello from the bot!")
             .Build();
 
-        await bot.SendActivityAsync(reply, ct);
+        await bot.SendActivityAsync(
+            activity.Conversation!.Id!,
+            reply,
+            activity.ServiceUrl!,
+            cancellationToken: ct);
     }
 };
 
@@ -71,7 +73,8 @@ public class MyBot : BotApplication
 }
 
 // Registration
-builder.AddBotApplication<MyBot>();
+builder.Services.AddBotApplication<MyBot>();
+var app = builder.Build();
 var bot = app.UseBotApplication<MyBot>();
 ```
 
@@ -155,7 +158,8 @@ When no MSAL configuration is provided, communication happens as anonymous REST 
 | `ConversationClient` | HTTP client for Bot Framework conversation APIs (send, update, delete, members) |
 | `UserTokenClient` | HTTP client for Bot Framework Token Service (OAuth, SSO, sign-in) |
 | `CoreActivity` | Activity data model following the Activity Protocol specification |
-| `CoreActivityBuilder` | Fluent builder for constructing `CoreActivity` instances |
+| `CoreActivityInput` | Outbound activity model used when sending activities |
+| `CoreActivityInputBuilder` | Fluent builder for constructing `CoreActivityInput` instances |
 | `ITurnMiddleware` | Interface for middleware in the activity processing pipeline |
 | `AgenticIdentity` | Represents user-delegated token acquisition identity |
 | `BotHandlerException` | Exception wrapper preserving the activity that caused the error |
