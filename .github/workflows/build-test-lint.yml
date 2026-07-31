@@ -5,39 +5,51 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ['main', 'releases/v2', 'releases/core']
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'Assets/**'
   push:
     branches: ['main', 'releases/v2', 'releases/core']
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'Assets/**'
 
   merge_group:
 
 permissions: read-all
 
 jobs:
+  check-changes:
+    name: Check changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.changes.outputs.code }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect code changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!Assets/**'
+              
   build-test-lint:
     name: Build & Test & Lint
+    needs : check-changes
+    if: needs.check-changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0'
-          
+      
       - name: Restore
         run: dotnet restore
 
@@ -55,3 +67,11 @@ jobs:
         with:
           name: nupkg
           path: ./nupkgs/*.nupkg
+
+  docs-only:
+    name: Docs only
+    needs: check-changes
+    if: needs.check-changes.outputs.code != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Docs-only change. Nothing to build."
