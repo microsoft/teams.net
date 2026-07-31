@@ -73,6 +73,7 @@ public class MyBot : BotApplication
 }
 
 // Registration
+var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddBotApplication<MyBot>();
 var app = builder.Build();
 var bot = app.UseBotApplication<MyBot>();
