@@ -11,9 +11,10 @@ WebApplication webApp = webAppBuilder.Build();
 TeamsBotApplication app = webApp.UseTeamsBotApplication();
 
 
-app.OnConversationUpdate(async (context, cancellationToken) =>
+app.OnConversationUpdate((context, cancellationToken) =>
     {
         Console.WriteLine($"[ConversationUpdate] Conversation updated");
+        return Task.CompletedTask;
     }
 );
 
@@ -26,11 +27,12 @@ app.OnChannelCreated(async (context, cancellationToken) =>
     await context.SendAsync($"New channel created: {channelName}", cancellationToken);
 });
 
-app.OnChannelDeleted(async (context, cancellationToken) =>
+// The channel is gone by the time this fires, so there is nowhere to reply.
+app.OnChannelDeleted((context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelDeleted] Channel '{channelName}' was deleted");
-    await context.SendAsync($"Channel deleted: {channelName}", cancellationToken);
+    return Task.CompletedTask;
 });
 
 app.OnChannelRenamed(async (context, cancellationToken) =>
