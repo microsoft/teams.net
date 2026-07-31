@@ -35,4 +35,15 @@ public class AppBuilder
         Options.AddOAuthFlow(connectionName);
         return this;
     }
+
+    /// <summary>
+    /// Completes the backward-compatible builder chain.
+    /// </summary>
+    /// <remarks>
+    /// The application is created by <c>AddTeams(WebApplicationBuilder, AppBuilder)</c>;
+    /// this method returns the configured builder so legacy
+    /// <c>App.Builder().AddOAuth(...).Build()</c> call sites can pass it to that overload.
+    /// </remarks>
+    /// <returns>This configured builder instance.</returns>
+    public AppBuilder Build() => this;
 }
