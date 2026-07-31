@@ -155,9 +155,9 @@ public static class ConversationEventTypes
     /// <summary>Gets the team renamed event type.</summary>
     public static ConversationEventType TeamRenamed => ConversationEventType.TeamRenamed;
 
-    /// <summary>Gets the team unarchived event type.</summary>
-    public static ConversationEventType TeamUnarchived => ConversationEventType.TeamUnarchived;
-
     /// <summary>Gets the team restored event type.</summary>
     public static ConversationEventType TeamRestored => ConversationEventType.TeamRestored;
+
+    /// <summary>Gets the team unarchived event type.</summary>
+    public static ConversationEventType TeamUnarchived => ConversationEventType.TeamUnarchived;
 }
