@@ -9,8 +9,31 @@ Demonstrates `Microsoft.Teams.Core` directly, without the higher-level apps laye
 ## What it shows
 
 - `AddBotApplication()` and `UseBotApplication()` for the bare Core SDK setup.
+- Binding credentials from a **custom configuration section** (`CustomAuth`) instead of the
+  default `AzureAd` section, via `AddBotApplication("CustomAuth")`.
 - `OnActivity` for direct activity handling.
 - A reply built with `CoreActivityInput` and sent with `ConversationClient`.
+
+---
+
+## Configuration
+
+Copy `Properties/launchSettings.TEMPLATE.json` to `Properties/launchSettings.json` and fill in
+the `CustomAuth__*` values. The section name is passed explicitly to `AddBotApplication`, so
+these keys must stay in sync with `Program.cs`:
+
+~~~json
+{
+  "CustomAuth": {
+    "Instance": "https://login.microsoftonline.com/",
+    "TenantId": "your-tenant-id",
+    "ClientId": "your-client-id",
+    "ClientCredentials": [
+      { "SourceType": "ClientSecret", "ClientSecret": "your-client-secret" }
+    ]
+  }
+}
+~~~
 
 ---
 

@@ -6,7 +6,10 @@ using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
-webAppBuilder.Services.AddBotApplication();
+
+// Credentials are read from a custom configuration section instead of the default "AzureAd"
+// section, matching the "CustomAuth__*" values in Properties/launchSettings.TEMPLATE.json.
+webAppBuilder.Services.AddBotApplication("CustomAuth");
 WebApplication webApp = webAppBuilder.Build();
 
 webApp.MapGet("/", () => "CoreBot is running.");
