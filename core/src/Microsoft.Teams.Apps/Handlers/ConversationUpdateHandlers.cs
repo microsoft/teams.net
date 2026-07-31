@@ -175,7 +175,8 @@ public static class ConversationUpdateExtensions
     /// Registers a handler for channel restored events.
     /// </summary>
     /// <remarks>
-    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// All matching handlers are invoked sequentially, so this runs alongside any registered
+    /// <see cref="OnConversationUpdate"/> handler.
     /// </remarks>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
@@ -441,7 +442,8 @@ public static class ConversationUpdateExtensions
     /// Registers a handler for team restored events.
     /// </summary>
     /// <remarks>
-    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// All matching handlers are invoked sequentially, so this runs alongside any registered
+    /// <see cref="OnConversationUpdate"/> handler.
     /// </remarks>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
