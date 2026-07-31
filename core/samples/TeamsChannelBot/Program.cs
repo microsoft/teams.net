@@ -40,6 +40,13 @@ app.OnChannelRenamed(async (context, cancellationToken) =>
     await context.SendAsync($"Channel renamed to: {channelName}", cancellationToken);
 });
 
+app.OnChannelRestored(async (context, cancellationToken) =>
+{
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    Console.WriteLine($"[ChannelRestored] Channel '{channelName}' was restored");
+    await context.SendAsync($"Channel restored: {channelName}", cancellationToken);
+});
+
 app.OnChannelMemberAdded(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[ChannelMemberAdded] Member added to channel");
@@ -106,6 +113,13 @@ app.OnTeamUnarchived(async (context, cancellationToken) =>
     string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamUnarchived] Team '{teamName}' was unarchived");
     await context.SendAsync($"Team unarchived: {teamName}", cancellationToken);
+});
+
+app.OnTeamRestored(async (context, cancellationToken) =>
+{
+    string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
+    Console.WriteLine($"[TeamRestored] Team '{teamName}' was restored");
+    await context.SendAsync($"Team restored: {teamName}", cancellationToken);
 });
 
 webApp.Run();

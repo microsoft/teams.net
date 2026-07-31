@@ -84,6 +84,8 @@ public class ConversationEventType(string value) : StringEnum(value)
     public static readonly ConversationEventType ChannelDeleted = new("channelDeleted");
     /// <summary>Gets the channel renamed event type.</summary>
     public static readonly ConversationEventType ChannelRenamed = new("channelRenamed");
+    /// <summary>Gets the channel restored event type.</summary>
+    public static readonly ConversationEventType ChannelRestored = new("channelRestored");
     /// <summary>Gets the channel shared event type.</summary>
     public static readonly ConversationEventType ChannelShared = new("channelShared");
     /// <summary>Gets the channel unshared event type.</summary>
@@ -102,6 +104,8 @@ public class ConversationEventType(string value) : StringEnum(value)
     public static readonly ConversationEventType TeamDeleted = new("teamDeleted");
     /// <summary>Gets the team renamed event type.</summary>
     public static readonly ConversationEventType TeamRenamed = new("teamRenamed");
+    /// <summary>Gets the team restored event type.</summary>
+    public static readonly ConversationEventType TeamRestored = new("teamRestored");
     /// <summary>Gets the team unarchived event type.</summary>
     public static readonly ConversationEventType TeamUnarchived = new("teamUnarchived");
 
@@ -120,6 +124,9 @@ public static class ConversationEventTypes
 
     /// <summary>Gets the channel renamed event type.</summary>
     public static ConversationEventType ChannelRenamed => ConversationEventType.ChannelRenamed;
+
+    /// <summary>Gets the channel restored event type.</summary>
+    public static ConversationEventType ChannelRestored => ConversationEventType.ChannelRestored;
 
     /// <summary>Gets the channel shared event type.</summary>
     public static ConversationEventType ChannelShared => ConversationEventType.ChannelShared;
@@ -150,4 +157,7 @@ public static class ConversationEventTypes
 
     /// <summary>Gets the team unarchived event type.</summary>
     public static ConversationEventType TeamUnarchived => ConversationEventType.TeamUnarchived;
+
+    /// <summary>Gets the team restored event type.</summary>
+    public static ConversationEventType TeamRestored => ConversationEventType.TeamRestored;
 }
