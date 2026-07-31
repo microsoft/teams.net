@@ -1,4 +1,4 @@
-# Migration from `Libraries/` to `core/`
+# Migration from 2.0 (`Libraries/`) to 2.1 (`core/`)
 
 This document describes consumer-visible breaking changes when moving from the
 legacy implementation in `Libraries/` to the current implementation in
@@ -26,9 +26,9 @@ The following are deliberately not counted as breaking:
 - An API that still exists in `core/`, even if the compatibility member is now
   marked `[Obsolete]`.
 - A new API or capability that did not exist in `Libraries/`.
-- A type that only moved namespace when a compatibility type or direct
-  mechanical replacement is available. Namespace moves are still documented
-  because source changes are required.
+
+A namespace or type move is a source-level breaking change when consumers must
+change and recompile their code, even if the replacement is mechanical.
 
 ## High-level summary
 
@@ -42,6 +42,7 @@ not a drop-in binary replacement. The largest migration is architectural:
 | Context | `IContext<T>` with sender, storage, reference, and route chaining | `Context<T>` with `Activity`, `Api`, optional `State`, and send helpers | Custom handlers and middleware must be updated |
 | Routing | Handlers form an explicit `context.Next()` chain | Matching non-invoke handlers all run; invokes select one handler | Handler ordering and continuation behavior change |
 | API access | `Microsoft.Teams.Api.Clients.ApiClient` with `Bots`, `Users`, and custom HTTP abstractions | `Microsoft.Teams.Apps.Clients.ApiClient` with `Conversations`, `UserToken`, `Teams`, and `Meetings` | Client construction, hierarchy, and authentication change |
+| Bot authentication | Custom credentials and token acquisition owned by `App` | Microsoft.Identity.Web and MSAL token acquisition configured through standard .NET configuration and DI | Configuration moves; the standards-based auth stack is an additive 2.1 improvement |
 | OAuth | App-wide settings and sign-in events | Registered `OAuthFlow` instances and per-flow callbacks | Authentication setup and callbacks must be migrated |
 | Responses | General `Response` and `Response<T>` wrappers | `InvokeResponse` and feature-specific response builders | Invoke handlers must return the new response types |
 | Dependencies | Apps transitively references Api, Cards, and Common | Apps references Core; Cards is separate; standard .NET replaces Common | Direct uses of old transitive packages require explicit migration |
@@ -112,8 +113,7 @@ in the current Apps package.
 
 ### `App` is replaced by `TeamsBotApplication`
 
-The legacy `AppBuilder.Build()` method and most builder configuration methods
-do not exist in the current implementation.
+Most legacy `AppBuilder` methods do not exist in the current implementation.
 
 ```csharp
 // Legacy
@@ -141,22 +141,20 @@ var app = builder.Build();
 TeamsBotApplication teams = app.UseTeamsBotApplication();
 ```
 
-`App.Builder().AddOAuth()` and the `AddTeams()`/`UseTeams()` hosting names still
-exist as deprecated compatibility shims. They are therefore not breaking
-changes by themselves. The break applies to the active legacy builder methods
-that have no compatibility implementation:
+`App.Builder().AddOAuth().Build()` and the `AddTeams()`/`UseTeams()` hosting
+names still exist as deprecated compatibility shims. They are therefore not
+breaking changes by themselves. Other active legacy builder methods require
+migration:
 
-- `Build()`
-- `AddLogger(...)`
-- `AddStorage(...)`
-- `AddClient(...)`
-- `AddCredentials(...)`
-- `AddPlugin(...)`
-- `AddCloud(...)`
-- `AutoUserTokenLookup(...)`
-
-Use ASP.NET Core logging, DI, `HttpClient`, configuration, and
-`TeamsBotApplicationOptions` instead.
+| Legacy builder method | Current replacement |
+|---|---|
+| `AddLogger(...)` | `TeamsBotApplication` uses the `ILogger` infrastructure registered in DI; configure providers through `builder.Logging` |
+| `AddStorage(...)` | Call `options.UseState()` and register an `IDistributedCache` implementation when the in-memory default is insufficient |
+| `AddClient(...)` | Register clients through `builder.Services.AddHttpClient(...)` and use `IHttpClientFactory` |
+| `AddCredentials(...)` | Configure the Microsoft.Identity.Web/MSAL identity under `AzureAd` |
+| `AddPlugin(...)` | Register application services through DI; use ASP.NET Core middleware or `ITurnMiddleware` for pipeline behavior |
+| `AddCloud(...)` | Configure Entra and Bot Framework cloud endpoints through `AzureAd` and `BotFramework` configuration |
+| `AutoUserTokenLookup(...)` | Register an `OAuthFlow` and request or check tokens explicitly for the required connection |
 
 ### Plugin architecture is removed
 
@@ -245,6 +243,8 @@ The following active legacy handlers require a rename or consolidation:
 | `OnAnswerSearch` | `OnSearch` |
 | `OnSignIn` | `OAuthFlow.OnSignInComplete` |
 | `OnSignInFailure` | `OAuthFlow.OnSignInFailure` |
+| `OnTokenExchange` | Managed by the registered `OAuthFlow` |
+| `OnVerifyState` | Managed by the registered `OAuthFlow` |
 
 The following active legacy handlers have no dedicated current equivalent:
 
@@ -403,7 +403,21 @@ Client method names, request models, return models, and the `ServiceUrl` type
 are not source-compatible. Migrate client calls individually rather than
 performing only a namespace replacement.
 
-## OAuth and authentication
+## Authentication
+
+### Bot authentication
+
+Applications that directly use the active 2.0 `AddCredentials`, custom HTTP
+credentials, `Api.Bots.Token`, or manual token lifecycle APIs must migrate
+those call sites to the Microsoft.Identity.Web/MSAL authentication pipeline
+registered by `AddBotApplication()` or `AddTeamsBotApplication()`. Bot identity
+and credentials are supplied through the Microsoft.Identity.Web-compatible
+`AzureAd` configuration section and standard dependency injection.
+
+The legacy `Teams` configuration section is still mapped to `AzureAd` by a
+compatibility path, so the section rename alone is not a breaking change.
+
+### User OAuth and SSO
 
 Legacy OAuth is app-wide:
 
@@ -466,7 +480,7 @@ deprecation warnings, but code is not forced to migrate immediately:
 |---|---|
 | `builder.AddTeams()` | Deprecated shim to `AddTeamsBotApplication()` |
 | `app.UseTeams()` | Deprecated shim to `UseTeamsBotApplication()` |
-| `App.Builder().AddOAuth(...)` | Deprecated OAuth-only builder shim |
+| `App.Builder().AddOAuth(...).Build()` | Deprecated OAuth-only builder shim accepted by `AddTeams(builder)` |
 | `context.Log.Info/Error/Debug/Warn` | Deprecated `ContextLogger` shim |
 | `context.Send(...)` | Deprecated overloads for text and `MessageActivity` |
 | `context.Reply(...)` | Deprecated overloads for text and `MessageActivity` |
@@ -496,6 +510,8 @@ marked `[Obsolete]` in `Libraries/` include:
 - Message-reaction mutation helpers that direct callers to the reactions
   client
 - Unpaged member APIs where the legacy SDK directs callers to paged methods
+- Handler overloads without a cancellation-token parameter when the legacy SDK
+  already directs callers to the cancellation-token overload
 
 Their absence or replacement in `core/` is cleanup of an already-deprecated
 surface, not a new migration break.
@@ -507,6 +523,8 @@ changes:
 
 - The new `Microsoft.Teams.Core` foundation package.
 - .NET 10 support in addition to .NET 8.
+- Microsoft.Identity.Web/MSAL application authentication, distributed token
+  caching, managed and federated credentials, and agent identity support.
 - Per-turn conversation and user state backed by `IDistributedCache`.
 - OpenTelemetry spans and metrics and Agent 365 baggage propagation.
 - Agentic identity and agent lifecycle support.
@@ -531,4 +549,3 @@ changes:
 8. Handle any unsupported typed handlers at the Core middleware or raw
    protocol layer.
 9. Remove use of deprecated compatibility shims after behavior is verified.
-
