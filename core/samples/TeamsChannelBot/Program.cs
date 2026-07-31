@@ -11,9 +11,10 @@ WebApplication webApp = webAppBuilder.Build();
 TeamsBotApplication app = webApp.UseTeamsBotApplication();
 
 
-app.OnConversationUpdate(async (context, cancellationToken) =>
+app.OnConversationUpdate((context, cancellationToken) =>
     {
         Console.WriteLine($"[ConversationUpdate] Conversation updated");
+        return Task.CompletedTask;
     }
 );
 
@@ -26,11 +27,12 @@ app.OnChannelCreated(async (context, cancellationToken) =>
     await context.SendAsync($"New channel created: {channelName}", cancellationToken);
 });
 
-app.OnChannelDeleted(async (context, cancellationToken) =>
+// The channel is gone by the time this fires, so there is nowhere to reply.
+app.OnChannelDeleted((context, cancellationToken) =>
 {
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelDeleted] Channel '{channelName}' was deleted");
-    await context.SendAsync($"Channel deleted: {channelName}", cancellationToken);
+    return Task.CompletedTask;
 });
 
 app.OnChannelRenamed(async (context, cancellationToken) =>
@@ -38,6 +40,13 @@ app.OnChannelRenamed(async (context, cancellationToken) =>
     string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelRenamed] Channel renamed to '{channelName}'");
     await context.SendAsync($"Channel renamed to: {channelName}", cancellationToken);
+});
+
+app.OnChannelRestored(async (context, cancellationToken) =>
+{
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    Console.WriteLine($"[ChannelRestored] Channel '{channelName}' was restored");
+    await context.SendAsync($"Channel restored: {channelName}", cancellationToken);
 });
 
 app.OnChannelMemberAdded(async (context, cancellationToken) =>
@@ -106,6 +115,13 @@ app.OnTeamUnarchived(async (context, cancellationToken) =>
     string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamUnarchived] Team '{teamName}' was unarchived");
     await context.SendAsync($"Team unarchived: {teamName}", cancellationToken);
+});
+
+app.OnTeamRestored(async (context, cancellationToken) =>
+{
+    string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
+    Console.WriteLine($"[TeamRestored] Team '{teamName}' was restored");
+    await context.SendAsync($"Team restored: {teamName}", cancellationToken);
 });
 
 webApp.Run();

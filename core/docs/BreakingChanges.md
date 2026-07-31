@@ -256,8 +256,7 @@ The following active legacy handlers have no dedicated current equivalent:
 - `OnExecuteAction`
 - `OnHandoff`
 - `OnReadReceipt`
-- `OnChannelRestored`
-- `OnTeamRestored` and `OnTeamHardDeleted`
+- `OnTeamHardDeleted`
 - App lifecycle callbacks such as `OnStart`, `OnActivitySent`,
   `OnActivityResponse`, and `OnError`
 
