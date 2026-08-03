@@ -6,8 +6,7 @@
 #     signed, nuget.org, requires approval).
 # Versions come from Nerdbank.GitVersioning, per packageSet:
 #   - Legacy: root version.json
-#   - Core:   core/version.json (plus per-project overrides such as
-#             core/src/Microsoft.Teams.Apps/version.json)
+#   - Core:   core/version.json
 #
 # Extends 1ES.Official.PipelineTemplate for M365 security compliance.
 # =============================================================================
