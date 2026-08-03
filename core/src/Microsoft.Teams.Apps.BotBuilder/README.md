@@ -8,7 +8,7 @@ A compatibility bridge that enables existing **Bot Framework SDK v4** applicatio
 ## Key Features
 
 - **Drop-in Adapter** &mdash; `TeamsBotFrameworkHttpAdapter` implements `IBotFrameworkHttpAdapter`, so existing bots work with minimal changes
-- **Full Conversation Support** &mdash; Send, update, delete activities, manage members, and handle attachments through adapted interfaces
+- **Conversation Support** &mdash; Send, update, and delete activities and manage conversation members through adapted interfaces
 - **OAuth Compatibility** &mdash; `CompatUserTokenClient` bridges token management between the two frameworks
 - **Proactive Messaging** &mdash; `ContinueConversationAsync` for resuming conversations from external triggers
 - **Teams API Access** &mdash; Static `TeamsApiClient` methods for Teams-specific operations (meetings, batch messaging, team/channel metadata)
@@ -27,17 +27,18 @@ dotnet add package Microsoft.Teams.Apps.BotBuilder
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 builder.AddTeamsBotFrameworkHttpAdapter();
+builder.Services.AddTransient<IBot, MyBot>();
 
 var app = builder.Build();
-// Map your existing IBot implementation to the endpoint
-app.MapPost("api/messages", async (HttpContext context) =>
-{
-    var adapter = context.RequestServices
-        .GetRequiredService<IBotFrameworkHttpAdapter>();
-    var bot = context.RequestServices.GetRequiredService<IBot>();
-    await adapter.ProcessAsync(
-        context.Request, context.Response, bot, context.RequestAborted);
-});
+
+app.MapPost("/api/messages", async (
+    IBotFrameworkHttpAdapter adapter,
+    IBot bot,
+    HttpRequest request,
+    HttpResponse response,
+    CancellationToken ct) =>
+        await adapter.ProcessAsync(request, response, bot, ct))
+    .RequireAuthorization();
 
 app.Run();
 ```
@@ -56,10 +57,11 @@ public class MyBot : ActivityHandler
             MessageFactory.Text($"Echo: {turnContext.Activity.Text}"), ct);
     }
 }
-
-// Register your bot
-builder.Services.AddTransient<IBot, MyBot>();
 ```
+
+The compatibility connector implements conversation operations. The Bot
+Framework `IConnectorClient.Attachments` API is not implemented; send
+attachments as part of activities instead.
 
 ### Teams-Specific Operations
 
@@ -103,10 +105,10 @@ var failures = await TeamsApiClient.GetPagedFailedEntriesAsync(turnContext, oper
 ### Proactive Messaging
 
 ```csharp
-var adapter = serviceProvider
-    .GetRequiredService<IBotFrameworkHttpAdapter>() as TeamsBotFrameworkHttpAdapter;
+var adapter = (TeamsBotFrameworkHttpAdapter)serviceProvider
+    .GetRequiredService<IBotFrameworkHttpAdapter>();
 
-await adapter!.ContinueConversationAsync(
+await adapter.ContinueConversationAsync(
     botId, conversationReference,
     async (turnContext, ct) =>
     {

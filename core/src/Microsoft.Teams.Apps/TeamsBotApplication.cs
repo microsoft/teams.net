@@ -238,13 +238,31 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationId">The conversation ID.</param>
     /// <param name="messageId">The thread root message ID.</param>
     /// <param name="text">The text to send.</param>
+    /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-        return SendAsync(threadedConversationId, text, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        return SendAsync(threadedConversationId, text, serviceUrl, agenticIdentity, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends an activity proactively as a threaded reply.
+    /// Constructs a threaded conversation ID from the conversation ID and message ID.
+    /// </summary>
+    /// <param name="conversationId">The conversation ID.</param>
+    /// <param name="messageId">The thread root message ID.</param>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
+    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, TeamsActivityInput activity, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
+        return SendAsync(threadedConversationId, activity, serviceUrl, agenticIdentity, cancellationToken);
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>
@@ -252,10 +270,31 @@ public class TeamsBotApplication : BotApplication
     public Task<SendActivityResponse?> Send(string conversationId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => SendAsync(conversationId, text, serviceUrl, agenticIdentity, cancellationToken);
 
-    /// <inheritdoc cref="ReplyAsync(string, string, string, AgenticIdentity?, CancellationToken)"/>
+    /// <inheritdoc cref="SendAsync(string, TeamsActivityInput, Uri?, AgenticIdentity?, CancellationToken)"/>
+    [Obsolete("Use SendAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
+    public Task<SendActivityResponse?> Send(string conversationId, TeamsActivity activity, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
+            ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
+        return SendActivityAsync(conversationId, CoreActivityInput.FromActivity(activity), resolvedUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc cref="ReplyAsync(string, string, string, Uri?, AgenticIdentity?, CancellationToken)"/>
     [Obsolete("Use ReplyAsync instead.")]
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
-        => ReplyAsync(conversationId, messageId, text, agenticIdentity, cancellationToken);
+        => ReplyAsync(conversationId, messageId, text, null, agenticIdentity, cancellationToken);
+
+    /// <inheritdoc cref="ReplyAsync(string, string, TeamsActivityInput, Uri?, AgenticIdentity?, CancellationToken)"/>
+    [Obsolete("Use ReplyAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
+    public Task<SendActivityResponse?> Reply(string conversationId, string messageId, TeamsActivity activity, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
+        Uri resolvedUrl = _lastServiceUrl
+            ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
+        return SendActivityAsync(threadedConversationId, CoreActivityInput.FromActivity(activity), resolvedUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+    }
 
     /// <summary>
     /// NuGet package version

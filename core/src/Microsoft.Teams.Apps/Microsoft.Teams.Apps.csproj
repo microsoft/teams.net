@@ -19,7 +19,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 	</ItemGroup>

@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.Teams.Cards;
+using Microsoft.Teams.Common;
 
 namespace MessageExtensionBot;
 
@@ -62,7 +63,14 @@ public static class Cards
                 new("Item ID:", itemId ?? string.Empty)
             })])
         {
-            Version = Microsoft.Teams.Cards.Version.Version1_4
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions =
+            [
+                new OpenUrlAction($"https://www.microsoft.com/")
+                {
+                    Title = "🔗 View Details"
+                }
+            ]
         };
 
         return JsonSerializer.SerializeToElement(card);

@@ -70,16 +70,12 @@ public static class Cards
         };
     }
 
-    public static JsonElement CreateAdaptiveActionResponseCard(string? verb, string? message)
+    public static JsonElement CreateAdaptiveActionResponseCard(string? verb)
     {
         AdaptiveCard card = new([
             new TextBlock($"Action '{verb}' executed")
             {
                 Weight = TextWeight.Bolder
-            },
-            new TextBlock($"Message: {message}")
-            {
-                Wrap = true
             }])
         {
             Version = Microsoft.Teams.Cards.Version.Version1_4

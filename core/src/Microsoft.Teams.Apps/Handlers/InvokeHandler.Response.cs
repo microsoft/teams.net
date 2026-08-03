@@ -72,6 +72,7 @@ public class InvokeResponse<TBody>(int status, TBody? body = default) : InvokeRe
     /// This property shadows the base class Body property but uses the same underlying storage,
     /// ensuring no synchronization issues between typed and untyped access.
     /// </summary>
+    [JsonPropertyName("value")]
     public new TBody? Body
     {
         get => (TBody?)base.Body;

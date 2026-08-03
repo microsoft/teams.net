@@ -6,22 +6,32 @@ Minimal Teams bot wired to the [`Microsoft.OpenTelemetry`](https://github.com/mi
 
 - Bot registered and installed in Teams.
 - OpenTelemetry export target available (for local demo, Grafana LGTM).
-- Azure OpenAI configuration (required by the sample's AI path).
+- Azure OpenAI configured:
+  - `AzureOpenAI__Endpoint`
+  - `AzureOpenAI__ApiKey`
+  - `AzureOpenAI__Deployment` 
 - OAuth connection named `sso` configured on the bot resource.
+- [optional for multiple instances] Redis available and configured through `ConnectionStrings__Redis`.
 
 ## What it shows
 
 ```csharp
 builder.Services.AddOpenTelemetry()
-    .UseMicrosoftOpenTelemetry(o => o.Exporters = ExportTarget.Console | ExportTarget.Otlp)
-    .WithTracing(t => t
-        .AddSource(CoreTelemetryNames.ActivitySourceName)
-        .AddSource(TeamsBotApplicationTelemetry.ActivitySourceName))
-    .WithMetrics(m => m
-        .AddMeter(CoreTelemetryNames.MeterName)
-        .AddMeter(TeamsBotApplicationTelemetry.MeterName));
-
-builder.Logging.AddOpenTelemetry(o => o.IncludeFormattedMessage = true);
+    .ConfigureResource(r => r
+        .AddService(serviceName: "ObservabilityBot", serviceVersion: "0.0.1")
+        .AddAttributes(new Dictionary<string, object>
+        {
+            ["deployment.environment"] = builder.Environment.EnvironmentName,
+            ["service.namespace"] = "Microsoft.Teams"
+        }))
+    .UseMicrosoftOpenTelemetry(o =>
+    {
+        o.Exporters = ExportTarget.Otlp | ExportTarget.AzureMonitor;
+        o.Instrumentation.EnableHttpClientInstrumentation = true;
+        o.Instrumentation.EnableAspNetCoreInstrumentation = true;
+    })
+    .WithTracing(t => t.AddSource(activitySources))
+    .WithMetrics(m => m.AddMeter(meterNames));
 ```
 
 The two `.AddSource` / `.AddMeter` calls are the only Teams-specific OTel wiring. Everything else is standard distro setup.
@@ -39,11 +49,6 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_SERVICE_NAME=teams-observability-bot
 export OTEL_RESOURCE_ATTRIBUTES="deployment.environment=local,service.version=dev"
 
-# Required for the AI chat client (Azure OpenAI):
-export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
-export AZURE_OPENAI_KEY=your-key
-export AZURE_OPENAI_DEPLOYMENT=your-deployment-name
-
 dotnet run --project core/samples/ObservabilityBot
 ```
 
@@ -51,10 +56,6 @@ Open http://localhost:3000 (`admin` / `admin`) and explore Tempo, Mimir, and Lok
 
 ## Send a test activity
 
-To exercise the pipeline you need to POST a Bot Framework activity payload (with a valid bearer token) to the bot's `/api/messages` endpoint. Reasonable options:
-
-- Use the `core/test/ABSTokenServiceClient` helper to mint a token, then `curl` a JSON activity.
-- Drive the bot from one of the harnesses under `core/test/IntegrationTests`.
 - Deploy the bot to a Teams tenant and chat with it.
 
 Then use these commands in chat:
@@ -64,8 +65,7 @@ Then use these commands in chat:
 
 ## Export targets
 
-- Set `APPLICATIONINSIGHTS_CONNECTION_STRING` to additionally export to Azure Monitor / Application Insights.
-- Remove `ExportTarget.Console` for production.
+- Set `ConnectionStrings__AppInsights` to additionally export to Azure Monitor / Application Insights.
 - See the [Microsoft OpenTelemetry distro README](https://github.com/microsoft/opentelemetry-distro-dotnet#readme) for the full set of `ExportTarget` values, sampling, and Azure Monitor options.
 
 ## What you should see
@@ -89,6 +89,7 @@ HTTP server span                       (auto, OTel ASP.NET Core)
 Metrics (Prometheus / Mimir names): `teams_activities_received_total`, `teams_turn_duration_milliseconds_bucket/sum/count`, `teams_handler_errors_total`, `teams_middleware_duration_milliseconds_*`, `teams_outbound_calls_total`, `teams_outbound_errors_total`.
 
 Logs: every `ILogger` record produced inside a turn carries the active `TraceId` / `SpanId` so Loki queries can pivot from a slow trace to its log lines.
+
 ## Running the Sample
 
 ~~~bash

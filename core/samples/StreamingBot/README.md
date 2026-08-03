@@ -6,9 +6,9 @@ Shows streaming responses in Teams using `TeamsStreamingWriter`, including incre
 
 - Bot registered and installed in Teams.
 - Azure OpenAI configured:
-  - `AZURE_OPENAI_ENDPOINT`
-  - `AZURE_OPENAI_KEY`
-  - `AZURE_OPENAI_DEPLOYMENT`
+  - `AzureOpenAI__Endpoint`
+  - `AzureOpenAI__ApiKey`
+  - `AzureOpenAI__Deployment`
 
 ## What it shows
 

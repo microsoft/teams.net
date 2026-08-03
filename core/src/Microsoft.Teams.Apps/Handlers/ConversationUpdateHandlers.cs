@@ -172,6 +172,32 @@ public static class ConversationUpdateExtensions
     }
 
     /// <summary>
+    /// Registers a handler for channel restored events.
+    /// </summary>
+    /// <remarks>
+    /// All matching handlers are invoked sequentially, so this runs alongside any registered
+    /// <see cref="OnConversationUpdate"/> handler.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<ConversationUpdateActivity>
+        {
+            Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.ChannelRestored) ?? false,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
     /// Registers a handler for channel shared events.
     /// </summary>
     /// <param name="app">The Teams bot application.</param>
@@ -403,6 +429,32 @@ public static class ConversationUpdateExtensions
         {
             Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamUnarchived]),
             Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamUnarchived) ?? false,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for team restored events.
+    /// </summary>
+    /// <remarks>
+    /// All matching handlers are invoked sequentially, so this runs alongside any registered
+    /// <see cref="OnConversationUpdate"/> handler.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnTeamRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<ConversationUpdateActivity>
+        {
+            Name = string.Join("/", [TeamsActivityTypes.ConversationUpdate, ConversationEventTypes.TeamRestored]),
+            Selector = activity => activity.ChannelData?.EventType?.Equals(ConversationEventTypes.TeamRestored) ?? false,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);

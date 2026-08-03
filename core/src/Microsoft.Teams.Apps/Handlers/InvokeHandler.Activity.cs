@@ -136,6 +136,10 @@ public class InvokeName(string value) : StringEnum(value)
     public static readonly InvokeName MessageExtensionSelectItem = new("composeExtension/selectItem");
     /// <summary>Message extension submit action invoke name.</summary>
     public static readonly InvokeName MessageExtensionSubmitAction = new("composeExtension/submitAction");
+    /// <summary>Message extension setting invoke name. Sent when the user saves settings after the config URL flow.</summary>
+    public static readonly InvokeName MessageExtensionSetting = new("composeExtension/setting");
+    /// <summary>Message extension on card button clicked invoke name. Sent when a user clicks an Action.Submit button on a message extension result card.</summary>
+    public static readonly InvokeName MessageExtensionCardButtonClicked = new("composeExtension/onCardButtonClicked");
     /// <summary>Message fetch task invoke name.</summary>
     public static readonly InvokeName MessageFetchTask = new("message/fetchTask");
     /// <summary>Message submit action invoke name.</summary>
@@ -226,6 +230,17 @@ public static class InvokeNames
     /// Message extension submit action invoke name.
     /// </summary>
     public static InvokeName MessageExtensionSubmitAction => InvokeName.MessageExtensionSubmitAction;
+
+    /// <summary>
+    /// Message extension setting invoke name. Sent when the user saves settings after the config URL flow.
+    /// </summary>
+    public static InvokeName MessageExtensionSetting => InvokeName.MessageExtensionSetting;
+
+    /// <summary>
+    /// Message extension on card button clicked invoke name.
+    /// Sent when a user clicks an <c>Action.Submit</c> button on a message extension result card.
+    /// </summary>
+    public static InvokeName MessageExtensionCardButtonClicked => InvokeName.MessageExtensionCardButtonClicked;
 
     /// <summary>
     /// Message fetch task invoke name. Sent when the user clicks a feedback button on an AI-generated message.

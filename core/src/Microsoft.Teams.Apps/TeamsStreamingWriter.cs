@@ -193,6 +193,7 @@ public sealed class TeamsStreamingWriter
 
         final ??= new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
+        final.ReplyToId = _reference.Id;
 
         if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
             throw new InvalidOperationException(
@@ -374,9 +375,12 @@ public sealed class TeamsStreamingWriter
 
     private StreamingActivityInput BuildActivity(string text, StreamType streamType)
     {
-        return StreamingActivityInput.CreateBuilder()
+        StreamingActivityInput activity = StreamingActivityInput.CreateBuilder()
             .WithText(text)
             .WithStreamInfo(streamType, _streamId, _sequence)
             .Build();
+
+        activity.ReplyToId = _reference.Id;
+        return activity;
     }
 }

@@ -17,6 +17,7 @@ public sealed class BotConfig
 
     internal const string BotFrameworkSectionName = "BotFramework";
 
+    internal const string LegacySectionName = "Teams";
     private const string DangerouslyAllowUnauthenticatedRequestsKey = "DangerouslyAllowUnauthenticatedRequests";
 
     internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
@@ -109,6 +110,20 @@ public sealed class BotConfig
 
         IConfigurationSection section = configuration.GetSection(sectionName);
         IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
+        bool usingLegacyTeamsSection = false;
+
+        // Backward compat: if the primary section has no ClientId, fall back to the legacy "Teams" section
+        // and remap it to the AzureAd shape so all downstream code sees a consistent configuration.
+        if (string.IsNullOrEmpty(section["ClientId"]))
+        {
+            IConfigurationSection teamsSection = configuration.GetSection(LegacySectionName);
+            if (!string.IsNullOrEmpty(teamsSection["ClientId"]))
+            {
+                section = MapLegacyTeamsSection(teamsSection, sectionName);
+                usingLegacyTeamsSection = true;
+            }
+        }
+
         bool dangerouslyAllowUnauthenticatedRequests =
             ResolveOptionalBoolean(section, DangerouslyAllowUnauthenticatedRequestsKey)
             ?? false;
@@ -128,6 +143,9 @@ public sealed class BotConfig
         {
             AddBotApplicationExtensions.LogFromServices(services, l =>
             {
+                if (usingLegacyTeamsSection)
+                    _logUsingLegacySection(l, LegacySectionName, sectionName, BuildCurrentSectionExample(sectionName), null);
+
                 if (config.DangerouslyAllowUnauthenticatedRequests)
                     l.BypassAuthenticationConfigured(sectionName);
                 else if (!string.IsNullOrEmpty(config.ClientId))
@@ -139,6 +157,37 @@ public sealed class BotConfig
 
         return config;
     }
+
+    private static IConfigurationSection MapLegacyTeamsSection(IConfigurationSection teams, string targetSection) =>
+        new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{targetSection}:TenantId"]                          = teams["TenantId"],
+                [$"{targetSection}:ClientId"]                          = teams["ClientId"],
+                [$"{targetSection}:Instance"]                          = DefaultEntraInstance,
+                [$"{targetSection}:{DangerouslyAllowUnauthenticatedRequestsKey}"] = teams[DangerouslyAllowUnauthenticatedRequestsKey],
+                [$"{targetSection}:ClientCredentials:0:SourceType"]    = "ClientSecret",
+                [$"{targetSection}:ClientCredentials:0:ClientSecret"]  = teams["ClientSecret"],
+            })
+            .Build()
+            .GetSection(targetSection);
+
+    private static string BuildCurrentSectionExample(string sectionName) =>
+        $$"""
+              {
+          "{{sectionName}}": {
+            "Instance": "https://login.microsoftonline.com/",
+            "TenantId": "your-tenant-id",
+            "ClientId": "your-client-id",
+            "ClientCredentials": [
+              {
+                "SourceType": "ClientSecret",
+                "ClientSecret": "your-client-secret"
+              }
+            ]
+          }
+        }
+        """;
 
     private static bool? ResolveOptionalBoolean(IConfigurationSection section, string key)
     {
@@ -158,7 +207,6 @@ public sealed class BotConfig
         throw new InvalidOperationException(
             $"Configuration value '{section.Path}:{key}' is not a valid boolean: '{value}'.");
     }
-
     private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
     {
         ArgumentNullException.ThrowIfNull(section);
@@ -178,4 +226,9 @@ public sealed class BotConfig
 
     private static readonly Action<ILogger, string, Exception?> _logUsingSectionConfig =
         LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Resolved bot configuration from '{SectionName}' configuration section");
+    private static readonly Action<ILogger, string, string, string, Exception?> _logUsingLegacySection =
+        LoggerMessage.Define<string, string, string>(
+            LogLevel.Warning,
+            new(5),
+            "Configuration section '{LegacySectionName}' is deprecated. Please migrate to '{CurrentSectionName}' using the Microsoft.Identity.Web configuration structure:\n{CurrentSectionExample}");
 }

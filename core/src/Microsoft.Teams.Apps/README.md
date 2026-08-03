@@ -12,7 +12,11 @@ A high-level framework for building Microsoft Teams bots in .NET. Built on top o
 - **OAuth Flows** &mdash; Built-in SSO token exchange, sign-in cards, and token management via `OAuthFlow`
 - **Teams API Clients** &mdash; Typed clients for conversations, members, teams, channels, meetings, and batch operations
 - **Streaming Messages** &mdash; Progressive response updates via `TeamsStreamingWriter`
-- **Fluent Configuration** &mdash; Chainable handler registration and `AppBuilder` for setup
+- **Conversation Helpers** &mdash; Send, reply, quote, and typing helpers for reactive and proactive messaging
+- **Turn State** &mdash; Conversation and user state backed by `IDistributedCache`
+- **Targeted Messages** &mdash; Send messages visible only to a selected participant in supported conversations
+- **Observability** &mdash; OpenTelemetry spans, metrics, and Agent 365 baggage propagation
+- **Fluent Configuration** &mdash; Chainable handler registration and options-based service configuration
 
 ## Installation
 
@@ -33,9 +37,8 @@ var teams = app.UseTeamsBotApplication(); // maps POST /api/messages
 
 teams.OnMessage(async (context, ct) =>
 {
-    await context.SendActivityAsync($"You said: {context.Activity.Text}", ct);
+    await context.SendAsync($"You said: {context.Activity.Text}", ct);
 });
-
 
 app.Run();
 ```
@@ -53,7 +56,18 @@ teams.OnMessage(async (context, ct) => { ... });
 // Regex pattern match
 teams.OnMessage(@"^help$", async (context, ct) =>
 {
-    await context.SendAsync("Here's how to use the bot...");
+    await context.SendAsync("Here's how to use the bot...", ct);
+});
+```
+
+### Conversation Helpers
+
+```csharp
+teams.OnMessage(async (context, ct) =>
+{
+    await context.TypingAsync(ct);
+    await context.ReplyAsync("This reply quotes the incoming message.", ct);
+    await context.QuoteAsync(context.Activity.Id!, "Explicitly quoted reply.", ct);
 });
 ```
 
@@ -64,14 +78,21 @@ teams.OnMessage(@"^help$", async (context, ct) =>
 teams.OnAdaptiveCardAction(async (context, ct) =>
 {
     var value = context.Activity.Value;
-    return new InvokeResponse(200);
+    return AdaptiveCardResponse.CreateMessageResponse("Action received.");
 });
 
 // Message extension search
 teams.OnQuery(async (context, ct) =>
 {
-    var query = context.Activity.Value.Parameters["queryText"];
-    return new InvokeResponse<MessageExtensionResponse>(200, response);
+    var query = context.Activity.Value;
+    var searchText = query?.Parameters
+        .FirstOrDefault(parameter => parameter.Name == "queryText")?
+        .Value;
+
+    return MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseTypes.Message)
+        .WithText($"Searching for: {searchText}")
+        .Build();
 });
 
 // Task modules
@@ -82,6 +103,25 @@ teams.OnTaskSubmit(async (context, ct) => { ... });
 teams.OnQueryLink(async (context, ct) => { ... });
 ```
 
+Other message extension handlers include `OnSubmitAction`, `OnSelectItem`,
+`OnAnonQueryLink`, `OnQuerySettingUrl`, `OnSetting`, and
+`OnCardButtonClicked`.
+
+## State and OAuth
+
+Enable distributed turn state and register OAuth flows when adding the application:
+
+```csharp
+builder.Services.AddTeamsBotApplication(options =>
+{
+    options.UseState();
+    options.AddOAuthFlow("graph");
+});
+```
+
+`UseState()` uses an in-memory `IDistributedCache` by default. Register another
+`IDistributedCache` implementation, such as Redis, for state that must survive
+process restarts or be shared across instances.
 
 ## Main Types
 
@@ -96,4 +136,5 @@ teams.OnQueryLink(async (context, ct) => { ... });
 | `OAuthFlow` | OAuth sign-in, token exchange (SSO), and sign-out management |
 | `ApiClient` | Facade for Teams conversation, member, team, meeting, and bot APIs |
 | `TeamsStreamingWriter` | Progressive message streaming with rate limiting |
-| `Router` | Internal activity dispatcher matching routes by type and selector |
+| `MessageActivityInput` | Fluent outbound message model for text, cards, mentions, citations, and actions |
+| `TurnStateContainer` | Per-turn access to conversation and user state |

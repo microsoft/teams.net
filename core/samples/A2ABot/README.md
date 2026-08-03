@@ -68,7 +68,6 @@ The bots are symmetric — same flow runs in reverse from Bob to Alice.
   each installed for the user in the same tenant (so `CreateConversation`
   can open a proactive DM).
 - An Azure OpenAI resource with a chat deployment (e.g. `gpt-4o-mini`).
-- .NET 10 SDK.
 
 ## Configuration
 

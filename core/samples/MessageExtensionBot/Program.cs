@@ -12,6 +12,14 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
 WebApplication webApp = webAppBuilder.Build();
 
+webApp.UseStaticFiles();
+webApp.MapGet("/tabs/settings", async context =>
+{
+    string html = await File.ReadAllTextAsync("wwwroot/settings.html");
+    context.Response.ContentType = "text/html";
+    await context.Response.WriteAsync(html);
+});
+
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 
 // ==================== MESSAGE EXTENSION QUERY ====================
@@ -66,6 +74,14 @@ bot.OnSelectItem(async (context, cancellationToken) =>
         .Build();
 });
 
+// ==================== MESSAGE EXTENSION CARD BUTTON CLICKED ====================
+bot.OnCardButtonClicked(async (context, cancellationToken) =>
+{
+    Console.WriteLine("✓ OnCardButtonClicked");
+    return new InvokeResponse(200);
+});
+
+
 // ==================== MESSAGE EXTENSION FETCH TASK ====================
 bot.OnFetchTask(async (context, cancellationToken) =>
 {
@@ -85,12 +101,12 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 });
 
 // Helper: Extract title and description from preview card
-static (string?, string?) GetDataFromPreview(TeamsActivityInput? preview)
+static (string?, string?) GetDataFromPreview(MessageExtensionActivityPreview? preview)
 {
-    if (preview is not MessageActivityInput msg || msg.Attachments == null) return (null, null);
+    if (preview?.Attachments == null) return (null, null);
 
     JsonElement cardData = JsonSerializer.Deserialize<JsonElement>(
-        JsonSerializer.Serialize(msg.Attachments[0].Content));
+        JsonSerializer.Serialize(preview.Attachments[0].Content));
 
     if (!cardData.TryGetProperty("body", out JsonElement body) || body.ValueKind != JsonValueKind.Array)
         return (null, null);
@@ -155,7 +171,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
                 .WithType(MessageExtensionResponseTypes.BotMessagePreview)
-                .WithActivityPreview(new MessageActivityInput().AddAttachment(attachment))
+                .WithActivityPreview(new MessageExtensionActivityPreview().AddAttachment(attachment))
                 )
             .Build();
 });
@@ -178,20 +194,36 @@ bot.OnQueryLink(async (context, cancellationToken) =>
         .Build();
 });
 
-
 // ==================== MESSAGE EXTENSION QUERY SETTING URL ====================
 bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnQuerySettingUrl");
 
-    MessageExtensionQuery? query = context.Activity.Value;
+    string botEndpoint = webAppBuilder.Configuration["BotEndpoint"] ?? "";
+    string settingsUrl = $"{botEndpoint}/tabs/settings";
 
-    var action = new SuggestedAction(ActionTypes.OpenUrl, "Open", "https://www.microsoft.com");
+    var action = new SuggestedAction(ActionTypes.OpenUrl, "Settings", settingsUrl);
 
     return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseTypes.Config)
-        .WithSuggestedActions([action])
+        .WithSuggestedActions(new SuggestedActions().AddAction(action))
         .Build();
+});
+
+// ==================== MESSAGE EXTENSION SETTINGS SAVED ====================
+bot.OnSetting(async (context, cancellationToken) =>
+{
+    string? state = context.Activity.Value?.State;
+    Console.WriteLine($"✓ OnSettings - state: {state}");
+
+    if (state == "CancelledByUser")
+    {
+        Console.WriteLine("User cancelled settings.");
+        return new InvokeResponse(200);
+    }
+
+    Console.WriteLine($"User saved setting: {state}");
+    return new InvokeResponse(200);
 });
 
 webApp.Run();

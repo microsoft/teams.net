@@ -5,32 +5,11 @@ A sample bot demonstrating Teams message extension handlers.
 ## Prerequisites
 
 - Bot registered and installed in Teams.
-- Manifest package created from the inline manifest plus `color.png` / `outline.png`.
 
-## Setup
-
-1. Configure bot credentials in `Properties/launchSettings.TEMPLATE.json` (or environment variables).
-2. Run the bot: `dotnet run`.
-3. Sideload the Teams app package.
-
-## Manifest (inline)
+## Manifest Setup
 
 ```json
 {
-  "staticTabs": [
-    {
-      "entityId": "conversations",
-      "scopes": [
-        "personal"
-      ]
-    },
-    {
-      "entityId": "about",
-      "scopes": [
-        "personal"
-      ]
-    }
-  ],
   "bots": [
     {
       "botId": "YOUR_BOT_ID",
@@ -48,6 +27,7 @@ A sample bot demonstrating Teams message extension handlers.
   "composeExtensions": [
     {
       "botId": "YOUR_BOT_ID",
+      "canUpdateConfiguration": true,
       "commands": [
         {
           "id": "searchQuery",
@@ -92,7 +72,6 @@ A sample bot demonstrating Teams message extension handlers.
           ]
         }
       ],
-      "canUpdateConfiguration": true,
       "messageHandlers": [
         {
           "type": "link",
@@ -106,6 +85,10 @@ A sample bot demonstrating Teams message extension handlers.
         }
       ]
     }
+  ],
+   "validDomains": [
+    "*.botframework.com",
+    "xxx.devtunnels.ms"
   ]
 }
 ```
@@ -120,13 +103,20 @@ A sample bot demonstrating Teams message extension handlers.
 3. Type a search term
 4. Verify results display in list format
 5. Type "help" to test message response
-
 ### OnSelectItem
 **Manifest:** No specific requirement (works with OnQuery results)
 
 1. After running a search (OnQuery)
 2. Click on any search result
 3. Verify adaptive card preview appears
+
+
+### OnCardButtonClicked (Card Button)
+**Manifest:** No specific requirement (works with any message extension result card that has `Action` buttons)
+
+1. Click the **View Details** button on the adaptive card
+2. Verify `OnCardButtonClicked` fires — link opens)
+
 
 ### OnFetchTask (Action - Task Module)
 **Manifest:** `composeExtensions.commands` with `type: "action"` and `fetchTask: true`
@@ -141,7 +131,7 @@ A sample bot demonstrating Teams message extension handlers.
 2. Click submit
 3. Verify preview card appears with Edit/Send buttons
 4. Click Edit - verify form reopens with values
-5. Click Send - verify final card posts to conversation -- Currently this only works when we start from commandbox.
+5. Click Send - verify final card posts to conversation — currently only works when started from the command box
 
 ### OnQueryLink (Link Unfurling)
 **Manifest:** `composeExtensions.messageHandlers` with `type: "link"` and `domains`
@@ -149,12 +139,22 @@ A sample bot demonstrating Teams message extension handlers.
 1. Paste a URL in compose box that matches the unfurl domain in manifest (*.example.com)
 2. Verify card unfurls automatically
 
-### OnQuerySettingUrl (Settings)
-**Manifest:** `composeExtensions.canUpdateConfiguration: true`
+### OnQuerySettingUrl + OnSettings (Settings)
+**Manifest:** `composeExtensions.canUpdateConfiguration: true` (must be at the top level of the compose extension, not inside a command)
 
-1. Right-click message extension icon
-2. Select Settings
-3. Verify settings URL opens (microsoft.com)
+> **Important:** Add your bot's domain to `validDomains` in the manifest, otherwise Teams will block the settings page from loading in the iframe:
+> ```json
+> "validDomains": [
+>   "YOUR_DEVTUNNEL_SOMAIN"
+> ]
+> ```
+
+1. Right-click the message extension icon in the compose box
+2. Select **Settings** — Teams calls `OnQuerySettingUrl` which returns the settings page URL
+3. A popup opens at `{BOT_ENDPOINT}/tabs/settings`
+4. Select an option and click **Save Settings** — Teams calls `OnSettings` with `Value.State` set to the submitted value
+5. If the user dismisses the dialog, `Value.State` will be `"CancelledByUser"`
+
 ## Running the Sample
 
 ~~~bash

@@ -28,14 +28,11 @@ public class MessageExtensionQuery
     [JsonPropertyName("queryOptions")]
     public QueryOptions? QueryOptions { get; set; }
 
-    //TODO : check how to use this ? auth ?
-    /*
     /// <summary>
-    /// State parameter passed back to the bot after authentication/configuration flow.
+    /// State value after selecting config
     /// </summary>
     [JsonPropertyName("state")]
     public string? State { get; set; }
-    */
 }
 
 /// <summary>

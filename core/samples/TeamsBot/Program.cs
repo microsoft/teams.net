@@ -200,6 +200,19 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
 
     return AdaptiveCardResponse.CreateMessageResponse("Feedback received!");
 });
+
+// Message submit action handler: processes the thumbs up/down feedback buttons that
+// `.AddFeedback()` attaches to the `citation` reply. Without this route the invoke is
+// unhandled, Teams receives a 501 and shows "Unable to reach app".
+teamsApp.OnMessageSubmitFeedback(async (context, cancellationToken) =>
+{
+    MessageSubmitFeedbackValue? feedback = context.Activity.Value;
+    Console.WriteLine($"[Feedback] Reaction: {feedback?.Reaction}, Feedback: {feedback?.Feedback}");
+
+    await context.SendAsync($"Thanks for the `{feedback?.Reaction}` feedback!", cancellationToken);
+
+    return InvokeResponse.Ok();
+});
 // ==================== EVENT HANDLERS ====================
 
 teamsApp.OnEvent(async (context, cancellationToken) =>

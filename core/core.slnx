@@ -57,5 +57,6 @@
   </Folder>
   <Project Path="src/Microsoft.Teams.Apps.BotBuilder/Microsoft.Teams.Apps.BotBuilder.csproj" />
   <Project Path="src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
+  <Project Path="src/Microsoft.Teams.Cards/Microsoft.Teams.Cards.csproj" />
   <Project Path="src/Microsoft.Teams.Core/Microsoft.Teams.Core.csproj" />
 </Solution>

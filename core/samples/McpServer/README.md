@@ -30,25 +30,12 @@ wait for them to reply or approve.
 - Bot registered and installed in Teams.
 - Microsoft Graph application permission `User.ReadBasic.All` granted with admin consent.
 
-## Configure
-
-Set credentials in `Properties/launchSettings.TEMPLATE.json`, then copy to `launchSettings.json` for local runs.
-
-Required env vars:
-
-```
-AzureAd__TenantId=<your-tenant-id>
-AzureAd__ClientId=<your-azure-bot-app-id>
-AzureAd__ClientCredentials__0__SourceType=ClientSecret
-AzureAd__ClientCredentials__0__ClientSecret=<your-azure-bot-app-secret>
-```
+## Graph permissions
 
 The `userId` argument passed to `notify`, `ask`, and `request_approval` is the
 **AAD object id** of someone in the same tenant. Either call `find_user` to
 resolve a name, or DM the bot once and read the AAD object id off the first
 incoming activity in the server log.
-
-## Graph permissions
 
 `find_user` calls Microsoft Graph as the bot's app identity. In the bot's
 Azure AD app registration → **API permissions**, add **`User.ReadBasic.All`**

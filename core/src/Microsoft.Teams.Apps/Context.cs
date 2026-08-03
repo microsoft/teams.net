@@ -218,6 +218,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Typing(CancellationToken cancellationToken = default)
         => TypingAsync(cancellationToken);
 
+    /// <inheritdoc cref="TeamsStreamingWriter.CreateFromContext{TActivity}(Context{TActivity})"/>
+    [Obsolete("Use TeamsStreamingWriter.CreateFromContext(context) instead.")]
+    public TeamsStreamingWriter Stream()
+        => TeamsStreamingWriter.CreateFromContext(this);
+
     /// <inheritdoc cref="QuoteAsync(string, string, CancellationToken)"/>
     [Obsolete("Use QuoteAsync instead.")]
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
@@ -349,15 +354,38 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A list of token status results for all configured connections.</returns>
-    public Task<IList<GetTokenStatusResult>> GetConnectionStatusAsync(CancellationToken cancellationToken = default)
+    public async Task<IList<GetTokenStatusResult>> GetConnectionStatusAsync(CancellationToken cancellationToken = default)
     {
         OAuthFlowRegistry registry = TeamsBotApplication.OAuthRegistry
             ?? throw new InvalidOperationException("No OAuthFlow registered. Call AddOAuthFlow(connectionName) on the TeamsBotApplication first.");
 
-        // Use any flow -- GetConnectionStatusAsync returns all connections regardless
-        OAuthFlow flow = registry.GetAllFlows().First();
+        // Use any flow to call the GetTokenStatus API (returns all connections)
+        OAuthFlow first = registry.GetAllFlows().First();
+        IList<GetTokenStatusResult> statuses = await first.GetConnectionStatusAsync(this, cancellationToken).ConfigureAwait(false);
 
-        return flow.GetConnectionStatusAsync(this, cancellationToken);
+        // GetTokenStatus doesn't reliably reflect tokens obtained via silent SSO token exchange.
+        // For any connection that the API reports as not connected, verify by calling GetTokenAsync
+        // directly — if a token is actually present, correct the result.
+        List<GetTokenStatusResult> results = statuses.ToList();
+        foreach (OAuthFlow flow in registry.GetAllFlows())
+        {
+            GetTokenStatusResult? existing = results.FirstOrDefault(s =>
+                string.Equals(s.ConnectionName, flow.ConnectionName, StringComparison.OrdinalIgnoreCase));
+
+            if (existing?.HasToken == true)
+                continue;
+
+            string? token = await flow.GetTokenAsync(this, cancellationToken).ConfigureAwait(false);
+            if (token is not null)
+            {
+                if (existing is not null)
+                    existing.HasToken = true;
+                else
+                    results.Add(new GetTokenStatusResult { ConnectionName = flow.ConnectionName, HasToken = true });
+            }
+        }
+
+        return results;
     }
 
     private OAuthFlow ResolveOAuthFlow(string? connectionName)
