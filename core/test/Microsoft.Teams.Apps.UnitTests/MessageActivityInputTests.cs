@@ -69,6 +69,20 @@ public class MessageActivityInputTests
     }
 
     [Fact]
+    public void AddStreamFinal_OmitsStreamSequence()
+    {
+        MessageActivityInput activity = new MessageActivityInput
+        {
+            ChannelData = new TeamsOutboundChannelData { StreamSequence = 3 }
+        };
+
+        activity.AddStreamFinal();
+
+        Assert.Null(activity.ChannelData.StreamSequence);
+        Assert.DoesNotContain("\"streamSequence\"", activity.ToJson());
+    }
+
+    [Fact]
     public void FluentApi_CompleteActivity_BuildsCorrectly()
     {
         MessageActivityInput activity = new MessageActivityInput()

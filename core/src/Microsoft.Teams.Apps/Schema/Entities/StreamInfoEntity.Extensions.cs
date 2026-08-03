@@ -40,18 +40,18 @@ public static class StreamInfoEntityExtensions
 
         activity.ChannelData.StreamId = resolvedStreamId;
         activity.ChannelData.StreamType = streamType;
-        if (streamSequence.HasValue)
-        {
-            activity.ChannelData.StreamSequence = streamSequence.Value;
-        }
+        activity.ChannelData.StreamSequence = streamSequence;
 
         activity.Entities ??= [];
         StreamInfoEntity entity = new()
         {
             StreamId = resolvedStreamId,
-            StreamType = streamType,
-            StreamSequence = streamSequence
+            StreamType = streamType
         };
+        if (streamSequence.HasValue)
+        {
+            entity.StreamSequence = streamSequence.Value;
+        }
 
         activity.Entities.Add(entity);
         return entity;
