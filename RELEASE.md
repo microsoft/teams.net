@@ -10,8 +10,7 @@ This document describes how to release packages for the Teams SDK for .NET. It a
    ```
 
 2. Update `version.json` to set the stable version (remove the `-preview.{height}` suffix):
-   - **Core**: edit `core/version.json` (e.g., set `"version": "1.0.3"`)
-     - Do **not** modify `core/src/Microsoft.Teams.Apps/version.json` — keep its preview suffix as-is for now
+   - **Core**: edit `core/version.json` (e.g., set `"version": "2.1.0"`)
    - **Legacy**: edit root `version.json` (e.g., set `"version": "2.0.8"`)
 
 3. Commit, then merge the release branch history using the `ours` strategy:
@@ -35,7 +34,7 @@ This document describes how to release packages for the Teams SDK for .NET. It a
 6. Approve the push to nuget.org
 
 7. Bump the version on `main` for the next release cycle:
-   - **Core**: edit `core/version.json` (e.g., `"1.0.3-preview.{height}"` → `"1.0.4-preview.{height}"`)
+   - **Core**: edit `core/version.json` (e.g., `"2.1.0-preview.{height}"` → `"2.1.1-preview.{height}"`)
    - **Legacy**: edit root `version.json` (e.g., `"2.0.8-preview.{height}"` → `"2.0.9-preview.{height}"`)
    - Commit and push (or PR)
 
@@ -83,10 +82,10 @@ To publish experimental versions from a feature branch:
 
 There are two package sets, each with its own `version.json`:
 
-- **Core** (`core/`): `core/version.json` (with a per-project override at `core/src/Microsoft.Teams.Apps/version.json`)
+- **Core** (`core/`): `core/version.json`
 - **Legacy** (`Libraries/`): root `version.json`
 
-To bump from `2.0.x` to `2.1.x` or `3.0.x`:
+To bump from `2.1.x` to `2.2.x` or `3.0.x`:
 
 1. Edit `version.json` on `main`
 2. Update the version (e.g., `"2.0.x-preview.{height}"` → `"2.1.0-preview.{height}"` or `"3.0.0-preview.{height}"`)
