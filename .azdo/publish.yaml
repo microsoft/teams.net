@@ -74,21 +74,7 @@ extends:
           displayName: 'Build, Test, Pack, and Push to Internal Feed'
           steps:
             - checkout: self
-            - pwsh: |
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <clear />
-                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
-                  </packageSources>
-                </configuration>
-                "@
-                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
-              displayName: 'Create nuget.config'
-
-            - task: NuGetAuthenticate@1
-              displayName: 'Authenticate with NuGet feeds'
+            - template: .azdo/templates/configure-cfs-nuget.yaml@self
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
@@ -97,6 +83,7 @@ extends:
                   pack: true
                   packPattern: 'Libraries/**/*.csproj'
                   publishArtifact: false
+                  configureNuGet: false
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
@@ -104,6 +91,7 @@ extends:
                   pack: true
                   packPattern: 'core/src/**/*.csproj'
                   publishArtifact: false
+                  configureNuGet: false
 
             - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
@@ -132,21 +120,7 @@ extends:
           steps:
             - checkout: self
 
-            - pwsh: |
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <clear />
-                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
-                  </packageSources>
-                </configuration>
-                "@
-                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
-              displayName: 'Create nuget.config'
-
-            - task: NuGetAuthenticate@1
-              displayName: 'Authenticate with NuGet feeds'
+            - template: .azdo/templates/configure-cfs-nuget.yaml@self
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
@@ -154,12 +128,14 @@ extends:
                   sourceRoot: '.'
                   pack: false
                   publishArtifact: false
+                  configureNuGet: false
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
                   sourceRoot: 'core'
                   pack: false
                   publishArtifact: false
+                  configureNuGet: false
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/sign-and-pack.yaml@self
@@ -185,15 +161,20 @@ extends:
         jobs:
         - deployment: PushPackages
           displayName: 'Manual Approval Required to Push Packages'
+          templateContext:
+            type: releaseJob
+            isProduction: true
+            inputs:
+            - input: pipelineArtifact
+              artifactName: Packages
+              targetPath: '$(Pipeline.Workspace)/Packages'
           environment:
             name: 'teams-net-publish'
           strategy:
             runOnce:
               deploy:
                 steps:
-                - download: current
-                  artifact: Packages
-
+                - checkout: none
                 - task: 1ES.PublishNuget@1
                   displayName: 'Push Packages to nuget.org'
                   inputs:
