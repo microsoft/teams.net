@@ -1,4 +1,3 @@
-# Requires $(CfsNuGetFeedUrl), supplied by each pipeline's Azure DevOps variable group.
 steps:
   - pwsh: |
       $path = Join-Path "$(Agent.TempDirectory)" "NuGet.CFS.config"
@@ -7,7 +6,7 @@ steps:
       <configuration>
         <packageSources>
           <clear />
-          <add key="CFS" value="$(CfsNuGetFeedUrl)" />
+          <add key="PublicPackages" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/Github_Pipelines_PublicPackages/nuget/v3/index.json" />
         </packageSources>
       </configuration>
       "@

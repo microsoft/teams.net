@@ -41,7 +41,6 @@ parameters:
 variables:
   buildConfiguration: 'Release'
   folderPath: '$(Build.SourcesDirectory)'
-  CfsNuGetFeedUrl: 'https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/Github_Pipelines_PublicPackages/nuget/v3/index.json'
   ${{ if eq(parameters.publishType, 'Public') }}:
     appRegistrationTenantId: 'cdc5aeea-15c5-4db6-b079-fcadd2505dc2'
     authenticodeSignId: '2d5c4ab9-0b7e-4f60-bb92-70322df77b94'

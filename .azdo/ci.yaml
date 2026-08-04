@@ -26,7 +26,6 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  CfsNuGetFeedUrl: 'https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/Github_Pipelines_PublicPackages/nuget/v3/index.json'
 
 stages:
 - stage: DetectChanges
