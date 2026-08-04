@@ -159,8 +159,8 @@ extends:
         displayName: 'Push Packages to nuget.org'
         dependsOn: Build_Test_Sign_Pack
         jobs:
-        - job: PushPackages
-          displayName: 'Push Packages to nuget.org'
+        - deployment: PushPackages
+          displayName: 'Manual Approval Required to Push Packages'
           templateContext:
             type: releaseJob
             isProduction: true
@@ -168,15 +168,20 @@ extends:
             - input: pipelineArtifact
               artifactName: Packages
               targetPath: '$(Pipeline.Workspace)/Packages'
-          steps:
-          - checkout: none
-          - task: 1ES.PublishNuget@1
-            displayName: 'Push Packages to nuget.org'
-            inputs:
-              useDotNetTask: false
-              packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
-              packageParentPath: '$(Pipeline.Workspace)/Packages'
-              nuGetFeedType: external
-              publishFeedCredentials: 'Microsoft.Teams.*'
-              publishPackageMetadata: true
-              retryCountOnTaskFailure: 2
+          environment:
+            name: 'teams-net-publish'
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                - checkout: none
+                - task: 1ES.PublishNuget@1
+                  displayName: 'Push Packages to nuget.org'
+                  inputs:
+                    useDotNetTask: false
+                    packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+                    packageParentPath: '$(Pipeline.Workspace)/Packages'
+                    nuGetFeedType: external
+                    publishFeedCredentials: 'Microsoft.Teams.*'
+                    publishPackageMetadata: true
+                    retryCountOnTaskFailure: 2
