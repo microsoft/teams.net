@@ -32,6 +32,10 @@ parameters:
   - name: buildConfiguration
     type: string
     default: 'Release'
+  - name: configureNuGet
+    type: boolean
+    default: true
+    # publish.yaml configures CFS once at the job level and disables this copy.
 
 steps:
   - task: UseDotNet@2
@@ -46,7 +50,10 @@ steps:
       packageType: 'sdk'
       version: '10.0.x'
 
-  - script: dotnet restore
+  - ${{ if eq(parameters.configureNuGet, true) }}:
+    - template: configure-cfs-nuget.yaml
+
+  - script: dotnet restore --configfile $(nugetConfigPath)
     displayName: 'Restore'
     workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
 
