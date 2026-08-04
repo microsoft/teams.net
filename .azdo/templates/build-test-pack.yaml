@@ -5,7 +5,7 @@
 parameters:
   - name: sourceRoot
     type: string
-    # Required. '.' for Legacy (root Microsoft.Teams.sln), 'core' for Core (core.slnx).
+    # Required. Use '.' for the root Microsoft.Teams.sln.
   - name: packPattern
     type: string
     default: ''
@@ -27,8 +27,7 @@ parameters:
     type: string
     default: 'Packages'
     # Override when multiple instances of this template run in parallel within
-    # one pipeline (e.g. Build_Legacy + Build_Core in ci.yaml), since artifact
-    # names must be unique within a single ADO pipeline run.
+    # one pipeline, since artifact names must be unique within a pipeline run.
   - name: buildConfiguration
     type: string
     default: 'Release'

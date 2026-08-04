@@ -4,9 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
   pull_request:
-    branches: ['main', 'releases/v2', 'releases/core']
+    branches: ['release/v2.0', 'release/v2', 'releases/v2']
   push:
-    branches: ['main', 'releases/v2', 'releases/core']
+    branches: ['release/v2.0', 'release/v2', 'releases/v2']
 
   merge_group:
 
