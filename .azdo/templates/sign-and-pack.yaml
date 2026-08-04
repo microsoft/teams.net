@@ -8,10 +8,10 @@
 parameters:
   - name: assemblyPattern
     type: string
-    default: 'Libraries/**/*.dll'
+    default: 'src/**/*.dll'
   - name: packagePattern
     type: string
-    default: 'Libraries/**/*.csproj'
+    default: 'src/**/*.csproj'
 
 steps:
   - task: EsrpCodeSigning@5

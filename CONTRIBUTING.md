@@ -16,6 +16,6 @@ Add an integration test when your change affects **what goes on the wire** — U
 
 **You do NOT need a test for:** routing, card builders, event handlers, docs-only changes, or refactors with no public API change.
 
-Tests live in `core/test/IntegrationTests/` — see the [README](core/test/IntegrationTests/README.md) for setup and run instructions.
+Tests live in `test/IntegrationTests/` — see the [README](test/IntegrationTests/README.md) for setup and run instructions.
 
 👉 Full guidance: [INTEGRATION-TESTS.md](https://github.com/microsoft/teams-sdk/blob/main/INTEGRATION-TESTS.md#when-to-add-integration-tests)

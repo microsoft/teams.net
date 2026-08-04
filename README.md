@@ -1,75 +1,171 @@
-# ![Teams SDK Icon](./Assets/icon.png)
+# Microsoft Teams Bot Core SDK
 
-# Teams SDK: DotNet
-
-[![Version](https://img.shields.io/github/v/release/microsoft/teams.net?label=version)](#)
-
-a suite of packages used to build on the Teams Platform.
-
-[![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-sdk)
-
-## Questions & Issues
-
-- **Questions or Feature Requests**: Please use [GitHub Discussions](https://github.com/microsoft/teams-sdk/discussions)
-- **Bug Reports**: Please [open an issue](https://github.com/microsoft/teams.net/issues/new/choose)
-
-### Build
-
-```bash
-dotnet build
-```
-
-### Clean
-
-```bash
-dotnet clean
-```
-
-### Format
-
-```bash
-dotnet format
-```
-
-### Test
-
-```bash
-dotnet test
-```
-
-## Public Preview Packages
-
-> ⚠️ **Preview Packages**: In addition to stable releases, we publish preview packages (versioned with `-preview` suffix) to [nuget.org](https://www.nuget.org/profiles/teams-sdk) for early access to new features.
->
-> **About preview packages:**
-> - Preview builds may contain bugs, incomplete features, or breaking changes between versions
-> - APIs in preview packages are subject to change without notice
-> - You are welcome to [file issues](https://github.com/microsoft/teams.net/issues) for bugs or feedback, but they may not be addressed with the same priority as stable releases
-> - **Preview packages are not recommended for production workloads**
+The core SDK for building Microsoft Teams bots in .NET. It implements the [Activity Protocol](https://github.com/microsoft/Agents/blob/main/specs/activity/protocol-activity.md) and provides a modern, layered framework with first-class support for ASP.NET Core dependency injection, authentication via MSAL, and extensible activity schemas.
 
 ## Packages
 
-> ℹ️ core packages used to build client/server apps for Teams.
+| Package | Description |
+|---------|-------------|
+| [Microsoft.Teams.Core](src/Microsoft.Teams.Core/) | Foundational library &mdash; activity protocol, conversation client, user token client, middleware pipeline, and authentication |
+| [Microsoft.Teams.Apps](src/Microsoft.Teams.Apps/) | High-level Teams framework &mdash; typed activity routing, handler registration, OAuth flows, Teams API clients, and streaming |
+| [Microsoft.Teams.Apps.BotBuilder](src/Microsoft.Teams.Apps.BotBuilder/) | Compatibility bridge for existing Bot Framework SDK v4 bots to run on the new Core infrastructure |
 
-- [`Microsoft.Teams.Apps`](./Libraries/Microsoft.Teams.Apps/README.md)
-- [`Microsoft.Teams.Apps.Testing`](./Libraries/Microsoft.Teams.Apps.Testing/README.md)
-- [`Microsoft.Teams.AI`](./Libraries/Microsoft.Teams.AI/README.md)
-- [`Microsoft.Teams.AI.Models.OpenAI`](./Libraries/Microsoft.Teams.AI.Models.OpenAI/README.md)
-- [`Microsoft.Teams.Api`](./Libraries/Microsoft.Teams.Api/README.md)
-- [`Microsoft.Teams.Cards`](./Libraries/Microsoft.Teams.Cards/README.md)
-- [`Microsoft.Teams.Common`](./Libraries/Microsoft.Teams.Common/README.md)
-- [`Microsoft.Teams.Extensions.Configuration`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Configuration/README.md)
-- [`Microsoft.Teams.Extensions.Hosting`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Hosting/README.md)
-- [`Microsoft.Teams.Extensions.Logging`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Logging/README.md)
-- [`Microsoft.Teams.Extensions.Graph`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Graph/README.md)
-- [`Microsoft.Teams.Plugins.AspNetCore`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore/README.md)
-- [`Microsoft.Teams.Plugins.AspNetCore.DevTools`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.DevTools/README.md)
-- [`Microsoft.Teams.Plugins.AspNetCore.BotBuilder`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.BotBuilder/README.md)
+## Quick Start
 
-## External Packages
+```csharp
+using Microsoft.Teams.Apps;
 
-> ℹ️ external packages (typically plugins) used to integrate with other platforms.
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddTeamsBotApplication();
 
-- [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
-- [`Microsoft.Teams.Plugins.External.McpClient`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.McpClient/README.md)
+var app = builder.Build();
+var teams = app.UseTeamsBotApplication(); // maps POST /api/messages
 
+teams.OnMessage(async (context, ct) =>
+{
+    await context.SendAsync($"You said: {context.Activity.Text}");
+});
+
+app.Run();
+```
+
+## Design Principles
+
+- **Loose schema** &mdash; `CoreActivity` contains only strictly required fields; additional fields are captured via `JsonExtensionData`
+- **Simple serialization** &mdash; Standard `System.Text.Json` with source generation, no custom converters
+- **Extensible schema** &mdash; `ChannelData` and entities support extension properties; generics allow custom types
+- **MSAL-based auth** &mdash; Token acquisition built on Microsoft Identity Web, supporting client secrets, managed identities, and agentic (user-delegated) tokens
+- **ASP.NET DI** &mdash; All dependencies configured via `IServiceCollection`, reusing the built-in `HttpClient` factory
+- **ILogger & IConfiguration** &mdash; Standard .NET logging and configuration throughout
+
+## Configuration
+
+Create a Teams Application, configure it in Azure Bot Service, and provide credentials via `appsettings.json`:
+
+```json
+{
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "TenantId": "<your-tenant-id>",
+    "ClientId": "<your-client-id>",
+    "Scope": "https://api.botframework.com/.default",
+    "ClientCredentials": [
+      {
+        "SourceType": "ClientSecret",
+        "ClientSecret": "<your-entra-app-secret>"
+      }
+    ]
+  }
+}
+```
+
+Or via environment variables:
+
+```env
+AzureAd__Instance=https://login.microsoftonline.com/
+AzureAd__TenantId=<your-tenant-id>
+AzureAd__ClientId=<your-client-id>
+AzureAd__Scope=https://api.botframework.com/.default
+AzureAd__ClientCredentials__0__SourceType=ClientSecret
+AzureAd__ClientCredentials__0__ClientSecret=<your-entra-app-secret>
+```
+
+## Testing in Localhost (Anonymous)
+
+When no MSAL configuration is provided, all communication happens as anonymous REST calls, suitable for local development.
+
+### Install Playground
+
+Linux:
+```sh
+curl -s https://raw.githubusercontent.com/OfficeDev/microsoft-365-agents-toolkit/dev/.github/scripts/install-agentsplayground-linux.sh | bash
+```
+
+Windows:
+```sh
+winget install m365agentsplayground
+```
+
+### Run a Scenario
+
+```sh
+dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
+```
+
+## Samples
+
+### Core and hosting
+
+| Sample | Description |
+|--------|-------------|
+| [CoreBot](samples/CoreBot/) | Lowest-level sample using `Microsoft.Teams.Core` directly |
+| [CustomHosting](samples/CustomHosting/) | Custom `TeamsBotApplication` subclass and hosting |
+
+### Messaging and lifecycle
+
+| Sample | Description |
+|--------|-------------|
+| [CommonHandlersBot](samples/CommonHandlersBot/) | Basic message and conversation lifecycle handlers |
+| [TeamsBot](samples/TeamsBot/) | Simple Teams bot sample with rich messaging and cards |
+| [ReactionsBot](samples/ReactionsBot/) | Add/remove message reactions via conversation APIs |
+| [TeamsChannelBot](samples/TeamsChannelBot/) | Channel-scoped messaging |
+| [TargetedMessages](samples/TargetedMessages/) | Targeted messages and targeted message lifecycle |
+| [QuotingAndThreadingBot](samples/QuotingAndThreadingBot/) | Quoting and threaded replies |
+
+### Cards, invokes, and tabs
+
+| Sample | Description |
+|--------|-------------|
+| [AdaptiveCardTaskModuleBot](samples/AdaptiveCardTaskModuleBot/) | Adaptive card actions and task module invoke handlers |
+| [SuggestedActionBot](samples/SuggestedActionBot/) | Suggested actions and submit handling |
+| [MessageExtensionBot](samples/MessageExtensionBot/) | Message extension search and actions |
+| [MeetingsBot](samples/MeetingsBot/) | Meeting events and participant APIs |
+| [TabApp](samples/TabApp/) | Tab application with backend API |
+
+### OAuth, state, and observability
+
+| Sample | Description |
+|--------|-------------|
+| [OAuthFlowBot](samples/OAuthFlowBot/) | OAuth sign-in and token management |
+| [GraphBot](samples/GraphBot/) | App-only bot using the Microsoft Graph SDK with client credentials |
+| [CachingAuthTokens](samples/CachingAuthTokens/) | Redis-backed cache for auth/session data |
+| [StateBot](samples/StateBot/) | Conversation and user state backed by cache |
+| [ObservabilityBot](samples/ObservabilityBot/) | OpenTelemetry and AI observability |
+
+### AI integrations
+
+| Sample | Description |
+|--------|-------------|
+| [A2ABot](samples/A2ABot/) | Agent-to-agent handoff bot |
+| [ExtAIBot](samples/ExtAIBot/) | `Microsoft.Extensions.AI` integration |
+| [McpServer](samples/McpServer/) | MCP server with Teams and Graph tools |
+| [StreamingBot](samples/StreamingBot/) | Progressive streaming responses |
+
+### Compatibility and migration
+
+| Sample | Description |
+|--------|-------------|
+| [CompatBot](samples/CompatBot/) | Bot Framework compatibility sample |
+| [PABot](samples/PABot/) | Bot Framework compatibility with Teams auth |
+
+### Test utilities
+
+| Sample | Description |
+|--------|-------------|
+| [TeamsApisDemo](test/TeamsApisDemo/) | Console demo for member paging |
+
+## Project Structure
+
+```
+.
+├── src/
+│   ├── Microsoft.Teams.Core/              # Foundation: protocol, clients, middleware, auth
+│   ├── Microsoft.Teams.Apps/              # Framework: routing, handlers, OAuth, API clients
+│   └── Microsoft.Teams.Apps.BotBuilder/   # Compat bridge for Bot Framework SDK v4
+├── samples/                               # Sample bot applications
+└── test/
+    ├── Microsoft.Teams.Core.UnitTests/
+    ├── Microsoft.Teams.Apps.UnitTests/
+    ├── Microsoft.Teams.Apps.BotBuilder.UnitTests/
+    └── IntegrationTests/
+```
