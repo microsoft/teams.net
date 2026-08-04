@@ -26,8 +26,6 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  # Temporary fallback. Set the real CFS URL in the Azure DevOps variable group before merging.
-  CfsNuGetFeedUrl: 'https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json'
 
 stages:
 - stage: DetectChanges
