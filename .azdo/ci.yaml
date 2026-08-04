@@ -22,9 +22,12 @@ pr:
 
 pool:
   vmImage: 'ubuntu-22.04'
+  # TODO(SR21): Move to the network-isolated 1ES pool after CFS restore is green.
 
 variables:
   buildConfiguration: 'Release'
+  # Temporary fallback. Set the real CFS URL in the Azure DevOps variable group before merging.
+  CfsNuGetFeedUrl: 'https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json'
 
 stages:
 - stage: DetectChanges

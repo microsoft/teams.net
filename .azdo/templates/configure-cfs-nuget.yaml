@@ -1,0 +1,21 @@
+# Requires $(CfsNuGetFeedUrl), supplied by each pipeline's Azure DevOps variable group.
+steps:
+  - pwsh: |
+      $path = Join-Path "$(Agent.TempDirectory)" "NuGet.CFS.config"
+      $nugetConfig = @"
+      <?xml version="1.0" encoding="utf-8"?>
+      <configuration>
+        <packageSources>
+          <clear />
+          <add key="CFS" value="$(CfsNuGetFeedUrl)" />
+        </packageSources>
+      </configuration>
+      "@
+
+      $nugetConfig | Out-File -FilePath $path -Encoding utf8
+      Write-Host "##vso[task.setvariable variable=nugetConfigPath]$path"
+      dotnet nuget list source --configfile $path
+    displayName: 'Configure CFS NuGet source'
+
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate with NuGet feeds'

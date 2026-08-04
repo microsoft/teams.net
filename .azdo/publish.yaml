@@ -41,6 +41,8 @@ parameters:
 variables:
   buildConfiguration: 'Release'
   folderPath: '$(Build.SourcesDirectory)'
+  # Temporary fallback. Set the real CFS URL in the Azure DevOps variable group before merging.
+  CfsNuGetFeedUrl: 'https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json'
   ${{ if eq(parameters.publishType, 'Public') }}:
     appRegistrationTenantId: 'cdc5aeea-15c5-4db6-b079-fcadd2505dc2'
     authenticodeSignId: '2d5c4ab9-0b7e-4f60-bb92-70322df77b94'
@@ -74,21 +76,7 @@ extends:
           displayName: 'Build, Test, Pack, and Push to Internal Feed'
           steps:
             - checkout: self
-            - pwsh: |
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <clear />
-                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
-                  </packageSources>
-                </configuration>
-                "@
-                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
-              displayName: 'Create nuget.config'
-
-            - task: NuGetAuthenticate@1
-              displayName: 'Authenticate with NuGet feeds'
+            - template: .azdo/templates/configure-cfs-nuget.yaml@self
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
@@ -97,6 +85,7 @@ extends:
                   pack: true
                   packPattern: 'Libraries/**/*.csproj'
                   publishArtifact: false
+                  configureNuGet: false
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
@@ -104,6 +93,7 @@ extends:
                   pack: true
                   packPattern: 'core/src/**/*.csproj'
                   publishArtifact: false
+                  configureNuGet: false
 
             - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
@@ -132,21 +122,7 @@ extends:
           steps:
             - checkout: self
 
-            - pwsh: |
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <clear />
-                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
-                  </packageSources>
-                </configuration>
-                "@
-                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
-              displayName: 'Create nuget.config'
-
-            - task: NuGetAuthenticate@1
-              displayName: 'Authenticate with NuGet feeds'
+            - template: .azdo/templates/configure-cfs-nuget.yaml@self
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
@@ -154,12 +130,14 @@ extends:
                   sourceRoot: '.'
                   pack: false
                   publishArtifact: false
+                  configureNuGet: false
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
                   sourceRoot: 'core'
                   pack: false
                   publishArtifact: false
+                  configureNuGet: false
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/sign-and-pack.yaml@self
