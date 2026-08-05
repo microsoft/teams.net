@@ -207,7 +207,7 @@ public class TeamsBotApplication : BotApplication
     /// <see cref="InvokeResponse"/> without writing to <c>HttpContext.Response</c>.
     /// </summary>
     /// <remarks>
-    /// This method mirrors the invoke path used by <see cref="OnActivity"/>
+    /// This method mirrors the invoke path used by <see cref="BotApplication.OnActivity"/>
     /// for hosting scenarios where the caller needs to bridge the invoke
     /// result into its own response pipeline.
     /// </remarks>
