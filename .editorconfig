@@ -36,5 +36,5 @@ file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the 
 dotnet_diagnostic.CA1848.severity = none # Suppress Logger performance in samples
 
 # Test projects can be more lenient
-[tests/**/*.cs]
+[test/**/*.cs]
 dotnet_diagnostic.CS8602.severity = warning
