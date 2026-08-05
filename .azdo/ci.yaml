@@ -64,8 +64,8 @@ stages:
         while IFS= read -r f; do
           [ -z "$f" ] && continue
           case "$f" in
-            *.md|docs/*|Assets/*)
-              # Docs / asset-only — skip the build.
+            *.md|docs/*)
+              # Documentation-only — skip the build.
               ;;
             *)
               core=true
