@@ -5,7 +5,7 @@
 parameters:
   - name: sourceRoot
     type: string
-    # Required. '.' for Legacy (root Microsoft.Teams.sln), 'core' for Core (core.slnx).
+    # Required. Use '.' for the root Microsoft.Teams.sln.
   - name: packPattern
     type: string
     default: ''
@@ -27,11 +27,14 @@ parameters:
     type: string
     default: 'Packages'
     # Override when multiple instances of this template run in parallel within
-    # one pipeline (e.g. Build_Legacy + Build_Core in ci.yaml), since artifact
-    # names must be unique within a single ADO pipeline run.
+    # one pipeline, since artifact names must be unique within a pipeline run.
   - name: buildConfiguration
     type: string
     default: 'Release'
+  - name: useCfsNuGet
+    type: boolean
+    default: false
+    # publish.yaml creates and authenticates the CFS config once at job level.
 
 steps:
   - task: UseDotNet@2
@@ -46,9 +49,15 @@ steps:
       packageType: 'sdk'
       version: '10.0.x'
 
-  - script: dotnet restore
-    displayName: 'Restore'
-    workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
+  - ${{ if eq(parameters.useCfsNuGet, true) }}:
+    - script: dotnet restore --configfile $(Build.SourcesDirectory)/nuget.config
+      displayName: 'Restore'
+      workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
+
+  - ${{ if eq(parameters.useCfsNuGet, false) }}:
+    - script: dotnet restore
+      displayName: 'Restore'
+      workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
 
   - script: dotnet build --no-restore --configuration ${{ parameters.buildConfiguration }}
     displayName: 'Build'

@@ -1,10 +1,12 @@
 # ![Teams SDK Icon](./Assets/icon.png)
 
-# Teams SDK: DotNet
+# Teams SDK for .NET v2
 
 [![Version](https://img.shields.io/github/v/release/microsoft/teams.net?label=version)](#)
 
-a suite of packages used to build on the Teams Platform.
+This branch is the maintained home for the v2 SDK packages and samples used to
+build on the Teams Platform. Core development is maintained separately from this
+release line.
 
 [![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-sdk)
 
@@ -49,7 +51,7 @@ dotnet test
 
 ## Packages
 
-> ℹ️ core packages used to build client/server apps for Teams.
+> ℹ️ v2 packages used to build client/server apps for Teams.
 
 - [`Microsoft.Teams.Apps`](./Libraries/Microsoft.Teams.Apps/README.md)
 - [`Microsoft.Teams.Apps.Testing`](./Libraries/Microsoft.Teams.Apps.Testing/README.md)
@@ -72,4 +74,3 @@ dotnet test
 
 - [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
 - [`Microsoft.Teams.Plugins.External.McpClient`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.McpClient/README.md)
-

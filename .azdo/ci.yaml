@@ -1,12 +1,10 @@
 # =============================================================================
-# Teams.NET-PR — unified CI pipeline.
+# Teams.NET v2 PR validation pipeline.
 #
-# Validates Legacy (Libraries/, Samples/, Tests/) and Core (core/) package sets.
-# Always runs; the DetectChanges stage decides which build stages execute.
-# Neither stage publishes anything — pack output goes to a pipeline artifact only.
+# Validates the maintained v2 surface (Libraries/, Samples/, and Tests/).
+# Always runs; the DetectChanges stage decides whether the build stage executes.
+# The pipeline does not publish packages.
 # Pushes are handled by publish.yaml.
-#
-# Spec: docs/superpowers/specs/2026-05-12-pipeline-consolidation-design.md
 # =============================================================================
 
 trigger:
@@ -50,8 +48,8 @@ stages:
         elif [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCHNAME:-}" ]; then
           base="origin/${SYSTEM_PULLREQUEST_TARGETBRANCHNAME}"
         elif [ "${BUILD_REASON:-}" = "PullRequest" ]; then
-          echo "Warning: PullRequest run but target-branch variable is unset; defaulting to origin/main"
-          base="origin/main"
+          echo "Warning: PullRequest run but target-branch variable is unset; defaulting to origin/release/v2.0"
+          base="origin/release/v2.0"
         else
           base="HEAD^"
         fi
@@ -62,53 +60,34 @@ stages:
         echo "$changed"
 
         legacy=false
-        core=false
         while IFS= read -r f; do
           [ -z "$f" ] && continue
           case "$f" in
-            *.md|docs/*|core/docs/*|Assets/*)
-              # Docs / asset-only — skip both groups.
+            *.md|docs/*|Assets/*)
+              # Docs / asset-only — skip the build.
               ;;
             Libraries/*|Samples/*|Tests/*|Microsoft.Teams.sln|version.json)
               legacy=true
               ;;
-            core/*)
-              core=true
-              ;;
             .editorconfig|.azdo/*|.azdo/*/*|.azdo/*/*/*|Makefile)
               legacy=true
-              core=true
               ;;
           esac
         done <<< "$changed"
 
         echo "legacyChanged=$legacy"
-        echo "coreChanged=$core"
         echo "##vso[task.setvariable variable=legacyChanged;isOutput=true]$legacy"
-        echo "##vso[task.setvariable variable=coreChanged;isOutput=true]$core"
       name: flags
       displayName: 'git diff and flag groups'
 
-- stage: Build_Legacy
-  displayName: 'Build Legacy'
+- stage: Build_V2
+  displayName: 'Build v2'
   dependsOn: DetectChanges
   condition: eq(dependencies.DetectChanges.outputs['detect.flags.legacyChanged'], 'true')
   jobs:
   - job: BuildTestPack
-    displayName: 'Build, Test, Pack — Legacy'
+    displayName: 'Build and test v2'
     steps:
     - template: templates/build-test-pack.yaml
       parameters:
         sourceRoot: '.'
-
-- stage: Build_Core
-  displayName: 'Build Core'
-  dependsOn: DetectChanges
-  condition: eq(dependencies.DetectChanges.outputs['detect.flags.coreChanged'], 'true')
-  jobs:
-  - job: BuildTestPack
-    displayName: 'Build, Test, Pack — Core'
-    steps:
-    - template: templates/build-test-pack.yaml
-      parameters:
-        sourceRoot: 'core'
