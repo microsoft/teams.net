@@ -39,6 +39,9 @@ variables:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
+    settings:
+      networkIsolationPolicy: CFSClean
+
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
       image: ubuntu-22.04
@@ -72,7 +75,7 @@ extends:
                 pack: true
                 packPattern: 'src/**/*.csproj'
                 publishArtifact: false
-                configureNuGet: false
+                useCfsNuGet: true
 
             - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
@@ -108,7 +111,7 @@ extends:
                 sourceRoot: '.'
                 pack: false
                 publishArtifact: false
-                configureNuGet: false
+                useCfsNuGet: true
 
             - template: .azdo/templates/sign-and-pack.yaml@self
               parameters:
