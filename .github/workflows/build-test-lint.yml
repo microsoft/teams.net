@@ -34,7 +34,6 @@ jobs:
               - '**'
               - '!**/*.md'
               - '!docs/**'
-              - '!Assets/**'
 
       - name: Setup .NET
         if: steps.changes.outputs.code == 'true'
