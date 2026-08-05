@@ -87,6 +87,7 @@ extends:
                   packPattern: 'Libraries/**/*.csproj'
                   publishArtifact: false
                   configureNuGet: false
+                  useNuGetConfig: true
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
@@ -95,6 +96,7 @@ extends:
                   packPattern: 'core/src/**/*.csproj'
                   publishArtifact: false
                   configureNuGet: false
+                  useNuGetConfig: true
 
             - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
@@ -132,6 +134,7 @@ extends:
                   pack: false
                   publishArtifact: false
                   configureNuGet: false
+                  useNuGetConfig: true
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
@@ -139,6 +142,7 @@ extends:
                   pack: false
                   publishArtifact: false
                   configureNuGet: false
+                  useNuGetConfig: true
 
             - ${{ if eq(parameters.packageSet, 'Legacy') }}:
               - template: .azdo/templates/sign-and-pack.yaml@self
