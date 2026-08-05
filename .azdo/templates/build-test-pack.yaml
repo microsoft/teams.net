@@ -32,13 +32,10 @@ parameters:
   - name: buildConfiguration
     type: string
     default: 'Release'
-  - name: configureNuGet
+  - name: useCfsNuGet
     type: boolean
     default: false
-    # publish.yaml configures CFS once at the job level.
-  - name: useNuGetConfig
-    type: boolean
-    default: false
+    # publish.yaml configures and authenticates CFS once at the job level.
 
 steps:
   - task: UseDotNet@2
@@ -53,15 +50,12 @@ steps:
       packageType: 'sdk'
       version: '10.0.x'
 
-  - ${{ if eq(parameters.configureNuGet, true) }}:
-    - template: configure-cfs-nuget.yaml
-
-  - ${{ if eq(parameters.useNuGetConfig, true) }}:
+  - ${{ if eq(parameters.useCfsNuGet, true) }}:
     - script: dotnet restore --configfile $(nugetConfigPath)
       displayName: 'Restore'
       workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
 
-  - ${{ if eq(parameters.useNuGetConfig, false) }}:
+  - ${{ if eq(parameters.useCfsNuGet, false) }}:
     - script: dotnet restore
       displayName: 'Restore'
       workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
