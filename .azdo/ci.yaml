@@ -22,7 +22,6 @@ pr:
 
 pool:
   vmImage: 'ubuntu-22.04'
-  # TODO(SR21): Move to the network-isolated 1ES pool after CFS restore is green.
 
 variables:
   buildConfiguration: 'Release'

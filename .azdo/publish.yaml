@@ -49,6 +49,9 @@ variables:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
+    settings:
+      networkIsolationPolicy: CFSClean
+
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
       image: ubuntu-22.04
