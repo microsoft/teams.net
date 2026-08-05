@@ -16,14 +16,11 @@ test_report:
 clean:
 	dotnet clean
 
-samples_echo_run:
-	dotnet run --project Samples/Samples.Echo
+samples_core_run:
+	dotnet run --project samples/CoreBot
 
-samples_auth_run:
-	dotnet run --project Samples/Samples.Auth
-
-samples_lights_run:
-	dotnet run --project Samples/Samples.Lights
+samples_teams_run:
+	dotnet run --project samples/TeamsBot
 
 samples_mcp_run:
-	dotnet run --project Samples/Samples.Mcp
+	dotnet run --project samples/McpServer

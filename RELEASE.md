@@ -9,15 +9,13 @@ This document describes how to release packages for the Teams SDK for .NET. It a
    git checkout -b prep-release/<version> origin/main
    ```
 
-2. Update `version.json` to set the stable version (remove the `-preview.{height}` suffix):
-   - **Core**: edit `core/version.json` (e.g., set `"version": "2.1.0"`)
-   - **Legacy**: edit root `version.json` (e.g., set `"version": "2.0.8"`)
+2. Update the root `version.json` to set the stable version (remove the `-preview.{height}` suffix).
 
 3. Commit, then merge the release branch history using the `ours` strategy:
    ```bash
    git add .
    git commit -m "set version to <version>"
-   git merge -s ours origin/releases/core   # or origin/releases/v2 for Legacy
+   git merge -s ours origin/releases/core
    ```
    This records the release branch's history as merged without introducing conflicts.
 
@@ -25,18 +23,13 @@ This document describes how to release packages for the Teams SDK for .NET. It a
    ```bash
    git push -u origin prep-release/<version>
    ```
-   Create a PR (base: `releases/core` or `releases/v2`, compare: `prep-release/<version>`). Get teammate approval and merge.
+   Create a PR (base: `releases/core`, compare: `prep-release/<version>`). Get teammate approval and merge.
 
-5. Trigger the `Teams.NET-ESRP` pipeline from the release branch with `publishType=Public`:
-   - **Core**: `packageSet=Core` from `releases/core`
-   - **Legacy**: `packageSet=Legacy` from `releases/v2`
+5. Trigger the `Teams.NET-ESRP` pipeline from `releases/core` with `publishType=Public`.
 
 6. Approve the push to nuget.org
 
-7. Bump the version on `main` for the next release cycle:
-   - **Core**: edit `core/version.json` (e.g., `"2.1.0-preview.{height}"` → `"2.1.1-preview.{height}"`)
-   - **Legacy**: edit root `version.json` (e.g., `"2.0.8-preview.{height}"` → `"2.0.9-preview.{height}"`)
-   - Commit and push (or PR)
+7. Bump the root `version.json` on `main` for the next release cycle and commit the change.
 
 ## Hotfixes
 
@@ -46,7 +39,7 @@ To fix a bug in a released version without including new preview changes:
 
 1. Create a branch from the release branch:
    ```bash
-   git checkout -b hotfix/fix-description origin/releases/core  # or origin/releases/v2
+   git checkout -b hotfix/fix-description origin/releases/core
    ```
 
 2. Make your fix and commit
@@ -80,10 +73,8 @@ To publish experimental versions from a feature branch:
 
 ## Bumping Major/Minor Version
 
-There are two package sets, each with its own `version.json`:
-
-- **Core** (`core/`): `core/version.json`
-- **Legacy** (`Libraries/`): root `version.json`
+The Core package set uses the root `version.json`. Legacy 2.0 releases remain
+owned by `release/v2.0` and are not part of the `main` branch layout.
 
 To bump from `2.1.x` to `2.2.x` or `3.0.x`:
 
@@ -109,12 +100,11 @@ The publish pipeline (`Teams.NET-ESRP` / `publish.yaml`) is manually triggered.
 
 1. Go to **Pipelines > Teams.NET-ESRP** in ADO
 2. Click **Run pipeline**
-3. Select the branch to build from (either `releases/v2` for Legacy or `releases/core` for Core)
-4. Choose **Package Set**: `Legacy` or `Core`
-5. Choose **Publish Type**:
+3. Select the `releases/core` branch to build from
+4. Choose **Publish Type**:
    - **Internal** — publishes unsigned packages to the `TeamsSDKPreviews` ADO feed. No approval required.
    - **Public** — signs (Authenticode + NuGet) and publishes packages to nuget.org. Requires approval.
-6. Stages: Build → Test → Sign (Public only) → Pack → Publish
+5. Stages: Build → Test → Sign (Public only) → Pack → Publish
 
 ## Approvers
 
@@ -130,16 +120,13 @@ The `teams-net-publish` ADO pipeline environment controls who can approve public
 | Pipeline | File | Trigger |
 |----------|------|---------|
 | **Teams.NET-PR** | `ci.yaml` | PRs targeting `main` or `releases/*`; pushes to `main` |
-| **Teams.NET-ESRP** | `publish.yaml` | Manual (select `packageSet` and `publishType`) |
+| **Teams.NET-ESRP** | `publish.yaml` | Manual (select `publishType`) |
 
 ### CI path detection
 
-The `Teams.NET-PR` pipeline has a `DetectChanges` stage that skips builds when the relevant package set is unchanged. Docs-only PRs produce a green run with no builds.
-
-- `Libraries/**`, `Samples/**`, `Tests/**`, `Microsoft.Teams.sln`, `version.json` → Legacy
-- `core/**` → Core
-- `.editorconfig`, `.azdo/**`, `Makefile` → both (shared infrastructure)
-- `**/*.md`, `docs/**`, `Assets/**` → neither (skipped)
+The `Teams.NET-PR` pipeline has a `DetectChanges` stage that skips builds for
+documentation-only changes (`**/*.md`, `docs/**`, and `Assets/**`). All other
+changes validate the root Core solution.
 
 ## Appendix: Tagging and GitHub Release
 
@@ -153,7 +140,7 @@ gh release create v<version> -R microsoft/teams.net \
   --generate-notes --notes-start-tag v<previous-version>
 ```
 
-- `--target` is the release branch packages were published from: `releases/core` for Core, `releases/v<N>` for Legacy.
+- `--target` is the Core release branch the packages were published from.
 - The tag is created at the release branch tip when you publish the draft.
 
 If the auto-generated PR list comes back too small (only the release PR itself, because squash-merges hide ancestry), query the real PR delta from `main`:
