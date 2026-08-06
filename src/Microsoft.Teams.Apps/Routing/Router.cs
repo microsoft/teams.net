@@ -32,7 +32,7 @@ internal sealed class Router
     /// </summary>
     /// <param name="activity">The activity to check against registered routes.</param>
     /// <returns><c>true</c> if at least one route matches; otherwise, <c>false</c>.</returns>
-    internal bool IsMatch(TeamsActivity activity)
+    public bool IsMatch(TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         return _routes.Any(r => r.Matches(activity));

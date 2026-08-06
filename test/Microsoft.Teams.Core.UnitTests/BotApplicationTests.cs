@@ -292,58 +292,10 @@ public class BotApplicationTests
         Assert.True(onActivityCalled);
     }
 
-    [Fact]
-    public async Task RunActivityPipelineAsync_ReturnsHandlerResult()
-    {
-        TestBotApplication botApp = CreateTestBotApplication();
-        botApp.UseMiddleware(new TestMiddleware(async (_, _, next, cancellationToken) =>
-            await next(cancellationToken)));
-
-        string? result = await botApp.ProcessActivityAsync(
-            new CoreActivity(ActivityType.Message),
-            (_, _) => Task.FromResult<string?>("handled"));
-
-        Assert.Equal("handled", result);
-    }
-
-    [Fact]
-    public async Task RunActivityPipelineAsync_ReturnsNullWhenMiddlewareShortCircuits()
-    {
-        TestBotApplication botApp = CreateTestBotApplication();
-        botApp.UseMiddleware(new TestMiddleware((_, _, _, _) => Task.CompletedTask));
-
-        string? result = await botApp.ProcessActivityAsync(
-            new CoreActivity(ActivityType.Message),
-            (_, _) => Task.FromResult<string?>("handled"));
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task RunActivityPipelineAsync_PropagatesCallerCancellation()
-    {
-        TestBotApplication botApp = CreateTestBotApplication();
-        using CancellationTokenSource cancellationTokenSource = new();
-        cancellationTokenSource.Cancel();
-
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            botApp.ProcessActivityAsync(
-                new CoreActivity(ActivityType.Message),
-                async (_, cancellationToken) =>
-                {
-                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                    return "handled";
-                },
-                cancellationTokenSource.Token));
-    }
-
     private static BotApplicationOptions CreateOptions(string appId) =>
         new() { AppId = appId };
 
     private static BotApplication CreateBotApplication() =>
-        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
-
-    private static TestBotApplication CreateTestBotApplication() =>
         new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
 
     private static ConversationClient CreateMockConversationClient()
@@ -368,34 +320,5 @@ public class BotApplicationTests
         httpContext.Request.Body = new MemoryStream(bodyBytes);
         httpContext.Request.ContentType = "application/json";
         return httpContext;
-    }
-
-    private sealed class TestBotApplication(
-        ConversationClient conversationClient,
-        UserTokenClient userTokenClient,
-        NullLogger<BotApplication> logger)
-        : BotApplication(conversationClient, userTokenClient, logger)
-    {
-        public Task<TResult?> ProcessActivityAsync<TResult>(
-            CoreActivity activity,
-            Func<CoreActivity, CancellationToken, Task<TResult?>> handler,
-            CancellationToken cancellationToken = default)
-            where TResult : class
-            => RunActivityPipelineAsync(
-                activity,
-                handler,
-                useProcessTimeout: false,
-                cancellationToken: cancellationToken);
-    }
-
-    private sealed class TestMiddleware(
-        Func<BotApplication, CoreActivity, NextTurn, CancellationToken, Task> onTurn) : ITurnMiddleware
-    {
-        public Task OnTurnAsync(
-            BotApplication botApplication,
-            CoreActivity activity,
-            NextTurn nextTurn,
-            CancellationToken cancellationToken = default)
-            => onTurn(botApplication, activity, nextTurn, cancellationToken);
     }
 }
