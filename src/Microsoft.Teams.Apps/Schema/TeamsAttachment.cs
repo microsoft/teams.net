@@ -153,7 +153,7 @@ public class TeamsAttachment
     [JsonPropertyName("name")] public string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the thumbnail URL of the attachment.
+    /// Gets or sets the thumbnail URL of the attachment. Teams does not send this when a bot receives an upload.
     /// </summary>
     [JsonPropertyName("thumbnailUrl")] public Uri? ThumbnailUrl { get; set; }
 

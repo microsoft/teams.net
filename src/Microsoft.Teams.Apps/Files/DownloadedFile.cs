@@ -27,7 +27,7 @@ public sealed class DownloadedFile
     public byte[] Bytes => _bytes;
 #pragma warning restore CA1819 // Properties should not return arrays
 
-    /// <summary>MIME type resolved from the response or the incoming file.</summary>
+    /// <summary>MIME type resolved from the download response header, or the incoming file's metadata type if the response omits one. Falls back to <c>application/octet-stream</c> when neither provides a type, so this is never empty.</summary>
     public string ContentType { get; }
 
     /// <summary>Resolved filename.</summary>

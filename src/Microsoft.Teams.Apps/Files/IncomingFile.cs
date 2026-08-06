@@ -18,7 +18,11 @@ public sealed class IncomingFile
     /// <summary>Display name including extension when known.</summary>
     public required string Name { get; init; }
 
-    /// <summary>MIME type when known.</summary>
+    /// <summary>
+    /// The file's MIME type, when Teams provides it with the file. Files received today do not include one, so
+    /// this is usually <c>null</c>; the type resolved from the download response is on the returned
+    /// <see cref="DownloadedFile"/>, not written back here.
+    /// </summary>
     public string? ContentType { get; init; }
 
     /// <summary>File extension without the dot (e.g. <c>pdf</c>), taken from the platform-supplied <c>fileType</c>. Absent when the wire omits it.</summary>

@@ -29,8 +29,9 @@ public class FileDownloadInfo
     public string? FileType { get; set; }
 
     /// <summary>
-    /// ETag for the file.
+    /// A server-assigned version tag identifying this version of the file's contents, for detecting whether the file changed between reads.
+    /// Read-only; populated when Teams provides it with the file.
     /// </summary>
     [JsonPropertyName("etag")]
-    public object? Etag { get; set; }
+    public string? Etag { get; set; }
 }
