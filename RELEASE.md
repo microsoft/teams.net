@@ -125,7 +125,7 @@ The `teams-net-publish` ADO pipeline environment controls who can approve public
 ### CI path detection
 
 The `Teams.NET-PR` pipeline has a `DetectChanges` stage that skips builds for
-documentation-only changes (`**/*.md`, `docs/**`, and `Assets/**`). All other
+documentation-only changes (`**/*.md` and `docs/**`). All other
 changes validate the root Core solution.
 
 ## Appendix: Tagging and GitHub Release
