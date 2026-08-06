@@ -33,6 +33,18 @@ public class TeamsBotApplication : BotApplication
     internal Router Router { get; }
 
     /// <summary>
+    /// Determines whether any registered route matches the given activity.
+    /// </summary>
+    /// <param name="activity">The activity to check against registered routes.</param>
+    /// <returns><c>true</c> if at least one route matches; otherwise, <c>false</c>.</returns>
+    public bool HasMatchingRoute(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
+        return Router.IsMatch(teamsActivity);
+    }
+
+    /// <summary>
     /// Gets the registry of OAuthFlow instances. Set by AddOAuthFlow.
     /// </summary>
     internal OAuthFlowRegistry? OAuthRegistry { get; set; }
@@ -184,7 +196,6 @@ public class TeamsBotApplication : BotApplication
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
     }
-
 
     // ==================== Proactive Messaging ====================
 
