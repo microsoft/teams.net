@@ -188,17 +188,9 @@ public class BotApplication
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
 
-        _logger.StartProcessingActivity();
-
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
         string? correlationVector = httpContext.Request.GetCorrelationVector();
-        _logger.ActivityReceived(activity.Type, activity.Id, activity.ServiceUrl, correlationVector);
-
-        if (_logger.IsEnabled(LogLevel.Trace))
-        {
-            _logger.ReceivedActivityJson(activity.ToJson());
-        }
 
         string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
         if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
@@ -206,6 +198,53 @@ public class BotApplication
             _logger.LogServiceUrlClaimMismatch(activity.ServiceUrl, serviceUrlFromClaims);
             throw new InvalidDataException("ServiceUrl in activity payload does not match serviceurl JWT claim.");
             //$"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims})."
+        }
+
+        await RunActivityPipelineAsync<object>(
+            activity,
+            async (processedActivity, token) =>
+            {
+                if (OnActivity is not null)
+                {
+                    await OnActivity(processedActivity, token).ConfigureAwait(false);
+                }
+
+                return null;
+            },
+            correlationVector,
+            useProcessTimeout: true,
+            cancellationToken: CancellationToken.None).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Runs an activity through the bot middleware pipeline and invokes the supplied terminal handler.
+    /// </summary>
+    /// <typeparam name="TResult">The result produced by the terminal handler.</typeparam>
+    /// <param name="activity">The activity to process.</param>
+    /// <param name="handler">The handler invoked after all middleware components call the next delegate.</param>
+    /// <param name="correlationVector">An optional correlation vector supplied by the transport.</param>
+    /// <param name="useProcessTimeout">Whether to apply the configured process timeout instead of relying solely on caller cancellation.</param>
+    /// <param name="cancellationToken">A cancellation token for non-HTTP hosting scenarios.</param>
+    /// <returns>
+    /// The terminal handler result, or <see langword="null"/> when middleware short-circuits the pipeline.
+    /// </returns>
+    protected async Task<TResult?> RunActivityPipelineAsync<TResult>(
+        CoreActivity activity,
+        Func<CoreActivity, CancellationToken, Task<TResult?>> handler,
+        string? correlationVector = null,
+        bool useProcessTimeout = true,
+        CancellationToken cancellationToken = default)
+        where TResult : class
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(handler);
+
+        _logger.StartProcessingActivity();
+        _logger.ActivityReceived(activity.Type, activity.Id, activity.ServiceUrl, correlationVector);
+
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.ReceivedActivityJson(activity.ToJson());
         }
 
         KeyValuePair<string, object?> activityTypeTag = new(Telemetry.Tags.ActivityType, activity.Type);
@@ -223,19 +262,39 @@ public class BotApplication
         }
 
         long startTimestamp = Stopwatch.GetTimestamp();
+        TResult? result = null;
 
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
-            // Use a dedicated timeout instead of the HTTP request's cancellation token.
-            // The HTTP token fires when the client disconnects, which is expected for
-            // streaming handlers that outlive the original request.
-            using CancellationTokenSource cts = new(_processActivityTimeout);
+            // HTTP processing uses a dedicated timeout because the request token can fire
+            // when a streaming client disconnects. Other hosts can rely on their caller token.
+            using CancellationTokenSource timeoutCts = new(
+                useProcessTimeout ? _processActivityTimeout : Timeout.InfiniteTimeSpan);
+            using CancellationTokenSource? linkedCts = useProcessTimeout && cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken)
+                : null;
             try
             {
-                CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cts.Token;
-                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+                CancellationToken token = Debugger.IsAttached
+                    ? cancellationToken
+                    : useProcessTimeout
+                        ? linkedCts?.Token ?? timeoutCts.Token
+                        : cancellationToken;
+                await MiddleWare.RunPipelineAsync(
+                    this,
+                    activity,
+                    async (processedActivity, callbackToken) =>
+                    {
+                        result = await handler(processedActivity, callbackToken).ConfigureAwait(false);
+                    },
+                    0,
+                    token).ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException) when (useProcessTimeout && timeoutCts.IsCancellationRequested)
             {
                 _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
                 Telemetry.HandlerErrors.Add(1, activityTypeTag);
@@ -245,7 +304,7 @@ public class BotApplication
             {
                 _logger.ActivityProcessingError(ex, activity.Id);
                 Telemetry.HandlerErrors.Add(1, activityTypeTag);
-                span.RecordException(ex);
+                span?.RecordException(ex);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
@@ -255,6 +314,8 @@ public class BotApplication
                 Telemetry.TurnDuration.Record(elapsedMs, activityTypeTag);
             }
         }
+
+        return result;
     }
 
     /// <summary>

@@ -75,7 +75,7 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
                 RequestContext = requestContext
             });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            //turnContext.TurnState.Add<Microsoft.Teams.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
+            //turnContext.TurnState.Add<Microsoft.Teams.Apps.Clients.ApiClient>(_teamsBotApplication.Api); // TODO: review TeamsInfo needs
             await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
         };
 

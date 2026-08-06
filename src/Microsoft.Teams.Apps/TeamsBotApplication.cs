@@ -89,11 +89,6 @@ public class TeamsBotApplication : BotApplication
     public virtual ApiClient Api { get; }
 
     /// <summary>
-    /// Gets the client used to interact with the Teams API service.
-    /// </summary>
-    public virtual ApiClient TeamsApiClient => Api;
-
-    /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
@@ -141,61 +136,16 @@ public class TeamsBotApplication : BotApplication
 
         OnActivity = async (activity, cancellationToken) =>
         {
-            logger.LogDebug("OnActivity invoked for activity: Id={Id}", activity.Id);
-            TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
-
-            // Cache the service URL for proactive messaging
-            if (teamsActivity.ServiceUrl is not null)
+            InvokeResponse? invokeResponse = await DispatchActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+            HttpContext? httpContext = httpContextAccessor.HttpContext;
+            if (invokeResponse is not null && httpContext is not null)
             {
-                _lastServiceUrl = teamsActivity.ServiceUrl;
-            }
-
-            Context<TeamsActivity> defaultContext = new(this, teamsActivity);
-
-            // Load per-turn state if configured
-            string? conversationId = teamsActivity.Conversation?.Id;
-            if (_stateLoader is not null && !string.IsNullOrEmpty(conversationId))
-            {
-                TurnStateContainer stateContainer = await _stateLoader.LoadAsync(conversationId, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
-                stateContainer.SetDeleteDelegate(ct => _stateLoader.DeleteAsync(conversationId, teamsActivity.From?.Id, ct));
-                defaultContext.State = stateContainer;
-            }
-
-            // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
-            // child spans.
-            using IDisposable baggageScope = new TeamsBaggageBuilder()
-                .FromTeamsContext(defaultContext)
-                .Build();
-
-            try
-            {
-                if (teamsActivity.Type != TeamsActivityTypes.Invoke)
+                httpContext.Response.StatusCode = invokeResponse.Status;
+                logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
+                logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                if (invokeResponse.Body is not null)
                 {
-                    await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                }
-                else // invokes
-                {
-                    InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                    HttpContext? httpContext = httpContextAccessor.HttpContext;
-                    if (httpContext is not null && invokeResponse is not null)
-                    {
-                        httpContext.Response.StatusCode = invokeResponse.Status;
-                        logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
-                        logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                        if (invokeResponse.Body is not null)
-                        {
-                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                // Save dirty state back to the cache
-                if (_stateLoader is not null && defaultContext.HasState)
-                {
-                    await _stateLoader.SaveAsync(defaultContext.State, conversationId!, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
-                    defaultContext.State.Complete();
+                    await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
                 }
             }
         };
@@ -203,21 +153,32 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <summary>
-    /// Routes an invoke activity through the Teams SDK router and returns the
-    /// <see cref="InvokeResponse"/> without writing to <c>HttpContext.Response</c>.
+    /// Processes an activity through the bot middleware pipeline and Teams SDK router
+    /// without reading from or writing to an <see cref="HttpContext"/>.
     /// </summary>
     /// <remarks>
-    /// This method mirrors the invoke path used by <see cref="BotApplication.OnActivity"/>
-    /// for hosting scenarios where the caller needs to bridge the invoke
-    /// result into its own response pipeline.
+    /// Use this overload when embedding a Teams bot in a non-HTTP host. Invoke activities
+    /// return their response to the caller; other activity types return <see langword="null"/>.
     /// </remarks>
-    /// <param name="activity">The incoming <see cref="CoreActivity"/> of type Invoke.</param>
+    /// <param name="activity">The incoming activity.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    /// <returns>The <see cref="InvokeResponse"/> produced by the matched handler.</returns>
-    public async Task<InvokeResponse> ProcessInvokeAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    /// <returns>
+    /// The <see cref="InvokeResponse"/> produced by an invoke handler, or
+    /// <see langword="null"/> for non-invoke activities or when middleware short-circuits.
+    /// </returns>
+    public Task<InvokeResponse?> ProcessAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        Logger.LogDebug("ProcessInvokeAsync invoked for activity: Id={Id}", activity.Id);
+        return RunActivityPipelineAsync(
+            activity,
+            DispatchActivityAsync,
+            useProcessTimeout: false,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<InvokeResponse?> DispatchActivityAsync(CoreActivity activity, CancellationToken cancellationToken)
+    {
+        Logger.LogDebug("Dispatching activity: Id={Id}", activity.Id);
 
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
 
@@ -241,7 +202,13 @@ public class TeamsBotApplication : BotApplication
 
         try
         {
-            return await Router.DispatchWithReturnAsync(context, cancellationToken).ConfigureAwait(false);
+            if (teamsActivity.Type == TeamsActivityTypes.Invoke)
+            {
+                return await Router.DispatchWithReturnAsync(context, cancellationToken).ConfigureAwait(false);
+            }
+
+            await Router.DispatchAsync(context, cancellationToken).ConfigureAwait(false);
+            return null;
         }
         finally
         {
