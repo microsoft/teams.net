@@ -160,7 +160,7 @@ public class IncomingFileTests
         IncomingFile file = PersonalFile(handler, scope: ConversationType.GroupChat);
 
         FileScopeNotSupportedException ex = await Assert.ThrowsAsync<FileScopeNotSupportedException>(() => file.DownloadAsync());
-        Assert.Equal("groupChat", ex.Scope);
+        Assert.Equal(ConversationType.GroupChat, ex.Scope);
         Assert.Empty(handler.Calls);
     }
 

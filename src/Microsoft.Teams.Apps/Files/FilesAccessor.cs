@@ -72,8 +72,8 @@ public sealed class FilesAccessor
     /// <summary>Map a single activity attachment to an <see cref="IncomingFile"/>, or <c>null</c> when the attachment is not an uploaded file or is malformed. Never throws: unusable attachments are skipped so one bad entry cannot drop the rest.</summary>
     private IncomingFile? ToIncomingFile(TeamsAttachment attachment, int index, ConversationType scope)
     {
-        // Not an uploaded file (card, mention, adaptive card, etc.). Silently ignored.
-        if (!attachment.ContentType.Equals(AttachmentContentType.FileDownloadInfo))
+        // Not an uploaded file (card, mention, adaptive card, etc.). Silently ignored. Null-safe: a null ContentType is simply not a match, so a malformed attachment is skipped rather than throwing.
+        if (attachment.ContentType != AttachmentContentType.FileDownloadInfo)
         {
             return null;
         }

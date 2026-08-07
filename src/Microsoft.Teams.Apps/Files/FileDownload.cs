@@ -98,7 +98,7 @@ internal static class FileDownload
             return OpenPersonalFileStreamAsync(downloadUrl, contentType, priorFetchSucceeded, httpClient, cancellationToken);
         }
 
-        throw new FileScopeNotSupportedException(scope?.Value ?? "unknown");
+        throw new FileScopeNotSupportedException(scope);
     }
 
     private static async Task<OpenedFileStream> OpenPersonalFileStreamAsync(

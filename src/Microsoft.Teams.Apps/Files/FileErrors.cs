@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Apps.Schema;
+
 namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
@@ -65,16 +67,16 @@ public class FileUrlExpiredException : Exception
 
 /// <summary>
 /// Raised when file bytes are requested for a conversation scope whose download path is not implemented.
-/// <para>Only <c>personal</c> (1:1) uploaded files download directly. <c>groupChat</c> and <c>channel</c> files are surfaced by <c>ListAsync()</c>, but fetching their bytes needs Graph; <c>DownloadAsync()</c>/<c>StreamAsync()</c> throws until that path lands.</para>
+/// <para>Only <c>personal</c> (1:1) uploaded files download directly. <c>groupChat</c> files are surfaced by <c>ListAsync()</c>, but fetching their bytes needs Graph; <c>DownloadAsync()</c>/<c>StreamAsync()</c> throws until that path lands.</para>
 /// </summary>
 public class FileScopeNotSupportedException : Exception
 {
     /// <summary>The conversation scope that is not yet fetchable.</summary>
-    public string? Scope { get; }
+    public ConversationType? Scope { get; }
 
     /// <summary>Initializes a new instance of the <see cref="FileScopeNotSupportedException"/> class for the specified scope.</summary>
     /// <param name="scope">The conversation scope that is not yet fetchable.</param>
-    public FileScopeNotSupportedException(string scope) : base($"downloading files from '{scope}' conversations is not supported via SDK at this time")
+    public FileScopeNotSupportedException(ConversationType? scope) : base($"downloading files from '{scope?.Value ?? "unknown"}' conversations is not supported via SDK at this time")
     {
         Scope = scope;
     }
@@ -82,13 +84,19 @@ public class FileScopeNotSupportedException : Exception
     /// <summary>Initializes a new instance of the <see cref="FileScopeNotSupportedException"/> class for the specified scope and error message.</summary>
     /// <param name="scope">The conversation scope that is not yet fetchable.</param>
     /// <param name="message">The error message that describes the reason for the exception.</param>
-    public FileScopeNotSupportedException(string scope, string message) : base(message)
+    public FileScopeNotSupportedException(ConversationType? scope, string message) : base(message)
     {
         Scope = scope;
     }
 
     /// <summary>Initializes a new instance of the <see cref="FileScopeNotSupportedException"/> class.</summary>
     public FileScopeNotSupportedException()
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="FileScopeNotSupportedException"/> class with a specified error message.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    public FileScopeNotSupportedException(string message) : base(message)
     {
     }
 
