@@ -176,6 +176,17 @@ public class IncomingFileTests
     }
 
     [Fact]
+    public async Task Download_NonHttpsDownloadUrl_Throws()
+    {
+        SequenceHttpMessageHandler handler = new SequenceHttpMessageHandler().Enqueue(Body("unused"));
+        IncomingFile file = PersonalFile(handler, downloadUrl: "http://download.example/notes.txt");
+
+        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => file.DownloadAsync());
+        Assert.Contains("must use https", ex.Message);
+        Assert.Empty(handler.Calls);
+    }
+
+    [Fact]
     public async Task Download_NonAuthError_Throws()
     {
         SequenceHttpMessageHandler handler = new SequenceHttpMessageHandler().Enqueue(Status(HttpStatusCode.InternalServerError, "Server Error"));

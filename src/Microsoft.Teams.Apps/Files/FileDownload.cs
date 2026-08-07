@@ -113,6 +113,11 @@ internal static class FileDownload
             throw new InvalidOperationException("cannot download personal file: no download URL is available");
         }
 
+        if (!downloadUrl.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("cannot download file: download URL must use https");
+        }
+
         HttpClient client = httpClient ?? DefaultHttpClient;
 
         // Plain GET with no bearer token: the download URL embeds its own `tempauth` credential, and attaching a
