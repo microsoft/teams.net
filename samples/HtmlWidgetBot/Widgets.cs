@@ -16,7 +16,7 @@ public static class Widgets
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px 0;color:#333}
@@ -35,7 +35,7 @@ p{margin:0;color:#666}
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px 0}
@@ -83,7 +83,7 @@ button:hover{background:#4b4fb7}
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px 0}
@@ -124,7 +124,7 @@ button:hover{background:#006cbd}
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px 0}
@@ -173,7 +173,7 @@ button:hover{background:#0e6b0e}
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px 0}
@@ -232,7 +232,7 @@ p{margin:0 0 12px 0;color:#666}
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px}
 button{margin:4px 4px 4px 0;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;color:inherit;cursor:pointer;font-size:12px}
@@ -292,7 +292,7 @@ async function openLink(url) {
 <html><head><meta charset=""utf-8"">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:auto}
+html,body{overflow:auto}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px;background:#fff;color:#242424;font-size:13px}
 h3{margin:0 0 8px}
 button{margin:4px 4px 4px 0;padding:6px 12px;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;color:inherit;cursor:pointer;font-size:12px}
