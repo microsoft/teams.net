@@ -30,11 +30,11 @@ internal sealed class OpenedFileStream : Stream
     public override bool CanRead => _inner.CanRead;
     public override bool CanSeek => false;
     public override bool CanWrite => false;
-    public override long Length => _inner.Length;
+    public override long Length => throw new NotSupportedException();
 
     public override long Position
     {
-        get => _inner.Position;
+        get => throw new NotSupportedException();
         set => throw new NotSupportedException();
     }
 

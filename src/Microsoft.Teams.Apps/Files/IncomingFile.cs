@@ -98,7 +98,7 @@ public sealed class IncomingFile
 
         await using (opened.ConfigureAwait(false))
         {
-            FileStream file = new(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            FileStream file = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
             await using (file.ConfigureAwait(false))
             {
                 await opened.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
