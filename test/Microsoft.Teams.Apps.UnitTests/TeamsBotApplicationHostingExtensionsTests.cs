@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.State;
+using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
+using Moq;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
@@ -71,6 +73,33 @@ public class TeamsBotApplicationHostingExtensionsTests
 
         Assert.True(bot.ConstructedViaDI);
         Assert.Equal("subclass-client-id", bot.AppId);
+    }
+
+    [Fact]
+    public void AddTeamsApiClient_UsesNamedHttpClient()
+    {
+        const string httpClientName = "AgentsSdk";
+        HttpClient httpClient = new();
+        Mock<IHttpClientFactory> httpClientFactory = new();
+        httpClientFactory
+            .Setup(factory => factory.CreateClient(httpClientName))
+            .Returns(httpClient);
+
+        IConfigurationRoot configuration = new ConfigurationBuilder().Build();
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton(httpClientFactory.Object);
+        services.AddSingleton(new ConversationClient(new HttpClient()));
+        services.AddSingleton(new UserTokenClient(
+            new HttpClient(),
+            configuration,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<UserTokenClient>.Instance));
+        services.AddTeamsApiClient(httpClientName);
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        Assert.NotNull(serviceProvider.GetRequiredService<ApiClient>());
+        httpClientFactory.Verify(factory => factory.CreateClient(httpClientName), Times.Once);
     }
 
     [Fact]

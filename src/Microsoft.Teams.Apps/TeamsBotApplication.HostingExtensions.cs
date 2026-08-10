@@ -92,6 +92,33 @@ public static class TeamsBotApplicationHostingExtensions
     }
 
     /// <summary>
+    /// Registers the Teams <see cref="ApiClient"/> using a named <see cref="HttpClient"/>.
+    /// </summary>
+    /// <remarks>
+    /// The calling host must register the named HTTP client, <see cref="ConversationClient"/>,
+    /// and <see cref="UserTokenClient"/> before resolving the API client.
+    /// </remarks>
+    /// <param name="services">The service collection.</param>
+    /// <param name="httpClientName">The name of the registered HTTP client to use.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeamsApiClient(this IServiceCollection services, string httpClientName)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentException.ThrowIfNullOrWhiteSpace(httpClientName);
+
+        services.AddSingleton(sp =>
+        {
+            IHttpClientFactory factory = sp.GetRequiredService<IHttpClientFactory>();
+            HttpClient httpClient = factory.CreateClient(httpClientName);
+            ConversationClient conversationClient = sp.GetRequiredService<ConversationClient>();
+            UserTokenClient userTokenClient = sp.GetRequiredService<UserTokenClient>();
+            return new ApiClient(httpClient, conversationClient, userTokenClient);
+        });
+
+        return services;
+    }
+
+    /// <summary>
     /// Adds a custom <see cref="TeamsBotApplication"/> to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -127,14 +154,7 @@ public static class TeamsBotApplicationHostingExtensions
         }
 
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
-        services.AddSingleton(sp =>
-        {
-            IHttpClientFactory factory = sp.GetRequiredService<IHttpClientFactory>();
-            HttpClient httpClient = factory.CreateClient(nameof(ApiClient));
-            ConversationClient conversationClient = sp.GetRequiredService<ConversationClient>();
-            UserTokenClient userTokenClient = sp.GetRequiredService<UserTokenClient>();
-            return new ApiClient(httpClient, conversationClient, userTokenClient);
-        });
+        services.AddTeamsApiClient(nameof(ApiClient));
         return services;
     }
 
