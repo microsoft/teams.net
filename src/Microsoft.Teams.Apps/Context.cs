@@ -56,7 +56,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Gets the uploaded files attached to the current inbound activity, exposed as lazy <see cref="Files.IncomingFile"/> handles. See <see cref="Files.FilesAccessor"/> for the full contract.
     /// </summary>
-    public Files.FilesAccessor Files => _files ??= new Files.FilesAccessor(Activity, TeamsBotApplication.Logger);
+    public Files.FilesAccessor Files => _files ??= new Files.FilesAccessor(Activity, TeamsBotApplication.Logger, TeamsBotApplication.FileDownloader);
 
     // ==================== Turn State ====================
 

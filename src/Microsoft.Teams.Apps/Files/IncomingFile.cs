@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Teams.Apps.Schema;
 
@@ -12,16 +13,33 @@ namespace Microsoft.Teams.Apps.Files;
 /// </summary>
 public sealed class IncomingFile
 {
+    private readonly FileDownloader _downloader;
+
+    /// <summary>Initializes a new instance of the <see cref="IncomingFile"/> class.</summary>
+    /// <param name="name">Display name including extension when known.</param>
+    /// <param name="scope">Conversation scope the file arrived in.</param>
+    /// <param name="source">Where the SDK found the file.</param>
+    /// <param name="downloader">Opens the byte stream when a byte method is called.</param>
+    internal IncomingFile(string name, ConversationType scope, FileSource source, FileDownloader downloader)
+    {
+        Name = name;
+        Scope = scope;
+        Source = source;
+        _downloader = downloader ?? throw new ArgumentNullException(nameof(downloader));
+    }
+
     /// <summary>The OneDrive/ODSP drive-item id when the platform reports it (<c>content.uniqueId</c>); the storage-specific locator a Graph fetch keys off. Present only when the wire provided it.</summary>
     public string? UniqueId { get; init; }
 
     /// <summary>Display name including extension when known.</summary>
-    public required string Name { get; init; }
+    public string Name { get; }
 
     /// <summary>
-    /// The file's MIME type, when Teams provides it with the file. Files received today do not include one, so
-    /// this is usually <c>null</c>; the type resolved from the download response is on the returned
-    /// <see cref="DownloadedFile"/>, not written back here.
+    /// The file's MIME type when the source provides one. Always <c>null</c> for
+    /// <see cref="FileSource.BotActivity"/> files: a <c>file.download.info</c> attachment carries no MIME type,
+    /// only the <c>fileType</c> extension surfaced as <see cref="Extension"/>. Populated for sources that do carry
+    /// one, such as a <see cref="FileSource.Graph"/> drive item. To learn the type of the bytes you actually
+    /// received, read <see cref="DownloadedFile.ContentType"/>, which is resolved from the download response.
     /// </summary>
     public string? ContentType { get; init; }
 
@@ -29,10 +47,10 @@ public sealed class IncomingFile
     public string? Extension { get; init; }
 
     /// <summary>Conversation scope the file arrived in (the SDK's <see cref="ConversationType"/>).</summary>
-    public required ConversationType Scope { get; init; }
+    public ConversationType Scope { get; }
 
     /// <summary>Where the SDK found the file. Only <see cref="FileSource.BotActivity"/> is produced today.</summary>
-    public required FileSource Source { get; init; }
+    public FileSource Source { get; }
 
     /// <summary>Web URL to the file in OneDrive/SharePoint when known.</summary>
     public Uri? WebUrl { get; init; }
@@ -40,38 +58,39 @@ public sealed class IncomingFile
     /// <summary>The raw underlying attachment/graph object for escape-hatch access.</summary>
     public object? Raw { get; init; }
 
-    /// <summary>Short-lived, pre-authorized download URL (personal scope).</summary>
+    /// <summary>Short-lived, pre-authorized download URL (personal scope). Scope-dependent rather than universal, so it stays an initializer: a later Graph path keys off <see cref="UniqueId"/> instead.</summary>
     internal Uri? DownloadUrl { get; init; }
-
-    /// <summary>Injectable HTTP client, defaulting to a shared client; used to keep tests off the network.</summary>
-    internal HttpClient? HttpClient { get; init; }
 
     private bool _priorFetchSucceeded;
 
     /// <summary>Stream the bytes. Low-level primitive: returns the response body stream directly, single-consumption, not buffered or retained. Use for large files and pipelines (parse-as-you-go, pipe to disk). <see cref="DownloadAsync"/> is built on this. Uncapped: the consumer bounds it by how much it reads. Dispose the returned stream to release the underlying connection.</summary>
     /// <param name="cancellationToken">A token to cancel opening the stream.</param>
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The stream is handed to the caller, who is documented to dispose it. Disposing it here would defeat the method.")]
     public async Task<Stream> StreamAsync(CancellationToken cancellationToken = default)
     {
-        OpenedFileStream opened = await FileDownload
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, HttpClient, cancellationToken)
+        OpenedFile opened = await _downloader
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
-        return opened;
+        return opened.Stream;
     }
 
     /// <summary>Fetch the whole file and buffer it into a <see cref="DownloadedFile"/> snapshot you own. Lazy and not memoized: calling again re-fetches. If you already hold a <see cref="DownloadedFile"/>, call its <see cref="DownloadedFile.SaveAsAsync"/> rather than this handle's, which would re-fetch.</summary>
     /// <param name="cancellationToken">A token to cancel the download.</param>
     public async Task<DownloadedFile> DownloadAsync(CancellationToken cancellationToken = default)
     {
-        OpenedFileStream opened = await FileDownload
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, HttpClient, cancellationToken)
+        OpenedFile opened = await _downloader
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
 
         await using (opened.ConfigureAwait(false))
         {
             using MemoryStream buffer = new();
-            await opened.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
+            await opened.Stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
 
             return new DownloadedFile(buffer.ToArray(), opened.ContentType, Name, opened.SourceUrl);
         }
@@ -91,8 +110,8 @@ public sealed class IncomingFile
     /// <param name="cancellationToken">A token to cancel the download or write.</param>
     public async Task SaveAsAsync(string path, CancellationToken cancellationToken = default)
     {
-        OpenedFileStream opened = await FileDownload
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, HttpClient, cancellationToken)
+        OpenedFile opened = await _downloader
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
 
@@ -101,7 +120,7 @@ public sealed class IncomingFile
             FileStream file = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
             await using (file.ConfigureAwait(false))
             {
-                await opened.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
+                await opened.Stream.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
             }
         }
     }

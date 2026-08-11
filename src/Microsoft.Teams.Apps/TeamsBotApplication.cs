@@ -77,6 +77,16 @@ public class TeamsBotApplication : BotApplication
     public virtual ApiClient Api { get; }
 
     /// <summary>
+    /// Opens byte streams for inbound files, backing <c>ctx.Files</c>. Its client comes from
+    /// <see cref="IHttpClientFactory"/> when the app is built through the hosting extensions.
+    /// </summary>
+    internal Files.FileDownloader FileDownloader { get; }
+
+    // Fallback for an app constructed directly rather than through DI, where no factory is available. Shared and
+    // never disposed, which is the supported lifetime for a long-lived HttpClient.
+    private static readonly HttpClient FallbackFileDownloadClient = new();
+
+    /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
@@ -84,6 +94,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
+    /// <param name="httpClientFactory">Optional factory supplying the client used to download inbound files. Injected automatically by the hosting extensions.</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
@@ -102,7 +113,8 @@ public class TeamsBotApplication : BotApplication
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
         TeamsBotApplicationOptions? options = null,
-        TurnStateLoader? stateLoader = null)
+        TurnStateLoader? stateLoader = null,
+        IHttpClientFactory? httpClientFactory = null)
         : base(
             (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
             teamsApiClient.UserTokenClient,
@@ -113,6 +125,8 @@ public class TeamsBotApplication : BotApplication
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
+        FileDownloader = new Files.FileDownloader(
+            httpClientFactory?.CreateClient(nameof(Files.FileDownloader)) ?? FallbackFileDownloadClient);
 
         if (options is not null)
         {

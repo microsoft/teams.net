@@ -1,31 +1,38 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Apps.Schema;
 
 namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
-/// A freshly opened, single-consumption byte stream plus the metadata resolved while opening it. Owns the underlying <see cref="HttpResponseMessage"/>; disposing this stream releases the response and connection. Read-only and non-seekable: it hands back the raw response body without leaking the response.
+/// A freshly opened, single-consumption byte stream plus the metadata resolved while opening it. Disposing releases
+/// the underlying response and connection.
 /// </summary>
-internal sealed class OpenedFileStream : Stream
+/// <param name="Stream">The response body. Read-only, non-seekable, and owns the underlying response.</param>
+/// <param name="SourceUrl">The URL the bytes were actually fetched from.</param>
+/// <param name="ContentType">MIME type resolved from the response, falling back to the incoming file's when the response omits one.</param>
+internal sealed record OpenedFile(Stream Stream, Uri SourceUrl, string ContentType) : IAsyncDisposable
+{
+    public ValueTask DisposeAsync() => Stream.DisposeAsync();
+}
+
+/// <summary>
+/// Wraps a response body stream so that disposing it also disposes the <see cref="HttpResponseMessage"/> it was read
+/// from, releasing the connection. Carries no metadata: it exists only to tie the two lifetimes together, so the
+/// response can be handed to a caller as a plain <see cref="Stream"/> without leaking.
+/// </summary>
+internal sealed class ResponseOwningStream : Stream
 {
     private readonly Stream _inner;
     private readonly HttpResponseMessage? _response;
 
-    public OpenedFileStream(Stream inner, Uri sourceUrl, string contentType, HttpResponseMessage? response = null)
+    public ResponseOwningStream(Stream inner, HttpResponseMessage? response = null)
     {
         _inner = inner;
-        SourceUrl = sourceUrl;
-        ContentType = contentType;
         _response = response;
     }
-
-    /// <summary>The URL the bytes were actually fetched from.</summary>
-    public Uri SourceUrl { get; }
-
-    /// <summary>MIME type resolved from the response, falling back to the incoming file's.</summary>
-    public string ContentType { get; }
 
     public override bool CanRead => _inner.CanRead;
     public override bool CanSeek => false;
@@ -80,32 +87,38 @@ internal sealed class OpenedFileStream : Stream
 /// <summary>
 /// Opens byte streams for inbound files, keyed on conversation scope so every scope's receive path extends this one place rather than branching in callers.
 /// </summary>
-internal static class FileDownload
+/// <remarks>
+/// Initializes a new instance of the <see cref="FileDownloader"/> class.
+/// </remarks>
+/// <param name="httpClient">Client used to fetch file bytes. Supplied by DI; must not be null.</param>
+internal sealed class FileDownloader(HttpClient httpClient)
 {
-    private static readonly HttpClient DefaultHttpClient = new();
+    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
     /// <summary>Open a byte stream for an inbound file. Only <c>personal</c> is implemented; other scopes throw <see cref="FileScopeNotSupportedException"/> until their Graph receive path lands.</summary>
-    public static Task<OpenedFileStream> OpenFileStreamAsync(
+    public Task<OpenedFile> OpenFileStreamAsync(
         ConversationType? scope,
         Uri? downloadUrl,
         string? contentType,
         bool priorFetchSucceeded,
-        HttpClient? httpClient,
         CancellationToken cancellationToken)
     {
         if (scope == ConversationType.Personal)
         {
-            return OpenPersonalFileStreamAsync(downloadUrl, contentType, priorFetchSucceeded, httpClient, cancellationToken);
+            return OpenPersonalFileStreamAsync(downloadUrl, contentType, priorFetchSucceeded, cancellationToken);
         }
 
         throw new FileScopeNotSupportedException(scope);
     }
 
-    private static async Task<OpenedFileStream> OpenPersonalFileStreamAsync(
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Ownership of the stream transfers to the returned OpenedFile, which the caller disposes. The catch below disposes the response if construction fails.")]
+    private async Task<OpenedFile> OpenPersonalFileStreamAsync(
         Uri? downloadUrl,
         string? contentType,
         bool priorFetchSucceeded,
-        HttpClient? httpClient,
         CancellationToken cancellationToken)
     {
         if (downloadUrl is null)
@@ -118,11 +131,9 @@ internal static class FileDownload
             throw new InvalidOperationException("cannot download file: download URL must use https");
         }
 
-        HttpClient client = httpClient ?? DefaultHttpClient;
-
         // Plain GET with no bearer token: the download URL embeds its own `tempauth` credential, and attaching a
         // credential can get the request rejected.
-        HttpResponseMessage response = await client
+        HttpResponseMessage response = await _httpClient
             .GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
 
@@ -146,7 +157,7 @@ internal static class FileDownload
 
             Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-            return new OpenedFileStream(stream, downloadUrl, resolvedContentType, response);
+            return new OpenedFile(new ResponseOwningStream(stream, response), downloadUrl, resolvedContentType);
         }
         catch
         {

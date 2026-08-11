@@ -16,14 +16,17 @@ public sealed class FilesAccessor
 {
     private readonly TeamsActivity _activity;
     private readonly ILogger _logger;
+    private readonly FileDownloader _downloader;
 
     /// <summary>Initializes a new instance of the <see cref="FilesAccessor"/> class for the given inbound activity.</summary>
     /// <param name="activity">The inbound activity whose attachments are read.</param>
     /// <param name="logger">Logger used to leave a breadcrumb when a malformed file attachment is skipped.</param>
-    public FilesAccessor(TeamsActivity activity, ILogger logger)
+    /// <param name="downloader">Opens byte streams for the files this accessor hands out.</param>
+    internal FilesAccessor(TeamsActivity activity, ILogger logger, FileDownloader downloader)
     {
         _activity = activity;
         _logger = logger;
+        _downloader = downloader;
     }
 
     /// <summary>
@@ -92,14 +95,11 @@ public sealed class FilesAccessor
             return null;
         }
 
-        return new IncomingFile
+        return new IncomingFile(name, scope, FileSource.BotActivity, _downloader)
         {
             UniqueId = content?.UniqueId,
-            Name = name,
             // `fileType` is the platform-supplied extension (e.g. `pdf`); left null when the wire omits it, matching how peer SDKs surface it.
             Extension = content?.FileType,
-            Scope = scope,
-            Source = FileSource.BotActivity,
             // Maps the wire's `contentUrl` (a browsable link to the file in OneDrive/SharePoint) to `WebUrl`; not fetchable like `downloadUrl`.
             WebUrl = attachment.ContentUrl,
             Raw = attachment,

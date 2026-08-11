@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.Schema;
+namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
 /// The content of a <c>file.download.info</c> attachment, describing an uploaded file received in a personal (1:1) chat. The file is fetched from the short-lived, pre-authorized <see cref="DownloadUrl"/> with a plain GET (no bearer token).

@@ -127,6 +127,11 @@ public static class TeamsBotApplicationHostingExtensions
         }
 
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
+
+        // Named client for file downloads. Deliberately separate from the ApiClient's: a file download URL embeds its
+        // own `tempauth` credential, so the request must not carry bot credentials.
+        services.AddHttpClient(nameof(Files.FileDownloader));
+
         services.AddSingleton(sp =>
         {
             IHttpClientFactory factory = sp.GetRequiredService<IHttpClientFactory>();

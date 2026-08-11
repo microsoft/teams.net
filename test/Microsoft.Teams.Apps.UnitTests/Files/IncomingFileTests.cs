@@ -51,15 +51,56 @@ public class IncomingFileTests
     private static HttpResponseMessage Status(HttpStatusCode status, string? reasonPhrase = null)
         => new(status) { ReasonPhrase = reasonPhrase };
 
-    private static IncomingFile PersonalFile(SequenceHttpMessageHandler handler, string? contentType = null, string? downloadUrl = DownloadUrl, ConversationType? scope = null)
-        => new()
+    // Records whether the response that produced a stream was disposed, so tests can prove the returned stream still
+    // owns the response and releases the connection.
+    private sealed class TrackingContent : HttpContent
+    {
+        private readonly byte[] _bytes;
+
+        public TrackingContent(string text) => _bytes = Encoding.UTF8.GetBytes(text);
+
+        public bool Disposed { get; private set; }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            => stream.WriteAsync(_bytes, 0, _bytes.Length);
+
+        protected override bool TryComputeLength(out long length)
         {
-            Name = "notes.txt",
+            length = _bytes.Length;
+            return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            Disposed = true;
+            base.Dispose(disposing);
+        }
+    }
+
+    [Fact]
+    public async Task Stream_DisposingReturnedStream_DisposesResponse()
+    {
+        TrackingContent content = new("streamed");
+        SequenceHttpMessageHandler handler = new SequenceHttpMessageHandler()
+            .Enqueue(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        IncomingFile file = PersonalFile(handler);
+
+        Stream stream = await file.StreamAsync();
+        Assert.False(content.Disposed);
+
+        await stream.DisposeAsync();
+        Assert.True(content.Disposed);
+    }
+
+    private static IncomingFile PersonalFile(SequenceHttpMessageHandler handler, string? contentType = null, string? downloadUrl = DownloadUrl, ConversationType? scope = null)
+        => new(
+            "notes.txt",
+            scope ?? ConversationType.Personal,
+            FileSource.BotActivity,
+            new FileDownloader(new HttpClient(handler)))
+        {
             ContentType = contentType,
-            Scope = scope ?? ConversationType.Personal,
-            Source = FileSource.BotActivity,
             DownloadUrl = downloadUrl is null ? null : new Uri(downloadUrl),
-            HttpClient = new HttpClient(handler),
         };
 
     [Fact]

@@ -13,6 +13,9 @@ public class FilesAccessorTests
 {
     private static readonly NullLogger Log = NullLogger.Instance;
 
+    // These tests only exercise attachment mapping, never a download, so the client is never used.
+    private static readonly FileDownloader Downloader = new(new HttpClient());
+
     private static TeamsAttachment FileAttachment(string? name, FileDownloadInfo? content, Uri? contentUrl = null)
         => new()
         {
@@ -63,7 +66,7 @@ public class FilesAccessorTests
             new Uri("https://contoso.sharepoint.com/report.pdf"));
 
         MessageActivity activity = MessageWith([attachment]);
-        FilesAccessor accessor = new(activity, Log);
+        FilesAccessor accessor = new(activity, Log, Downloader);
         IList<IncomingFile> files = await accessor.ListAsync();
 
         IncomingFile file = Assert.Single(files);
@@ -85,7 +88,7 @@ public class FilesAccessorTests
             Content = new object(),
         };
 
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith([card]), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith([card]), Log, Downloader).ListAsync();
 
         Assert.Empty(files);
     }
@@ -95,7 +98,7 @@ public class FilesAccessorTests
     {
         TeamsAttachment attachment = FileAttachment("broken.pdf", new FileDownloadInfo { UniqueId = "no-url" });
 
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment]), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment]), Log, Downloader).ListAsync();
 
         Assert.Empty(files);
     }
@@ -105,7 +108,7 @@ public class FilesAccessorTests
     {
         TeamsAttachment attachment = FileAttachment(null, new FileDownloadInfo { DownloadUrl = new Uri("https://download.example/anon") });
 
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment]), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment]), Log, Downloader).ListAsync();
 
         Assert.Empty(files);
     }
@@ -115,7 +118,7 @@ public class FilesAccessorTests
     {
         TeamsAttachment attachment = FileAttachment("anon.pdf", new FileDownloadInfo { DownloadUrl = new Uri("https://download.example/anon.pdf") });
 
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment]), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment]), Log, Downloader).ListAsync();
 
         IncomingFile file = Assert.Single(files);
         Assert.Equal("anon.pdf", file.Name);
@@ -127,7 +130,7 @@ public class FilesAccessorTests
     {
         TeamsAttachment attachment = FileAttachment("a.pdf", new FileDownloadInfo { DownloadUrl = new Uri("https://download.example/a.pdf"), UniqueId = "a" });
 
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment], withConversation: false), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith([attachment], withConversation: false), Log, Downloader).ListAsync();
 
         IncomingFile file = Assert.Single(files);
         Assert.Equal(ConversationType.Personal, file.Scope);
@@ -136,7 +139,7 @@ public class FilesAccessorTests
     [Fact]
     public async Task ReturnsEmpty_WhenActivityHasNoAttachments()
     {
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith([]), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith([]), Log, Downloader).ListAsync();
 
         Assert.Empty(files);
     }
@@ -144,7 +147,7 @@ public class FilesAccessorTests
     [Fact]
     public async Task ReturnsEmpty_WhenAttachmentsFieldAbsent()
     {
-        IList<IncomingFile> files = await new FilesAccessor(MessageWith(null), Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(MessageWith(null), Log, Downloader).ListAsync();
 
         Assert.Empty(files);
     }
@@ -154,7 +157,7 @@ public class FilesAccessorTests
     {
         TeamsActivity typing = new() { Type = TeamsActivityTypes.Typing };
 
-        IList<IncomingFile> files = await new FilesAccessor(typing, Log).ListAsync();
+        IList<IncomingFile> files = await new FilesAccessor(typing, Log, Downloader).ListAsync();
 
         Assert.Empty(files);
     }
@@ -164,7 +167,7 @@ public class FilesAccessorTests
     {
         TeamsAttachment attachment = FileAttachment("a.pdf", new FileDownloadInfo { DownloadUrl = new Uri("https://download.example/a.pdf"), UniqueId = "a" });
 
-        Assert.NotNull(await new FilesAccessor(MessageWith([attachment]), Log).FirstAsync());
-        Assert.Null(await new FilesAccessor(MessageWith([]), Log).FirstAsync());
+        Assert.NotNull(await new FilesAccessor(MessageWith([attachment]), Log, Downloader).FirstAsync());
+        Assert.Null(await new FilesAccessor(MessageWith([]), Log, Downloader).FirstAsync());
     }
 }

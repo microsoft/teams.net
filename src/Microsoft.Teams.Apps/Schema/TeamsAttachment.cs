@@ -28,7 +28,7 @@ public class AttachmentContentType(string value) : StringEnum(value)
     /// <summary>File info card content type.</summary>
     public static readonly AttachmentContentType FileInfoCard = new("application/vnd.microsoft.teams.card.file.info");
     /// <summary>
-    /// File download info content type of an inbound uploaded-file attachment. Its content is a <see cref="FileDownloadInfo"/> describing a file that can be fetched from a short-lived, pre-authorized download URL.
+    /// File download info content type of an inbound uploaded-file attachment. Its content is a <see cref="Files.FileDownloadInfo"/> describing a file that can be fetched from a short-lived, pre-authorized download URL.
     /// </summary>
     public static readonly AttachmentContentType FileDownloadInfo = new("application/vnd.microsoft.teams.file.download.info");
     /// <summary>OAuth card content type.</summary>
