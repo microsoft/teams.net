@@ -25,7 +25,7 @@ in a separate handler class.
 
 | Command | Behavior |
 |---------|----------|
-| `thread reply` | `context.ReplyAsync()` sends a reactive threaded reply |
+| `thread reply` | `teamsApp.ReplyAsync()` sends a reactive threaded reply |
 | `thread send` | `context.SendAsync()` sends to the same thread without quoting |
 | `thread proactive` | `teamsApp.ReplyAsync()` sends a proactive threaded reply |
 | `thread manual` | `ToThreadedConversationId()` and `teamsApp.SendAsync()` provide manual control |

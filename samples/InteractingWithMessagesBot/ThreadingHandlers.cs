@@ -16,7 +16,12 @@ internal static class ThreadingHandlers
 
         teamsApp.OnMessage("(?i)^thread reply$", async (context, cancellationToken) =>
         {
-            await context.ReplyAsync("This is a threaded reply to your message.", cancellationToken);
+            (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
+            await teamsApp.ReplyAsync(
+                conversationId,
+                threadRootId,
+                "This is a threaded reply to your message.",
+                cancellationToken: cancellationToken);
         });
 
         teamsApp.OnMessage("(?i)^thread proactive$", async (context, cancellationToken) =>
