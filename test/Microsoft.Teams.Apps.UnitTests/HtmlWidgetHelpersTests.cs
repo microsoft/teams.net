@@ -44,6 +44,18 @@ public class HtmlWidgetHelpersTests
     }
 
     [Fact]
+    public void InjectWidgetProtocol_ReportsRobustContentHeight()
+    {
+        // The size reporter must measure the taller of documentElement/body and
+        // round up, so trailing margins and sub-pixel content are never clipped.
+        var html = "<body><p>Hello</p></body>";
+        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
+        Assert.Contains("height:Math.ceil(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight))", result);
+        // Guard against regressing to the old body-only measurement.
+        Assert.DoesNotContain("height:document.body.scrollHeight}", result);
+    }
+
+    [Fact]
     public void InjectWidgetProtocol_AppendsIfNoBody()
     {
         var html = "<div>Hello</div>";
