@@ -107,10 +107,9 @@ dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
 |--------|-------------|
 | [CommonHandlersBot](samples/CommonHandlersBot/) | Basic message and conversation lifecycle handlers |
 | [TeamsBot](samples/TeamsBot/) | Simple Teams bot sample with rich messaging and cards |
-| [ReactionsBot](samples/ReactionsBot/) | Add/remove message reactions via conversation APIs |
 | [TeamsChannelBot](samples/TeamsChannelBot/) | Channel-scoped messaging |
 | [TargetedMessages](samples/TargetedMessages/) | Targeted messages and targeted message lifecycle |
-| [QuotingAndThreadingBot](samples/QuotingAndThreadingBot/) | Quoting and threaded replies |
+| [InteractingWithMessagesBot](samples/InteractingWithMessagesBot/) | Quoting, threading, and message reactions |
 
 ### Cards, invokes, and tabs
 
