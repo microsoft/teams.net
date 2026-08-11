@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Teams.Apps.Schema;
 
@@ -65,24 +64,20 @@ public sealed class IncomingFile
 
     /// <summary>Stream the bytes. Low-level primitive: returns the response body stream directly, single-consumption, not buffered or retained. Use for large files and pipelines (parse-as-you-go, pipe to disk). <see cref="DownloadAsync"/> is built on this. Uncapped: the consumer bounds it by how much it reads. Dispose the returned stream to release the underlying connection.</summary>
     /// <param name="cancellationToken">A token to cancel opening the stream.</param>
-    [SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "The stream is handed to the caller, who is documented to dispose it. Disposing it here would defeat the method.")]
     public async Task<Stream> StreamAsync(CancellationToken cancellationToken = default)
     {
-        OpenedFile opened = await _downloader
+        OpenedFileStream opened = await _downloader
             .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
-        return opened.Stream;
+        return opened;
     }
 
     /// <summary>Fetch the whole file and buffer it into a <see cref="DownloadedFile"/> snapshot you own. Lazy and not memoized: calling again re-fetches. If you already hold a <see cref="DownloadedFile"/>, call its <see cref="DownloadedFile.SaveAsAsync"/> rather than this handle's, which would re-fetch.</summary>
     /// <param name="cancellationToken">A token to cancel the download.</param>
     public async Task<DownloadedFile> DownloadAsync(CancellationToken cancellationToken = default)
     {
-        OpenedFile opened = await _downloader
+        OpenedFileStream opened = await _downloader
             .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
@@ -90,7 +85,7 @@ public sealed class IncomingFile
         await using (opened.ConfigureAwait(false))
         {
             using MemoryStream buffer = new();
-            await opened.Stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
+            await opened.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
 
             return new DownloadedFile(buffer.ToArray(), opened.ContentType, Name, opened.SourceUrl);
         }
@@ -110,7 +105,7 @@ public sealed class IncomingFile
     /// <param name="cancellationToken">A token to cancel the download or write.</param>
     public async Task SaveAsAsync(string path, CancellationToken cancellationToken = default)
     {
-        OpenedFile opened = await _downloader
+        OpenedFileStream opened = await _downloader
             .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
@@ -120,7 +115,7 @@ public sealed class IncomingFile
             FileStream file = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
             await using (file.ConfigureAwait(false))
             {
-                await opened.Stream.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
+                await opened.CopyToAsync(file, cancellationToken).ConfigureAwait(false);
             }
         }
     }

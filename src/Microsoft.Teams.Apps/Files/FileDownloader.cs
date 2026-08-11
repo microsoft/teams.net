@@ -1,71 +1,87 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Apps.Schema;
 
 namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
-/// A freshly opened, single-consumption byte stream plus the metadata resolved while opening it. Disposing releases
-/// the underlying response and connection.
+/// A freshly opened, single-consumption byte stream plus the metadata resolved while opening it. Owns the underlying
+/// <see cref="HttpResponseMessage"/>; disposing this stream releases the response and connection. Read-only and
+/// non-seekable: it hands back the raw response body without leaking the response.
 /// </summary>
-/// <param name="Stream">The response body. Read-only, non-seekable, and owns the underlying response.</param>
-/// <param name="SourceUrl">The URL the bytes were actually fetched from.</param>
-/// <param name="ContentType">MIME type resolved from the response, falling back to the incoming file's when the response omits one.</param>
-public sealed record OpenedFile(Stream Stream, Uri SourceUrl, string ContentType) : IAsyncDisposable
-{
-    /// <summary>Disposes the stream, releasing the underlying response and its connection.</summary>
-    public ValueTask DisposeAsync() => Stream.DisposeAsync();
-}
-
-/// <summary>
-/// Wraps a response body stream so that disposing it also disposes the <see cref="HttpResponseMessage"/> it was read
-/// from, releasing the connection. Carries no metadata: it exists only to tie the two lifetimes together, so the
-/// response can be handed to a caller as a plain <see cref="Stream"/> without leaking.
-/// </summary>
-internal sealed class ResponseOwningStream : Stream
+public sealed class OpenedFileStream : Stream
 {
     private readonly Stream _inner;
     private readonly HttpResponseMessage? _response;
 
-    public ResponseOwningStream(Stream inner, HttpResponseMessage? response = null)
+    /// <summary>Initializes a new instance of the <see cref="OpenedFileStream"/> class.</summary>
+    /// <param name="inner">The response body stream to wrap.</param>
+    /// <param name="sourceUrl">The URL the bytes were fetched from.</param>
+    /// <param name="contentType">MIME type resolved while opening.</param>
+    /// <param name="response">The response whose lifetime is tied to this stream.</param>
+    public OpenedFileStream(Stream inner, Uri sourceUrl, string contentType, HttpResponseMessage? response = null)
     {
         _inner = inner;
+        SourceUrl = sourceUrl;
+        ContentType = contentType;
         _response = response;
     }
 
+    /// <summary>The URL the bytes were actually fetched from.</summary>
+    public Uri SourceUrl { get; }
+
+    /// <summary>MIME type resolved from the response, falling back to the incoming file's.</summary>
+    public string ContentType { get; }
+
+    /// <inheritdoc />
     public override bool CanRead => _inner.CanRead;
+
+    /// <inheritdoc />
     public override bool CanSeek => false;
+
+    /// <inheritdoc />
     public override bool CanWrite => false;
+
+    /// <inheritdoc />
     public override long Length => throw new NotSupportedException();
 
+    /// <inheritdoc />
     public override long Position
     {
         get => throw new NotSupportedException();
         set => throw new NotSupportedException();
     }
 
+    /// <inheritdoc />
     public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
 
+    /// <inheritdoc />
     public override int Read(Span<byte> buffer) => _inner.Read(buffer);
 
+    /// <inheritdoc />
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         => _inner.ReadAsync(buffer, offset, count, cancellationToken);
 
+    /// <inheritdoc />
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         => _inner.ReadAsync(buffer, cancellationToken);
 
+    /// <inheritdoc />
     public override void Flush()
     {
     }
 
+    /// <inheritdoc />
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
 
+    /// <inheritdoc />
     public override void SetLength(long value) => throw new NotSupportedException();
 
+    /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -77,6 +93,7 @@ internal sealed class ResponseOwningStream : Stream
         base.Dispose(disposing);
     }
 
+    /// <inheritdoc />
     public override async ValueTask DisposeAsync()
     {
         await _inner.DisposeAsync().ConfigureAwait(false);
@@ -97,7 +114,7 @@ public sealed class FileDownloader(HttpClient httpClient)
     private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
     /// <summary>Open a byte stream for an inbound file. Only <c>personal</c> is implemented; other scopes throw <see cref="FileScopeNotSupportedException"/> until their Graph receive path lands.</summary>
-    public Task<OpenedFile> OpenFileStreamAsync(
+    public Task<OpenedFileStream> OpenFileStreamAsync(
         ConversationType? scope,
         Uri? downloadUrl,
         string? contentType,
@@ -112,11 +129,7 @@ public sealed class FileDownloader(HttpClient httpClient)
         throw new FileScopeNotSupportedException(scope);
     }
 
-    [SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "Ownership of the stream transfers to the returned OpenedFile, which the caller disposes. The catch below disposes the response if construction fails.")]
-    private async Task<OpenedFile> OpenPersonalFileStreamAsync(
+    private async Task<OpenedFileStream> OpenPersonalFileStreamAsync(
         Uri? downloadUrl,
         string? contentType,
         bool priorFetchSucceeded,
@@ -158,7 +171,7 @@ public sealed class FileDownloader(HttpClient httpClient)
 
             Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-            return new OpenedFile(new ResponseOwningStream(stream, response), downloadUrl, resolvedContentType);
+            return new OpenedFileStream(stream, downloadUrl, resolvedContentType, response);
         }
         catch
         {
