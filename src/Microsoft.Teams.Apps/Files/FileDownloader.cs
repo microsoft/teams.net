@@ -13,8 +13,9 @@ namespace Microsoft.Teams.Apps.Files;
 /// <param name="Stream">The response body. Read-only, non-seekable, and owns the underlying response.</param>
 /// <param name="SourceUrl">The URL the bytes were actually fetched from.</param>
 /// <param name="ContentType">MIME type resolved from the response, falling back to the incoming file's when the response omits one.</param>
-internal sealed record OpenedFile(Stream Stream, Uri SourceUrl, string ContentType) : IAsyncDisposable
+public sealed record OpenedFile(Stream Stream, Uri SourceUrl, string ContentType) : IAsyncDisposable
 {
+    /// <summary>Disposes the stream, releasing the underlying response and its connection.</summary>
     public ValueTask DisposeAsync() => Stream.DisposeAsync();
 }
 
@@ -91,7 +92,7 @@ internal sealed class ResponseOwningStream : Stream
 /// Initializes a new instance of the <see cref="FileDownloader"/> class.
 /// </remarks>
 /// <param name="httpClient">Client used to fetch file bytes. Supplied by DI; must not be null.</param>
-internal sealed class FileDownloader(HttpClient httpClient)
+public sealed class FileDownloader(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
