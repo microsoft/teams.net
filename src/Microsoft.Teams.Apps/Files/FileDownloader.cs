@@ -111,7 +111,17 @@ public sealed class OpenedFileStream : Stream
 /// <param name="httpClient">Client used to fetch file bytes. Supplied by DI; must not be null.</param>
 public sealed class FileDownloader(HttpClient httpClient)
 {
+    // Shared by apps built outside DI, where there is no factory to ask. Static so it is created once and never
+    // disposed, which is the supported lifetime for a long-lived HttpClient.
+    private static readonly HttpClient SharedClient = new();
+
     private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+
+    /// <summary>
+    /// A downloader backed by a process-wide <see cref="HttpClient"/>, for apps constructed directly rather than
+    /// through the hosting extensions. Prefer the DI-registered typed client.
+    /// </summary>
+    internal static FileDownloader CreateDefault() => new(SharedClient);
 
     /// <summary>Open a byte stream for an inbound file. Only <c>personal</c> is implemented; other scopes throw <see cref="FileScopeNotSupportedException"/> until their Graph receive path lands.</summary>
     public Task<OpenedFileStream> OpenFileStreamAsync(

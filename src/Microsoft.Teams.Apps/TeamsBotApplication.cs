@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Clients;
@@ -117,10 +116,6 @@ public class TeamsBotApplication : BotApplication
     /// }
     /// </code>
     /// </example>
-    [SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "The fallback client is owned by this app for its lifetime, which is the supported lifetime for a long-lived HttpClient. Disposing it here would break every subsequent download.")]
     public TeamsBotApplication(
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
@@ -138,8 +133,7 @@ public class TeamsBotApplication : BotApplication
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
-        // Direct construction (outside DI) has no factory to ask, so fall back to a client owned by this app.
-        FileDownloader = fileDownloader ?? new Files.FileDownloader(new HttpClient());
+        FileDownloader = fileDownloader ?? Files.FileDownloader.CreateDefault();
 
         if (options is not null)
         {
