@@ -21,14 +21,13 @@
     <Project Path="samples/ExtAIBot/ExtAIBot.csproj" />
     <Project Path="samples/GraphBot/GraphBot.csproj" />
     <Project Path="samples/HtmlWidgetBot/HtmlWidgetBot.csproj" />
+    <Project Path="samples/InteractingWithMessagesBot/InteractingWithMessagesBot.csproj" />
     <Project Path="samples/McpServer/McpServer.csproj" />
     <Project Path="samples/MeetingsBot/MeetingsBot.csproj" />
     <Project Path="samples/MessageExtensionBot/MessageExtensionBot.csproj" />
     <Project Path="samples/OAuthFlowBot/OAuthFlowBot.csproj" />
     <Project Path="samples/ObservabilityBot/ObservabilityBot.csproj" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
-    <Project Path="samples/QuotingAndThreadingBot/QuotingAndThreadingBot.csproj" />
-    <Project Path="samples/ReactionsBot/ReactionsBot.csproj" />
     <Project Path="samples/StateBot/StateBot.csproj" Id="59061ea6-7fb8-4f94-908d-e32e323cafe4" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
     <Project Path="samples/SuggestedActionBot/SuggestedActionBot.csproj" />

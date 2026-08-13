@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ReactionsBot": {
+    "InteractingWithMessagesBot": {
       "commandName": "Project",
       "launchBrowser": false,
       "environmentVariables": {
