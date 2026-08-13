@@ -89,6 +89,12 @@ public class TeamsBotApplication : BotApplication
     public virtual ApiClient Api { get; }
 
     /// <summary>
+    /// Opens byte streams for inbound files, backing <c>ctx.Files</c>. Registered as a typed client by the hosting
+    /// extensions, so its <see cref="HttpClient"/> is factory-managed.
+    /// </summary>
+    internal Files.FileDownloader FileDownloader { get; }
+
+    /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
@@ -96,6 +102,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
+    /// <param name="fileDownloader">Optional downloader used to fetch inbound file bytes. Injected automatically by the hosting extensions.</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
@@ -114,7 +121,8 @@ public class TeamsBotApplication : BotApplication
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
         TeamsBotApplicationOptions? options = null,
-        TurnStateLoader? stateLoader = null)
+        TurnStateLoader? stateLoader = null,
+        Files.FileDownloader? fileDownloader = null)
         : base(
             (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
             teamsApiClient.UserTokenClient,
@@ -125,6 +133,7 @@ public class TeamsBotApplication : BotApplication
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
+        FileDownloader = fileDownloader ?? Files.FileDownloader.CreateDefault();
 
         if (options is not null)
         {

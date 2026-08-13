@@ -51,6 +51,46 @@ public class TeamsBotApplicationHostingExtensionsTests
     }
 
     [Fact]
+    public void AddTeamsBotApplication_RegistersFileDownloaderAsTypedClient()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "teams-bundle-client-id",
+            ["AzureAd:TenantId"] = "teams-bundle-tenant-id"
+        };
+
+        using ServiceProvider serviceProvider = BuildServiceProvider(configData);
+
+        Assert.NotNull(serviceProvider.GetRequiredService<Microsoft.Teams.Apps.Files.FileDownloader>());
+    }
+
+    [Fact]
+    public void AddTeamsBotApplication_InjectsTheRegisteredFileDownloaderIntoTheApp()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "teams-bundle-client-id",
+            ["AzureAd:TenantId"] = "teams-bundle-tenant-id"
+        };
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(configData).Build());
+        services.AddLogging();
+        services.AddTeamsBotApplication();
+
+        // Registered after AddTeamsBotApplication so this instance wins resolution. If the constructor ignored the
+        // injected downloader and built its own, the app would not hold this instance.
+        using HttpClient probeClient = new();
+        Microsoft.Teams.Apps.Files.FileDownloader expected = new(probeClient);
+        services.AddSingleton(expected);
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        TeamsBotApplication app = serviceProvider.GetRequiredService<TeamsBotApplication>();
+
+        Assert.Same(expected, app.FileDownloader);
+    }
+
+    [Fact]
     public void AddTeamsBotApplication_WithCustomSubclass_ResolvesViaDI()
     {
         Dictionary<string, string?> configData = new()

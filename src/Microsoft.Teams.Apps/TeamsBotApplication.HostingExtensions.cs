@@ -154,6 +154,11 @@ public static class TeamsBotApplicationHostingExtensions
         }
 
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
+
+        // Typed client for file downloads. Deliberately separate from the ApiClient's: a file download URL embeds its
+        // own `tempauth` credential, so the request must not carry bot credentials.
+        services.AddHttpClient<Files.FileDownloader>();
+
         services.AddTeamsApiClient(nameof(ApiClient));
         return services;
     }
