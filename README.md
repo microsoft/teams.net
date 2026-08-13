@@ -136,6 +136,7 @@ dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
 | Sample | Description |
 |--------|-------------|
 | [A2ABot](samples/A2ABot/) | Agent-to-agent handoff bot |
+| [AIFileAnalysisBot](samples/AIFileAnalysisBot/) | Analyzes attached files with Azure OpenAI |
 | [ExtAIBot](samples/ExtAIBot/) | `Microsoft.Extensions.AI` integration |
 | [McpServer](samples/McpServer/) | MCP server with Teams and Graph tools |
 | [StreamingBot](samples/StreamingBot/) | Progressive streaming responses |
