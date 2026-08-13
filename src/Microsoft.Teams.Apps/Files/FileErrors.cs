@@ -24,8 +24,8 @@ public enum FileUrlExpiredReason
 /// </summary>
 public class FileUrlExpiredException : Exception
 {
-    /// <summary>Lets callers branch without string-matching the message. See <see cref="FileUrlExpiredReason"/>.</summary>
-    public FileUrlExpiredReason Reason { get; }
+    /// <summary>Lets callers branch without string-matching the message. <c>null</c> when the reason was not specified, matching how <see cref="FileScopeNotSupportedException.Scope"/> reports an unknown scope. See <see cref="FileUrlExpiredReason"/>.</summary>
+    public FileUrlExpiredReason? Reason { get; }
 
     /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class with the specified reason and a default message.</summary>
     /// <param name="reason">The reason the download URL was found expired.</param>
@@ -41,18 +41,18 @@ public class FileUrlExpiredException : Exception
         Reason = reason;
     }
 
-    /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class.</summary>
-    public FileUrlExpiredException() : this(FileUrlExpiredReason.FirstFetch)
+    /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class. <see cref="Reason"/> is left <c>null</c>.</summary>
+    public FileUrlExpiredException() : base("file download URL expired and can no longer fetch bytes")
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class with a specified error message.</summary>
+    /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class with a specified error message. <see cref="Reason"/> is left <c>null</c>.</summary>
     /// <param name="message">The error message that describes the reason for the exception.</param>
     public FileUrlExpiredException(string message) : base(message)
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class with a specified error message and inner exception.</summary>
+    /// <summary>Initializes a new instance of the <see cref="FileUrlExpiredException"/> class with a specified error message and inner exception. <see cref="Reason"/> is left <c>null</c>.</summary>
     /// <param name="message">The error message that describes the reason for the exception.</param>
     /// <param name="innerException">The underlying exception that caused this exception.</param>
     public FileUrlExpiredException(string message, Exception innerException) : base(message, innerException)

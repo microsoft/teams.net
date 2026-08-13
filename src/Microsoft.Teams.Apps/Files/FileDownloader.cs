@@ -15,12 +15,12 @@ public sealed class OpenedFileStream : Stream
     private readonly Stream _inner;
     private readonly HttpResponseMessage? _response;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenedFileStream"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenedFileStream"/> class. Internal: instances are produced by <see cref="FileDownloader"/>, which owns tying the response's lifetime to the stream.</summary>
     /// <param name="inner">The response body stream to wrap.</param>
     /// <param name="sourceUrl">The URL the bytes were fetched from.</param>
     /// <param name="contentType">MIME type resolved while opening.</param>
     /// <param name="response">The response whose lifetime is tied to this stream.</param>
-    public OpenedFileStream(Stream inner, Uri sourceUrl, string contentType, HttpResponseMessage? response = null)
+    internal OpenedFileStream(Stream inner, Uri sourceUrl, string contentType, HttpResponseMessage? response = null)
     {
         _inner = inner;
         SourceUrl = sourceUrl;

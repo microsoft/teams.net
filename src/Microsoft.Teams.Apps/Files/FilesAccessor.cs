@@ -36,6 +36,12 @@ public sealed class FilesAccessor
     /// <param name="cancellationToken">A token to cancel hydration once later scopes fetch through Graph.</param>
     public Task<IList<IncomingFile>> ListAsync(CancellationToken cancellationToken = default)
     {
+        // The personal path resolves synchronously, so honor the token up front rather than accepting one that does nothing. Returns a canceled task instead of throwing synchronously, so the exception surfaces at the await like any other async method.
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled<IList<IncomingFile>>(cancellationToken);
+        }
+
         // Uploaded files only ride on inbound message activities so we validate the shape and return an empty list rather than throwing.
         if (_activity is not MessageActivity message)
         {

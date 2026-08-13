@@ -170,4 +170,16 @@ public class FilesAccessorTests
         Assert.NotNull(await new FilesAccessor(MessageWith([attachment]), Log, Downloader).FirstAsync());
         Assert.Null(await new FilesAccessor(MessageWith([]), Log, Downloader).FirstAsync());
     }
+
+    [Fact]
+    public async Task Honors_AlreadyCancelledToken()
+    {
+        TeamsAttachment attachment = FileAttachment("a.pdf", new FileDownloadInfo { DownloadUrl = new Uri("https://download.example/a.pdf"), UniqueId = "a" });
+        FilesAccessor accessor = new(MessageWith([attachment]), Log, Downloader);
+        using CancellationTokenSource cts = new();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(() => accessor.ListAsync(cts.Token));
+        await Assert.ThrowsAsync<TaskCanceledException>(() => accessor.FirstAsync(cts.Token));
+    }
 }
