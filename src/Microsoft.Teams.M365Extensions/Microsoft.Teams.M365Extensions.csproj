@@ -1,0 +1,37 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>Microsoft.Teams.M365Extensions</PackageId>
+		<PackageDescription>Bridge the Microsoft 365 Agents SDK and the Microsoft Teams SDK: route Teams-channel turns to a Teams SDK application while everything else flows through the Agents SDK.</PackageDescription>
+		<PackageTags>microsoft;teams;msteams;copilot;apps;bots;agents;m365</PackageTags>
+	</PropertyGroup>
+
+	<!--
+		The bridge uses ASP.NET Core abstractions (IServiceCollection, AddHttpClient,
+		IHttpContextAccessor, DefaultHttpContext), so it needs the shared framework
+		reference even though it is a class library, not a web app.
+	-->
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<!-- The Teams SDK application model (brings Microsoft.Teams.Core transitively). -->
+	<ItemGroup>
+		<ProjectReference Include="..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+	</ItemGroup>
+
+	<!-- The Microsoft 365 Agents SDK hosting layer (brings Builder/Core/Authentication transitively). -->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Agents.Hosting.AspNetCore" Version="1.8.44-beta" />
+	</ItemGroup>
+
+</Project>

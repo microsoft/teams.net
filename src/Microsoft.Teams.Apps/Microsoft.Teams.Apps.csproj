@@ -26,5 +26,6 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
+		<InternalsVisibleTo Include="Microsoft.Teams.M365Extensions" />
 	</ItemGroup>
 </Project>

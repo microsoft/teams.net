@@ -1,0 +1,33 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<!-- The sample exercises experimental Teams SDK APIs (quoted replies, targeted messages). -->
+		<NoWarn>$(NoWarn);ExperimentalTeamsQuotedReplies;ExperimentalTeamsTargeted</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="wwwroot\**" />
+		<Content Remove="wwwroot\**" />
+		<EmbeddedResource Remove="wwwroot\**" />
+		<None Remove="wwwroot\**" />
+	</ItemGroup>
+
+	<!-- The reusable Teams SDK + Agents SDK bridge, plus the Teams SDK app model it builds on. -->
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Microsoft.Teams.M365Extensions\Microsoft.Teams.M365Extensions.csproj" />
+		<ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+	</ItemGroup>
+
+	<!-- The sample uses Agents SDK MSAL auth directly, in addition to what flows transitively from the bridge. -->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Agents.Authentication.Msal" Version="1.8.44-beta" />
+		<PackageReference Include="Microsoft.Agents.Hosting.AspNetCore" Version="1.8.44-beta" />
+	</ItemGroup>
+
+</Project>
