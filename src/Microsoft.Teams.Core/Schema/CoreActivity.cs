@@ -177,7 +177,6 @@ public class CoreActivity
         Properties = new ExtendedPropertiesDictionary(activity.Properties);
     }
 
-#pragma warning disable ExperimentalTeamsTargeted
     private static ChannelAccount CloneChannelAccount(ChannelAccount source) => new()
     {
         Id = source.Id,
@@ -190,7 +189,6 @@ public class CoreActivity
         TenantId = source.TenantId,
         Properties = new ExtendedPropertiesDictionary(source.Properties)
     };
-#pragma warning restore ExperimentalTeamsTargeted
 
     /// <summary>
     /// Serializes the current activity to a JSON string.

@@ -293,9 +293,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             return Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
         }
 
-#pragma warning disable ExperimentalTeamsTargeted
         return Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
-#pragma warning restore ExperimentalTeamsTargeted
     }
 
     // ==================== OAuth Sign-In ====================

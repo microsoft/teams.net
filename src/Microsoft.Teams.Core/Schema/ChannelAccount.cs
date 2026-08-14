@@ -34,7 +34,6 @@ public class ChannelAccount()
     /// Gets or sets a value indicating whether this is a targeted message visible only to this recipient.
     /// </summary>
     [JsonPropertyName("isTargeted")]
-    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsTargeted")]
     public bool? IsTargeted { get; set; }
 
     /// <summary>

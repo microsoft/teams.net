@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
@@ -10,7 +9,6 @@ namespace Microsoft.Teams.Apps.Schema.Entities;
 /// Represents a targeted message info entity in a Teams activity, used to identify
 /// the original targeted message being responded to in a Prompt Preview reactive send.
 /// </summary>
-[Experimental("ExperimentalTeamsTargeted")]
 public class TargetedMessageInfoEntity : Entity
 {
     /// <summary>

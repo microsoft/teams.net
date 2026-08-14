@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
@@ -104,7 +103,6 @@ public class ConversationApiClient
     /// Create a new targeted activity in a conversation.
     /// Targeted activities are only visible to the specified recipient.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public Task<SendActivityResponse?> CreateTargetedActivityAsync(string conversationId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -114,7 +112,6 @@ public class ConversationApiClient
     /// <summary>
     /// Update an existing targeted activity in a conversation.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -124,7 +121,6 @@ public class ConversationApiClient
     /// <summary>
     /// Delete a targeted activity from a conversation.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public Task DeleteTargetedActivityAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, isTargeted: true, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
