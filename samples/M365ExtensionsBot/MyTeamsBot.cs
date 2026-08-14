@@ -11,6 +11,7 @@ using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.TaskModules;
 using Microsoft.Teams.Cards;
 using Microsoft.Teams.Common;
+using System.Text.Json;
 
 namespace M365ExtensionsBot;
 
@@ -101,8 +102,8 @@ public class MyTeamsBot : TeamsBotApplication
         });
     }
 
-    private static AdaptiveCard HelpCard()
-        => new(
+    private static JsonElement HelpCard()
+        => SerializeCard(new AdaptiveCard(
             new TextBlock("Teams SDK Feature Showcase")
                 .WithWeight(TextWeight.Bolder)
                 .WithSize(TextSize.Large)
@@ -127,10 +128,10 @@ public class MyTeamsBot : TeamsBotApplication
                 new Fact("signout", "Clear both OAuth handler caches"),
                 new Fact("agents sdk react", "Reach Teams reactions API from the Agent SDK"),
                 new Fact("agents sdk proactive", "Send via Teams SDK API client from the Agent SDK"),
-                new Fact("anything else", "Echo via the Agent SDK")));
+                new Fact("anything else", "Echo via the Agent SDK"))));
 
-    private static AdaptiveCard TaskLauncherCard()
-        => new AdaptiveCard(
+    private static JsonElement TaskLauncherCard()
+        => SerializeCard(new AdaptiveCard(
             new TextBlock("Task module demo")
                 .WithWeight(TextWeight.Bolder)
                 .WithSize(TextSize.Medium),
@@ -140,10 +141,10 @@ public class MyTeamsBot : TeamsBotApplication
                 new SubmitAction()
                     .WithTitle("Open task module")
                     .WithData(new Union<string, SubmitActionData>(
-                        new SubmitActionData().WithMsteams(new { type = "task/fetch" }))));
+                        new SubmitActionData().WithMsteams(new { type = "task/fetch" })))));
 
-    private static AdaptiveCard TaskFormCard()
-        => new AdaptiveCard(
+    private static JsonElement TaskFormCard()
+        => SerializeCard(new AdaptiveCard(
             new TextBlock("Task Module Form")
                 .WithWeight(TextWeight.Bolder)
                 .WithSize(TextSize.Medium),
@@ -151,5 +152,10 @@ public class MyTeamsBot : TeamsBotApplication
                 .WithId("note")
                 .WithPlaceholder("Type here...")
                 .WithLabel("Your response"))
-            .WithActions(new SubmitAction().WithTitle("Submit"));
+            .WithActions(new SubmitAction().WithTitle("Submit")));
+
+    // Serialize the strongly-typed card to a JsonElement so it round-trips through the Teams SDK's
+    // source-generated activity serializer (which has no metadata for Microsoft.Teams.Cards types).
+    private static JsonElement SerializeCard(AdaptiveCard card)
+        => JsonSerializer.SerializeToElement(card);
 }
