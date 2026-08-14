@@ -5,6 +5,7 @@ using Microsoft.Agents.Builder;
 using Microsoft.Agents.Core.Models;
 using Microsoft.Agents.Core.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Core.Schema;
@@ -135,7 +136,15 @@ public class TeamsSdkMiddleware : IMiddleware
                 ITurnContext? previousTurnContext = _currentTurnContext.Value;
                 HttpContext? previousHttpContext = _httpContextAccessor.HttpContext;
                 _currentTurnContext.Value = turnContext;
-                DefaultHttpContext syntheticContext = CreateSyntheticHttpContext(turnContext, activityJson, previousHttpContext);
+
+                // When the turn runs on a background thread there is no ambient
+                // HttpContext, so the synthetic context would otherwise fall back to
+                // the root service provider. Resolving scoped services from the root
+                // provider throws, so create a dedicated DI scope for the turn and
+                // dispose it once ProcessAsync completes. When a real request context
+                // is present we reuse its already-scoped provider instead.
+                IServiceScope? turnScope = previousHttpContext is null ? _serviceProvider.CreateScope() : null;
+                DefaultHttpContext syntheticContext = CreateSyntheticHttpContext(turnContext, activityJson, previousHttpContext, turnScope);
                 _httpContextAccessor.HttpContext = syntheticContext;
 
                 try
@@ -154,6 +163,7 @@ public class TeamsSdkMiddleware : IMiddleware
                     _currentTurnContext.Value = previousTurnContext;
                     await syntheticContext.Request.Body.DisposeAsync().ConfigureAwait(false);
                     await syntheticContext.Response.Body.DisposeAsync().ConfigureAwait(false);
+                    turnScope?.Dispose();
                 }
 
                 // Short-circuit: do NOT call next() — Teams SDK handled this activity.
@@ -167,12 +177,12 @@ public class TeamsSdkMiddleware : IMiddleware
         await next(cancellationToken).ConfigureAwait(false);
     }
 
-    private DefaultHttpContext CreateSyntheticHttpContext(ITurnContext turnContext, string activityJson, HttpContext? previousHttpContext)
+    private DefaultHttpContext CreateSyntheticHttpContext(ITurnContext turnContext, string activityJson, HttpContext? previousHttpContext, IServiceScope? turnScope)
     {
         byte[] requestBody = Encoding.UTF8.GetBytes(activityJson);
         var syntheticContext = new DefaultHttpContext
         {
-            RequestServices = previousHttpContext?.RequestServices ?? _serviceProvider,
+            RequestServices = previousHttpContext?.RequestServices ?? turnScope?.ServiceProvider ?? _serviceProvider,
             TraceIdentifier = previousHttpContext?.TraceIdentifier ?? turnContext.Activity.RequestId ?? Guid.NewGuid().ToString(),
             User = turnContext.Identity is ClaimsIdentity identity
                 ? new ClaimsPrincipal(identity)

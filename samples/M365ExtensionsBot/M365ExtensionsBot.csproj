@@ -22,6 +22,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Microsoft.Teams.M365Extensions\Microsoft.Teams.M365Extensions.csproj" />
 		<ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+		<ProjectReference Include="..\..\src\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
 	</ItemGroup>
 
 	<!-- The sample uses Agents SDK MSAL auth directly, in addition to what flows transitively from the bridge. -->

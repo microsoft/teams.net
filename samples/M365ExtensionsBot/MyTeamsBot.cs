@@ -10,7 +10,8 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.TaskModules;
-using System.Text.Json;
+using Microsoft.Teams.Cards;
+using Microsoft.Teams.Common;
 
 namespace M365ExtensionsBot;
 
@@ -25,57 +26,7 @@ public class MyTeamsBot : TeamsBotApplication
         this.OnMessage("help", async (context, ct) =>
         {
             var attachment = TeamsAttachment.CreateBuilder()
-                .WithAdaptiveCard(ParseCard("""
-                    {
-                      "type": "AdaptiveCard",
-                      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                      "version": "1.5",
-                      "body": [
-                        {
-                          "type": "TextBlock",
-                          "text": "Teams SDK Feature Showcase",
-                          "weight": "Bolder",
-                          "size": "Large",
-                          "wrap": true
-                        },
-                        {
-                          "type": "TextBlock",
-                          "text": "Teams SDK handlers (MyTeamsBot)",
-                          "weight": "Bolder",
-                          "spacing": "Medium"
-                        },
-                        {
-                          "type": "FactSet",
-                          "facts": [
-                            { "title": "help", "value": "This command list" },
-                            { "title": "react", "value": "Bot adds/removes emoji reactions" },
-                            { "title": "quote", "value": "Bot quotes your message" },
-                            { "title": "targeted", "value": "Ephemeral message visible only to sender" },
-                            { "title": "task", "value": "Task module fetch/submit flow" }
-                          ]
-                        },
-                        {
-                          "type": "TextBlock",
-                          "text": "Agents SDK fallthrough handlers (MyAgent)",
-                          "weight": "Bolder",
-                          "spacing": "Medium"
-                        },
-                        {
-                          "type": "FactSet",
-                          "facts": [
-                            { "title": "help", "value": "Plain-text help on non-Teams channels" },
-                            { "title": "channel", "value": "Report the channel and how it was routed" },
-                            { "title": "whoami", "value": "Graph profile via OAuth connection graphuser" },
-                            { "title": "mail", "value": "Recent mail via OAuth connection graphmail" },
-                            { "title": "signout", "value": "Clear both OAuth handler caches" },
-                            { "title": "agents sdk react", "value": "Reach Teams reactions API from the Agent SDK" },
-                            { "title": "agents sdk proactive", "value": "Send via Teams SDK API client from the Agent SDK" },
-                            { "title": "anything else", "value": "Echo via the Agent SDK" }
-                          ]
-                        }
-                      ]
-                    }
-                    """))
+                .WithAdaptiveCard(HelpCard())
                 .Build();
 
             await context.SendAsync(new MessageActivityInput().AddAttachment(attachment), ct);
@@ -113,35 +64,7 @@ public class MyTeamsBot : TeamsBotApplication
         this.OnMessage("task", async (context, ct) =>
         {
             var attachment = TeamsAttachment.CreateBuilder()
-                .WithAdaptiveCard(ParseCard("""
-                    {
-                      "type": "AdaptiveCard",
-                      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                      "version": "1.5",
-                      "body": [
-                        {
-                          "type": "TextBlock",
-                          "text": "Task module demo",
-                          "weight": "Bolder",
-                          "size": "Medium"
-                        },
-                        {
-                          "type": "TextBlock",
-                          "text": "Press the button to open a task module.",
-                          "wrap": true
-                        }
-                      ],
-                      "actions": [
-                        {
-                          "type": "Action.Submit",
-                          "title": "Open task module",
-                          "data": {
-                            "msteams": { "type": "task/fetch" }
-                          }
-                        }
-                      ]
-                    }
-                    """))
+                .WithAdaptiveCard(TaskLauncherCard())
                 .Build();
 
             await context.SendAsync(new MessageActivityInput().AddAttachment(attachment), ct);
@@ -150,33 +73,7 @@ public class MyTeamsBot : TeamsBotApplication
         this.OnTaskFetch(async (context, ct) =>
         {
             var attachment = TeamsAttachment.CreateBuilder()
-                .WithAdaptiveCard(ParseCard("""
-                    {
-                      "type": "AdaptiveCard",
-                      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                      "version": "1.5",
-                      "body": [
-                        {
-                          "type": "TextBlock",
-                          "text": "Task Module Form",
-                          "weight": "Bolder",
-                          "size": "Medium"
-                        },
-                        {
-                          "type": "Input.Text",
-                          "id": "note",
-                          "placeholder": "Type here...",
-                          "label": "Your response"
-                        }
-                      ],
-                      "actions": [
-                        {
-                          "type": "Action.Submit",
-                          "title": "Submit"
-                        }
-                      ]
-                    }
-                    """))
+                .WithAdaptiveCard(TaskFormCard())
                 .Build();
 
             return TaskModuleResponse.CreateBuilder()
@@ -205,9 +102,55 @@ public class MyTeamsBot : TeamsBotApplication
         });
     }
 
-    private static JsonElement ParseCard(string json)
-    {
-        using JsonDocument document = JsonDocument.Parse(json);
-        return document.RootElement.Clone();
-    }
+    private static AdaptiveCard HelpCard()
+        => new(
+            new TextBlock("Teams SDK Feature Showcase")
+                .WithWeight(TextWeight.Bolder)
+                .WithSize(TextSize.Large)
+                .WithWrap(true),
+            new TextBlock("Teams SDK handlers (MyTeamsBot)")
+                .WithWeight(TextWeight.Bolder)
+                .WithSpacing(Spacing.Medium),
+            new FactSet(
+                new Fact("help", "This command list"),
+                new Fact("react", "Bot adds/removes emoji reactions"),
+                new Fact("quote", "Bot quotes your message"),
+                new Fact("targeted", "Ephemeral message visible only to sender"),
+                new Fact("task", "Task module fetch/submit flow")),
+            new TextBlock("Agents SDK fallthrough handlers (MyAgent)")
+                .WithWeight(TextWeight.Bolder)
+                .WithSpacing(Spacing.Medium),
+            new FactSet(
+                new Fact("help", "Plain-text help on non-Teams channels"),
+                new Fact("channel", "Report the channel and how it was routed"),
+                new Fact("whoami", "Graph profile via OAuth connection graphuser"),
+                new Fact("mail", "Recent mail via OAuth connection graphmail"),
+                new Fact("signout", "Clear both OAuth handler caches"),
+                new Fact("agents sdk react", "Reach Teams reactions API from the Agent SDK"),
+                new Fact("agents sdk proactive", "Send via Teams SDK API client from the Agent SDK"),
+                new Fact("anything else", "Echo via the Agent SDK")));
+
+    private static AdaptiveCard TaskLauncherCard()
+        => new AdaptiveCard(
+            new TextBlock("Task module demo")
+                .WithWeight(TextWeight.Bolder)
+                .WithSize(TextSize.Medium),
+            new TextBlock("Press the button to open a task module.")
+                .WithWrap(true))
+            .WithActions(
+                new SubmitAction()
+                    .WithTitle("Open task module")
+                    .WithData(new Union<string, SubmitActionData>(
+                        new SubmitActionData().WithMsteams(new { type = "task/fetch" }))));
+
+    private static AdaptiveCard TaskFormCard()
+        => new AdaptiveCard(
+            new TextBlock("Task Module Form")
+                .WithWeight(TextWeight.Bolder)
+                .WithSize(TextSize.Medium),
+            new TextInput()
+                .WithId("note")
+                .WithPlaceholder("Type here...")
+                .WithLabel("Your response"))
+            .WithActions(new SubmitAction().WithTitle("Submit"));
 }
