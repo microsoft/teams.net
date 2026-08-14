@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma warning disable ExperimentalTeamsQuotedReplies // ReplyAsync quotes the inbound message.
 #pragma warning disable ExperimentalTeamsTargeted       // WithRecipient(targeted) is experimental.
 
 using Microsoft.AspNetCore.Http;

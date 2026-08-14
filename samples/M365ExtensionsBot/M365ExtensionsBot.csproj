@@ -7,8 +7,8 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<!-- The sample exercises experimental Teams SDK APIs (quoted replies, targeted messages). -->
-		<NoWarn>$(NoWarn);ExperimentalTeamsQuotedReplies;ExperimentalTeamsTargeted</NoWarn>
+		<!-- The sample exercises the experimental targeted-message API. -->
+		<NoWarn>$(NoWarn);ExperimentalTeamsTargeted</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
