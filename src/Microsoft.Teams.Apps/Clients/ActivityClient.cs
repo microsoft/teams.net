@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Http;
@@ -112,7 +111,6 @@ public class ActivityClient
     /// Create a new targeted activity in a conversation.
     /// Targeted activities are only visible to the specified recipient.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -122,7 +120,6 @@ public class ActivityClient
     /// <summary>
     /// Update an existing targeted activity in a conversation.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public Task<UpdateActivityResponse> UpdateTargetedAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);

@@ -258,7 +258,6 @@ public static class MessageActivityExtensions
     /// <param name="isTargeted">Whether the recipient is targeted.</param>
     /// <returns>The message activity for chaining.</returns>
     [Obsolete(ObsoleteMessage)]
-    [Experimental("ExperimentalTeamsTargeted")]
     public static MessageActivity WithRecipient(this MessageActivity message, ChannelAccount account, bool isTargeted = false)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -566,7 +565,6 @@ public static class MessageActivityExtensions
     /// Adds targeted message info entity for prompt preview and strips quote placeholders.
     /// </summary>
     [Obsolete(ObsoleteMessage)]
-    [Experimental("ExperimentalTeamsTargeted")]
     public static MessageActivity AddTargetedMessageInfo(this MessageActivity message, string messageId)
     {
         ArgumentNullException.ThrowIfNull(message);

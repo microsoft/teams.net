@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Schema;
@@ -168,7 +167,6 @@ public class MessageActivityInput : TeamsActivityInput
     /// <summary>
     /// Adds a targetedMessageInfo entity for Prompt Preview, referencing the inbound targeted-message id.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public MessageActivityInput WithTargetedMessageInfo(string messageId)
         => Apply(builder => builder.WithTargetedMessageInfo(messageId));
 
@@ -221,7 +219,6 @@ public class MessageActivityInput : TeamsActivityInput
     /// <param name="account">The recipient account.</param>
     /// <param name="isTargeted">Whether the recipient is targeted.</param>
     /// <returns>The activity instance for chaining.</returns>
-    [Experimental("ExperimentalTeamsTargeted")]
     public MessageActivityInput WithRecipient(TeamsChannelAccount account, bool isTargeted)
         => Apply(builder => builder.WithRecipient(account, isTargeted));
 }
@@ -388,7 +385,6 @@ internal class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageAc
     /// <summary>
     /// Adds a targetedMessageInfo entity for Prompt Preview, referencing the inbound targeted-message id.
     /// </summary>
-    [Experimental("ExperimentalTeamsTargeted")]
     public MessageActivityInputBuilder WithTargetedMessageInfo(string messageId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -471,7 +467,6 @@ internal class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageAc
     /// <param name="account">The recipient account.</param>
     /// <param name="isTargeted">Whether the recipient is targeted.</param>
     /// <returns>The builder instance for chaining.</returns>
-    [Experimental("ExperimentalTeamsTargeted")]
     public MessageActivityInputBuilder WithRecipient(TeamsChannelAccount account, bool isTargeted)
     {
         ArgumentNullException.ThrowIfNull(account);

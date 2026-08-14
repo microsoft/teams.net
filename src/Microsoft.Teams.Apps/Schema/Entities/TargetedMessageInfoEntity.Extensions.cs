@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
@@ -9,7 +8,6 @@ namespace Microsoft.Teams.Apps.Schema.Entities;
 /// <summary>
 /// Targeted message info entity extension methods.
 /// </summary>
-[Experimental("ExperimentalTeamsTargeted")]
 public static class TargetedMessageInfoEntityExtensions
 {
     /// <summary>
