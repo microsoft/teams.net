@@ -99,8 +99,7 @@ $env:ASPNETCORE_ENVIRONMENT = "Development"
 dotnet run --project samples/M365ExtensionsBot --urls http://localhost:3978
 ```
 
-Install the app in Teams (via the CLI's install link or by sideloading the package in
-`appManifest/`) and send `help`.
+Install the app in Teams via the Teams CLI (see Setup above), then send `help`.
 
 ## Multi Authentication
 
