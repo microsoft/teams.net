@@ -76,9 +76,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         CoreActivity incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
         Microsoft.Teams.Core.Schema.ChannelAccount? incomingFrom = incomingCoreActivity.From;
         Microsoft.Teams.Core.Schema.ChannelAccount? incomingRecipient = incomingCoreActivity.Recipient;
-#pragma warning disable ExperimentalTeamsTargeted
         incomingFrom!.IsTargeted = true;
-#pragma warning restore ExperimentalTeamsTargeted
         CoreActivityInput tm = CoreActivityInput.CreateBuilder()
             .WithProperty("text", "Hello TM !")
             .Build();
