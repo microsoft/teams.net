@@ -37,7 +37,7 @@ public class TeamsChannelDataSettings
     /// <summary>
     /// Selected channel information.
     /// </summary>
-    [JsonPropertyName("selectedChannel")] public required TeamsChannel SelectedChannel { get; set; }
+    [JsonPropertyName("selectedChannel")] public TeamsChannel? SelectedChannel { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of additional properties not explicitly defined by the type.
