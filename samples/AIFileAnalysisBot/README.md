@@ -1,0 +1,88 @@
+# AI file analysis
+
+A Teams bot that reads files attached in personal (1:1) chat and sends the ones it understands to Azure OpenAI.
+
+One message handler covers both paths:
+
+- **Basic (no LLM)** replies with an Adaptive Card describing any file the sample cannot analyze, showing the metadata the file API exposes and the bytes that were downloaded.
+- **AI** converts supported text files and images into model input and streams the analysis back.
+
+### Reading the code
+
+Comments label which of two things a given block is doing:
+
+- **`FILE RECEIVE`** is the Teams SDK file API. This is the part worth copying into your own app.
+- **`SAMPLE GUARDRAIL`** is this sample deciding what it will forward to a model: which formats it accepts, how much text it sends, how many files per message, and whether anything is remembered between turns. These are arbitrary product choices, not SDK or Azure OpenAI requirements. Your app should pick its own.
+
+The distinction matters because most of the code volume here is guardrails. Receiving a file is only `context.Files.ListAsync()` followed by `DownloadAsync()`.
+
+## Prerequisites
+
+- .NET
+- A Teams bot registration
+- A Teams app manifest with `supportsFiles` set to `true` on the bot entry (see [Enable file support in the manifest](#enable-file-support-in-the-manifest))
+- An Azure OpenAI deployment (use a vision-capable model to analyze images). This is optional: without it the example still runs, receives files, and reports each one with an Adaptive Card instead of analyzing it. See [Running without a model](#running-without-a-model).
+
+## Enable file support in the manifest
+
+The bot entry in your Teams app manifest must set `supportsFiles` to `true`:
+
+```json
+"bots": [
+  {
+    "botId": "<your-bot-id>",
+    "scopes": ["personal"],
+    "supportsFiles": true
+  }
+]
+```
+
+Without it, Teams does not enable the attachment UI in the bot's chat, so there is no way to attach a file in the first place and `context.Files.ListAsync()` has nothing to return.
+
+## Setup
+
+Copy `Properties/launchSettings.TEMPLATE.json` to `Properties/launchSettings.json` and fill in your bot credentials alongside these settings:
+
+```json
+"AzureOpenAI__Endpoint": "https://<resource>.openai.azure.com/",
+"AzureOpenAI__ApiKey": "<api-key>",
+"AzureOpenAI__Deployment": "<deployment-name>"
+```
+
+Run:
+
+```bash
+dotnet run --project samples/AIFileAnalysisBot
+```
+
+## Running without a model
+
+The file APIs this sample demonstrates do not need a model, so the Azure OpenAI settings above are optional.
+
+Leave any of them unset and the sample starts in metadata-only mode. It still receives, downloads, and reports every
+attached file with the Adaptive Card, showing the resolved content type, byte count, scope, and source, so the whole
+file round-trip is demonstrable without a model subscription. Only the analysis step is skipped, and the card says so.
+
+## What happens to an attached file
+
+1. `context.Files.ListAsync()` returns the files on the incoming activity.
+2. Each file is downloaded once, and that in-memory copy is reused instead of refetching through the short-lived Teams download URL.
+3. `FileContext.Classify` sorts each download into `Text`, `Image`, or `Unsupported`.
+4. Unsupported files get the basic Adaptive Card. No model call is made for them.
+5. Supported files become model content parts and are sent in a single request, and the reply is streamed to Teams.
+
+Image bytes are sent inline as `DataContent` rather than as a link, so the pre-authorized `tempauth` download URL is never handed to the model.
+
+## Limits
+
+The sample accepts up to five files per message. Text input is capped at 100 KB per file and 250 KB per message, and images at 1 MB each. Supported image formats are PNG, JPEG, GIF, and WebP. Anything skipped or truncated produces a message explaining why.
+
+Because `DownloadAsync()` buffers the whole file first, these caps bound what reaches the model, not network transfer or process memory.
+
+## Scope
+
+The AI path is stateless: each message is analyzed on its own, with no conversation memory. That keeps a follow-up question from silently reusing files the user did not attach to it, and keeps images from being resent on every later turn.
+
+Statelessness here is a **`SAMPLE GUARDRAIL`**, not an SDK or Azure OpenAI constraint. Your app can keep conversation state and reuse previously attached files; this sample opts out so that every analysis is traceable to the files on the message that triggered it.
+
+There are no tools, citations, feedback, or follow-up suggestions here. See the [`ExtAIBot`](https://github.com/microsoft/teams.net/tree/main/samples/ExtAIBot) sample for those.
