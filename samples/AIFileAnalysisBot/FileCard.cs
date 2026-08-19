@@ -9,6 +9,10 @@ namespace AIFileAnalysisBot;
 
 internal static class FileCard
 {
+    private const string UnsupportedNote =
+        "I downloaded this file but did not analyze it. This sample sends only text files and PNG, JPEG, GIF, "
+        + "or WebP images to the model.";
+
     /// <summary>
     /// FILE RECEIVE: the no-LLM response for a file this sample will not send to the model.
     ///
@@ -16,7 +20,13 @@ internal static class FileCard
     /// plus the byte count that was actually downloaded, so the file round-trip is still demonstrated for formats the
     /// model never sees.
     /// </summary>
-    public static JsonElement Unsupported(IncomingFile file, DownloadedFile downloaded)
+    /// <param name="file">The incoming file, used for the scope and source facts.</param>
+    /// <param name="downloaded">The downloaded copy, used for filename, content type, and byte count.</param>
+    /// <param name="note">
+    /// Overrides the closing explanation. Defaults to the unsupported-format wording; the no-model path passes its
+    /// own so the card does not imply the file type was the problem.
+    /// </param>
+    public static JsonElement Unsupported(IncomingFile file, DownloadedFile downloaded, string? note = null)
     {
         AdaptiveCard card = new([
             new Container(
@@ -39,9 +49,7 @@ internal static class FileCard
                 new Fact("Size", HumanSize(downloaded.Bytes.Length)),
                 new Fact("Scope", file.Scope.ToString()),
                 new Fact("Source", file.Source.ToString())),
-            new TextBlock(
-                "I downloaded this file but did not analyze it. This sample sends only text files and PNG, JPEG, GIF, "
-                + "or WebP images to the model.")
+            new TextBlock(note ?? UnsupportedNote)
             {
                 Wrap = true,
                 IsSubtle = true,

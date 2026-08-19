@@ -138,15 +138,20 @@ internal static class FileContext
             bool truncated = includedBytes < downloaded.Bytes.Length;
             totalTextBytes += includedBytes;
 
-            parts.Add(new TextContent(string.Join('\n',
+            List<string> lines =
             [
                 $"Attached file: {downloaded.Filename}",
                 string.Empty,
                 "<file>",
                 text,
-                truncated ? "\n[File content truncated by the sample.]" : string.Empty,
-                "</file>",
-            ])));
+            ];
+            if (truncated)
+            {
+                lines.Add("[File content truncated by the sample.]");
+            }
+            lines.Add("</file>");
+
+            parts.Add(new TextContent(string.Join('\n', lines)));
 
             if (truncated)
             {
@@ -159,8 +164,8 @@ internal static class FileContext
         if (files.Count > MaxFiles)
         {
             warnings.Add(
-                $"{files.Count - MaxFiles} additional file(s) were not sent to the model because this sample accepts " +
-                $"up to {MaxFiles} files per message.");
+                $"{files.Count - MaxFiles} supported file(s) were not sent to the model because this sample " +
+                $"analyzes up to {MaxFiles} files per message. Unsupported files are reported separately.");
         }
 
         return new AnalysisRequest(parts, warnings, fileCount);
