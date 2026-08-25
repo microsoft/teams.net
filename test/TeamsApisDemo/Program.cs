@@ -26,8 +26,8 @@ var teamsBotApplication = provider.GetRequiredService<TeamsBotApplication>();
 Console.WriteLine($"Running Teams Bot Application for appId '{teamsBotApplication.AppId}' with version '{TeamsBotApplication.Version}'.");
 
 
-var smba = new Uri("https://smba.trafficmanager.net/amer");
-var conversations = teamsBotApplication.Api.ForServiceUrl(smba).Conversations;
+var serviceUrl = new Uri("https://smba.trafficmanager.net/amer");
+var conversations = teamsBotApplication.Api.ForServiceUrl(serviceUrl).Conversations;
 
 int pages = 1;
 string cid = "19%3ALydFnezGKSkhYoiLNP6kZ8AuXQr36EDAkvG9CNJSPKc1%40thread.tacv2";

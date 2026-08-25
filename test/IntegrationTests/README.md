@@ -1,6 +1,6 @@
 # Teams SDK Integration Tests
 
-This project runs integration tests against Teams Server (SMBA) using bot and agentic identities.
+This project runs integration tests against Teams Server using bot and agentic identities.
 
 ## Prerequisites
 
