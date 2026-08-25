@@ -20,7 +20,7 @@ public static class ConversationExtensions
 
     /// <summary>
     /// Construct a threaded conversation ID by appending <c>;messageid={messageId}</c>
-    /// to the conversation ID. This is the format the service uses to route messages
+    /// to the conversation ID. This is the format the Teams service uses to route messages
     /// to a specific thread in a channel.
     /// </summary>
     /// <param name="conversationId">the conversation to thread into (e.g. <c>19:abc@thread.skype</c>)</param>

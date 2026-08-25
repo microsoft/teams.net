@@ -400,7 +400,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         public async Task SendToConversationWithHttpMessagesAsync_WhenSendActivityReturnsNull_ReturnsStringEmptyForId()
         {
             // This test verifies the fix for the OAuth card null reference bug
-            // When the service returns 202 Accepted with no body, SendActivityAsync returns null
+            // When the Teams service returns 202 Accepted with no body, SendActivityAsync returns null
             // We should return string.Empty for Id instead of null to maintain API contract
 
             // Arrange
@@ -433,7 +433,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         public async Task ReplyToActivityWithHttpMessagesAsync_WhenSendActivityReturnsNull_ReturnsStringEmptyForId()
         {
             // This test verifies the fix for the OAuth card null reference bug in ReplyToActivity
-            // When the service returns 202 Accepted with no body, SendActivityAsync returns null
+            // When the Teams service returns 202 Accepted with no body, SendActivityAsync returns null
             // We should return string.Empty for Id instead of null to maintain API contract
 
             // Arrange

@@ -176,7 +176,7 @@ public class BotRequestContextTests
     [Fact]
     public void FromInboundActivity_FallsBackToRecipientId_WhenBotIdAbsent()
     {
-        // Standard (non-agentic) inbound activity: the service does not populate BotId, but Recipient.Id
+        // Standard (non-agentic) inbound activity: the Teams service does not populate BotId, but Recipient.Id
         // carries the Teams-style "28:<appId>" value.
         CoreActivity activity = new()
         {
