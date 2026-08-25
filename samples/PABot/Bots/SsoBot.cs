@@ -362,7 +362,7 @@ namespace PABot.Bots
                 logger.LogInformation($"ConversationId: {activity.Conversation.Id}");
                 logger.LogInformation($"Recipient: {activity.Recipient.Id}");
 
-                // This is the call that causes NullReferenceException when APX returns 202 with empty body
+                // This is the call that causes NullReferenceException when the service returns 202 with empty body
                 ResourceResponse response = await connectorClient.Conversations.SendToConversationAsync(
                     (Microsoft.Bot.Schema.Activity)activity,
                     cancellationToken
