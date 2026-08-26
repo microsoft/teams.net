@@ -197,12 +197,14 @@ public class ConversationClientTests
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, ct) =>
-                capturedBody = req.Content?.ReadAsStringAsync(ct).GetAwaiter().GetResult())
-            .ReturnsAsync(new HttpResponseMessage
+            .Returns(async (HttpRequestMessage req, CancellationToken ct) =>
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{\"id\":\"activity123\"}")
+                capturedBody = req.Content is null ? null : await req.Content.ReadAsStringAsync(ct);
+                return new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"id\":\"activity123\"}")
+                };
             });
 
         HttpClient httpClient = new(mockHttpMessageHandler.Object);

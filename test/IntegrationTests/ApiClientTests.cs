@@ -39,7 +39,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     private static MessageActivityInput CreateMessageActivity(string text, ChannelAccount recipient)
     {
         MessageActivityInput activity = CreateMessageActivity(text);
-        return activity.WithRecipient(new TeamsChannelAccount { Id = recipient.Id }, isTargeted: true);
+        return activity.WithRecipient(TeamsChannelAccount.FromChannelAccount(recipient)!, isTargeted: true);
     }
 
     #region Activities
