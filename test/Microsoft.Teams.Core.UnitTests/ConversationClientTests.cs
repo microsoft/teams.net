@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core.Schema;
 using Moq;
@@ -183,6 +184,42 @@ public class ConversationClientTests
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
         Assert.Equal(HttpMethod.Put, capturedRequest.Method);
+    }
+
+    [Fact]
+    public async Task UpdateActivityAsync_WithIsTargeted_DoesNotSendRecipient()
+    {
+        string? capturedBody = null;
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, ct) =>
+                capturedBody = req.Content?.ReadAsStringAsync(ct).GetAwaiter().GetResult())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":\"activity123\"}")
+            });
+
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
+
+        await conversationClient.UpdateActivityAsync(
+            "conv123",
+            "activity123",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"),
+            isTargeted: true);
+
+        Assert.NotNull(capturedBody);
+        using JsonDocument document = JsonDocument.Parse(capturedBody);
+        Assert.False(
+            document.RootElement.TryGetProperty("recipient", out _),
+            "Targeted update payloads must omit 'recipient'; the service rejects it on update.");
     }
 
     [Fact]
