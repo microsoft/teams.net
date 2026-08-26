@@ -87,7 +87,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
-        foreach (ChannelAccount m in members)
+        foreach (ChannelAccount m in members.Take(5))
         {
             _output.WriteLine($"Member: {m.Id} — {m.Name}");
         }
