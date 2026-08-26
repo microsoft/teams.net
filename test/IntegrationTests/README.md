@@ -33,9 +33,6 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
 > git check-ignore -v test/IntegrationTests/.runsettings/botid-prod.runsettings
 > # no output means NOT ignored — fix .gitignore first
 > ```
->
-> Also avoid `dotnet test -v d` on this suite: diagnostic verbosity can echo environment
-> variables, and these files carry a live client secret.
 
 ### Required environment variables
 
