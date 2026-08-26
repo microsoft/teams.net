@@ -9,8 +9,9 @@ This project runs integration tests against Teams Server using bot and agentic i
   - Bot app registration (client ID + secret)
   - Agentic app registration (client ID + secret) — optional
   - A team with at least one channel
-  - A scheduled meeting
-  - At least 2 test users in the conversation
+  - At least 3 non-bot users in the test conversation (`GroupChat_ThreeMembers` needs three)
+  - A regular scheduled meeting (not a channel meeting) with the bot app installed *in the meeting*
+  - An OAuth connection on the Azure Bot resource named to match `TEST_CONNECTION_NAME`
 
 ## RunSettings
 
@@ -44,6 +45,7 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
   <TEST_USER_ID>29:...</TEST_USER_ID>
   <TEST_TEAMID>19:...@thread.tacv2</TEST_TEAMID>
   <TEST_CHANNELID>19:...@thread.tacv2</TEST_CHANNELID>
+  <!-- base64 of "0#<19:meeting_...@thread.v2>#0" -->
   <TEST_MEETINGID>MCM...</TEST_MEETINGID>
   <TEST_TENANTID>YOUR_TENANT_ID</TEST_TENANTID>
 
@@ -52,6 +54,8 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
   <TEST_AGENTIC_USERID></TEST_AGENTIC_USERID>
 
   <!-- Optional -->
+  <!-- TEST_USER_ID_2 is read by the fixture but consumed by no test today; safe to omit.
+       Multi-member tests read the live conversation roster instead. -->
   <TEST_USER_ID_2>29:...</TEST_USER_ID_2>
   <TEST_CONNECTION_NAME>aadv2</TEST_CONNECTION_NAME>
 </EnvironmentVariables>
@@ -80,6 +84,14 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
   --logger "trx;LogFileName=botid-prod.trx"
 ```
 
+### Throttling
+
+The tenant enforces a call quota that a single full run already approaches. Running the full suite twice in quick succession produces a large batch of `TooManyRequests` / `"API calls quota exceeded"` failures that look exactly like real breakage. One observed back-to-back run reported 36 failures, 35 of which were quota errors rather than genuine problems.
+
+- Leave roughly 10 minutes between full runs.
+- When triaging any unexpected failure, grep the output for `TooManyRequests` before investigating anything else.
+- While iterating on one area, use `--filter` to run just that category instead of the full suite.
+
 ### Trait Categories
 
 | Category | Tests | Description |
@@ -90,11 +102,26 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
 | `Reactions` | 1 | Add and delete reactions |
 | `Teams` | 6 | Get team details, channels |
 | `Meetings` | 3 | Get participant, meeting details |
-| `Bots` | 2 | Sign-in URL and resource |
-| `Users` | 3 | Token get, status, sign-out |
+| `Users` | 5 | Sign-in URL and resource, token get, status, sign-out |
 | `Client` | 1 | ForServiceUrl scoped client |
 | `Diagnostic` | 13 | Conversation creation matrix |
 | `ErrorHandling` | 3 | Error cases (compat layer) |
+
+> These account for 68 of the suite's 72 tests; the remaining 4 carry no `Category` trait. A filter naming a category that does not exist prints `No test matches the given testcase filter` and **exits 0**, so a typo looks exactly like a clean pass.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Many unrelated tests fail with `TooManyRequests` / `"API calls quota exceeded"` | Tenant quota exhausted by consecutive runs | Wait ~10 minutes and re-run. These are not real failures. |
+| Every test fails during fixture initialization with an `AADSTS` error | Tenant expired or credentials wrong | Re-provision the tenant and regenerate the runsettings |
+| Fixture throws `... environment variable not set` | A required variable is missing; `TEST_MEETINGID` and `TEST_TENANTID` are required even for unrelated categories | Populate the runsettings fully |
+| `GroupChat_*` fail on `Assert.NotNull` before any API call | Conversation has fewer than 3 non-bot members | Add users to the channel |
+| Meetings tests return `404 ConversationNotFound` | `TEST_MEETINGID` is wrong, stale, or a placeholder | Re-encode from the current meeting thread ID |
+| Meetings tests return `403 BotNotInConversationRoster` | App is not installed in the meeting | Install it in the meeting, then message the bot in the meeting chat |
+| `Meetings_GetByIdAsync` returns `403 NotEnoughPermissions` | Manifest lacks RSC `OnlineMeeting.ReadBasic.Chat` | Add the RSC permission, bump the manifest version, reinstall in the meeting |
+| `Users_GetSignInResourceAsync` returns `400 Could not find Connection Setting` | OAuth connection missing on the Azure Bot resource | Create a connection named to match `TEST_CONNECTION_NAME` |
+| A filtered run reports "No test matches" and exits 0 | Category name does not exist | Check the [Trait Categories](#trait-categories) table |
 
 ## Architecture
 
@@ -104,6 +131,7 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
 
 ## Known Limitations
 
+- **Expected skips**: 5 tests are skipped by design via `Skip.If` guards (paged members and reactions on canary). Skips are not failures. A correctly provisioned tenant should report 72 total with 5 skipped and 0 failed.
 - **Agentic identity**: Targeted activities, paged members, and reactions return 500/404 with agentic identity. These are service-side limitations pending investigation.
 - **Group chat creation**: Bot-only identity cannot create group chats with `IsGroup=true` + multiple members via the conversations API.
 - **User token tests**: `SignIn` and `Users` token tests are skipped when agentic identity is configured (not supported).
