@@ -25,6 +25,15 @@ Tests are configured via `.runsettings` files that set environment variables. Fo
 
 Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
 
+> Verify that before you write a secret into it. The ignore rule pointed at a
+> pre-migration path until [#659](https://github.com/microsoft/teams.net/pull/659), so on
+> older branches this directory is **not** ignored despite what this line says:
+>
+> ```bash
+> git check-ignore -v test/IntegrationTests/.runsettings/botid-prod.runsettings
+> # no output means NOT ignored — fix .gitignore first
+> ```
+
 ### Required environment variables
 
 ```xml

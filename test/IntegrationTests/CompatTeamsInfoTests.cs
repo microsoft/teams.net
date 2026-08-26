@@ -132,7 +132,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         List<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> members = [.. result];
         Assert.NotEmpty(members);
 
-        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in members)
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in members.Take(5))
         {
             _output.WriteLine($"GetMembers: {m.Id} — {m.Name}");
         }
@@ -152,7 +152,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(result.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in result.Members)
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in result.Members.Take(5))
         {
             _output.WriteLine($"PagedMember: {m.Id} — {m.Name}");
         }
@@ -203,7 +203,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         List<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> members = [.. result];
         Assert.NotEmpty(members);
 
-        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in members)
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in members.Take(5))
         {
             _output.WriteLine($"TeamMember: {m.Id} — {m.Name}");
         }
@@ -223,7 +223,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(result.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in result.Members)
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in result.Members.Take(5))
         {
             _output.WriteLine($"PagedTeamMember: {m.Id} — {m.Name}");
         }
