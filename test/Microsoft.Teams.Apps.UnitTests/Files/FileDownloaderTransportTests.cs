@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Teams.Apps.Files;
 using Microsoft.Teams.Apps.Schema;
 
@@ -56,11 +57,16 @@ public class FileDownloaderTransportTests
         };
 
     /// <summary>
-    /// Builds the container the hosting extensions build, then swaps only the downloader's primary handler for a
-    /// recorder. Every other piece of the registration, including any handler or default header it configures, is
-    /// left exactly as shipped, so what the recorder sees is what a real download would send.
+    /// Builds the container the hosting extensions build, then overrides only the primary handler of the typed
+    /// client they already registered. Deliberately does <b>not</b> call <c>AddHttpClient&lt;FileDownloader&gt;()</c>
+    /// itself: doing so would register the downloader independently, so these tests would keep passing even if the
+    /// hosting extensions stopped registering it at all. Reaching into the existing
+    /// <see cref="HttpClientFactoryOptions"/> instead means resolution fails outright if the production registration
+    /// goes away, which is the regression these tests exist to catch.
+    /// <para>Every other piece of the shipped registration, including any handler or default header it configures,
+    /// is left intact, so what the recorder sees is what a real download would send.</para>
     /// </summary>
-    private static ServiceProvider BuildAppContainer(RecordingHandler handler, Action<IHttpClientBuilder>? extraConfig = null)
+    private static ServiceProvider BuildAppContainer(RecordingHandler handler, Action<HttpClientFactoryOptions>? extraConfig = null)
     {
         ServiceCollection services = new();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
@@ -73,9 +79,12 @@ public class FileDownloaderTransportTests
         services.AddLogging();
         services.AddTeamsBotApplication();
 
-        IHttpClientBuilder builder = services.AddHttpClient<FileDownloader>()
-            .ConfigurePrimaryHttpMessageHandler(() => handler);
-        extraConfig?.Invoke(builder);
+        // The name AddHttpClient<FileDownloader>() registers its options under.
+        services.Configure<HttpClientFactoryOptions>(nameof(FileDownloader), options =>
+        {
+            options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = handler);
+            extraConfig?.Invoke(options);
+        });
 
         return services.BuildServiceProvider();
     }
