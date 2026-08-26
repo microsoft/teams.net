@@ -495,4 +495,3 @@ $RECYCLE.BIN/
 
 # Integration test run settings (contain secrets)
 core/test/IntegrationTests/.runsettings/
-test/IntegrationTests/.runsettings/
