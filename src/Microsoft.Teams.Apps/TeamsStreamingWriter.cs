@@ -38,6 +38,16 @@ namespace Microsoft.Teams.Apps;
 ///     await writer.FinalizeResponseAsync(final);
 /// </code>
 ///
+/// To stream content in a non-default <see cref="TextFormat"/> (ex. extended markdown), call
+/// <see cref="WithTextFormat"/> before streaming starts. It's applied to every intermediate
+/// typing chunk and used as the final message's format unless overridden explicitly on the
+/// activity passed to <see cref="FinalizeResponseAsync"/>.
+/// <code>
+///     writer.WithTextFormat(TextFormats.ExtendedMarkdown);
+///     await writer.AppendResponseAsync("- [x] Rendered as extended markdown while streaming");
+///     await writer.FinalizeResponseAsync();
+/// </code>
+///
 /// The writer is reusable: appending or sending an informative update after
 /// <see cref="FinalizeResponseAsync"/> reopens the stream on the same instance and starts a new
 /// streamed message. Finalizing is idempotent until the next append/informative update.
@@ -64,6 +74,9 @@ public sealed class TeamsStreamingWriter
     private bool _timedOut;
     private readonly System.Text.StringBuilder _accumulated = new();
     private DateTime _lastChunkSent = DateTime.MinValue;
+    // Applied to every intermediate typing chunk sent from here on, and used as the
+    // final message's default format unless the caller sets it explicitly on the final activity.
+    private TextFormat? _textFormat;
 
     /// <summary>
     /// Whether the stream has been cancelled, for example when the user pressed the Stop button.
@@ -92,6 +105,22 @@ public sealed class TeamsStreamingWriter
     {
         ArgumentNullException.ThrowIfNull(context);
         return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity);
+    }
+
+    /// <summary>
+    /// Sets the text format applied to every subsequent intermediate typing chunk (informative
+    /// updates and streamed text) and used as the final message's format, unless the caller sets
+    /// <see cref="MessageActivityInput.TextFormat"/> explicitly on the activity passed to
+    /// <see cref="FinalizeResponseAsync"/>.
+    /// </summary>
+    /// <remarks>
+    /// Cleared when the stream is reused for a new streamed message after
+    /// <see cref="FinalizeResponseAsync"/>; call this again for each new streamed message.
+    /// </remarks>
+    public TeamsStreamingWriter WithTextFormat(TextFormat textFormat)
+    {
+        _textFormat = textFormat;
+        return this;
     }
 
     /// <summary>
@@ -193,6 +222,9 @@ public sealed class TeamsStreamingWriter
 
         final ??= new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
+        // Same format that was applied to the intermediate typing chunks, unless the caller
+        // set a different one explicitly on the final activity.
+        final.TextFormat ??= _textFormat;
         final.ReplyToId = _reference.Id;
 
         if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
@@ -371,15 +403,19 @@ public sealed class TeamsStreamingWriter
         _timedOut = false;
         _accumulated.Clear();
         _lastChunkSent = DateTime.MinValue;
+        _textFormat = null;
     }
 
     private StreamingActivityInput BuildActivity(string text, StreamType streamType)
     {
-        StreamingActivityInput activity = StreamingActivityInput.CreateBuilder()
+        StreamingActivityInputBuilder builder = StreamingActivityInput.CreateBuilder()
             .WithText(text)
-            .WithStreamInfo(streamType, _streamId, _sequence)
-            .Build();
+            .WithStreamInfo(streamType, _streamId, _sequence);
 
+        if (_textFormat is not null)
+            builder = builder.WithTextFormat(_textFormat);
+
+        StreamingActivityInput activity = builder.Build();
         activity.ReplyToId = _reference.Id;
         return activity;
     }

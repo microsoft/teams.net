@@ -140,6 +140,75 @@ public class TeamsStreamingWriterTests
         Assert.Contains("\"streamType\": \"final\"", finalBody);
     }
 
+    // ── TextFormat propagation ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task WithTextFormat_AppliesToInformativeAndStreamingChunksAndFinalMessage()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        writer.WithTextFormat(TextFormats.ExtendedMarkdown);
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello, world");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(3, handler.RequestBodies.Count);
+        Assert.Contains("\"textFormat\": \"extendedmarkdown\"", handler.RequestBodies[0]);
+        Assert.Contains("\"textFormat\": \"extendedmarkdown\"", handler.RequestBodies[1]);
+        Assert.Contains("\"textFormat\": \"extendedmarkdown\"", handler.RequestBodies[2]);
+    }
+
+    [Fact]
+    public async Task WithoutWithTextFormat_NoTextFormatSentOnChunksOrFinalMessage()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("Hello, world");
+        await writer.FinalizeResponseAsync();
+
+        Assert.All(handler.RequestBodies, body => Assert.DoesNotContain("\"textFormat\"", body, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_ExplicitTextFormatOnFinalActivity_OverridesWriterTextFormat()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        writer.WithTextFormat(TextFormats.ExtendedMarkdown);
+
+        await writer.AppendResponseAsync("Hello, world");
+
+        MessageActivityInput final = new MessageActivityInput().WithTextFormat(TextFormats.Markdown);
+        await writer.FinalizeResponseAsync(final);
+
+        // Intermediate chunk carried the writer's format...
+        Assert.Contains("\"textFormat\": \"extendedmarkdown\"", handler.RequestBodies[0]);
+        // ...but the caller's explicit format on the final activity wins there.
+        string finalBody = handler.RequestBodies.Last();
+        Assert.Contains("\"textFormat\": \"markdown\"", finalBody);
+        Assert.DoesNotContain("extendedmarkdown", finalBody);
+    }
+
+    [Fact]
+    public async Task WithTextFormat_IsResetWhenStreamIsReusedAfterFinalize()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        writer.WithTextFormat(TextFormats.ExtendedMarkdown);
+        await writer.AppendResponseAsync("First message");
+        await writer.FinalizeResponseAsync();
+
+        // Reopening the stream without calling WithTextFormat again should not carry the
+        // previous stream's format forward.
+        await writer.AppendResponseAsync("Second message");
+        await writer.FinalizeResponseAsync();
+
+        string secondStreamFinalBody = handler.RequestBodies.Last();
+        Assert.Contains("Second message", secondStreamFinalBody);
+        Assert.DoesNotContain("\"textFormat\"", secondStreamFinalBody);
+    }
+
     [Fact]
     public async Task FinalizeAsync_WithNoAppendCalls_ThrowsInvalidOperationException()
     {
