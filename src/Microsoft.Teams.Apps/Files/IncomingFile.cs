@@ -53,7 +53,7 @@ public sealed class IncomingFile
 
     /// <summary>
     /// Browsable URL to the file in OneDrive/SharePoint, as sent on the attachment's <c>contentUrl</c>.
-    /// Not fetchable for bytes despite the name; those come from the download URL.
+    /// Not fetchable for bytes despite the name; those come from <see cref="DownloadAsync"/> or <see cref="StreamAsync"/>.
     /// </summary>
     public Uri? ContentUrl { get; init; }
 
