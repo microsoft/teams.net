@@ -33,7 +33,7 @@ public class FilesAccessorWireShapeTests
     private const string ExpectedUniqueId = "00000000-0000-4000-8000-00000000f11e";
 
     // Percent-encoded spaces, exactly as Teams sends them in the browsable OneDrive path.
-    private const string ExpectedWebUrl =
+    private const string ExpectedContentUrl =
         "https://example.sharepoint.com/personal/synthetic_user_example_com/Documents/Microsoft%20Teams%20Chat%20Files/quarterly%20report.pdf";
 
     private const string ExpectedDownloadUrl =
@@ -52,7 +52,7 @@ public class FilesAccessorWireShapeTests
       "attachments": [
         {
           "contentType": "application/vnd.microsoft.teams.file.download.info",
-          "contentUrl": "{{ExpectedWebUrl}}",
+          "contentUrl": "{{ExpectedContentUrl}}",
           "name": "{{ExpectedName}}",
           "content": {
             "downloadUrl": "{{ExpectedDownloadUrl}}",
@@ -88,7 +88,7 @@ public class FilesAccessorWireShapeTests
         Assert.Equal(ExpectedName, file.Name);
         Assert.Equal("pdf", file.Extension);
         Assert.Equal(ExpectedUniqueId, file.UniqueId);
-        Assert.Equal(new Uri(ExpectedWebUrl), file.WebUrl);
+        Assert.Equal(new Uri(ExpectedContentUrl), file.ContentUrl);
         Assert.Equal(new Uri(ExpectedDownloadUrl), file.DownloadUrl);
         Assert.Equal(ConversationType.Personal, file.Scope);
         Assert.Equal(FileSource.BotActivity, file.Source);
@@ -96,8 +96,8 @@ public class FilesAccessorWireShapeTests
         // `TeamsAttachment.ContentUrl` is a `Uri`, so the wire value is normalized before anything reads it. Teams
         // percent-encodes the spaces in the OneDrive path; pin that they survive the round-trip, since a URL that
         // silently decoded them would no longer address the item.
-        Assert.Contains("Microsoft%20Teams%20Chat%20Files", file.WebUrl!.AbsoluteUri, StringComparison.Ordinal);
-        Assert.DoesNotContain(' ', file.WebUrl.AbsoluteUri);
+        Assert.Contains("Microsoft%20Teams%20Chat%20Files", file.ContentUrl!.AbsoluteUri, StringComparison.Ordinal);
+        Assert.DoesNotContain(' ', file.ContentUrl.AbsoluteUri);
     }
 
     [Fact]

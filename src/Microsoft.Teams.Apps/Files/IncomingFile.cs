@@ -51,8 +51,11 @@ public sealed class IncomingFile
     /// <summary>Where the SDK found the file. Only <see cref="FileSource.BotActivity"/> is produced today.</summary>
     public FileSource Source { get; }
 
-    /// <summary>Web URL to the file in OneDrive/SharePoint when known.</summary>
-    public Uri? WebUrl { get; init; }
+    /// <summary>
+    /// Browsable URL to the file in OneDrive/SharePoint, as sent on the attachment's <c>contentUrl</c>.
+    /// Not fetchable for bytes despite the name; those come from <see cref="DownloadAsync"/> or <see cref="StreamAsync"/>.
+    /// </summary>
+    public Uri? ContentUrl { get; init; }
 
     /// <summary>The raw underlying attachment/graph object for escape-hatch access.</summary>
     public object? Raw { get; init; }

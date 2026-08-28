@@ -106,8 +106,8 @@ public sealed class FilesAccessor
             UniqueId = content?.UniqueId,
             // `fileType` is the platform-supplied extension (e.g. `pdf`); left null when the wire omits it, matching how peer SDKs surface it.
             Extension = content?.FileType,
-            // Maps the wire's `contentUrl` (a browsable link to the file in OneDrive/SharePoint) to `WebUrl`; not fetchable like `downloadUrl`.
-            WebUrl = attachment.ContentUrl,
+            // Browsable link to the file in OneDrive/SharePoint; not fetchable like `downloadUrl`.
+            ContentUrl = attachment.ContentUrl,
             Raw = attachment,
             DownloadUrl = downloadUrl,
         };

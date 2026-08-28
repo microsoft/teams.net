@@ -75,7 +75,7 @@ public class FilesAccessorTests
         Assert.Equal("pdf", file.Extension);
         Assert.Equal(ConversationType.Personal, file.Scope);
         Assert.Equal(FileSource.BotActivity, file.Source);
-        Assert.Equal(new Uri("https://contoso.sharepoint.com/report.pdf"), file.WebUrl);
+        Assert.Equal(new Uri("https://contoso.sharepoint.com/report.pdf"), file.ContentUrl);
         Assert.Same(activity.Attachments![0], file.Raw);
     }
 
