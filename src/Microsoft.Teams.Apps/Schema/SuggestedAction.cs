@@ -113,6 +113,11 @@ public class ActionType(string value) : StringEnum(value)
     public static readonly ActionType SignIn = new("signin");
     /// <summary>Gets the <c>call</c> action type.</summary>
     public static readonly ActionType Call = new("call");
+    /// <summary>
+    /// Gets the <c>setCachePolicy</c> action type used to control caching for a link-unfurling response.
+    /// Set the action value to <c>{"type":"no-cache"}</c> to prevent Teams from caching the response.
+    /// </summary>
+    public static readonly ActionType SetCachePolicy = new("setCachePolicy");
     /// <summary>Gets the experimental <c>Action.Submit</c> action type.</summary>
     public static readonly ActionType Submit = new("Action.Submit");
 
@@ -149,6 +154,12 @@ public static class ActionTypes
 
     /// <summary>Gets the <c>call</c> action type.</summary>
     public static ActionType Call => ActionType.Call;
+
+    /// <summary>
+    /// Gets the <c>setCachePolicy</c> action type used to control caching for a link-unfurling response.
+    /// Set the action value to <c>{"type":"no-cache"}</c> to prevent Teams from caching the response.
+    /// </summary>
+    public static ActionType SetCachePolicy => ActionType.SetCachePolicy;
 
     /// <summary>Gets the experimental <c>Action.Submit</c> action type.</summary>
     [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
