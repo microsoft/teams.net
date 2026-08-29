@@ -22,6 +22,7 @@ public class SuggestedActionsTests
         Assert.Equal("downloadFile", ActionTypes.DownloadFile);
         Assert.Equal("signin", ActionTypes.SignIn);
         Assert.Equal("call", ActionTypes.Call);
+        Assert.Equal("setCachePolicy", ActionTypes.SetCachePolicy);
         Assert.Equal("Action.Submit", ActionTypes.Submit);
     }
 
@@ -249,5 +250,26 @@ public class SuggestedActionsTests
         Assert.Equal("Open", roundTripped.SuggestedActions.Actions[0].Title);
         Assert.Equal("imBack", roundTripped.SuggestedActions.Actions[1].Type!.ToString());
         Assert.Equal("Say Hi", roundTripped.SuggestedActions.Actions[1].Title);
+    }
+
+    [Fact]
+    public void MessageActivity_SetCachePolicySuggestedAction_RoundTripsNoCacheValue()
+    {
+        MessageActivity activity = new("Link unfurl")
+        {
+            SuggestedActions = new SuggestedActions()
+                .AddAction(new SuggestedAction(
+                    ActionTypes.SetCachePolicy,
+                    "Disable caching",
+                    new { type = "no-cache" }))
+        };
+
+        string json = activity.ToJson();
+        CoreActivity coreActivity = CoreActivity.FromJsonString(json);
+        MessageActivity roundTripped = MessageActivity.FromActivity(coreActivity);
+
+        SuggestedAction action = Assert.Single(roundTripped.SuggestedActions!.Actions);
+        Assert.Equal("setCachePolicy", action.Type!.ToString());
+        Assert.Equal("no-cache", action.Value!["type"]!.GetValue<string>());
     }
 }
