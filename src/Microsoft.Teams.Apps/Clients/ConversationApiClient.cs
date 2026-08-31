@@ -87,8 +87,7 @@ public class ConversationApiClient
     public Task<SendActivityResponse?> ReplyToActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        activity.ReplyToId = id;
-        return _client.SendActivityAsync(conversationId, activity, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.ReplyToActivityAsync(conversationId, id, activity, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>

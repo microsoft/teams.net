@@ -12,7 +12,10 @@ internal static class QuotingHandlers
     {
         teamsApp.OnMessage("(?i)^quote reply$", async (context, cancellationToken) =>
         {
-            await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
+            await context.SendAsync(
+                new MessageActivityInput()
+                    .AddQuote(context.Activity.Id!, "Thanks for your message!"),
+                cancellationToken);
         });
 
         teamsApp.OnMessage("(?i)^quote message$", async (context, cancellationToken) =>
@@ -22,9 +25,9 @@ internal static class QuotingHandlers
                 cancellationToken);
             if (sent?.Id != null)
             {
-                await context.QuoteAsync(
-                    sent.Id,
-                    "Just to confirm - does the new time work for everyone?",
+                await context.SendAsync(
+                    new MessageActivityInput()
+                        .AddQuote(sent.Id, "Just to confirm - does the new time work for everyone?"),
                     cancellationToken);
             }
         });

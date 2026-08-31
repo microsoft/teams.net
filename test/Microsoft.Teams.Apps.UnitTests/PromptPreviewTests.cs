@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -136,6 +137,62 @@ public class PromptPreviewTests
         Assert.NotNull(captured.Value);
     }
 
+    [Fact]
+    public async Task SendActivityAsync_InChannel_RoutesToReplyEndpoint()
+    {
+        TestHarness harness = CreateHarness();
+        string? capturedConversationId = null;
+        string? capturedRootId = null;
+        SetupReplyCapture(harness, (conversationId, rootId) =>
+        {
+            capturedConversationId = conversationId;
+            capturedRootId = rootId;
+        });
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1772129782775", convType: ConversationTypes.Channel);
+        Context<MessageActivity> ctx = new(harness.App, inbound);
+
+        await ctx.SendAsync("hello");
+
+        Assert.Equal("conv-1", capturedConversationId);
+        Assert.Equal("1772129782775", capturedRootId);
+    }
+
+    [Fact]
+    public async Task SendActivityAsync_WithChannelDataThread_RoutesToReplyEndpoint()
+    {
+        TestHarness harness = CreateHarness();
+        string? capturedRootId = null;
+        SetupReplyCapture(harness, (_, rootId) => capturedRootId = rootId);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "reply-id", convType: ConversationTypes.GroupChat);
+        inbound.ChannelData = JsonSerializer.Deserialize<TeamsChannelData>("{\"thread\":{\"id\":\"1772129782775\"}}");
+        Context<MessageActivity> ctx = new(harness.App, inbound);
+
+        await ctx.SendAsync("hello");
+
+        Assert.Equal("1772129782775", capturedRootId);
+    }
+
+    [Fact]
+    public async Task SendActivityAsync_WithLegacyThreadedConversationId_UsesBaseIdAndReplyEndpoint()
+    {
+        TestHarness harness = CreateHarness();
+        string? capturedConversationId = null;
+        string? capturedRootId = null;
+        SetupReplyCapture(harness, (conversationId, rootId) =>
+        {
+            capturedConversationId = conversationId;
+            capturedRootId = rootId;
+        });
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "reply-id", convType: ConversationTypes.GroupChat);
+        inbound.Conversation!.Id = "conv-1;messageid=1772129782775";
+        Context<MessageActivity> ctx = new(harness.App, inbound);
+
+        await ctx.SendAsync("hello");
+
+        Assert.Equal("conv-1", capturedConversationId);
+        Assert.Equal("1772129782775", capturedRootId);
+    }
+
     // ==================== Helpers ====================
 
     private sealed class CaptureSlot
@@ -181,6 +238,23 @@ public class PromptPreviewTests
                 (_, activity, _, _, _, _, _) => slot.Value = activity)
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
         return slot;
+    }
+
+    private static void SetupReplyCapture(TestHarness harness, Action<string, string> capture)
+    {
+        harness.MockConversationClient
+            .Setup(c => c.ReplyToActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (conversationId, rootId, _, _, _, _, _, _) => capture(conversationId, rootId))
+            .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
     }
 
     private sealed class TestHarness

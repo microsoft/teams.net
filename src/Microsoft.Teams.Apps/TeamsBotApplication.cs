@@ -10,6 +10,7 @@ using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -211,7 +212,7 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Sends a text message proactively to a conversation.
     /// </summary>
-    /// <param name="conversationId">The conversation ID to send to. For channel threads, include <c>;messageid=</c>.</param>
+    /// <param name="conversationId">The base conversation ID to send to.</param>
     /// <param name="text">The text to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
@@ -229,7 +230,7 @@ public class TeamsBotApplication : BotApplication
     /// Sends an activity proactively to a conversation. When the activity carries a recipient marked as
     /// targeted (<see cref="ChannelAccount.IsTargeted"/>), it is sent as a targeted message visible only to that recipient.
     /// </summary>
-    /// <param name="conversationId">The conversation ID to send to. For channel threads, include <c>;messageid=</c>.</param>
+    /// <param name="conversationId">The base conversation ID to send to.</param>
     /// <param name="activity">The activity to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
@@ -253,7 +254,6 @@ public class TeamsBotApplication : BotApplication
 
     /// <summary>
     /// Sends a text message proactively as a threaded reply.
-    /// Constructs a threaded conversation ID from the conversation ID and message ID.
     /// </summary>
     /// <param name="conversationId">The conversation ID.</param>
     /// <param name="messageId">The thread root message ID.</param>
@@ -264,13 +264,17 @@ public class TeamsBotApplication : BotApplication
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-        return SendAsync(threadedConversationId, text, serviceUrl, agenticIdentity, cancellationToken);
+        return ReplyAsync(
+            conversationId,
+            messageId,
+            new MessageActivityInput().WithText(text),
+            serviceUrl,
+            agenticIdentity,
+            cancellationToken);
     }
 
     /// <summary>
     /// Sends an activity proactively as a threaded reply.
-    /// Constructs a threaded conversation ID from the conversation ID and message ID.
     /// </summary>
     /// <param name="conversationId">The conversation ID.</param>
     /// <param name="messageId">The thread root message ID.</param>
@@ -281,8 +285,20 @@ public class TeamsBotApplication : BotApplication
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, TeamsActivityInput activity, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-        return SendAsync(threadedConversationId, activity, serviceUrl, agenticIdentity, cancellationToken);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ValidateThreadRootId(messageId);
+        ArgumentNullException.ThrowIfNull(activity);
+
+        Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
+            ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
+        string baseConversationId = conversationId.Split(';')[0];
+        return ConversationClient.ReplyToActivityAsync(
+            baseConversationId,
+            messageId,
+            activity,
+            resolvedUrl,
+            requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>
@@ -310,10 +326,25 @@ public class TeamsBotApplication : BotApplication
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, TeamsActivity activity, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ValidateThreadRootId(messageId);
         Uri resolvedUrl = _lastServiceUrl
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
-        return SendActivityAsync(threadedConversationId, CoreActivityInput.FromActivity(activity), resolvedUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        return ConversationClient.ReplyToActivityAsync(
+            conversationId.Split(';')[0],
+            messageId,
+            CoreActivityInput.FromActivity(activity),
+            resolvedUrl,
+            requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
+            cancellationToken: cancellationToken);
+    }
+
+    private static void ValidateThreadRootId(string messageId)
+    {
+        if (string.IsNullOrEmpty(messageId) || !ulong.TryParse(messageId, out ulong parsed) || parsed == 0)
+        {
+            throw new ArgumentException($"Invalid messageId \"{messageId}\": must be a non-zero numeric value", nameof(messageId));
+        }
     }
 
     /// <summary>

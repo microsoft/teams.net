@@ -83,6 +83,51 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     }
 
     /// <summary>
+    /// Sends an activity as a reply beneath an existing root activity.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The ID of the root activity to reply beneath. Cannot be null or whitespace.</param>
+    /// <param name="activity">The activity to send. Cannot be null.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="isTargeted">When true, the activity is sent as a targeted message.</param>
+    /// <param name="requestContext">Optional per-request properties used as a fallback for authentication context.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
+    /// <returns>The response containing the ID of the sent activity, or <see langword="null"/>.</returns>
+    public virtual async Task<SendActivityResponse?> ReplyToActivityAsync(string conversationId, string activityId, CoreActivityInput activity, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}";
+        if (isTargeted)
+        {
+            url += "?isTargetedActivity=true";
+        }
+
+        string body = activity.ToJson();
+        return await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.ClientOperations.SendActivity,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityId, activityId);
+                span?.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+                SendActivityResponse? response = await _botHttpClient.SendAsync<SendActivityResponse>(
+                    HttpMethod.Post,
+                    url,
+                    body,
+                    CreateRequestOptions(requestContext, "replying to activity", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
+                return response;
+            }).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Updates an existing activity in a conversation.
     /// </summary>
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>

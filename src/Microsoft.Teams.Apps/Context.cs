@@ -108,30 +108,31 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
-    /// Sends a text message as a threaded reply to the current activity. When the inbound activity
-    /// has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams);
-    /// otherwise sends without quoting.
+    /// Sends a text message that quotes the current activity when it has an ID.
     /// </summary>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
+    [Obsolete("Use SendAsync. To quote a message, add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
-        => ReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
+        => SendQuotedReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
-    /// Sends an activity to the conversation. When the inbound activity has an id, the response
-    /// auto-quotes it (rendered as a quote bubble above the response in Teams). Otherwise sends
-    /// without quoting. To send without quoting unconditionally, use <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
+    /// Sends an activity that quotes the current activity when it has an ID.
     /// </summary>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
+    [Obsolete("Use SendAsync. To quote a message, add the quote to the MessageActivityInput with AddQuote before passing it to SendAsync.")]
     public Task<SendActivityResponse?> ReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken = default)
+        => SendQuotedReplyAsync(activity, cancellationToken);
+
+    private Task<SendActivityResponse?> SendQuotedReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
         if (!string.IsNullOrWhiteSpace(Activity.Id))
         {
-            return QuoteAsync(Activity.Id, activity, cancellationToken);
+            activity.PrependQuote(Activity.Id);
         }
 
         return SendAsync(activity, cancellationToken);
@@ -159,8 +160,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The response text, appended to the quoted message placeholder.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
+    [Obsolete("Add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> QuoteAsync(string messageId, string text, CancellationToken cancellationToken = default)
-        => QuoteAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
+        => SendQuotedAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
     /// Send a message to the conversation with a quoted message reference prepended to the text.
@@ -170,14 +172,15 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send. For <see cref="MessageActivity"/>, a quote placeholder for messageId is prepended to its text. Other activity types are sent as-is without quoting.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
+    [Obsolete("Add the quote to the MessageActivityInput with AddQuote before passing it to SendAsync.")]
     public Task<SendActivityResponse?> QuoteAsync(string messageId, MessageActivityInput activity, CancellationToken cancellationToken = default)
+        => SendQuotedAsync(messageId, activity, cancellationToken);
+
+    private Task<SendActivityResponse?> SendQuotedAsync(string messageId, MessageActivityInput activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
-        if (activity is MessageActivityInput message)
-        {
-            message.PrependQuote(messageId);
-        }
+        activity.PrependQuote(messageId);
         return SendAsync(activity, cancellationToken);
     }
 
@@ -199,23 +202,25 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     }
 
     /// <inheritdoc cref="ReplyAsync(string, CancellationToken)"/>
-    [Obsolete("Use ReplyAsync instead.")]
+    [Obsolete("Use SendAsync. To quote a message, add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
-        => ReplyAsync(text, cancellationToken);
+        => SendQuotedReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <inheritdoc cref="ReplyAsync(MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Use ReplyAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
+    [Obsolete("Use SendAsync. To quote a message, add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> Reply(MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         string conversationId = Activity.Conversation?.Id
             ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
-#pragma warning disable CS0618 // routing an inbound activity through the obsolete client overload
         if (!string.IsNullOrWhiteSpace(Activity.Id))
         {
-            return Api.Conversations.Activities.ReplyAsync(conversationId, Activity.Id!, activity, cancellationToken: cancellationToken);
+#pragma warning disable CS0618 // preserving the obsolete auto-quote behavior
+            activity.PrependQuote(Activity.Id);
+#pragma warning restore CS0618
         }
 
+#pragma warning disable CS0618 // routing an inbound activity through the obsolete client overload
         return Api.Conversations.Activities.CreateAsync(conversationId, activity, cancellationToken: cancellationToken);
 #pragma warning restore CS0618
     }
@@ -231,19 +236,20 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => TeamsStreamingWriter.CreateFromContext(this);
 
     /// <inheritdoc cref="QuoteAsync(string, string, CancellationToken)"/>
-    [Obsolete("Use QuoteAsync instead.")]
+    [Obsolete("Add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
-        => QuoteAsync(messageId, text, cancellationToken);
+        => SendQuotedAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <inheritdoc cref="QuoteAsync(string, MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Use QuoteAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
+    [Obsolete("Add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> Quote(string messageId, MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         string conversationId = Activity.Conversation?.Id
             ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
-#pragma warning disable CS0618 // routing an inbound activity through the obsolete client overload
-        return Api.Conversations.Activities.ReplyAsync(conversationId, messageId, activity, cancellationToken: cancellationToken);
+#pragma warning disable CS0618 // preserving the obsolete quote behavior and outbound activity overload
+        activity.PrependQuote(messageId);
+        return Api.Conversations.Activities.CreateAsync(conversationId, activity, cancellationToken: cancellationToken);
 #pragma warning restore CS0618
     }
 
@@ -290,10 +296,45 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
         if (!isTargeted)
         {
+            if (TryGetThreadRoot(conversationId, out string baseConversationId, out string threadRootId))
+            {
+                return Api.Conversations.ReplyToActivityAsync(baseConversationId, threadRootId, activity, cancellationToken: cancellationToken);
+            }
+
             return Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
         }
 
         return Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
+    }
+
+    private bool TryGetThreadRoot(string conversationId, out string baseConversationId, out string threadRootId)
+    {
+        const string legacyThreadMarker = ";messageid=";
+        int markerIndex = conversationId.IndexOf(legacyThreadMarker, StringComparison.OrdinalIgnoreCase);
+        baseConversationId = markerIndex >= 0 ? conversationId[..markerIndex] : conversationId;
+
+        string? channelDataThreadId = Activity.ChannelData?.Thread?.Id;
+        if (!string.IsNullOrWhiteSpace(channelDataThreadId))
+        {
+            threadRootId = channelDataThreadId;
+            return true;
+        }
+
+        if (markerIndex >= 0)
+        {
+            threadRootId = conversationId[(markerIndex + legacyThreadMarker.Length)..];
+            return !string.IsNullOrWhiteSpace(threadRootId);
+        }
+
+        bool isChannel = Activity.Conversation?.ConversationType?.Equals(ConversationTypes.Channel) ?? false;
+        if (isChannel && !string.IsNullOrWhiteSpace(Activity.Id))
+        {
+            threadRootId = Activity.Id;
+            return true;
+        }
+
+        threadRootId = string.Empty;
+        return false;
     }
 
     // ==================== OAuth Sign-In ====================

@@ -14,6 +14,15 @@ namespace Microsoft.Teams.Apps.UnitTests;
 /// </summary>
 public class TeamsChannelDataDeserializationTests
 {
+    [Fact]
+    public void Deserialize_ThreadRoot()
+    {
+        TeamsChannelData? channelData = JsonSerializer.Deserialize<TeamsChannelData>(
+            "{\"thread\":{\"id\":\"1772129782775\"}}");
+
+        Assert.Equal("1772129782775", channelData?.Thread?.Id);
+    }
+
     [Theory]
     [InlineData("{\"app\":{}}")]
     [InlineData("{\"channel\":{}}")]

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
@@ -37,22 +38,25 @@ internal static class ThreadingHandlers
         teamsApp.OnMessage("(?i)^thread manual$", async (context, cancellationToken) =>
         {
             (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
-            string threadId = ConversationExtensions.ToThreadedConversationId(conversationId, threadRootId);
-            await teamsApp.SendAsync(
-                threadId,
-                "This was sent using ToThreadedConversationId() + teamsApp.SendAsync() for manual control.",
+            await context.Api.Conversations.ReplyToActivityAsync(
+                conversationId,
+                threadRootId,
+                new MessageActivityInput().WithText(
+                    "This was sent using the explicit reply endpoint for manual control."),
                 cancellationToken: cancellationToken);
         });
     }
 
-    private static (string ConversationId, string ThreadRootId) GetThreadReference(CoreActivity activity)
+    private static (string ConversationId, string ThreadRootId) GetThreadReference(TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity.Conversation);
         ArgumentException.ThrowIfNullOrEmpty(activity.Id);
 
-        string conversationId = activity.Conversation.Id;
-        string[] threadParts = conversationId.Split(";messageid=");
-        string threadRootId = threadParts.Length > 1 ? threadParts[1] : activity.Id;
+        string inboundConversationId = activity.Conversation.Id;
+        string conversationId = activity.Conversation.ThreadId();
+        string[] threadParts = inboundConversationId.Split(";messageid=");
+        string threadRootId = activity.ChannelData?.Thread?.Id
+            ?? (threadParts.Length > 1 ? threadParts[1] : activity.Id);
         return (conversationId, threadRootId);
     }
 }

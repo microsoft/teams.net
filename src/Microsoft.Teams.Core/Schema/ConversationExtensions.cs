@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Core.Schema;
 public static class ConversationExtensions
 {
     /// <summary>
-    /// The thread root portion of the conversation ID, with any <c>;messageid=</c> suffix stripped.
+    /// The base conversation ID, with any legacy <c>;messageid=</c> suffix stripped.
     /// </summary>
     public static string ThreadId(this Conversation conversation)
     {
@@ -26,6 +26,7 @@ public static class ConversationExtensions
     /// <param name="conversationId">the conversation to thread into (e.g. <c>19:abc@thread.skype</c>)</param>
     /// <param name="messageId">the thread root message ID (must be a non-zero numeric string)</param>
     /// <returns>the threaded conversation ID (e.g. <c>19:abc@thread.skype;messageid=123</c>)</returns>
+    [Obsolete("Thread placement is endpoint-based. Use the base conversation ID with ReplyToActivityAsync instead.")]
     public static string ToThreadedConversationId(string conversationId, string messageId)
     {
         if (string.IsNullOrEmpty(conversationId))
