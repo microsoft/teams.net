@@ -132,6 +132,53 @@ public class ConversationClientTests
     }
 
     [Fact]
+    public async Task ReplyToActivityAsync_ConstructsReplyEndpoint()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":\"reply123\"}")
+            });
+
+        ConversationClient conversationClient = new(new HttpClient(mockHttpMessageHandler.Object));
+
+        SendActivityResponse? result = await conversationClient.ReplyToActivityAsync(
+            "conv/123",
+            "root/456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"));
+
+        Assert.Equal("reply123", result?.Id);
+        Assert.NotNull(capturedRequest);
+        Assert.Equal(
+            "https://test.service.url/v3/conversations/conv%2F123/activities/root%2F456",
+            capturedRequest.RequestUri?.ToString());
+        Assert.Equal(HttpMethod.Post, capturedRequest.Method);
+    }
+
+    [Fact]
+    public async Task ReplyToActivityAsync_RejectsEmptyRootId()
+    {
+        ConversationClient conversationClient = new(new HttpClient());
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            conversationClient.ReplyToActivityAsync(
+                "conv123",
+                "",
+                CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+                new Uri("https://test.service.url/")));
+    }
+
+    [Fact]
     public async Task SendActivityAsync_WithIsTargeted_AppendsQueryString()
     {
         HttpRequestMessage? capturedRequest = null;

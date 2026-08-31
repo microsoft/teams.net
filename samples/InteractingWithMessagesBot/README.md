@@ -14,8 +14,8 @@ in a separate handler class.
 
 | Command | Behavior |
 |---------|----------|
-| `quote reply` | `context.ReplyAsync()` auto-quotes the inbound message |
-| `quote message` | `context.QuoteAsync()` quotes a previously sent message by ID |
+| `quote reply` | `MessageActivityInput.AddQuote()` explicitly quotes the inbound message |
+| `quote message` | `MessageActivityInput.AddQuote()` quotes a previously sent message by ID |
 | `quote add` | `AddQuote()` composes a quote with a response |
 | `quote batch` | Combines multiple quotes with mixed responses |
 | `quote manual` | Combines `AddQuote()` and `AddText()` manually |
@@ -28,7 +28,7 @@ in a separate handler class.
 | `thread reply` | `teamsApp.ReplyAsync()` sends a reactive threaded reply |
 | `thread send` | `context.SendAsync()` sends to the same thread without quoting |
 | `thread proactive` | `teamsApp.ReplyAsync()` sends a proactive threaded reply |
-| `thread manual` | `ToThreadedConversationId()` and `teamsApp.SendAsync()` provide manual control |
+| `thread manual` | `context.Api.Conversations.ReplyToActivityAsync()` uses the reply endpoint directly |
 
 ### Reactions
 

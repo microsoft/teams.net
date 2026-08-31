@@ -47,7 +47,9 @@ public class MyTeamsBot : TeamsBotApplication
 
         this.OnMessage("quote", async (context, ct) =>
         {
-            await context.ReplyAsync("Quoting your message!", ct);
+            await context.SendAsync(
+                new MessageActivityInput().AddQuote(context.Activity.Id!, "Quoting your message!"),
+                ct);
         });
 
         this.OnMessage("targeted", async (context, ct) =>

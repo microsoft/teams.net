@@ -65,6 +65,28 @@ public class AppInfo
 }
 
 /// <summary>
+/// Identifies the root of the thread containing an inbound activity.
+/// </summary>
+public sealed class TeamsChannelDataThread
+{
+    /// <summary>
+    /// Creates thread information for deserialization.
+    /// </summary>
+    /// <param name="id">The root activity ID.</param>
+    [JsonConstructor]
+    public TeamsChannelDataThread(string? id)
+    {
+        Id = id;
+    }
+
+    /// <summary>
+    /// Gets the root activity ID.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; }
+}
+
+/// <summary>
 /// Represents Teams-specific channel data.
 /// </summary>
 public class TeamsChannelData : ChannelData
@@ -90,6 +112,13 @@ public class TeamsChannelData : ChannelData
     /// Teams Team Id.
     /// </summary>
     [JsonPropertyName("teamsTeamId")] public string? TeamsTeamId { get; set; }
+
+    /// <summary>
+    /// Gets information about the thread containing this inbound activity.
+    /// </summary>
+    [JsonPropertyName("thread")]
+    [JsonInclude]
+    public TeamsChannelDataThread? Thread { get; internal set; }
 
     /// <summary>
     /// Gets or sets the channel information associated with this entity.

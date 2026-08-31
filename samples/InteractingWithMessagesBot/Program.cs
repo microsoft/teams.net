@@ -24,7 +24,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             **Interacting with Messages**
 
             **Quoting:**
-            - `quote reply` - auto-quote your message
+            - `quote reply` - explicitly quote your message
             - `quote message` - quote a previously sent message
             - `quote add` - compose a quote with the message builder
             - `quote batch` - combine multiple quotes
