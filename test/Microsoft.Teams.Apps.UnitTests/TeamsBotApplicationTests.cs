@@ -76,6 +76,49 @@ public class TeamsBotApplicationTests
     }
 
     [Fact]
+    public async Task Send_Proactive_WithLegacyThreadedId_UsesReplyEndpoint()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        string? capturedConversationId = null;
+        string? capturedRootId = null;
+        conversationClient
+            .Setup(c => c.ReplyToActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (conversationId, rootId, _, _, _, _, _, _) =>
+                {
+                    capturedConversationId = conversationId;
+                    capturedRootId = rootId;
+                })
+            .ReturnsAsync(new SendActivityResponse { Id = "reply-id" });
+
+        await app.SendAsync(
+            "19:abc@thread.skype;messageid=1680000000000",
+            new MessageActivityInput().WithText("hello"),
+            new Uri("https://test.service.url/"));
+
+        Assert.Equal("19:abc@thread.skype", capturedConversationId);
+        Assert.Equal("1680000000000", capturedRootId);
+        conversationClient.Verify(
+            c => c.SendActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public void HasMatchingRoute_ReturnsTrueForRegisteredInvokeHandler()
     {
         TeamsBotApplication app = CreateApp();

@@ -243,6 +243,18 @@ public class TeamsBotApplication : BotApplication
         Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
 
+        if (TryParseLegacyThreadedConversationId(conversationId, out string baseConversationId, out string threadRootId))
+        {
+            return ConversationClient.ReplyToActivityAsync(
+                baseConversationId,
+                threadRootId,
+                activity,
+                resolvedUrl,
+                isTargeted: activity.Recipient?.IsTargeted ?? false,
+                requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
+                cancellationToken: cancellationToken);
+        }
+
         return SendActivityAsync(
             conversationId,
             activity,
@@ -313,6 +325,17 @@ public class TeamsBotApplication : BotApplication
         ArgumentNullException.ThrowIfNull(activity);
         Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
+        if (TryParseLegacyThreadedConversationId(conversationId, out string baseConversationId, out string threadRootId))
+        {
+            return ConversationClient.ReplyToActivityAsync(
+                baseConversationId,
+                threadRootId,
+                CoreActivityInput.FromActivity(activity),
+                resolvedUrl,
+                requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
+                cancellationToken: cancellationToken);
+        }
+
         return SendActivityAsync(conversationId, CoreActivityInput.FromActivity(activity), resolvedUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 
@@ -345,6 +368,26 @@ public class TeamsBotApplication : BotApplication
         {
             throw new ArgumentException($"Invalid messageId \"{messageId}\": must be a non-zero numeric value", nameof(messageId));
         }
+    }
+
+    private static bool TryParseLegacyThreadedConversationId(string conversationId, out string baseConversationId, out string threadRootId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+
+        const string marker = ";messageid=";
+        int markerIndex = conversationId.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (markerIndex < 0)
+        {
+            baseConversationId = conversationId;
+            threadRootId = string.Empty;
+            return false;
+        }
+
+        baseConversationId = conversationId[..markerIndex];
+        threadRootId = conversationId[(markerIndex + marker.Length)..];
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseConversationId);
+        ValidateThreadRootId(threadRootId);
+        return true;
     }
 
     /// <summary>
