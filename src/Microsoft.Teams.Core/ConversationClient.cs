@@ -122,7 +122,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
                     body,
                     CreateRequestOptions(requestContext, "replying to activity", customHeaders),
                     cancellationToken).ConfigureAwait(false);
-                span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
                 return response;
             }).ConfigureAwait(false);
     }
