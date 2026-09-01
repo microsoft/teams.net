@@ -59,6 +59,8 @@ public class InstallUpdateAction(string value) : StringEnum(value)
     public static readonly InstallUpdateAction Add = new("add");
     /// <summary>Remove action.</summary>
     public static readonly InstallUpdateAction Remove = new("remove");
+    /// <summary>Upgrade action.</summary>
+    public static readonly InstallUpdateAction Upgrade = new("upgrade");
 }
 
 /// <summary>
@@ -75,4 +77,9 @@ public static class InstallUpdateActions
     /// Remove action constant.
     /// </summary>
     public static InstallUpdateAction Remove => InstallUpdateAction.Remove;
+
+    /// <summary>
+    /// Upgrade action constant.
+    /// </summary>
+    public static InstallUpdateAction Upgrade => InstallUpdateAction.Upgrade;
 }
