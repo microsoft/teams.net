@@ -13,29 +13,53 @@ using Microsoft.Teams.Cards;
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddTeamsBotApplication();
 
-string endpoint = builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
-string apiKey = builder.Configuration["AzureOpenAI:ApiKey"] ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required.");
-string deployment = builder.Configuration["AzureOpenAI:Deployment"] ?? throw new InvalidOperationException("AzureOpenAI:Deployment is required.");
+// Azure OpenAI is optional. When all three settings are present the default message path streams
+// live model output; otherwise it falls back to a canned streamed response so the sample still runs.
+string? endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
+string? apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
+string? deployment = builder.Configuration["AzureOpenAI:Deployment"];
+bool aiConfigured = !string.IsNullOrWhiteSpace(endpoint)
+    && !string.IsNullOrWhiteSpace(apiKey)
+    && !string.IsNullOrWhiteSpace(deployment);
 
-builder.Services.AddSingleton<AzureOpenAIClient>(_ => new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey)));
-builder.Services.AddSingleton<IChatClient>(sp =>
-    sp.GetRequiredService<AzureOpenAIClient>()
-      .GetChatClient(deployment)
-      .AsIChatClient());
+if (aiConfigured)
+{
+    builder.Services.AddSingleton<AzureOpenAIClient>(_ => new AzureOpenAIClient(new Uri(endpoint!), new ApiKeyCredential(apiKey!)));
+    builder.Services.AddSingleton<IChatClient>(sp =>
+        sp.GetRequiredService<AzureOpenAIClient>()
+          .GetChatClient(deployment!)
+          .AsIChatClient());
+}
 
 WebApplication webApp = builder.Build();
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
-IChatClient chatClient = webApp.Services.GetRequiredService<IChatClient>();
+IChatClient? chatClient = webApp.Services.GetService<IChatClient>();
 
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
     TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
 
-    // Send "multi-stream" to demo reusing the same writer for a second streamed message
-    // after FinalizeResponseAsync (stream reuse). This path does not call OpenAI.
-    if ((context.Activity.Text ?? string.Empty).Replace("-", " ").Contains("multi stream", StringComparison.OrdinalIgnoreCase))
+    string normalized = (context.Activity.Text ?? string.Empty).Replace("-", " ");
+
+    // "multi stream": reuse the same writer for a second streamed message after finalize.
+    if (normalized.Contains("multi stream", StringComparison.OrdinalIgnoreCase))
     {
         await RunMultiStreamDemoAsync(writer, cancellationToken);
+        return;
+    }
+
+    // "extended markdown": stream content that only renders correctly under extended markdown.
+    if (normalized.Contains("extended markdown", StringComparison.OrdinalIgnoreCase))
+    {
+        await RunExtendedMarkdownDemoAsync(writer, cancellationToken);
+        return;
+    }
+
+    // Default path: stream live model output when Azure OpenAI is configured, otherwise a
+    // canned streamed response so the sample works without any AI backend.
+    if (chatClient is null)
+    {
+        await RunCannedResponseAsync(writer, cancellationToken);
         return;
     }
 
@@ -75,7 +99,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     };
 
     TeamsAttachment card = TeamsAttachment.CreateBuilder()
-        .WithAdaptiveCard(CreateResponseCard(deployment))
+        .WithAdaptiveCard(CreateResponseCard(deployment!))
         .Build();
 
     MessageActivityInput final = new MessageActivityInput()
@@ -93,6 +117,27 @@ teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 
     return new InvokeResponse(200);
 });
+
+static async Task RunCannedResponseAsync(TeamsStreamingWriter writer, CancellationToken cancellationToken)
+{
+    string[] messages =
+    [
+        "Azure OpenAI isn't configured, so here's a canned streamed reply. ",
+        "Set AzureOpenAI:Endpoint, :ApiKey, and :Deployment to stream live model output instead. ",
+        "You can also try `extended markdown`, `extended markdown before`, or `multi stream`.",
+    ];
+
+    await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
+    await Task.Delay(500, cancellationToken);
+
+    foreach (string message in messages)
+    {
+        await Task.Delay(500, cancellationToken);
+        await writer.AppendResponseAsync(message, cancellationToken);
+    }
+
+    await writer.FinalizeResponseAsync(cancellationToken: cancellationToken);
+}
 
 static async Task RunMultiStreamDemoAsync(TeamsStreamingWriter writer, CancellationToken cancellationToken)
 {
@@ -139,6 +184,34 @@ static async Task RunMultiStreamDemoAsync(TeamsStreamingWriter writer, Cancellat
         await Task.Delay(500, cancellationToken);
         await writer.AppendResponseAsync(message, cancellationToken);
     }
+
+    await writer.FinalizeResponseAsync(cancellationToken: cancellationToken);
+}
+
+static async Task RunExtendedMarkdownDemoAsync(TeamsStreamingWriter writer, CancellationToken cancellationToken)
+{
+    // Task lists ("- [x]") and strikethrough ("~~...~~") only render under extended markdown.
+    string[] messages =
+    [
+        "**Extended markdown stream** — rendering features plain markdown can't:\n\n",
+        "- [x] Sent with `textFormat: 'extendedmarkdown'`\n",
+        "- [x] Task list items render as real checkboxes\n",
+        "- [ ] ~~Under plain markdown these would be literal `[ ]` text~~\n",
+        "- [x] Strikethrough renders too\n",
+    ];
+
+#pragma warning disable ExperimentalTeamsExtendedMarkdown
+    // The informative update carries its own format (plain markdown here); the streamed chunks
+    // set extended markdown per-chunk via MessageActivityInput, which also formats the final message.
+    await writer.SendInformativeUpdateAsync("Starting the *extended* markdown stream…", TextFormats.Markdown, cancellationToken);
+    await Task.Delay(1000, cancellationToken);
+
+    foreach (string message in messages)
+    {
+        await Task.Delay(500, cancellationToken);
+        await writer.AppendResponseAsync(new MessageActivityInput().WithText(message, TextFormats.ExtendedMarkdown), cancellationToken);
+    }
+#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await writer.FinalizeResponseAsync(cancellationToken: cancellationToken);
 }

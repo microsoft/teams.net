@@ -30,6 +30,12 @@ public class StreamingActivityInput : TeamsActivityInput
     public string? Text { get; set; }
 
     /// <summary>
+    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
+    /// </summary>
+    [JsonPropertyName("textFormat")]
+    public TextFormat? TextFormat { get; set; }
+
+    /// <summary>
     /// Gets or sets the stream info entity for this streaming activity.
     /// </summary>
     [JsonIgnore]
@@ -75,6 +81,15 @@ internal class StreamingActivityInputBuilder : TeamsActivityInputBuilder<Streami
     public StreamingActivityInputBuilder WithText(string text)
     {
         _activity.Text = text;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the format of the streaming chunk's text. See <see cref="TextFormats"/>.
+    /// </summary>
+    public StreamingActivityInputBuilder WithTextFormat(TextFormat textFormat)
+    {
+        _activity.TextFormat = textFormat;
         return this;
     }
 

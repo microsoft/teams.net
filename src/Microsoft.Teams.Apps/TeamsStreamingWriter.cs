@@ -38,6 +38,19 @@ namespace Microsoft.Teams.Apps;
 ///     await writer.FinalizeResponseAsync(final);
 /// </code>
 ///
+/// To stream content in a non-default <see cref="TextFormat"/> (ex. extended markdown), pass the
+/// format on the chunk itself: use <see cref="AppendResponseAsync(MessageActivityInput, CancellationToken)"/>
+/// with a <see cref="MessageActivityInput.TextFormat"/> set, or
+/// <see cref="SendInformativeUpdateAsync(string, TextFormat, CancellationToken)"/> for an informative update.
+/// The most recent streamed chunk's format is also used as the final message's format, unless the caller
+/// sets <see cref="MessageActivityInput.TextFormat"/> explicitly on the activity passed to
+/// <see cref="FinalizeResponseAsync"/>.
+/// <code>
+///     await writer.AppendResponseAsync(
+///         new MessageActivityInput().WithText("- [x] Rendered as extended markdown", TextFormats.ExtendedMarkdown));
+///     await writer.FinalizeResponseAsync();
+/// </code>
+///
 /// The writer is reusable: appending or sending an informative update after
 /// <see cref="FinalizeResponseAsync"/> reopens the stream on the same instance and starts a new
 /// streamed message. Finalizing is idempotent until the next append/informative update.
@@ -64,6 +77,10 @@ public sealed class TeamsStreamingWriter
     private bool _timedOut;
     private readonly System.Text.StringBuilder _accumulated = new();
     private DateTime _lastChunkSent = DateTime.MinValue;
+    // The most recent streamed chunk's text format (set by AppendResponseAsync with a
+    // MessageActivityInput carrying a TextFormat). Applied to subsequent streamed chunks and
+    // used as the final message's default format unless the caller sets one explicitly.
+    private TextFormat? _textFormat;
 
     /// <summary>
     /// Whether the stream has been cancelled, for example when the user pressed the Stop button.
@@ -96,9 +113,23 @@ public sealed class TeamsStreamingWriter
 
     /// <summary>
     /// Sends an informative placeholder (streamType = "informative").
-    /// Optional — if omitted the first <see cref="AppendResponseAsync"/> call begins the stream.
+    /// Optional — if omitted the first <see cref="AppendResponseAsync(string, CancellationToken)"/> call begins the stream.
     /// </summary>
-    public async Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
+    public Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
+        => SendInformativeUpdateCoreAsync(text, null, cancellationToken);
+
+    /// <summary>
+    /// Sends an informative placeholder (streamType = "informative") rendered with the given
+    /// <paramref name="textFormat"/> (ex. extended markdown).
+    /// </summary>
+    /// <remarks>
+    /// The format applies to this informative chunk only; it does not change the format of
+    /// subsequent streamed chunks or the final message.
+    /// </remarks>
+    public Task SendInformativeUpdateAsync(string text, TextFormat textFormat, CancellationToken cancellationToken = default)
+        => SendInformativeUpdateCoreAsync(text, textFormat, cancellationToken);
+
+    private async Task SendInformativeUpdateCoreAsync(string text, TextFormat? textFormat, CancellationToken cancellationToken)
     {
         if (_cancelled)
             return;
@@ -115,7 +146,7 @@ public sealed class TeamsStreamingWriter
 
         _sequence++;
         _logger.LogDebug("Sending informative streaming update (sequence {Sequence}).", _sequence);
-        SendActivityResponse? response = await TrySendChunkAsync(BuildActivity(text, StreamTypes.Informative), cancellationToken).ConfigureAwait(false);
+        SendActivityResponse? response = await TrySendChunkAsync(BuildActivity(text, StreamTypes.Informative, textFormat), cancellationToken).ConfigureAwait(false);
         _streamId ??= response?.Id;
         _logger.LogDebug("Stream started with streamId '{StreamId}'.", _streamId);
     }
@@ -165,6 +196,26 @@ public sealed class TeamsStreamingWriter
     }
 
     /// <summary>
+    /// Appends <paramref name="chunk"/>'s <see cref="MessageActivityInput.Text"/> to the accumulated
+    /// text and sends the full accumulated text as an intermediate streaming update, rendered with
+    /// <paramref name="chunk"/>'s <see cref="MessageActivityInput.TextFormat"/> when set.
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="MessageActivityInput.Text"/> and <see cref="MessageActivityInput.TextFormat"/>
+    /// are honored for intermediate chunks; attachments, entities, and other properties belong on the
+    /// final message passed to <see cref="FinalizeResponseAsync"/>. When <paramref name="chunk"/> carries
+    /// a <see cref="MessageActivityInput.TextFormat"/>, it becomes the format of this and subsequent
+    /// streamed chunks (last-wins) and the final message's default format.
+    /// </remarks>
+    public Task AppendResponseAsync(MessageActivityInput chunk, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(chunk);
+        if (chunk.TextFormat is not null)
+            _textFormat = chunk.TextFormat;
+        return AppendResponseAsync(chunk.Text ?? string.Empty, cancellationToken);
+    }
+
+    /// <summary>
     /// Sends the final streaming activity and marks the stream complete.
     /// </summary>
     /// <param name="final">
@@ -193,6 +244,9 @@ public sealed class TeamsStreamingWriter
 
         final ??= new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
+        // Same format that was applied to the intermediate typing chunks, unless the caller
+        // set a different one explicitly on the final activity.
+        final.TextFormat ??= _textFormat;
         final.ReplyToId = _reference.Id;
 
         if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
@@ -371,15 +425,20 @@ public sealed class TeamsStreamingWriter
         _timedOut = false;
         _accumulated.Clear();
         _lastChunkSent = DateTime.MinValue;
+        _textFormat = null;
     }
 
-    private StreamingActivityInput BuildActivity(string text, StreamType streamType)
+    private StreamingActivityInput BuildActivity(string text, StreamType streamType, TextFormat? textFormatOverride = null)
     {
-        StreamingActivityInput activity = StreamingActivityInput.CreateBuilder()
+        StreamingActivityInputBuilder builder = StreamingActivityInput.CreateBuilder()
             .WithText(text)
-            .WithStreamInfo(streamType, _streamId, _sequence)
-            .Build();
+            .WithStreamInfo(streamType, _streamId, _sequence);
 
+        TextFormat? textFormat = textFormatOverride ?? _textFormat;
+        if (textFormat is not null)
+            builder = builder.WithTextFormat(textFormat);
+
+        StreamingActivityInput activity = builder.Build();
         activity.ReplyToId = _reference.Id;
         return activity;
     }
