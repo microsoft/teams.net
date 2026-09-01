@@ -76,18 +76,59 @@ public class ActivitiesTests
         //Assert.Equal("Converted Topic", activity.TopicName);
     }
 
-    [Fact]
-    public void InstallUpdate_FromActivityConvertsCorrectly()
+    [Theory]
+    [InlineData("add")]
+    [InlineData("remove")]
+    public void InstallUpdate_FromActivityConvertsKnownActionsCorrectly(string action)
     {
         CoreActivity coreActivity = new()
         {
             Type = TeamsActivityTypes.InstallationUpdate
         };
-        coreActivity.Properties["action"] = "remove";
+        coreActivity.Properties["action"] = action;
 
         InstallUpdateActivity activity = InstallUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
         Assert.Equal(TeamsActivityTypes.InstallationUpdate, activity.Type);
-        Assert.Equal(InstallUpdateActions.Remove, activity.Action);
+        Assert.Equal(action, activity.Action?.Value);
+    }
+
+    [Fact]
+    public void InstallUpdate_FromJsonConvertsUpgradeActionCorrectly()
+    {
+        const string json = """
+            {
+              "action": "upgrade",
+              "channelId": "msteams",
+              "conversation": {
+                "conversationType": "personal",
+                "id": "xxx",
+                "tenantId": "xxx"
+              },
+              "entities": [
+                {
+                  "locale": "en-US",
+                  "type": "clientInfo"
+                }
+              ],
+              "from": {
+                "aadObjectId": "xxx",
+                "id": "xxx"
+              },
+              "id": "xxx",
+              "recipient": {
+                "id": "xxx",
+                "name": "xxx"
+              },
+              "serviceUrl": "https://smba.trafficmanager.net/emea/xxx/",
+              "timestamp": "2026-08-26T13:38:36.356Z",
+              "type": "installationUpdate"
+            }
+            """;
+
+        TeamsActivity activity = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+
+        InstallUpdateActivity installUpdateActivity = Assert.IsType<InstallUpdateActivity>(activity);
+        Assert.Equal(InstallUpdateActions.Upgrade, installUpdateActivity.Action);
     }
 }
