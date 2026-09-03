@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
 internal static class ThreadingHandlers
@@ -38,11 +37,11 @@ internal static class ThreadingHandlers
         teamsApp.OnMessage("(?i)^thread manual$", async (context, cancellationToken) =>
         {
             (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
-            await context.Api.Conversations.ReplyToActivityAsync(
+            await teamsApp.ReplyAsync(
                 conversationId,
                 threadRootId,
                 new MessageActivityInput().WithText(
-                    "This was sent using the explicit reply endpoint for manual control."),
+                    "This was sent using teamsApp.ReplyAsync() for explicit thread placement."),
                 cancellationToken: cancellationToken);
         });
     }
