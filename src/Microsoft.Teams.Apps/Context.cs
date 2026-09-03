@@ -274,11 +274,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
 
         bool isTargeted = activity.Recipient?.IsTargeted == true;
-        if (isTargeted && (Activity.Conversation?.ConversationType?.Equals(ConversationTypes.Personal) ?? false))
-        {
-            throw new InvalidOperationException(
-                "Targeted messages are not supported in personal (1:1) chats.");
-        }
 
         // prompt preview support
         if (activity.Type == TeamsActivityTypes.Message

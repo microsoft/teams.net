@@ -91,19 +91,20 @@ public class PromptPreviewTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_Throws_WhenTargetedMessage_InPersonalChat()
+    public async Task SendActivityAsync_SendsTargetedMessage_InPersonalChat()
     {
         TestHarness harness = CreateHarness();
-        SetupCapture(harness);
+        CaptureSlot captured = SetupCapture(harness);
 
         MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         MessageActivityInput outbound = new MessageActivityInput().WithText("secret").WithRecipient(inbound.From!, isTargeted: true);
 
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => ctx.SendAsync(outbound));
-        Assert.Contains("personal", ex.Message, StringComparison.OrdinalIgnoreCase);
+        await ctx.SendAsync(outbound);
+
+        Assert.NotNull(captured.Value);
+        Assert.True(captured.IsTargeted);
     }
 
     [Fact]
@@ -141,6 +142,7 @@ public class PromptPreviewTests
     private sealed class CaptureSlot
     {
         public CoreActivityInput? Value { get; set; }
+        public bool IsTargeted { get; set; }
     }
 
     private static MessageActivity BuildInbound(bool targetedInbound, string inboundId, ConversationType convType)
@@ -178,7 +180,11 @@ public class PromptPreviewTests
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
             .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
-                (_, activity, _, _, _, _, _) => slot.Value = activity)
+                (_, activity, _, isTargeted, _, _, _) =>
+                {
+                    slot.Value = activity;
+                    slot.IsTargeted = isTargeted;
+                })
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
         return slot;
     }
