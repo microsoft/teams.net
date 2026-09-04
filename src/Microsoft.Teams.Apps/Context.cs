@@ -294,13 +294,15 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
 
+        if (TryGetThreadRoot(conversationId, out string baseConversationId, out string threadRootId))
+        {
+            return isTargeted
+                ? Api.Conversations.ReplyToTargetedActivityAsync(baseConversationId, threadRootId, activity, cancellationToken: cancellationToken)
+                : Api.Conversations.ReplyToActivityAsync(baseConversationId, threadRootId, activity, cancellationToken: cancellationToken);
+        }
+
         if (!isTargeted)
         {
-            if (TryGetThreadRoot(conversationId, out string baseConversationId, out string threadRootId))
-            {
-                return Api.Conversations.ReplyToActivityAsync(baseConversationId, threadRootId, activity, cancellationToken: cancellationToken);
-            }
-
             return Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
         }
 

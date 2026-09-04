@@ -173,6 +173,29 @@ public class PromptPreviewTests
     }
 
     [Fact]
+    public async Task SendActivityAsync_TargetedWithChannelDataThread_UsesTargetedReplyEndpoint()
+    {
+        TestHarness harness = CreateHarness();
+        string? capturedRootId = null;
+        bool? capturedIsTargeted = null;
+        SetupReplyCapture(
+            harness,
+            (_, rootId) => capturedRootId = rootId,
+            isTargeted => capturedIsTargeted = isTargeted);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "reply-id", convType: ConversationTypes.GroupChat);
+        inbound.ChannelData = JsonSerializer.Deserialize<TeamsChannelData>("{\"thread\":{\"id\":\"1772129782775\"}}");
+        Context<MessageActivity> ctx = new(harness.App, inbound);
+
+        await ctx.SendAsync(
+            new MessageActivityInput()
+                .WithText("targeted reply")
+                .WithRecipient(inbound.From!, isTargeted: true));
+
+        Assert.Equal("1772129782775", capturedRootId);
+        Assert.True(capturedIsTargeted);
+    }
+
+    [Fact]
     public async Task SendActivityAsync_WithLegacyThreadedConversationId_UsesBaseIdAndReplyEndpoint()
     {
         TestHarness harness = CreateHarness();
@@ -240,7 +263,10 @@ public class PromptPreviewTests
         return slot;
     }
 
-    private static void SetupReplyCapture(TestHarness harness, Action<string, string> capture)
+    private static void SetupReplyCapture(
+        TestHarness harness,
+        Action<string, string> capture,
+        Action<bool>? captureIsTargeted = null)
     {
         harness.MockConversationClient
             .Setup(c => c.ReplyToActivityAsync(
@@ -253,7 +279,11 @@ public class PromptPreviewTests
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
             .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
-                (conversationId, rootId, _, _, _, _, _, _) => capture(conversationId, rootId))
+                (conversationId, rootId, _, _, isTargeted, _, _, _) =>
+                {
+                    capture(conversationId, rootId);
+                    captureIsTargeted?.Invoke(isTargeted);
+                })
             .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
     }
 

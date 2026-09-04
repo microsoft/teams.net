@@ -109,6 +109,15 @@ public class ConversationApiClient
     }
 
     /// <summary>
+    /// Reply to an existing activity with a targeted activity visible only to the specified recipient.
+    /// </summary>
+    public Task<SendActivityResponse?> ReplyToTargetedActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return _client.ReplyToActivityAsync(conversationId, id, activity, _serviceUrl, isTargeted: true, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
     /// Update an existing targeted activity in a conversation.
     /// </summary>
     public Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)

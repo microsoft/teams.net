@@ -166,6 +166,38 @@ public class ConversationClientTests
     }
 
     [Fact]
+    public async Task ReplyToActivityAsync_WithIsTargeted_AppendsQueryString()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":\"reply123\"}")
+            });
+
+        ConversationClient conversationClient = new(new HttpClient(mockHttpMessageHandler.Object));
+
+        await conversationClient.ReplyToActivityAsync(
+            "conv123",
+            "root456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"),
+            isTargeted: true);
+
+        Assert.Equal(
+            "https://test.service.url/v3/conversations/conv123/activities/root456?isTargetedActivity=true",
+            capturedRequest?.RequestUri?.ToString());
+    }
+
+    [Fact]
     public async Task ReplyToActivityAsync_RejectsEmptyRootId()
     {
         ConversationClient conversationClient = new(new HttpClient());
