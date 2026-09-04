@@ -24,7 +24,7 @@ in a separate handler class.
 | Command | Behavior |
 |---------|----------|
 | `default send` | `context.SendAsync()` uses the default placement for the current scope without quoting |
-| `thread proactive` | `teamsApp.ReplyAsync()` sends a proactive threaded reply |
+| `thread proactive` | `GetProactiveThreadReference()` resolves placement and `teamsApp.ReplyAsync()` sends a proactive threaded reply |
 | `thread proactive quote` | `teamsApp.ReplyAsync()` explicitly places a reply and `AddQuote()` quotes the inbound message |
 | `thread proactive targeted` | `teamsApp.ReplyAsync()` sends a proactive targeted reply through the explicit reply endpoint |
 | `thread proactive targeted quote` | `teamsApp.ReplyAsync()` sends a proactive targeted reply with an explicit quote |
