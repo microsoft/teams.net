@@ -4,7 +4,7 @@ Demonstrates quoting, threading, and reactions in one bot while keeping each con
 in a separate handler class.
 
 - `QuotingHandlers.cs` - quoted-message metadata and quote composition
-- `ThreadingHandlers.cs` - reactive, proactive, and manually constructed threads
+- `ThreadingHandlers.cs` - default and explicit thread placement
 - `ReactionHandlers.cs` - reactions on inbound messages and a proactive reaction flow
 - `Program.cs` - app setup, handler registration, and help
 
@@ -14,21 +14,20 @@ in a separate handler class.
 
 | Command | Behavior |
 |---------|----------|
-| `quote reply` | `MessageActivityInput.AddQuote()` explicitly quotes the inbound message |
+| `quote reply` | `MessageActivityInput.AddQuote()` quotes the inbound message |
 | `quote message` | `MessageActivityInput.AddQuote()` quotes a previously sent message by ID |
-| `quote add` | `AddQuote()` composes a quote with a response |
 | `quote batch` | Combines multiple quotes with mixed responses |
-| `quote manual` | Combines `AddQuote()` and `AddText()` manually |
 | *(quote a message)* | Displays the quoted-message metadata |
 
 ### Threading
 
 | Command | Behavior |
 |---------|----------|
-| `thread reply` | `teamsApp.ReplyAsync()` sends a reactive threaded reply |
-| `thread send` | `context.SendAsync()` sends to the same thread without quoting |
+| `default send` | `context.SendAsync()` uses the default placement for the current scope without quoting |
 | `thread proactive` | `teamsApp.ReplyAsync()` sends a proactive threaded reply |
-| `thread manual` | `context.Api.Conversations.ReplyToActivityAsync()` uses the reply endpoint directly |
+| `thread proactive quote` | `teamsApp.ReplyAsync()` explicitly places a reply and `AddQuote()` quotes the inbound message |
+| `thread proactive targeted` | `teamsApp.ReplyAsync()` sends a proactive targeted reply through the explicit reply endpoint |
+| `thread proactive targeted quote` | `teamsApp.ReplyAsync()` sends a proactive targeted reply with an explicit quote |
 
 ### Reactions
 

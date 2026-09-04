@@ -354,7 +354,8 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <summary>
-    /// Sends an activity proactively as a threaded reply.
+    /// Sends an activity proactively as a threaded reply. When the activity carries a targeted recipient,
+    /// the reply is visible only to that recipient.
     /// </summary>
     /// <param name="conversationId">The conversation ID.</param>
     /// <param name="messageId">The thread root message ID.</param>
@@ -377,6 +378,7 @@ public class TeamsBotApplication : BotApplication
             messageId,
             activity,
             resolvedUrl,
+            isTargeted: activity.Recipient?.IsTargeted ?? false,
             requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
             cancellationToken: cancellationToken);
     }
@@ -426,6 +428,7 @@ public class TeamsBotApplication : BotApplication
             messageId,
             CoreActivityInput.FromActivity(activity),
             resolvedUrl,
+            isTargeted: activity.Recipient?.IsTargeted ?? false,
             requestContext: BotRequestContext.FromAgenticIdentity(agenticIdentity),
             cancellationToken: cancellationToken);
     }

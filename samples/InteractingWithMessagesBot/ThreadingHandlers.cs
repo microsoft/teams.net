@@ -9,19 +9,9 @@ internal static class ThreadingHandlers
 {
     internal static void Register(TeamsBotApplication teamsApp)
     {
-        teamsApp.OnMessage("(?i)^thread send$", async (context, cancellationToken) =>
+        teamsApp.OnMessage("(?i)^default send$", async (context, cancellationToken) =>
         {
             await context.SendAsync("This is sent to the same thread, without quoting.", cancellationToken);
-        });
-
-        teamsApp.OnMessage("(?i)^thread reply$", async (context, cancellationToken) =>
-        {
-            (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
-            await teamsApp.ReplyAsync(
-                conversationId,
-                threadRootId,
-                "This is a threaded reply to your message.",
-                cancellationToken: cancellationToken);
         });
 
         teamsApp.OnMessage("(?i)^thread proactive$", async (context, cancellationToken) =>
@@ -34,14 +24,41 @@ internal static class ThreadingHandlers
                 cancellationToken: cancellationToken);
         });
 
-        teamsApp.OnMessage("(?i)^thread manual$", async (context, cancellationToken) =>
+        teamsApp.OnMessage("(?i)^thread proactive quote$", async (context, cancellationToken) =>
         {
             (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
             await teamsApp.ReplyAsync(
                 conversationId,
                 threadRootId,
-                new MessageActivityInput().WithText(
-                    "This was sent using teamsApp.ReplyAsync() for explicit thread placement."),
+                new MessageActivityInput().AddQuote(
+                    context.Activity.Id!,
+                    "This is explicitly placed in the thread and quotes your message."),
+                cancellationToken: cancellationToken);
+        });
+
+        teamsApp.OnMessage("(?i)^thread proactive targeted$", async (context, cancellationToken) =>
+        {
+            ArgumentNullException.ThrowIfNull(context.Activity.From);
+            (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
+            await teamsApp.ReplyAsync(
+                conversationId,
+                threadRootId,
+                new MessageActivityInput()
+                    .WithText("This proactive targeted message uses the explicit reply endpoint.")
+                    .WithRecipient(context.Activity.From, isTargeted: true),
+                cancellationToken: cancellationToken);
+        });
+
+        teamsApp.OnMessage("(?i)^thread proactive targeted quote$", async (context, cancellationToken) =>
+        {
+            ArgumentNullException.ThrowIfNull(context.Activity.From);
+            (string conversationId, string threadRootId) = GetThreadReference(context.Activity);
+            await teamsApp.ReplyAsync(
+                conversationId,
+                threadRootId,
+                new MessageActivityInput()
+                    .AddQuote(context.Activity.Id!, "This proactive targeted reply quotes your message.")
+                    .WithRecipient(context.Activity.From, isTargeted: true),
                 cancellationToken: cancellationToken);
         });
     }
