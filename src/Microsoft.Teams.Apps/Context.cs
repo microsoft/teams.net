@@ -8,6 +8,7 @@ using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
 
@@ -294,8 +295,10 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
 
-        if (TryGetThreadRoot(conversationId, out string baseConversationId, out string threadRootId))
+        string? threadRootId = Activity.GetDefaultThreadId();
+        if (threadRootId is not null)
         {
+            string baseConversationId = Activity.Conversation!.ThreadId();
             return isTargeted
                 ? Api.Conversations.ReplyToTargetedActivityAsync(baseConversationId, threadRootId, activity, cancellationToken: cancellationToken)
                 : Api.Conversations.ReplyToActivityAsync(baseConversationId, threadRootId, activity, cancellationToken: cancellationToken);
@@ -307,36 +310,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         }
 
         return Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
-    }
-
-    private bool TryGetThreadRoot(string conversationId, out string baseConversationId, out string threadRootId)
-    {
-        const string legacyThreadMarker = ";messageid=";
-        int markerIndex = conversationId.IndexOf(legacyThreadMarker, StringComparison.OrdinalIgnoreCase);
-        baseConversationId = markerIndex >= 0 ? conversationId[..markerIndex] : conversationId;
-
-        string? channelDataThreadId = Activity.ChannelData?.Thread?.Id;
-        if (!string.IsNullOrWhiteSpace(channelDataThreadId))
-        {
-            threadRootId = channelDataThreadId;
-            return true;
-        }
-
-        if (markerIndex >= 0)
-        {
-            threadRootId = conversationId[(markerIndex + legacyThreadMarker.Length)..];
-            return !string.IsNullOrWhiteSpace(threadRootId);
-        }
-
-        bool isChannel = Activity.Conversation?.ConversationType?.Equals(ConversationTypes.Channel) ?? false;
-        if (isChannel && !string.IsNullOrWhiteSpace(Activity.Id))
-        {
-            threadRootId = Activity.Id;
-            return true;
-        }
-
-        threadRootId = string.Empty;
-        return false;
     }
 
     // ==================== OAuth Sign-In ====================
