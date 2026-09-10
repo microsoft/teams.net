@@ -115,6 +115,51 @@ public class BotConfigTests
     }
 
     [Fact]
+    public void Resolve_GraphBaseUrl_DefaultsToPublicCloud_WhenNotConfigured()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("https://graph.microsoft.com", config.GraphBaseUrl);
+    }
+
+    [Theory]
+    [InlineData("https://graph.microsoft.us")]
+    [InlineData("https://microsoftgraph.chinacloudapi.cn")]
+    public void Resolve_GraphBaseUrl_HonorsBotFrameworkOverride(string configured)
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+            ["BotFramework:GraphBaseUrl"] = configured,
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal(configured, config.GraphBaseUrl);
+    }
+
+    [Fact]
+    public void Resolve_ThrowsInvalidOperationException_WhenGraphBaseUrlIsNotAbsoluteUri()
+    {
+        // A configured host can disagree with the token audience in a way a derived value never could, so it is validated at startup rather than surfacing as a 404 that reads like a missing file.
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["BotFramework:GraphBaseUrl"] = "graph.microsoft.us",
+        });
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => BotConfig.Resolve(services));
+        Assert.Contains("BotFramework:GraphBaseUrl", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Resolve_BotFrameworkSection_IsIndependentOfAzureAdSectionName()
     {
         ServiceCollection services = BuildServices(new Dictionary<string, string?>

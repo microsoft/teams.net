@@ -26,6 +26,8 @@ public sealed class BotConfig
 
     internal const string DefaultBotTokenIssuer = "https://api.botframework.com";
 
+    internal const string DefaultGraphBaseUrl = "https://graph.microsoft.com";
+
     /// <summary>
     /// Gets or sets the Azure AD tenant ID.
     /// </summary>
@@ -67,6 +69,15 @@ public sealed class BotConfig
     /// Defaults to the public-cloud issuer when not configured.
     /// </summary>
     public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
+
+    /// <summary>
+    /// Gets or sets the Microsoft Graph host root that Graph-backed features address.
+    /// For sovereign clouds, set <c>BotFramework:GraphBaseUrl</c> in configuration, e.g. <c>"https://graph.microsoft.us"</c> for USGov.
+    /// Defaults to the public-cloud host when not configured.
+    /// <para>A host root, not a versioned endpoint: callers append their own API version, so a pre-versioned value
+    /// produces <c>/v1.0/v1.0</c>.</para>
+    /// </summary>
+    public string GraphBaseUrl { get; set; } = DefaultGraphBaseUrl;
 
     /// <summary>
     /// Gets or sets whether inbound bot requests should bypass authentication.
@@ -134,6 +145,7 @@ public sealed class BotConfig
             EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
             OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
             BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
+            GraphBaseUrl = ResolveAbsoluteUri(botFrameworkSection, "GraphBaseUrl", DefaultGraphBaseUrl),
             DangerouslyAllowUnauthenticatedRequests = dangerouslyAllowUnauthenticatedRequests,
             MsalConfigurationSection = section,
             SectionName = sectionName
