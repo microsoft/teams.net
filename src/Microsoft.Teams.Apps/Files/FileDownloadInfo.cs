@@ -17,7 +17,9 @@ public class FileDownloadInfo
     public Uri? DownloadUrl { get; set; }
 
     /// <summary>
-    /// The OneDrive/ODSP drive-item id for the file. This is the storage-specific file identity a Graph fetch keys off.
+    /// The ODSP/OneDrive identifier for the file. Useful for correlation, dedup and logging, but not for retrieval:
+    /// the Graph fetch resolves bytes from the attachment's <c>contentUrl</c> through <c>/shares</c>, and this value
+    /// arrives as a GUID, which is a SharePoint <c>listItemUniqueId</c> shape rather than a Graph <c>driveItem.id</c>.
     /// </summary>
     [JsonPropertyName("uniqueId")]
     public string? UniqueId { get; set; }
