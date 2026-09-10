@@ -142,7 +142,8 @@ public static class TeamsBotApplicationHostingExtensions
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
         // Register TeamsBotApplicationOptions
-        TeamsBotApplicationOptions teamsOptions = new() { AppId = botConfig.ClientId };
+        // BotConfig has already validated this as an absolute URI, so the parse cannot fail here.
+        TeamsBotApplicationOptions teamsOptions = new() { AppId = botConfig.ClientId, GraphBaseUrl = new Uri(botConfig.GraphBaseUrl) };
         configure?.Invoke(teamsOptions);
         services.AddSingleton(teamsOptions);
 
@@ -160,6 +161,17 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddHttpClient<Files.FileDownloader>();
 
         services.AddTeamsApiClient(nameof(ApiClient));
+
+        // A custom subclass forwards only the constructor arguments it declares, and the shape this SDK documents declares four, so a service added to the base constructor later never reaches it.
+        // Re-registering TApp to back-fill after construction keeps every documented subclass working unchanged.
+        // Without it the whole Agentic User file path is silently unreachable from a subclass: every content-URL-only file reports no credential.
+        services.AddSingleton<TApp>(sp =>
+        {
+            TApp app = ActivatorUtilities.CreateInstance<TApp>(sp);
+            app.TokenProvider ??= sp.GetService<BotTokenProvider>();
+            return app;
+        });
+
         return services;
     }
 

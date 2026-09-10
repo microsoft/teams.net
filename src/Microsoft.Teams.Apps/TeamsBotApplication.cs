@@ -11,6 +11,7 @@ using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -96,6 +97,20 @@ public class TeamsBotApplication : BotApplication
     internal Files.FileDownloader FileDownloader { get; }
 
     /// <summary>
+    /// Acquires Graph tokens for the inbound-file path.
+    /// Null when the app was built outside the hosting extensions, in which case a file that can only be reached through Graph reports no credential rather than failing late.
+    /// <para>Back-filled by the hosting extensions after construction rather than injected through the constructor.
+    /// That is the ONLY wiring path: a custom subclass forwards only the arguments it declares, so a constructor parameter would reach the base class and never a subclass, leaving the Agentic User file path silently dead for anyone who subclasses. One path serves both.</para>
+    /// </summary>
+    internal BotTokenProvider? TokenProvider { get; set; }
+
+    /// <summary>Graph host root the inbound-file path resolves drive items against, from <c>BotFramework:GraphBaseUrl</c>. Null uses the public cloud.</summary>
+    internal Uri? GraphBaseUrl { get; }
+
+    /// <summary>The Graph scope derived from <see cref="GraphBaseUrl"/>. Derived rather than configured so the host and the audience cannot disagree.</summary>
+    private string GraphScope => $"{(GraphBaseUrl ?? Files.GraphShare.DefaultBaseUrlRoot).ToString().TrimEnd('/')}/.default";
+
+    /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/> without a file downloader.
     /// <para>Preserves the exact signature shipped in 2.1.0. C# bakes optional arguments into the CALLER, so an
     /// assembly compiled against 2.1.0 emits a call to this five-parameter form. Without it that call resolves to
@@ -160,6 +175,7 @@ public class TeamsBotApplication : BotApplication
         Logger = logger;
         Router = new Router(logger);
         FileDownloader = fileDownloader ?? Files.FileDownloader.CreateDefault();
+        GraphBaseUrl = options?.GraphBaseUrl;
 
         if (options is not null)
         {
@@ -230,6 +246,32 @@ public class TeamsBotApplication : BotApplication
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
+    }
+    /// <summary>
+    /// Acquires a Graph token for the app itself, reading with application permissions.
+    /// </summary>
+    /// <param name="tenantId">Tenant the inbound activity arrived in, so a multi-tenant app reads in the tenant the file lives in rather than its own. <c>null</c> leaves the configured authority alone.</param>
+    /// <param name="cancellationToken">A token to cancel the acquisition.</param>
+    internal Task<string?> GetAppGraphTokenAsync(string? tenantId = null, CancellationToken cancellationToken = default)
+        => TokenProvider?.GetAppTokenAsync(GraphScope, tenantId, cancellationToken) ?? Task.FromResult<string?>(null);
+
+    /// <summary>
+    /// Acquires a Graph token for an Agentic User, via the federated identity exchange the token provider already performs.
+    /// <para>Separate from <see cref="GetAppGraphTokenAsync"/> because the identity differs, not merely the scope: this reads as the agent, so it sees what was shared with the agent rather than everything the app may read.</para>
+    /// </summary>
+    /// <param name="identity">The agentic identity to act as.</param>
+    /// <param name="cancellationToken">A token to cancel the acquisition.</param>
+    internal Task<string?> GetAgenticGraphTokenAsync(AgenticIdentity identity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(identity);
+
+        // A blueprint-level identity legitimately has this shape. There is no agentic user to mint a token for, so the file path must report no credential rather than silently reading as the app.
+        if (string.IsNullOrEmpty(identity.AgenticAppId) || string.IsNullOrEmpty(identity.AgenticUserId))
+        {
+            return Task.FromResult<string?>(null);
+        }
+
+        return TokenProvider?.GetAgenticUserTokenAsync(identity, GraphScope, cancellationToken) ?? Task.FromResult<string?>(null);
     }
 
     // ==================== Proactive Messaging ====================
