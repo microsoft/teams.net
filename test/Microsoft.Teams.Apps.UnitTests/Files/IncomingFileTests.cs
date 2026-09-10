@@ -92,6 +92,44 @@ public class IncomingFileTests
         Assert.True(content.Disposed);
     }
 
+    /// <summary>
+    /// The response is released when the fetch FAILS, not only when a successful stream is disposed.
+    /// <para>The success path is pinned by the test above. This is the path that matters more in practice: expiry and
+    /// denial are the headline error modes for this feature, so a failed download is common rather than exceptional.
+    /// The release depends on a <c>catch</c> that disposes and rethrows, and a regression that removed it would leak
+    /// a connection per failed download while leaving every success test green.</para>
+    /// </summary>
+    [Fact]
+    public async Task Download_ReleasesTheResponse_WhenTheFetchFails()
+    {
+        TrackingContent content = new("unauthorized");
+        SequenceHttpMessageHandler handler = new SequenceHttpMessageHandler()
+            .Enqueue(new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = content });
+        IncomingFile file = PersonalFile(handler);
+
+        await Assert.ThrowsAsync<FileUrlExpiredException>(() => file.DownloadAsync());
+
+        Assert.True(content.Disposed);
+    }
+
+    /// <summary>
+    /// A cancellation token reaches the transport rather than being accepted and dropped.
+    /// <para>TypeScript pins this with a dedicated cancellation spec; .NET had no equivalent. The risk here is narrow,
+    /// because the cancelling itself is framework behaviour, but "the parameter is threaded all the way down" is
+    /// exactly the kind of thing a refactor drops silently: the signature still compiles, and every test that passes
+    /// <c>CancellationToken.None</c> stays green.</para>
+    /// </summary>
+    [Fact]
+    public async Task Download_HonoursAnAlreadyCancelledToken()
+    {
+        SequenceHttpMessageHandler handler = new SequenceHttpMessageHandler().Enqueue(Body("never read", "text/plain"));
+        IncomingFile file = PersonalFile(handler);
+        using CancellationTokenSource cts = new();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => file.DownloadAsync(cts.Token));
+    }
+
     private static IncomingFile PersonalFile(SequenceHttpMessageHandler handler, string? contentType = null, string? downloadUrl = DownloadUrl, ConversationType? scope = null)
         => new(
             "notes.txt",
