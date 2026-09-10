@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.ComponentModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Clients;
@@ -93,6 +94,31 @@ public class TeamsBotApplication : BotApplication
     /// extensions, so its <see cref="HttpClient"/> is factory-managed.
     /// </summary>
     internal Files.FileDownloader FileDownloader { get; }
+
+    /// <summary>
+    /// Initializes a new <see cref="TeamsBotApplication"/> without a file downloader.
+    /// <para>Preserves the exact signature shipped in 2.1.0. C# bakes optional arguments into the CALLER, so an
+    /// assembly compiled against 2.1.0 emits a call to this five-parameter form. Without it that call resolves to
+    /// nothing at runtime and throws <c>MissingMethodException</c>, which recompiling the consuming app cannot fix
+    /// when the offending IL is inside a third-party library built against the older version.</para>
+    /// <para>Hidden from IntelliSense because it is a compatibility shim rather than an API to choose. New code should
+    /// use the constructor that accepts a file downloader.</para>
+    /// </summary>
+    /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
+    /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
+    /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
+    /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public TeamsBotApplication(
+        ApiClient teamsApiClient,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<TeamsBotApplication> logger,
+        TeamsBotApplicationOptions? options,
+        TurnStateLoader? stateLoader)
+        : this(teamsApiClient, httpContextAccessor, logger, options, stateLoader, fileDownloader: null)
+    {
+    }
 
     /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
