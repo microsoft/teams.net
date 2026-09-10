@@ -108,4 +108,22 @@ public class GraphShareTests
             GraphShare.BuildDriveItemContentUrl(sharing).OriginalString,
             StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void BuildDriveItemContentUrl_RefusesAnHttpRoot_BecauseTheRequestCarriesABearer()
+    {
+        // The download URL is already required to be https and carries no bearer. This one does, so it gets at least the same check: a mistyped scheme would otherwise put a Graph token on the wire in cleartext.
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(
+            () => GraphShare.BuildDriveItemContentUrl(new Uri("https://a.example/b"), new Uri("http://graph.microsoft.com")));
+
+        Assert.Contains("must use https", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildDriveItemContentUrl_AllowsHttpOnLoopback_SoALocalMockGraphStillWorks()
+    {
+        Uri built = GraphShare.BuildDriveItemContentUrl(new Uri("https://a.example/b"), new Uri("http://localhost:3000"));
+
+        Assert.StartsWith("http://localhost:3000/v1.0/shares/", built.OriginalString, StringComparison.Ordinal);
+    }
 }
