@@ -203,7 +203,8 @@ public class FilesGraphIntegrationTests : IClassFixture<GraphFilesFixture>
     }
 
     /// <summary>
-    /// An expired pre-authorized URL is terminal, against a real 401 from a real Microsoft endpoint.
+    /// A terminal 401 on the pre-authorized path does not reach for Graph, asserted against a live first-party 401 rather than a mock.
+    /// <para><b>The 401 is real; the expiry is synthetic.</b> This uses an unauthenticated Graph endpoint as a stand-in for a lapsed <c>tempauth</c> URL, because a genuinely expired one cannot be produced on demand in an automated test. What it pins is the branch: a 401 on the pre-authorized path is terminal and acquires no token. That a real lapsed URL produces that 401 is covered by the manual e2e runs, not here.</para>
     /// <para>The contentUrl is supplied deliberately. It is the locator a Graph fallback would use, so passing
     /// it proves the URL is terminal <em>because there is no recovery</em>, rather than because the test withheld
     /// the means to recover.</para>
