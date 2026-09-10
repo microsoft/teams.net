@@ -56,7 +56,19 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Gets the uploaded files attached to the current inbound activity, exposed as lazy <see cref="Files.IncomingFile"/> handles. See <see cref="Files.FilesAccessor"/> for the full contract.
     /// </summary>
-    public Files.FilesAccessor Files => _files ??= new Files.FilesAccessor(Activity, TeamsBotApplication.Logger, TeamsBotApplication.FileDownloader);
+    public Files.FilesAccessor Files => _files ??= new Files.FilesAccessor(
+        Activity,
+        TeamsBotApplication.Logger,
+        TeamsBotApplication.FileDownloader,
+        // Resolved at fetch time rather than eagerly, so a turn that never touches files pays nothing for it.
+        //
+        // An Agentic User reads as itself. An app-only token sees what the app may read tenant-wide, a different set from what was shared with the agent, so it would 403 on exactly the files the agent was given.
+        FilesCredential.Select(
+            Activity.Recipient?.GetAgenticIdentity(),
+            TeamsBotApplication.GraphBaseUrl,
+            // The activity's tenant, not the app's: a multi-tenant app has to read in the tenant the file lives in.
+            ct => TeamsBotApplication.GetAppGraphTokenAsync(Activity.TenantId, ct),
+            TeamsBotApplication.GetAgenticGraphTokenAsync));
 
     // ==================== Turn State ====================
 
