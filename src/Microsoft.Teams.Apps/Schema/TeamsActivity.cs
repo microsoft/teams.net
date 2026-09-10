@@ -110,6 +110,22 @@ public class TeamsActivity : CoreActivity
     public TeamsChannelData? ChannelData { get; set; }
 
     /// <summary>
+    /// The tenant an activity belongs to, read from the conversation first and from channel data second.
+    /// <para>Reading only <c>conversation.tenantId</c> silently misses the ones that arrive as
+    /// <c>channelData.tenant</c> depending on the activity. An empty tenant is treated as absent.</para>
+    /// </summary>
+    [JsonIgnore]
+    public string? TenantId
+    {
+        get
+        {
+            string? fromConversation = Conversation?.TenantId;
+
+            return string.IsNullOrEmpty(fromConversation) ? ChannelData?.Tenant?.Id : fromConversation;
+        }
+    }
+
+    /// <summary>
     /// Gets the entities specific to Teams.
     /// </summary>
     [JsonPropertyName("entities")]

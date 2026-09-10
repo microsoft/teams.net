@@ -286,5 +286,53 @@ public class TeamsActivityTests
             }
             """;
 
+    /// <summary>
+    /// The tenant is read from the conversation first, then from channel data.
+    /// <para>Both slots carry it depending on the activity. Reading only the conversation would silently
+    /// misresolve the tenant for a multi-tenant app, which then acquires a token against the wrong tenant or none.</para>
+    /// </summary>
+    [Fact]
+    public void TenantId_PrefersTheConversation()
+    {
+        TeamsActivity activity = new()
+        {
+            Conversation = new TeamsConversation { Id = "c", TenantId = "tenant-from-conversation" },
+            ChannelData = new TeamsChannelData { Tenant = new TeamsChannelDataTenant { Id = "tenant-from-channeldata" } },
+        };
 
+        Assert.Equal("tenant-from-conversation", activity.TenantId);
+    }
+
+    [Fact]
+    public void TenantId_FallsBackToChannelData_WhenTheConversationCarriesNone()
+    {
+        TeamsActivity activity = new()
+        {
+            Conversation = new TeamsConversation { Id = "c" },
+            ChannelData = new TeamsChannelData { Tenant = new TeamsChannelDataTenant { Id = "tenant-from-channeldata" } },
+        };
+
+        Assert.Equal("tenant-from-channeldata", activity.TenantId);
+    }
+
+    // Empty is treated as absent rather than as a tenant, so a blank slot does not shadow a populated one.
+    [Fact]
+    public void TenantId_TreatsAnEmptyConversationTenantAsAbsent()
+    {
+        TeamsActivity activity = new()
+        {
+            Conversation = new TeamsConversation { Id = "c", TenantId = "" },
+            ChannelData = new TeamsChannelData { Tenant = new TeamsChannelDataTenant { Id = "tenant-from-channeldata" } },
+        };
+
+        Assert.Equal("tenant-from-channeldata", activity.TenantId);
+    }
+
+    [Fact]
+    public void TenantId_IsNull_WhenNeitherSlotCarriesOne()
+    {
+        TeamsActivity activity = new() { Conversation = new TeamsConversation { Id = "c" } };
+
+        Assert.Null(activity.TenantId);
+    }
 }
