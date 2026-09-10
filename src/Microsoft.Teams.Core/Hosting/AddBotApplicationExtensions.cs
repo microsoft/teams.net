@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -162,6 +163,13 @@ public static class AddBotApplicationExtensions
 
         ArgumentNullException.ThrowIfNull(botConfig);
         ArgumentNullException.ThrowIfNull(botConfig.MsalConfigurationSection);
+
+        // The same acquisition the outbound pipeline performs, reachable by callers that are not an HTTP pipeline.
+        // TryAdd because this method is documented as safe to call more than once.
+        services.TryAddSingleton(sp => new BotTokenProvider(
+            sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+            botConfig.SectionName,
+            sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));
 
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
