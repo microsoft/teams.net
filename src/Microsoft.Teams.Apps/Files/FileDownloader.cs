@@ -143,7 +143,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
         => OpenFileStreamAsync(scope, downloadUrl, contentUrl: null, contentType, priorFetchSucceeded, credential: null, cancellationToken);
 
     /// <summary>
-    /// Open a byte stream for an inbound file, resolving it through Microsoft Graph when the pre-authorized download URL is absent or has lapsed.
+    /// Open a byte stream for an inbound file, resolving it through Microsoft Graph when the pre-authorized download URL is absent.
     /// <para>Only <c>personal</c> is implemented; other scopes throw <see cref="FileScopeNotSupportedException"/> until their Graph receive path lands.</para>
     /// </summary>
     /// <param name="scope">Conversation scope; the dispatcher is keyed on this.</param>

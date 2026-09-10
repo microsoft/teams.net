@@ -160,7 +160,7 @@ public class FileScopeNotSupportedException : FileException
 
 /// <summary>
 /// Raised when a file's bytes could not be retrieved through Microsoft Graph.
-/// <para>Distinct from <see cref="FileUrlExpiredException"/>, which means a pre-authorized URL lapsed and no usable Graph route existed. This exception means a Graph fetch was attempted and did not produce bytes.</para>
+/// <para>Distinct from <see cref="FileUrlExpiredException"/>, which is terminal: a pre-authorized URL lapsed, and the SDK does not resolve those bytes another way even when a <c>contentUrl</c> and a Graph credential are both present. This exception means the Graph route was the one that failed, either refused by the service or ruled out before the request when no usable credential was available.</para>
 /// </summary>
 public class FileRetrievalException : FileException
 {
