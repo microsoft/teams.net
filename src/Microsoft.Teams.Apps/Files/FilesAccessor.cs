@@ -9,7 +9,9 @@ namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
 /// Accessor for the uploaded files on the current inbound activity, exposed as <c>ctx.Files</c>. Reads the files attached to the current inbound activity and exposes them as lazy <see cref="IncomingFile"/> handles.
-/// <para>"Files" is the uploaded-file view over the raw <c>ctx.Activity.Attachments</c> list. Uploaded files arrive as attachments where <c>ContentType</c> is <c>file.download.info</c>, carrying file metadata (a <c>downloadUrl</c> plus identifiers) rather than the bytes themselves, which are fetched from that URL. This accessor maps each to an <see cref="IncomingFile"/>, and skips everything else in <c>Attachments</c> (adaptive cards, mentions, other non-file content) as well as malformed file entries, never throwing. For each file it returns, the original wire attachment (the metadata object, not the bytes) is retained on <see cref="IncomingFile.Raw"/>. A malformed or non-file attachment is reachable only through the raw <c>Activity.Attachments</c> list.</para>
+/// <para>"Files" is the uploaded-file view over the raw <c>ctx.Activity.Attachments</c> list. Uploaded files arrive as attachments where <c>ContentType</c> is <c>file.download.info</c>, carrying file metadata rather than the bytes themselves.
+/// The metadata names where the bytes live: a pre-authorized <c>downloadUrl</c> when the platform issues one, otherwise a <c>contentUrl</c> that locates the item so Graph can resolve it.
+/// This accessor maps each to an <see cref="IncomingFile"/>, and skips everything else in <c>Attachments</c> (adaptive cards, mentions, other non-file content) as well as malformed file entries, never throwing. For each file it returns, the original wire attachment (the metadata object, not the bytes) is retained on <see cref="IncomingFile.Raw"/>. A malformed or non-file attachment is reachable only through the raw <c>Activity.Attachments</c> list.</para>
 /// <para>This covers the file-upload path, not "any uploaded media". What matters is how the content arrived, not the file's MIME type, so file <em>type</em> is unrestricted (pdf, docx, png, etc.) as long as it was sent as an uploaded file. An image sent as a file appears here, but the same image pasted inline does not.</para>
 /// </summary>
 public sealed class FilesAccessor
@@ -17,16 +19,19 @@ public sealed class FilesAccessor
     private readonly TeamsActivity _activity;
     private readonly ILogger _logger;
     private readonly FileDownloader _downloader;
+    private readonly GraphCredential? _credential;
 
     /// <summary>Initializes a new instance of the <see cref="FilesAccessor"/> class for the given inbound activity.</summary>
     /// <param name="activity">The inbound activity whose attachments are read.</param>
-    /// <param name="logger">Logger used to leave a breadcrumb when a malformed file attachment is skipped.</param>
+    /// <param name="logger">Logger used to leave a breadcrumb when a file attachment is skipped.</param>
     /// <param name="downloader">Opens byte streams for the files this accessor hands out.</param>
-    internal FilesAccessor(TeamsActivity activity, ILogger logger, FileDownloader downloader)
+    /// <param name="credential">Graph credential for the current actor, resolved at fetch time. Absent when the app has no Graph route, in which case an expired URL cannot be recovered.</param>
+    internal FilesAccessor(TeamsActivity activity, ILogger logger, FileDownloader downloader, GraphCredential? credential = null)
     {
         _activity = activity;
         _logger = logger;
         _downloader = downloader;
+        _credential = credential;
     }
 
     /// <summary>
@@ -89,15 +94,34 @@ public sealed class FilesAccessor
 
         FileDownloadInfo? content = AsFileDownloadInfo(attachment.Content);
         Uri? downloadUrl = content?.DownloadUrl;
+        Uri? contentUrl = attachment.ContentUrl;
         string? name = attachment.Name;
 
-        // A `file.download.info` without fetchable URL or name cannot be turned into a usable handle. Skip it and leave a breadcrumb rather than throwing.
-        if (downloadUrl is null || string.IsNullOrEmpty(name))
+        // `downloadUrl` is fetched directly. A `contentUrl` without one is the Agentic User case and resolves through
+        // Graph, restricted to `personal` because agentic delivery in other scopes is unvalidated: surfacing a handle
+        // there will produce a `ListAsync()` entry that then fails at `DownloadAsync()`. The `downloadUrl` branch
+        // keeps its existing scope behavior.
+        bool hasLocator = downloadUrl is not null || contentUrl is not null;
+        bool canFetch = downloadUrl is not null || (scope == ConversationType.Personal && contentUrl is not null);
+
+        if (!canFetch || string.IsNullOrEmpty(name))
         {
-            _logger.LogDebug(
-                "files: skipping file.download.info attachment at index {Index}; missing {Missing}",
-                index,
-                string.IsNullOrEmpty(name) ? "name" : "downloadUrl");
+            // Split by cause: a malformed attachment is a real defect, while an out-of-scope file is expected noise.
+            if (string.IsNullOrEmpty(name) || !hasLocator)
+            {
+                _logger.LogWarning(
+                    "files: skipping file.download.info attachment at index {Index}; missing {Missing}",
+                    index,
+                    string.IsNullOrEmpty(name) ? "name" : "a download or content URL");
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "files: skipping file.download.info attachment at index {Index}; '{Scope}' scope files are not fetchable yet",
+                    index,
+                    scope.Value);
+            }
+
             return null;
         }
 
@@ -106,10 +130,11 @@ public sealed class FilesAccessor
             UniqueId = content?.UniqueId,
             // `fileType` is the platform-supplied extension (e.g. `pdf`); left null when the wire omits it, matching how peer SDKs surface it.
             Extension = content?.FileType,
-            // Browsable link to the file in OneDrive/SharePoint; not fetchable like `downloadUrl`.
-            ContentUrl = attachment.ContentUrl,
+            // Browsable link to the file in OneDrive/SharePoint. Not directly fetchable like `downloadUrl`, but it is the locator a Graph `/shares` resolution keys off.
+            ContentUrl = contentUrl,
             Raw = attachment,
             DownloadUrl = downloadUrl,
+            Credential = _credential,
         };
     }
 
