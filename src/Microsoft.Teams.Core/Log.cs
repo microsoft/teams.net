@@ -111,6 +111,9 @@ internal static partial class Log
     [LoggerMessage(EventId = 57, Level = LogLevel.Warning, Message = "Authentication is not configured for scheme '{SchemeName}'. Configure ClientId or enable DangerouslyAllowUnauthenticatedRequests for local development.")]
     public static partial void AuthenticationNotConfigured(this ILogger logger, string schemeName);
 
+    [LoggerMessage(EventId = 58, Level = LogLevel.Warning, Message = "Graph host '{GraphBaseUrl}' is not one this SDK associates with the Entra instance '{EntraInstance}'. If this is a sovereign cloud, set '{SectionName}:GraphBaseUrl' to that cloud's Graph endpoint; otherwise Graph calls will go to the wrong cloud and fail as 401 at the first request.")]
+    public static partial void GraphHostMayNotMatchCloud(this ILogger logger, string graphBaseUrl, string entraInstance, string sectionName);
+
     // ── Hosting (UMI inference) ─────────────────────────────────────────
 
     [LoggerMessage(EventId = 60, Level = LogLevel.Information, Message = "No ClientCredentials configured; treating ClientId '{ClientId}' as a User-Assigned Managed Identity. Bot Framework tokens will be acquired via the IMDS endpoint.")]
