@@ -26,6 +26,8 @@ public sealed class BotConfig
 
     internal const string DefaultBotTokenIssuer = "https://api.botframework.com";
 
+    internal const string DefaultGraphBaseUrl = "https://graph.microsoft.com";
+
     /// <summary>
     /// Gets or sets the Azure AD tenant ID.
     /// </summary>
@@ -67,6 +69,15 @@ public sealed class BotConfig
     /// Defaults to the public-cloud issuer when not configured.
     /// </summary>
     public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
+
+    /// <summary>
+    /// Gets or sets the Microsoft Graph host root that Graph-backed features address.
+    /// For sovereign clouds, set <c>BotFramework:GraphBaseUrl</c> in configuration, e.g. <c>"https://graph.microsoft.us"</c> for USGov.
+    /// Defaults to the public-cloud host when not configured.
+    /// <para>A host root, not a versioned endpoint: callers append their own API version, so a pre-versioned value
+    /// produces <c>/v1.0/v1.0</c>.</para>
+    /// </summary>
+    public string GraphBaseUrl { get; set; } = DefaultGraphBaseUrl;
 
     /// <summary>
     /// Gets or sets whether inbound bot requests should bypass authentication.
@@ -134,6 +145,7 @@ public sealed class BotConfig
             EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
             OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
             BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
+            GraphBaseUrl = ResolveAbsoluteUri(botFrameworkSection, "GraphBaseUrl", DefaultGraphBaseUrl),
             DangerouslyAllowUnauthenticatedRequests = dangerouslyAllowUnauthenticatedRequests,
             MsalConfigurationSection = section,
             SectionName = sectionName
@@ -152,6 +164,9 @@ public sealed class BotConfig
                     _logUsingSectionConfig(l, sectionName, null);
                 else
                     l.AuthenticationNotConfigured(sectionName);
+
+                if (!GraphHostMatchesCloud(config.EntraInstance, config.GraphBaseUrl))
+                    l.GraphHostMayNotMatchCloud(config.GraphBaseUrl, config.EntraInstance, sectionName);
             }, typeof(BotConfig));
         }
 
@@ -207,6 +222,33 @@ public sealed class BotConfig
         throw new InvalidOperationException(
             $"Configuration value '{section.Path}:{key}' is not a valid boolean: '{value}'.");
     }
+    /// <summary>
+    /// Whether a Graph host is one this SDK associates with the Entra instance the rest of the configuration implies.
+    /// </summary>
+    /// <remarks>
+    /// <para>A derived Graph host cannot disagree with the cloud, but a configuration key can, and the two are set independently. The failure this catches is the quiet one: an operator sets <c>Instance</c> for a sovereign cloud, leaves <c>GraphBaseUrl</c> alone, and silently inherits the public-cloud default until the first file download returns 401 from the wrong cloud.</para>
+    /// <para>Unknown instances return <c>true</c> deliberately. Air-gapped and future clouds are not enumerable here, and a warning aimed at a deployment this SDK knows nothing about would be noise rather than a signal.</para>
+    /// <para>The US Gov instance maps to two Graph hosts because GCC High and DoD share an Entra endpoint and differ only in their Graph resource.</para>
+    /// </remarks>
+    internal static bool GraphHostMatchesCloud(string entraInstance, string graphBaseUrl)
+    {
+        if (!Uri.TryCreate(entraInstance, UriKind.Absolute, out Uri? entra)
+            || !Uri.TryCreate(graphBaseUrl, UriKind.Absolute, out Uri? graph))
+        {
+            return true;
+        }
+
+        static bool IsHost(Uri uri, string host) => string.Equals(uri.Host, host, StringComparison.OrdinalIgnoreCase);
+
+        string[]? expected =
+            IsHost(entra, "login.microsoftonline.com") ? ["graph.microsoft.com"]
+            : IsHost(entra, "login.microsoftonline.us") ? ["graph.microsoft.us", "dod-graph.microsoft.us"]
+            : IsHost(entra, "login.partner.microsoftonline.cn") ? ["microsoftgraph.chinacloudapi.cn"]
+            : null;
+
+        return expected is null || expected.Contains(graph.Host, StringComparer.OrdinalIgnoreCase);
+    }
+
     private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
     {
         ArgumentNullException.ThrowIfNull(section);
