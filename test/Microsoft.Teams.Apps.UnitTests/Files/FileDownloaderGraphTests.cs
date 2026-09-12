@@ -135,7 +135,7 @@ public class FileDownloaderGraphTests
     {
         RecordingHandler handler = new((HttpStatusCode.OK, null));
 
-        await Assert.ThrowsAsync<FileRetrievalException>(() => OpenAsync(DownloaderFor(handler), null, ContentUrl, null));
+        await Assert.ThrowsAsync<FileCredentialException>(() => OpenAsync(DownloaderFor(handler), null, ContentUrl, null));
 
         Assert.Empty(handler.Calls);
     }
@@ -146,10 +146,8 @@ public class FileDownloaderGraphTests
         // The app has no consented Graph application permissions. Detectable without a round trip, so this surfaces as a named failure rather than an opaque Graph 401.
         RecordingHandler handler = new((HttpStatusCode.OK, null));
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException error = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Credential(FileActor.App, null)));
-
-        Assert.Equal(FileRetrievalFailureReason.NoGraphCredential, error.Reason);
         Assert.Equal(FileActor.App, error.Actor);
         Assert.Empty(handler.Calls);
     }
@@ -164,12 +162,10 @@ public class FileDownloaderGraphTests
             _ => throw new InvalidOperationException("AADSTS7000215: Invalid client secret provided."),
             null);
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException error = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, throwing));
-
-        Assert.Equal(FileRetrievalFailureReason.NoGraphCredential, error.Reason);
         Assert.Equal(FileActor.AgenticUser, error.Actor);
-        Assert.Equal("AADSTS7000215: Invalid client secret provided.", error.Details);
+        Assert.Equal("AADSTS7000215: Invalid client secret provided.", error.Cause);
         Assert.Empty(handler.Calls);
     }
 
@@ -181,10 +177,8 @@ public class FileDownloaderGraphTests
         RecordingHandler handler = new((HttpStatusCode.OK, null));
         string roleless = Jwt(new { aud = "https://graph.microsoft.com", roles = Array.Empty<string>() });
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException error = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Credential(FileActor.App, roleless)));
-
-        Assert.Equal(FileRetrievalFailureReason.NoGraphCredential, error.Reason);
         Assert.Equal(FileActor.App, error.Actor);
         Assert.Empty(handler.Calls);
     }
@@ -197,10 +191,8 @@ public class FileDownloaderGraphTests
         RecordingHandler handler = new((HttpStatusCode.OK, null));
         string unrelated = Jwt(new { scp = "profile openid email Mail.Send Chat.ReadWrite User.Read.All" });
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException error = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Credential(FileActor.AgenticUser, unrelated)));
-
-        Assert.Equal(FileRetrievalFailureReason.NoGraphCredential, error.Reason);
         Assert.Equal(FileActor.AgenticUser, error.Actor);
         Assert.Empty(handler.Calls);
     }
@@ -255,10 +247,9 @@ public class FileDownloaderGraphTests
     {
         RecordingHandler handler = new((HttpStatusCode.Forbidden, null));
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileAccessException error = await Assert.ThrowsAsync<FileAccessException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Agentic(handler)));
-
-        Assert.Equal(FileRetrievalFailureReason.AccessDenied, error.Reason);
+        Assert.Equal(403, error.Status);
         Assert.Equal(FileActor.AgenticUser, error.Actor);
         Assert.Contains("the agentic user", error.Message, StringComparison.Ordinal);
     }
@@ -332,10 +323,8 @@ public class FileDownloaderGraphTests
         // of what went wrong.
         RecordingHandler handler = new((HttpStatusCode.OK, null));
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException error = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Credential(FileActor.AgenticUser, null)));
-
-        Assert.Equal(FileRetrievalFailureReason.NoGraphCredential, error.Reason);
         Assert.Equal(FileActor.AgenticUser, error.Actor);
     }
 
@@ -362,10 +351,9 @@ public class FileDownloaderGraphTests
         // only signal that distinguishes them.
         RecordingHandler handler = new((HttpStatusCode.Forbidden, """{"error":{"code":"accessDenied","message":"The caller does not have permission"}}"""));
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileAccessException error = await Assert.ThrowsAsync<FileAccessException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Agentic(handler)));
-
-        Assert.Equal(FileRetrievalFailureReason.AccessDenied, error.Reason);
+        Assert.Equal(403, error.Status);
         Assert.Equal("accessDenied: The caller does not have permission", error.Details);
     }
 
@@ -375,7 +363,7 @@ public class FileDownloaderGraphTests
         // A 401 can come from the edge as HTML rather than Graph JSON, so the parser must not assume an envelope.
         RecordingHandler handler = new((HttpStatusCode.Unauthorized, "<html><body>Access Denied</body></html>"));
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileAccessException error = await Assert.ThrowsAsync<FileAccessException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Agentic(handler)));
 
         Assert.Equal("<html><body>Access Denied</body></html>", error.Details);
@@ -388,7 +376,7 @@ public class FileDownloaderGraphTests
         // it safe; without it a large body would land whole in an exception message.
         RecordingHandler handler = new((HttpStatusCode.Forbidden, new string('x', 8192)));
 
-        FileRetrievalException error = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileAccessException error = await Assert.ThrowsAsync<FileAccessException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Agentic(handler)));
 
         Assert.Equal(2048, error.Details!.Length);
@@ -402,9 +390,9 @@ public class FileDownloaderGraphTests
         // permissions doc would advise a fix that does not work.
         RecordingHandler handler = new((HttpStatusCode.OK, null));
 
-        FileRetrievalException agentic = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException agentic = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Credential(FileActor.AgenticUser, null)));
-        FileRetrievalException app = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileCredentialException app = await Assert.ThrowsAsync<FileCredentialException>(
             () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Credential(FileActor.App, null)));
 
         Assert.Contains("https://learn.microsoft.com/entra/agent-id/concept-inheritable-permissions", agentic.Message, StringComparison.Ordinal);

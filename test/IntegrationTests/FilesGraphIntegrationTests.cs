@@ -122,11 +122,12 @@ public class FilesGraphIntegrationTests : IClassFixture<GraphFilesFixture>
     /// missing folder on a real site, a nonexistent personal site, and an entirely foreign host. <b>All four returned
     /// 403 <c>accessDenied</c>, "The sharing link no longer exists, or you do not have permission to access it."</b>
     /// None returned 404. Only a malformed token behaves differently, at <c>400 invalidRequest</c>.</para>
-    /// <para>So <c>FileRetrievalFailureReason.NotFound</c> has no producer on this path, and the <c>status is 404</c>
-    /// branch is unreachable. That is Graph behaving correctly rather than a Graph bug: telling an unauthorized
-    /// caller whether a resource exists is an information disclosure, so the two answers are deliberately merged.</para>
-    /// <para>If Graph ever splits them, this goes red and <c>NotFound</c> becomes reachable, which is a
-    /// change worth being told about.</para>
+    /// <para>So a 404 has no producer on this path. That is Graph behaving correctly rather than a Graph bug:
+    /// telling an unauthorized caller whether a resource exists is an information disclosure, so the two answers are
+    /// deliberately merged. This is also why <see cref="FileAccessException.Status"/> is carried verbatim: the
+    /// status is the only thing that separates a rejected token from an insufficient grant, and it cannot separate a
+    /// missing item from an unshared one.</para>
+    /// <para>If Graph ever splits them, this goes red, which is a change worth being told about.</para>
     /// </summary>
     [SkippableFact(Timeout = 30000)]
     [Trait("Category", "Files")]
@@ -145,7 +146,7 @@ public class FilesGraphIntegrationTests : IClassFixture<GraphFilesFixture>
             ? original + suffix
             : string.Concat(original.AsSpan(0, query), suffix, original.AsSpan(query)));
 
-        FileRetrievalException ex = await Assert.ThrowsAsync<FileRetrievalException>(
+        FileAccessException ex = await Assert.ThrowsAsync<FileAccessException>(
             () => Downloader.OpenFileStreamAsync(
                 ConversationType.Personal,
                 downloadUrl: null,
@@ -155,9 +156,9 @@ public class FilesGraphIntegrationTests : IClassFixture<GraphFilesFixture>
                 credential: Credential(),
                 CancellationToken.None));
 
-        _output.WriteLine($"missing item resolved to reason={ex.Reason}, details={ex.Details}");
+        _output.WriteLine($"missing item resolved to status={ex.Status}, details={ex.Details}");
 
-        Assert.Equal(FileRetrievalFailureReason.AccessDenied, ex.Reason);
+        Assert.Equal(403, ex.Status);
         Assert.Equal(FileActor.AgenticUser, ex.Actor);
 
         // ReadServiceErrorAsync returns null on an empty body, and an accessDenied carrying no message tells a
