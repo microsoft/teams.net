@@ -202,6 +202,8 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
 
+        EnsureFinalHopIsHttps(response);
+
         try
         {
             int status = (int)response.StatusCode;
@@ -256,7 +258,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
         if (token is null || CarriesNoGraphPermissions(token))
         {
             // An acquisition that threw is not the same as an identity with no permissions, and the guidance for one is wrong for the other, so the cause is carried rather than dropped.
-            throw new FileRetrievalException(FileRetrievalFailureReason.NoGraphCredential, actor, tokenFailure);
+            throw new FileCredentialException(actor, tokenFailure);
         }
 
         Uri url = GraphShare.BuildDriveItemContentUrl(sharingUrl, credential?.BaseUrlRoot);
@@ -269,16 +271,18 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
 
+        EnsureFinalHopIsHttps(response);
+
         try
         {
             int status = (int)response.StatusCode;
 
             if (status is 401 or 403)
             {
-                // An unconsented scope, a file never shared with this identity, and a drive item that does not exist are all 403, differing only in message text.
-                // The SDK cannot branch on that, but the developer can read it, so it is carried rather than dropped.
-                throw new FileRetrievalException(
-                    FileRetrievalFailureReason.AccessDenied,
+                // The status is carried rather than collapsed: a 401 means the token itself was rejected and a 403 means the identity lacks the grant, and those have different remedies.
+                // Within a 403, an unconsented scope and a file never shared are still indistinguishable, so the service's own text is carried too.
+                throw new FileAccessException(
+                    status,
                     actor,
                     await ReadServiceErrorAsync(response, cancellationToken).ConfigureAwait(false));
             }
@@ -341,6 +345,24 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     /// <para>Graph replies <c>{ "error": { "code", "message" } }</c>, but a 401 can also come from the edge as HTML, so this must not assume JSON.
     /// Bounded because it runs on a stream the SDK does not size, and lands in an exception message.</para>
     /// </summary>
+
+    /// <summary>
+    /// Refuse a response whose final hop left HTTPS.
+    /// <para>Storage answers with a 302 to the host actually holding the bytes, so redirects have to be followed. They must not be followed <em>down</em> to plaintext: an <c>https</c> to <c>http</c> hop would put the file on the wire in the clear.</para>
+    /// <para>Checked after the fact rather than by disabling <see cref="HttpClientHandler.AllowAutoRedirect"/>, because the downloader is handed an <see cref="HttpClient"/> it does not own and cannot reconfigure. Paired with <see cref="HttpCompletionOption.ResponseHeadersRead"/> this still runs before the body is read, so the file's bytes never cross the downgraded hop.</para>
+    /// </summary>
+    private static void EnsureFinalHopIsHttps(HttpResponseMessage response)
+    {
+        Uri? finalUri = response.RequestMessage?.RequestUri;
+
+        if (finalUri is not null && !string.Equals(finalUri.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
+        {
+            response.Dispose();
+            throw new InvalidOperationException(
+                $"cannot download file: a redirect destination must use https, got '{finalUri.Scheme}://{finalUri.Host}'. The file's bytes would cross that hop in the clear.");
+        }
+    }
+
     private static async Task<string?> ReadServiceErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         string raw;

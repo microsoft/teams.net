@@ -74,7 +74,7 @@ public class FileDownloaderTransportTests
     /// <para>Every other piece of the shipped registration, including any handler or default header it configures,
     /// is left intact, so what the recorder sees is what a real download would send.</para>
     /// </summary>
-    private static ServiceProvider BuildAppContainer(RecordingHandler handler, Action<HttpClientFactoryOptions>? extraConfig = null)
+    private static ServiceProvider BuildAppContainer(HttpMessageHandler handler, Action<HttpClientFactoryOptions>? extraConfig = null)
     {
         ServiceCollection services = new();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
@@ -180,5 +180,44 @@ public class FileDownloaderTransportTests
         Assert.Equal(2, handler.Requests.Count);
         Assert.Equal("Bearer agent-token", handler.Requests[0].Headers.Authorization?.ToString());
         Assert.Null(handler.Requests[1].Headers.Authorization);
+    }
+    /// <summary>Answers with a response whose final hop left HTTPS, which is what a storage 302 to a plaintext host produces once the handler has followed it.</summary>
+    private sealed class DowngradingHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(Encoding.UTF8.GetBytes("bytes")),
+                // The redirect has already been followed by the time a handler returns, so the downgrade is visible
+                // here rather than as a 302: this is the shape the real handler hands back.
+                RequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://storage.example/bytes"),
+            });
+    }
+
+    [Fact]
+    public async Task Download_RefusesAResponseWhoseFinalHopLeftHttps()
+    {
+        // Storage answers with a 302 to the host actually holding the bytes, so redirects have to be followed. A hop
+        // down to plaintext would put the file on the wire in the clear, and the downloader is handed an HttpClient it
+        // does not own, so it cannot turn redirects off. It refuses the response instead, before reading the body.
+        DowngradingHandler handler = new();
+        using ServiceProvider provider = BuildAppContainer(handler);
+
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => PersonalFile(provider.GetRequiredService<FileDownloader>()).DownloadAsync());
+
+        Assert.Contains("must use https", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Download_AllowsAResponseThatStayedOnHttps()
+    {
+        // The ordinary storage 302. The guard cannot simply refuse every redirected response.
+        RecordingHandler handler = new();
+        using ServiceProvider provider = BuildAppContainer(handler);
+
+        DownloadedFile downloaded = await PersonalFile(provider.GetRequiredService<FileDownloader>()).DownloadAsync();
+
+        Assert.Equal("bytes", Encoding.UTF8.GetString(downloaded.Bytes.ToArray()));
     }
 }

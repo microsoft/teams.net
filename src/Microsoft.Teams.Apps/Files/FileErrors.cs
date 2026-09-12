@@ -31,7 +31,7 @@ public class FileException : Exception
 }
 
 /// <summary>
-/// The identity a file fetch was attempted as. Reported on <see cref="FileRetrievalException"/> so a failure names who was refused, not merely that something was.
+/// The identity a file fetch was attempted as. Reported on <see cref="FileCredentialException"/> and <see cref="FileAccessException"/> so a failure names who was refused, not merely that something was.
 /// </summary>
 public enum FileActor
 {
@@ -41,18 +41,6 @@ public enum FileActor
     /// <summary>The Agentic User the bot is acting as, reading what was shared with the agent.</summary>
     AgenticUser,
 
-}
-
-/// <summary>
-/// Why a file's bytes could not be retrieved. See <see cref="FileRetrievalException"/>.
-/// </summary>
-public enum FileRetrievalFailureReason
-{
-    /// <summary>No credential was available for the Graph call. Detectable before any HTTP request.</summary>
-    NoGraphCredential,
-
-    /// <summary>The identity used was refused by the storage service. Covers an unconsented scope, a file the identity was never granted, and a drive item that does not exist, which are indistinguishable on the wire: Graph answers all three with <c>403</c>, because telling an unauthorized caller whether a resource exists would disclose it.</summary>
-    AccessDenied,
 }
 
 /// <summary>
@@ -159,91 +147,134 @@ public class FileScopeNotSupportedException : FileException
 }
 
 /// <summary>
-/// Raised when a file's bytes could not be retrieved through Microsoft Graph.
-/// <para>Distinct from <see cref="FileUrlExpiredException"/>, which is terminal: a pre-authorized URL lapsed, and the SDK does not resolve those bytes another way even when a <c>contentUrl</c> and a Graph credential are both present. This exception means the Graph route was the one that failed, either refused by the service or ruled out before the request when no usable credential was available.</para>
+/// Raised when no credential was available for the Graph call. Detectable before any HTTP request.
+/// <para>Distinct from <see cref="FileUrlExpiredException"/>, which is terminal: a pre-authorized URL lapsed, and the SDK does not resolve those bytes another way even when a <c>contentUrl</c> and a Graph credential are both present. This exception means the Graph route was ruled out before the request, because no usable credential was available: either a token could not be acquired, or the one acquired carries no file-capable permission.</para>
 /// </summary>
-public class FileRetrievalException : FileException
+public class FileCredentialException : FileException
 {
-    /// <summary>Lets callers branch without string-matching the message. <c>null</c> when the reason was not specified, matching how <see cref="FileUrlExpiredException.Reason"/> reports an unspecified one. See <see cref="FileRetrievalFailureReason"/>.</summary>
-    public FileRetrievalFailureReason? Reason { get; }
+    /// <summary>The identity the fetch was attempted as, when one was selected. <c>null</c> when the failure preceded credential selection.</summary>
+    public FileActor? Actor { get; }
+
+    /// <summary>
+    /// What went wrong while acquiring the token, when the attempt failed rather than simply returning nothing.
+    /// <para>An acquisition that threw and an identity with no permissions both arrive here as "no token", but the fixes differ: one is a transient or configuration fault, the other is a consent problem. Local to this process; contrast <see cref="FileAccessException.Details"/>, which is the service's own words.</para>
+    /// </summary>
+    public string? Cause { get; }
+
+    /// <summary>Initializes a new instance of the <see cref="FileCredentialException"/> class with the identity a credential was being resolved for and why acquisition failed.</summary>
+    /// <param name="actor">The identity a credential was being resolved for, when one had been selected.</param>
+    /// <param name="cause">What went wrong while acquiring the token, when the attempt failed.</param>
+    public FileCredentialException(FileActor? actor, string? cause = null)
+        : base(string.IsNullOrEmpty(cause)
+            ? $"cannot fetch file bytes through Graph: {NoCredentialGuidance(actor)}"
+            : $"cannot fetch file bytes through Graph: {NoCredentialGuidance(actor)} ({cause})")
+    {
+        Actor = actor;
+        Cause = cause;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="FileCredentialException"/> class. <see cref="Actor"/> is left <c>null</c>.</summary>
+    public FileCredentialException() : base("cannot fetch file bytes through Graph: no Graph credential was available")
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="FileCredentialException"/> class with a specified error message. <see cref="Actor"/> is left <c>null</c>.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    public FileCredentialException(string message) : base(message)
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="FileCredentialException"/> class with a specified error message and inner exception. <see cref="Actor"/> is left <c>null</c>.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    /// <param name="innerException">The underlying exception that caused this exception.</param>
+    public FileCredentialException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    /// <summary>Where to go to fix a missing credential, which differs per identity, and says so plainly when no identity had been selected.</summary>
+    // CS8524 only covers values outside the declared set, which no caller can produce. Suppressed so that a new
+    // declared actor still fails the build as CS8509 instead of being waved through by a default arm. The `null` arm
+    // is listed explicitly for the same reason: it is a real case, not a catch-all.
+#pragma warning disable CS8524
+    internal static string NoCredentialGuidance(FileActor? actor) => actor switch
+    {
+        // Linked rather than described because the agent permission model is still moving, and stale instructions in an error message are worse than none.
+        FileActor.AgenticUser => "the agentic user has no usable Graph permissions. An agent identity gets Graph scopes from its blueprint's inheritable permissions or from a direct grant, and an administrator must consent to them. See https://learn.microsoft.com/entra/agent-id/concept-inheritable-permissions",
+        // Graph file reads happen as the agentic user. Granting the app file permissions would make this succeed, which is why the message says it may be used rather than that it cannot.
+        FileActor.App => "the app has no usable Graph credential for this file. Graph file retrieval is supported for Agentic Users, which read as their own identity; an app identity and/or user-delegated permissions may be used but are not supported via the SDK at this time",
+        // No identity was selected, so neither remedy above applies and naming one would send the reader somewhere wrong.
+        null => "no Graph credential was available, and no identity had been selected when the attempt was made",
+    };
+#pragma warning restore CS8524
+}
+
+/// <summary>
+/// Raised when the identity used was refused by the storage service.
+/// <para>Distinct from <see cref="FileUrlExpiredException"/>, which is terminal: a pre-authorized URL lapsed, and the SDK does not resolve those bytes another way even when a <c>contentUrl</c> and a Graph credential are both present. This exception means the Graph route was the one that failed, refused by the service after the request was made.</para>
+/// </summary>
+public class FileAccessException : FileException
+{
+    /// <summary>Lets callers branch without string-matching the message. <c>401</c> means the token itself was rejected; <c>403</c> means the identity lacks the grant, and the two have different remedies.</summary>
+    public int Status { get; }
 
     /// <summary>The identity the fetch was attempted as, when one was selected. <c>null</c> when the failure preceded credential selection.</summary>
     public FileActor? Actor { get; }
 
     /// <summary>
     /// What the storage service itself said, verbatim and truncated, when it said anything.
-    /// <para><see cref="Reason"/> deliberately collapses causes that are indistinguishable to the SDK: an unconsented scope and a file that was never shared both arrive as 403. That collapse is right for branching and wrong for diagnosis, so the original text is kept here rather than discarded.</para>
+    /// <para>A <c>403</c> covers an unconsented scope, a file the identity was never granted, and a drive item that does not exist, which are indistinguishable on the wire: Graph answers all three with <c>403</c>, because telling an unauthorized caller whether a resource exists would disclose it. That collapse is right for branching and wrong for diagnosis, so the original text is kept here rather than discarded.</para>
     /// </summary>
     public string? Details { get; }
 
-    /// <summary>Initializes a new instance of the <see cref="FileRetrievalException"/> class with the specified reason, the identity the fetch was attempted as, and whatever the service said.</summary>
-    /// <param name="reason">Why the bytes could not be retrieved.</param>
-    /// <param name="actor">The identity the fetch was attempted as, when one was selected.</param>
+    /// <summary>Initializes a new instance of the <see cref="FileAccessException"/> class with the status Graph returned, the identity the fetch was attempted as, and whatever the service said.</summary>
+    /// <param name="status">The HTTP status Graph returned.</param>
+    /// <param name="actor">The identity the fetch was attempted as.</param>
     /// <param name="details">What the storage service said, already truncated.</param>
-    public FileRetrievalException(FileRetrievalFailureReason reason, FileActor? actor = null, string? details = null)
+    public FileAccessException(int status, FileActor? actor = null, string? details = null)
         : base(string.IsNullOrEmpty(details)
-            ? DefaultMessage(reason, actor)
-            : $"{DefaultMessage(reason, actor)} (service said: {details})")
+            ? $"cannot fetch file bytes through Graph: {AccessGuidance(status, actor)}"
+            : $"cannot fetch file bytes through Graph: {AccessGuidance(status, actor)} (service said: {details})")
     {
-        Reason = reason;
+        Status = status;
         Actor = actor;
         Details = details;
     }
 
-    /// <summary>Initializes a new instance of the <see cref="FileRetrievalException"/> class. <see cref="Reason"/> and <see cref="Actor"/> are left <c>null</c>.</summary>
-    public FileRetrievalException() : base("cannot fetch file bytes through Graph")
+    /// <summary>Initializes a new instance of the <see cref="FileAccessException"/> class. <see cref="Status"/> is left <c>0</c>.</summary>
+    public FileAccessException() : base("cannot fetch file bytes through Graph: access was denied")
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="FileRetrievalException"/> class with a specified error message. <see cref="Reason"/> and <see cref="Actor"/> are left <c>null</c>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="FileAccessException"/> class with a specified error message. <see cref="Status"/> is left <c>0</c>.</summary>
     /// <param name="message">The error message that describes the reason for the exception.</param>
-    public FileRetrievalException(string message) : base(message)
+    public FileAccessException(string message) : base(message)
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="FileRetrievalException"/> class with a specified error message and inner exception. <see cref="Reason"/> and <see cref="Actor"/> are left <c>null</c>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="FileAccessException"/> class with a specified error message and inner exception. <see cref="Status"/> is left <c>0</c>.</summary>
     /// <param name="message">The error message that describes the reason for the exception.</param>
     /// <param name="innerException">The underlying exception that caused this exception.</param>
-    public FileRetrievalException(string message, Exception innerException) : base(message, innerException)
+    public FileAccessException(string message, Exception innerException) : base(message, innerException)
     {
     }
 
-    /// <summary>
-    /// Names the identity in prose. Exhaustive on purpose: a new <see cref="FileActor"/> must fail the build here rather than silently inherit the app's wording, which would send that identity's failures to the wrong remedy.
-    /// </summary>
-    private static string DescribeActor(FileActor actor)
-        // CS8524 only covers values outside the declared set, which no caller can produce. Suppressed so that a new
-        // declared actor still fails the build as CS8509 instead of being waved through by a default arm.
+    /// <summary>Say what a refusal means, which depends on the status: a rejected token and an insufficient grant have different remedies.</summary>
+    private static string AccessGuidance(int status, FileActor? actor)
+    {
 #pragma warning disable CS8524
-        => actor switch
+        string asWho = actor switch
         {
             FileActor.AgenticUser => "the agentic user",
             FileActor.App => "the app",
+            null => "the identity used",
         };
 #pragma warning restore CS8524
 
-    /// <summary>Where to go to fix a missing credential, which differs per identity. Exhaustive for the same reason.</summary>
-    private static string NoCredentialGuidance(FileActor actor)
-#pragma warning disable CS8524
-        => actor switch
+        return status switch
         {
-            // Linked rather than described because the agent permission model is still moving, and stale instructions in an error message are worse than none.
-            FileActor.AgenticUser => "the agentic user has no usable Graph permissions. An agent identity gets Graph scopes from its blueprint's inheritable permissions or from a direct grant, and an administrator must consent to them. See https://learn.microsoft.com/entra/agent-id/concept-inheritable-permissions",
-            // Graph file reads happen as the agentic user. Granting the app file permissions would make this succeed, which is why the message says it may be used rather than that it cannot.
-            FileActor.App => "the app has no usable Graph credential for this file. Graph file retrieval is supported for Agentic Users, which read as their own identity; an app identity and/or user-delegated permissions may be used but are not supported via the SDK at this time",
+            401 => $"the token presented for {asWho} was rejected. It may have expired, or been issued for the wrong audience or tenant",
+            403 => $"access was denied for {asWho}. The required scope may not be consented, the file may never have been shared with that identity, or the drive item may not exist",
+            _ => $"the request for {asWho} was refused with status {status}",
         };
-#pragma warning restore CS8524
-
-    private static string DefaultMessage(FileRetrievalFailureReason reason, FileActor? actor)
-    {
-        string asWho = DescribeActor(actor ?? FileActor.App);
-
-#pragma warning disable CS8524
-        return reason switch
-        {
-            FileRetrievalFailureReason.NoGraphCredential => $"cannot fetch file bytes through Graph: {NoCredentialGuidance(actor ?? FileActor.App)}",
-            FileRetrievalFailureReason.AccessDenied => $"cannot fetch file bytes through Graph: access was denied for {asWho}. The required scope may not be consented, the file may never have been shared with that identity, or the drive item may not exist",
-        };
-#pragma warning restore CS8524
     }
 }

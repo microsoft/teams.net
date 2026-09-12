@@ -82,7 +82,7 @@ So download when the file arrives, as this sample does, instead of storing an `I
 
 Sideloading this sample will not reach an agentic user. An Agentic User receives activities on its blueprint's notification URL rather than at your bot endpoint, and needs a Graph file permission consented on that blueprint by an administrator. If you have one, point its notification URL at this sample. To provision one, see the [Microsoft Agent 365 documentation](https://learn.microsoft.com/microsoft-agent-365/) and [inheritable permissions](https://learn.microsoft.com/entra/agent-id/concept-inheritable-permissions).
 
-The handler code is unchanged: `ListAsync()` then `DownloadAsync()`, with the SDK selecting the agent's own credential rather than the app's. A failed Graph read raises `FileRetrievalException`, which names the identity that was refused and links its permissions documentation.
+The handler code is unchanged: `ListAsync()` then `DownloadAsync()`, with the SDK selecting the agent's own credential rather than the app's. A failed Graph read raises `FileCredentialException` when no credential was available, or `FileAccessException` when the service refused. Both name the identity involved and link its permissions documentation.
 
 ## Limits
 

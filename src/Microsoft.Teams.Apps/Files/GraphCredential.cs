@@ -5,7 +5,7 @@ namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
 /// Supplies a bearer token for Graph, and names the identity it belongs to.
-/// <para>Resolved at fetch time rather than stored on the file handle, so a handle stays inert and a token is never acquired before it is needed. Returning <c>null</c> for the token means no credential is available, which surfaces as <see cref="FileRetrievalFailureReason.NoGraphCredential"/> before any request is made.</para>
+/// <para>Resolved at fetch time rather than stored on the file handle, so a handle stays inert and a token is never acquired before it is needed. Returning <c>null</c> for the token means no credential is available, which surfaces as a <see cref="FileCredentialException"/> before any request is made.</para>
 /// </summary>
 public sealed class GraphCredential
 {
