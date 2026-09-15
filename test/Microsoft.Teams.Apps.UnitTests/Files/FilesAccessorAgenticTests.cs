@@ -123,4 +123,63 @@ public class FilesAccessorAgenticTests
 
         Assert.Same(credential, file.Credential);
     }
+    /// <summary>An attachment whose <c>content</c> is raw wire JSON rather than a typed model, which is the only way to express a wrong-typed field.</summary>
+    private static TeamsAttachment RawContentAttachment(object content)
+        => new()
+        {
+            ContentType = AttachmentContentType.FileDownloadInfo,
+            ContentUrl = new Uri(ContentUrl),
+            Name = "report.pdf",
+            Content = content,
+        };
+
+    [Fact]
+    public async Task KeepsThePreauthRouteWhenAMetadataFieldIsWrongTyped()
+    {
+        // `uniqueId` and `fileType` are metadata. Rejecting the whole `content` over one of them drops the `downloadUrl` beside it, and the file then routes through Graph and fails on a bot holding no Graph credential, reporting a consent problem for what is really bad data.
+        // Asserted outside personal scope because the Graph route is personal-only, so a file surfaced here can only have reached the list on its `downloadUrl`.
+        TeamsAttachment attachment = RawContentAttachment(
+            new { downloadUrl = "https://download.example/tempauth=abc", uniqueId = 42, fileType = 7 });
+
+        FilesAccessor accessor = new(ActivityWith([attachment], "groupChat"), Log, Downloader);
+
+        IncomingFile file = Assert.Single(await accessor.ListAsync());
+
+        // Dropped one at a time rather than taken at face value, which would fail later in the sharing-url encoder.
+        Assert.Null(file.UniqueId);
+        Assert.Null(file.Extension);
+    }
+
+    [Fact]
+    public async Task DropsOnlyTheWrongTypedField()
+    {
+        TeamsAttachment attachment = RawContentAttachment(
+            new { downloadUrl = "https://download.example/tempauth=abc", uniqueId = "odsp-unique-id", fileType = 7 });
+
+        FilesAccessor accessor = new(ActivityWith([attachment], "groupChat"), Log, Downloader);
+
+        IncomingFile file = Assert.Single(await accessor.ListAsync());
+
+        Assert.Equal("odsp-unique-id", file.UniqueId);
+        Assert.Null(file.Extension);
+    }
+
+    [Fact]
+    public async Task DoesNotOpenTheGraphRouteWhenTheDownloadUrlIsWrongTyped()
+    {
+        // A declared `downloadUrl` the SDK could not use is a broken attachment, not the agentic shape, so no route applies in any scope. Falling to Graph here would resolve a payload already judged malformed, and would do it on whichever identity the turn happens to carry.
+        TeamsAttachment attachment = RawContentAttachment(
+            new { downloadUrl = 42, uniqueId = "odsp-unique-id", fileType = "pdf" });
+
+        Assert.Empty(await new FilesAccessor(ActivityWith([attachment], "groupChat"), Log, Downloader).ListAsync());
+        Assert.Empty(await new FilesAccessor(ActivityWith([attachment]), Log, Downloader).ListAsync());
+    }
+
+    [Fact]
+    public async Task OpensTheGraphRouteForContentThatDeclaresNoDownloadUrl()
+    {
+        // The agentic shape itself, which is the one case the route exists for.
+        Assert.Single(await new FilesAccessor(ActivityWith([AgenticAttachment()]), Log, Downloader).ListAsync());
+    }
+
 }

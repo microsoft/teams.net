@@ -92,17 +92,20 @@ public sealed class FilesAccessor
             return null;
         }
 
-        FileDownloadInfo? content = AsFileDownloadInfo(attachment.Content);
+        (FileDownloadInfo? content, bool declaresDownloadUrl) = AsFileDownloadInfo(attachment.Content);
         Uri? downloadUrl = content?.DownloadUrl;
         Uri? contentUrl = attachment.ContentUrl;
         string? name = attachment.Name;
+
+        // The Agentic User shape: `content` that parsed and declares no `downloadUrl` at all. Content that failed to parse, or that declares a `downloadUrl` too malformed to use, is a broken attachment rather than an agentic one. Both are excluded from the Graph route because both were skipped before it existed, and resolving one would spend a Graph credential on a payload the SDK has already judged untrustworthy.
+        bool isAgenticShape = content is not null && !declaresDownloadUrl;
 
         // `downloadUrl` is fetched directly. A `contentUrl` without one is the Agentic User case and resolves through
         // Graph, restricted to `personal` because agentic delivery in other scopes is unvalidated: surfacing a handle
         // there will produce a `ListAsync()` entry that then fails at `DownloadAsync()`. The `downloadUrl` branch
         // keeps its existing scope behavior.
         bool hasLocator = downloadUrl is not null || contentUrl is not null;
-        bool canFetch = downloadUrl is not null || (scope == ConversationType.Personal && contentUrl is not null);
+        bool canFetch = downloadUrl is not null || (scope == ConversationType.Personal && isAgenticShape && contentUrl is not null);
 
         if (!canFetch || string.IsNullOrEmpty(name))
         {
@@ -138,22 +141,55 @@ public sealed class FilesAccessor
         };
     }
 
-    /// <summary>Coerce an attachment's <c>Content</c> (already-typed, a <see cref="JsonElement"/> from the wire, or another object) into a <see cref="FileDownloadInfo"/>. Returns <c>null</c> on malformed content so the caller can skip it rather than throw.</summary>
-    private static FileDownloadInfo? AsFileDownloadInfo(object? content)
+    /// <summary>
+    /// Coerce an attachment's <c>Content</c> (already-typed, a <see cref="JsonElement"/> from the wire, or another object) into a <see cref="FileDownloadInfo"/>. Returns <c>null</c> on malformed content so the caller can skip it rather than throw.
+    /// <para><c>DeclaresDownloadUrl</c> reports whether the payload carried a <c>downloadUrl</c> at all, which a null <see cref="FileDownloadInfo.DownloadUrl"/> cannot express: one means the field was absent, as it is for an Agentic User, and the other means it was present but unusable. Only the first is a shape the Graph route serves.</para>
+    /// </summary>
+    private static (FileDownloadInfo? Content, bool DeclaresDownloadUrl) AsFileDownloadInfo(object? content)
     {
         try
         {
             return content switch
             {
-                null => null,
-                FileDownloadInfo info => info,
-                JsonElement element => element.Deserialize<FileDownloadInfo>(),
-                _ => JsonSerializer.SerializeToElement(content).Deserialize<FileDownloadInfo>(),
+                null => (null, false),
+                FileDownloadInfo info => (info, info.DownloadUrl is not null),
+                JsonElement element => (DeserializeDroppingWrongTypedFields(element), DeclaresDownloadUrl(element)),
+                _ => AsFileDownloadInfo(JsonSerializer.SerializeToElement(content)),
             };
         }
         catch (JsonException)
         {
-            return null;
+            return (null, false);
         }
+    }
+
+    /// <summary>Whether the wire payload carried a <c>downloadUrl</c> property, regardless of whether its value was usable.</summary>
+    private static bool DeclaresDownloadUrl(JsonElement element)
+        => element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty("downloadUrl", out JsonElement value)
+            && value.ValueKind != JsonValueKind.Null;
+
+    /// <summary>
+    /// Deserialize a <see cref="FileDownloadInfo"/>, ignoring any property the wire sent with a non-string value.
+    /// <para>Every field on this payload is a string, so a wrong-typed one is malformed data rather than a shape to honour. Deserializing the object whole would throw on it and discard the rest, and <c>UniqueId</c> and <c>FileType</c> are metadata: losing a usable <c>DownloadUrl</c> alongside one of them routes a traditional bot's file through Graph, which then fails reporting a consent problem that was never the cause. Filtering rather than reading each property by hand keeps the model's own attribute mapping.</para>
+    /// </summary>
+    private static FileDownloadInfo? DeserializeDroppingWrongTypedFields(JsonElement element)
+    {
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return element.Deserialize<FileDownloadInfo>();
+        }
+
+        Dictionary<string, JsonElement> narrowed = [];
+
+        foreach (JsonProperty property in element.EnumerateObject())
+        {
+            if (property.Value.ValueKind is JsonValueKind.String or JsonValueKind.Null)
+            {
+                narrowed[property.Name] = property.Value;
+            }
+        }
+
+        return JsonSerializer.SerializeToElement(narrowed).Deserialize<FileDownloadInfo>();
     }
 }
