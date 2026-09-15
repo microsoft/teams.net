@@ -13,6 +13,13 @@ namespace Microsoft.Teams.Apps;
 /// </summary>
 public sealed class TeamsBotApplicationOptions : BotApplicationOptions
 {
+    /// <summary>
+    /// Microsoft Graph host root the inbound-file path resolves drive items against, for files that arrive without a pre-authorized download URL.
+    /// Populated from <c>BotFramework:GraphBaseUrl</c> by the hosting extensions; <c>null</c> uses the public cloud.
+    /// <para>A host root, not a versioned endpoint: the API version is appended at the point of use, so a pre-versioned value produces <c>/v1.0/v1.0</c>.</para>
+    /// </summary>
+    public Uri? GraphBaseUrl { get; set; }
+
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
 
     /// <summary>

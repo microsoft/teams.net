@@ -27,18 +27,22 @@ public sealed class IncomingFile
         _downloader = downloader ?? throw new ArgumentNullException(nameof(downloader));
     }
 
-    /// <summary>The OneDrive/ODSP drive-item id when the platform reports it (<c>content.uniqueId</c>); the storage-specific locator a Graph fetch keys off. Present only when the wire provided it.</summary>
+    /// <summary>
+    /// The ODSP/OneDrive identifier for the file when the platform reports it (<c>content.uniqueId</c>).
+    /// Useful for correlation, dedup and logging, but not for retrieval: the Graph fetch resolves bytes from
+    /// <see cref="ContentUrl"/> through <c>/shares</c>, and this value arrives as a GUID, which is a SharePoint
+    /// <c>listItemUniqueId</c> shape rather than a Graph <c>driveItem.id</c>.
+    /// Present only when the wire provided it.
+    /// </summary>
     public string? UniqueId { get; init; }
 
     /// <summary>Display name including extension when known.</summary>
     public string Name { get; }
 
     /// <summary>
-    /// The file's MIME type when the source provides one. Always <c>null</c> for
-    /// <see cref="FileSource.BotActivity"/> files: a <c>file.download.info</c> attachment carries no MIME type,
-    /// only the <c>fileType</c> extension surfaced as <see cref="Extension"/>. Populated for sources that do carry
-    /// one, such as a <see cref="FileSource.Graph"/> drive item. To learn the type of the bytes you actually
-    /// received, read <see cref="DownloadedFile.ContentType"/>, which is resolved from the download response.
+    /// The file's MIME type when the source provides one.
+    /// Always <c>null</c> for <see cref="FileSource.BotActivity"/> files: a <c>file.download.info</c> attachment carries no MIME type, only the <c>fileType</c> extension surfaced as <see cref="Extension"/>.
+    /// Populated for sources that do carry one, such as a <see cref="FileSource.Graph"/> drive item. To learn the type of the bytes you actually received, read <see cref="DownloadedFile.ContentType"/>, which is resolved from the download response.
     /// </summary>
     public string? ContentType { get; init; }
 
@@ -53,15 +57,18 @@ public sealed class IncomingFile
 
     /// <summary>
     /// Browsable URL to the file in OneDrive/SharePoint, as sent on the attachment's <c>contentUrl</c>.
-    /// Not fetchable for bytes despite the name; those come from <see cref="DownloadAsync"/> or <see cref="StreamAsync"/>.
+    /// Not fetchable for bytes despite the name, but it is the locator a Graph <c>/shares</c> resolution keys off; bytes come from <see cref="DownloadAsync"/> or <see cref="StreamAsync"/>.
     /// </summary>
     public Uri? ContentUrl { get; init; }
 
     /// <summary>The raw underlying attachment/graph object for escape-hatch access.</summary>
     public object? Raw { get; init; }
 
-    /// <summary>Short-lived, pre-authorized download URL (personal scope). Scope-dependent rather than universal, so it stays an initializer: a later Graph path keys off <see cref="UniqueId"/> instead.</summary>
+    /// <summary>Short-lived, pre-authorized download URL (personal scope). Scope-dependent rather than universal, so it stays an initializer: the Graph path keys off <see cref="ContentUrl"/> instead.</summary>
     internal Uri? DownloadUrl { get; init; }
+
+    /// <summary>Graph credential for the current actor, resolved at fetch time rather than captured here.</summary>
+    internal GraphCredential? Credential { get; init; }
 
     private bool _priorFetchSucceeded;
 
@@ -70,7 +77,7 @@ public sealed class IncomingFile
     public async Task<Stream> StreamAsync(CancellationToken cancellationToken = default)
     {
         OpenedFileStream opened = await _downloader
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
         return opened;
@@ -81,7 +88,7 @@ public sealed class IncomingFile
     public async Task<DownloadedFile> DownloadAsync(CancellationToken cancellationToken = default)
     {
         OpenedFileStream opened = await _downloader
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
 
@@ -109,7 +116,7 @@ public sealed class IncomingFile
     public async Task SaveAsAsync(string path, CancellationToken cancellationToken = default)
     {
         OpenedFileStream opened = await _downloader
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentType, _priorFetchSucceeded, cancellationToken)
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
 

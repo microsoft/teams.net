@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -162,6 +163,15 @@ public static class AddBotApplicationExtensions
 
         ArgumentNullException.ThrowIfNull(botConfig);
         ArgumentNullException.ThrowIfNull(botConfig.MsalConfigurationSection);
+
+        // The same acquisition the outbound pipeline performs, reachable by callers that are not an HTTP pipeline.
+        // Keyed on the section name so an app configuring two bots gets a provider per bot.
+        // An unkeyed TryAdd would bind to whichever section registered first while the typed clients bind to whichever registered last,
+        // leaving the two halves of the same process authenticating as different apps.
+        services.TryAddKeyedSingleton(botConfig.SectionName, (sp, _) => new BotTokenProvider(
+            sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+            botConfig.SectionName,
+            sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));
 
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {

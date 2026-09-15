@@ -115,6 +115,51 @@ public class BotConfigTests
     }
 
     [Fact]
+    public void Resolve_GraphBaseUrl_DefaultsToPublicCloud_WhenNotConfigured()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("https://graph.microsoft.com", config.GraphBaseUrl);
+    }
+
+    [Theory]
+    [InlineData("https://graph.microsoft.us")]
+    [InlineData("https://microsoftgraph.chinacloudapi.cn")]
+    public void Resolve_GraphBaseUrl_HonorsBotFrameworkOverride(string configured)
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+            ["BotFramework:GraphBaseUrl"] = configured,
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal(configured, config.GraphBaseUrl);
+    }
+
+    [Fact]
+    public void Resolve_ThrowsInvalidOperationException_WhenGraphBaseUrlIsNotAbsoluteUri()
+    {
+        // A configured host can disagree with the token audience in a way a derived value never could, so it is validated at startup rather than surfacing as a 404 that reads like a missing file.
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["BotFramework:GraphBaseUrl"] = "graph.microsoft.us",
+        });
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => BotConfig.Resolve(services));
+        Assert.Contains("BotFramework:GraphBaseUrl", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Resolve_BotFrameworkSection_IsIndependentOfAzureAdSectionName()
     {
         ServiceCollection services = BuildServices(new Dictionary<string, string?>
@@ -358,4 +403,32 @@ public class BotConfigTests
         Assert.True(config.DangerouslyAllowUnauthenticatedRequests);
     }
 
+    // A derived Graph host cannot disagree with the cloud, but a configuration key can, and the two are set
+    // independently. These pin the mapping rather than the log call: the mapping is where a wrong answer would
+    // either miss a real misconfiguration or slander a correct one.
+    [Theory]
+    // Public.
+    [InlineData("https://login.microsoftonline.com/", "https://graph.microsoft.com", true)]
+    // The quiet failure this exists for: sovereign Entra, public Graph inherited from the default.
+    [InlineData("https://login.microsoftonline.us/", "https://graph.microsoft.com", false)]
+    [InlineData("https://login.partner.microsoftonline.cn/", "https://graph.microsoft.com", false)]
+    // Public Entra with a sovereign Graph is equally wrong, in the other direction.
+    [InlineData("https://login.microsoftonline.com/", "https://graph.microsoft.us", false)]
+    // GCC High and DoD share an Entra endpoint and differ only in the Graph resource, so both must pass.
+    [InlineData("https://login.microsoftonline.us/", "https://graph.microsoft.us", true)]
+    [InlineData("https://login.microsoftonline.us/", "https://dod-graph.microsoft.us", true)]
+    [InlineData("https://login.partner.microsoftonline.cn/", "https://microsoftgraph.chinacloudapi.cn", true)]
+    // Host comparison is case-insensitive.
+    [InlineData("https://LOGIN.MICROSOFTONLINE.US/", "https://GRAPH.MICROSOFT.US", true)]
+    // An instance this SDK does not recognise stays silent: air-gapped and future clouds are not enumerable here,
+    // and a warning aimed at a deployment we know nothing about is noise rather than signal.
+    [InlineData("https://login.contoso-airgap.example/", "https://graph.contoso-airgap.example", true)]
+    [InlineData("https://login.contoso-airgap.example/", "https://graph.microsoft.com", true)]
+    // Unparseable values are somebody else's error; ResolveAbsoluteUri already rejects them.
+    [InlineData("not-a-uri", "https://graph.microsoft.com", true)]
+    [InlineData("https://login.microsoftonline.us/", "not-a-uri", true)]
+    public void GraphHostMatchesCloud_PairsKnownCloudsWithTheirGraphHosts(string entraInstance, string graphBaseUrl, bool expected)
+    {
+        Assert.Equal(expected, BotConfig.GraphHostMatchesCloud(entraInstance, graphBaseUrl));
+    }
 }

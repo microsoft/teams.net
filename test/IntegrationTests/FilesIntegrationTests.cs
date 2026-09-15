@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace IntegrationTests;
 
 /// <summary>
-/// Integration tests for inbound file handling as shipped today (PR A), covering the two things unit tests
+/// Integration tests for inbound file handling, covering the two things unit tests
 /// structurally cannot reach: that <see cref="FileDownloader"/> is actually wired into the DI container the app
 /// builds, and that its byte-fetch contract holds against a real Microsoft endpoint over a real network.
 /// <para><b>What these do and do not prove.</b> High fidelity for the <em>contract</em> the downloader depends on:
@@ -112,7 +112,7 @@ public class FilesIntegrationTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Files")]
     public async Task OpenFileStream_RejectsUnsupportedScopesAndNonHttpsUrls_BeforeAnyNetworkCall()
     {
-        // Non-personal scopes have no receive path yet; this pins the shipped behaviour so PR J has to change it
+        // Non-personal scopes have no receive path yet; this pins the current behaviour so it has to change
         // deliberately rather than by accident.
         FileScopeNotSupportedException scopeEx = await Assert.ThrowsAsync<FileScopeNotSupportedException>(
             () => Downloader.OpenFileStreamAsync(

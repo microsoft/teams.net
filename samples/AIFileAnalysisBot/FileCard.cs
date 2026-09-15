@@ -48,7 +48,7 @@ internal static class FileCard
                 new Fact("Type", downloaded.ContentType),
                 new Fact("Size", HumanSize(downloaded.Bytes.Length)),
                 new Fact("Scope", file.Scope.ToString()),
-                new Fact("Source", file.Source.ToString())),
+                new Fact("Listed from", file.Source.ToString())),
             new TextBlock(note ?? UnsupportedNote)
             {
                 Wrap = true,

@@ -26,3 +26,9 @@ using System.Diagnostics.CodeAnalysis;
     Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.",
     Scope = "member",
     Target = "~P:Microsoft.Teams.Core.Hosting.BotConfig.EntraInstance")]
+
+[assembly: SuppressMessage("Design",
+    "CA1056:URI-like properties should not be strings",
+    Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.",
+    Scope = "member",
+    Target = "~P:Microsoft.Teams.Core.Hosting.BotConfig.GraphBaseUrl")]

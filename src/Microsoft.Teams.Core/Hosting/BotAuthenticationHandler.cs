@@ -86,25 +86,12 @@ internal sealed class BotAuthenticationHandler(
 
         try
         {
-            AuthorizationHeaderProviderOptions options = new()
-            {
-                AcquireTokenOptions = new AcquireTokenOptions()
-                {
-                    AuthenticationOptionsName = optionsName,
-                }
-            };
+            AuthorizationHeaderProviderOptions options = BotTokenProvider.CreateOptions(optionsName, _managedIdentityOptions, out ManagedIdentityOptions? appliedManagedIdentity);
 
-            // Conditionally apply ManagedIdentity configuration if registered
-            if (_managedIdentityOptions is not null)
+            if (appliedManagedIdentity is not null)
             {
-                ManagedIdentityOptions miOptions = _managedIdentityOptions.Get(optionsName);
-
-                if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
-                {
-                    _logger.InferringUserAssignedManagedIdentity(miOptions.UserAssignedClientId);
-                    options.AcquireTokenOptions.ManagedIdentity = miOptions;
-                    span?.SetTag(Telemetry.Tags.AuthFlow, "managed_identity");
-                }
+                _logger.InferringUserAssignedManagedIdentity(appliedManagedIdentity.UserAssignedClientId!);
+                span?.SetTag(Telemetry.Tags.AuthFlow, "managed_identity");
             }
 
             if (agenticIdentity is not null &&
