@@ -168,7 +168,7 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddSingleton<TApp>(sp =>
         {
             TApp app = ActivatorUtilities.CreateInstance<TApp>(sp);
-            app.TokenProvider ??= sp.GetService<BotTokenProvider>();
+            app.TokenProvider ??= sp.GetKeyedService<BotTokenProvider>(sectionName);
             return app;
         });
 

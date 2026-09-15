@@ -283,4 +283,81 @@ public class AddBotApplicationExtensionsTests
         Assert.Equal("nested-client-id", msalOptions.ClientId);
         Assert.Equal("nested-tenant-id", msalOptions.TenantId);
     }
+    /// <summary>
+    /// The section a <see cref="BotTokenProvider"/> was built for, which is otherwise private.
+    /// </summary>
+    private static string? SectionOf(BotTokenProvider provider) => (string?)typeof(BotTokenProvider)
+        .GetField("<authenticationOptionsName>P", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+        .GetValue(provider);
+
+    private static ServiceProvider BuildServiceProviderForTwoSections()
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "first-client-id",
+                ["AzureAd:TenantId"] = "first-tenant-id",
+                ["SecondBot:ClientId"] = "second-client-id",
+                ["SecondBot:TenantId"] = "second-tenant-id"
+            })
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddConversationClient("AzureAd");
+        services.AddConversationClient("SecondBot");
+
+        return services.BuildServiceProvider();
+    }
+
+    [Fact]
+    public void EnsureMsalServices_WithTwoSections_GivesEachSectionItsOwnTokenProvider()
+    {
+        ServiceProvider serviceProvider = BuildServiceProviderForTwoSections();
+
+        BotTokenProvider first = serviceProvider.GetRequiredKeyedService<BotTokenProvider>("AzureAd");
+        BotTokenProvider second = serviceProvider.GetRequiredKeyedService<BotTokenProvider>("SecondBot");
+
+        Assert.Equal("AzureAd", SectionOf(first));
+        Assert.Equal("SecondBot", SectionOf(second));
+        Assert.NotSame(first, second);
+    }
+
+    [Fact]
+    public void EnsureMsalServices_WithTwoSections_RegistersNoUnkeyedTokenProvider()
+    {
+        // An unkeyed registration would resolve to whichever section was added first, while the typed clients
+        // resolve to whichever was added last, so the two would authenticate as different apps.
+        ServiceProvider serviceProvider = BuildServiceProviderForTwoSections();
+
+        Assert.Null(serviceProvider.GetService<BotTokenProvider>());
+    }
+
+    [Fact]
+    public void EnsureMsalServices_CalledTwiceForOneSection_RegistersOneTokenProvider()
+    {
+        // The repeat-call case the TryAdd exists for: AddConversationClient and AddUserTokenClient both run it.
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "only-client-id",
+                ["AzureAd:TenantId"] = "only-tenant-id"
+            })
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddConversationClient("AzureAd");
+        services.AddUserTokenClient("AzureAd");
+
+        Assert.Single(services, d => d.ServiceType == typeof(BotTokenProvider));
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        Assert.Same(
+            serviceProvider.GetRequiredKeyedService<BotTokenProvider>("AzureAd"),
+            serviceProvider.GetRequiredKeyedService<BotTokenProvider>("AzureAd"));
+    }
+
 }

@@ -81,9 +81,9 @@ public class CustomBotApplicationGraphWiringTests
         services.AddLogging();
         services.AddTeamsBotApplication<TApp>();
 
-        // Replaces the real acquisition, which would need a live Entra tenant. Registered last so it wins over the
-        // TryAddSingleton the hosting extensions perform.
-        services.AddSingleton(provider.Provider);
+        // Replaces the real acquisition, which would need a live Entra tenant. Registered last under the same key so
+        // it wins over the TryAddKeyedSingleton the hosting extensions perform.
+        services.AddKeyedSingleton("AzureAd", provider.Provider);
 
         return services.BuildServiceProvider();
     }
@@ -135,4 +135,57 @@ public class CustomBotApplicationGraphWiringTests
     [Fact]
     public async Task TheBuiltInApplicationAcquiresAGraphToken()
         => Assert.Equal("agent-token", await TokenThroughFilesAsync<TeamsBotApplication>());
+    /// <summary>
+    /// The hosting extensions register the provider keyed by section name and resolve it by the same key. A mismatch
+    /// would leave <c>TokenProvider</c> null, and an agentic file would then report no credential rather than fail,
+    /// so the two keys are pinned against the real registration rather than a substituted one.
+    /// </summary>
+    [Fact]
+    public void TheRealRegistrationReachesTheApplication()
+    {
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "graph-wiring-client-id",
+                ["AzureAd:TenantId"] = "graph-wiring-tenant-id",
+            })
+            .Build());
+        services.AddLogging();
+        services.AddTeamsBotApplication<TeamsBotApplication>();
+
+        using ServiceProvider container = services.BuildServiceProvider();
+
+        TeamsBotApplication app = container.GetRequiredService<TeamsBotApplication>();
+
+        Assert.NotNull(app.TokenProvider);
+        Assert.Same(container.GetRequiredKeyedService<BotTokenProvider>("AzureAd"), app.TokenProvider);
+    }
+
+    /// <summary>
+    /// The same wiring under a custom section name, which is where the registration key and the lookup key could
+    /// drift apart without either being obviously wrong.
+    /// </summary>
+    [Fact]
+    public void TheRealRegistrationReachesTheApplicationUnderACustomSection()
+    {
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["CustomAuth:ClientId"] = "custom-client-id",
+                ["CustomAuth:TenantId"] = "custom-tenant-id",
+            })
+            .Build());
+        services.AddLogging();
+        services.AddTeamsBotApplication<TeamsBotApplication>("CustomAuth");
+
+        using ServiceProvider container = services.BuildServiceProvider();
+
+        TeamsBotApplication app = container.GetRequiredService<TeamsBotApplication>();
+
+        Assert.NotNull(app.TokenProvider);
+        Assert.Same(container.GetRequiredKeyedService<BotTokenProvider>("CustomAuth"), app.TokenProvider);
+    }
+
 }

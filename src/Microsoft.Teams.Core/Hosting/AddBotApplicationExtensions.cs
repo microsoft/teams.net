@@ -165,8 +165,10 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNull(botConfig.MsalConfigurationSection);
 
         // The same acquisition the outbound pipeline performs, reachable by callers that are not an HTTP pipeline.
-        // TryAdd because this method is documented as safe to call more than once.
-        services.TryAddSingleton(sp => new BotTokenProvider(
+        // Keyed on the section name so an app configuring two bots gets a provider per bot.
+        // An unkeyed TryAdd would bind to whichever section registered first while the typed clients bind to whichever registered last,
+        // leaving the two halves of the same process authenticating as different apps.
+        services.TryAddKeyedSingleton(botConfig.SectionName, (sp, _) => new BotTokenProvider(
             sp.GetRequiredService<IAuthorizationHeaderProvider>(),
             botConfig.SectionName,
             sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));

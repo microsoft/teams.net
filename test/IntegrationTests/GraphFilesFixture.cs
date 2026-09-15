@@ -140,7 +140,7 @@ public sealed class GraphFilesFixture : IAsyncLifetime, IDisposable, ITestOutput
         try
         {
             AgentToken = await ServiceProvider
-                .GetRequiredService<BotTokenProvider>()
+                .GetRequiredKeyedService<BotTokenProvider>("AzureAd")
                 .GetAgenticUserTokenAsync(identity, GraphScope, CancellationToken.None)
                 .ConfigureAwait(false);
         }
