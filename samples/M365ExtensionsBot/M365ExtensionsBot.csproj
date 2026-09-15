@@ -25,8 +25,8 @@
 
 	<!-- The sample uses Agents SDK MSAL auth directly, in addition to what flows transitively from the bridge. -->
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Agents.Authentication.Msal" Version="1.8.44-beta" />
-		<PackageReference Include="Microsoft.Agents.Hosting.AspNetCore" Version="1.8.44-beta" />
+		<PackageReference Include="Microsoft.Agents.Authentication.Msal" Version="1.8.77" />
+		<PackageReference Include="Microsoft.Agents.Hosting.AspNetCore" Version="1.8.77" />
 	</ItemGroup>
 
 </Project>
