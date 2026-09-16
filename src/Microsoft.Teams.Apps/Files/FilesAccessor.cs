@@ -166,8 +166,7 @@ public sealed class FilesAccessor
     /// <summary>Whether the wire payload carried a <c>downloadUrl</c> property, regardless of whether its value was usable.</summary>
     private static bool DeclaresDownloadUrl(JsonElement element)
         => element.ValueKind == JsonValueKind.Object
-            && element.TryGetProperty("downloadUrl", out JsonElement value)
-            && value.ValueKind != JsonValueKind.Null;
+            && element.TryGetProperty("downloadUrl", out _);
 
     /// <summary>
     /// Deserialize a <see cref="FileDownloadInfo"/>, ignoring any property the wire sent with a non-string value.
