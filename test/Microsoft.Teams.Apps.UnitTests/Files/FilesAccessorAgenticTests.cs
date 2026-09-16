@@ -29,7 +29,7 @@ public class FilesAccessorAgenticTests
             ContentType = AttachmentContentType.FileDownloadInfo,
             ContentUrl = contentUrl is null ? null : new Uri(contentUrl),
             Name = name,
-            Content = content ?? new FileDownloadInfo { UniqueId = "odsp-unique-id", FileType = "pdf" },
+            Content = (object?)content ?? new { uniqueId = "odsp-unique-id", fileType = "pdf" },
         };
 
     private static MessageActivity ActivityWith(IList<TeamsAttachment> attachments, string conversationType = "personal")
@@ -173,6 +173,17 @@ public class FilesAccessorAgenticTests
 
         Assert.Empty(await new FilesAccessor(ActivityWith([attachment], "groupChat"), Log, Downloader).ListAsync());
         Assert.Empty(await new FilesAccessor(ActivityWith([attachment]), Log, Downloader).ListAsync());
+    }
+
+    [Fact]
+    public async Task DoesNotOpenTheGraphRouteWhenTheDownloadUrlIsNull()
+    {
+        TeamsAttachment attachment = RawContentAttachment(
+            new { downloadUrl = (string?)null, uniqueId = "odsp-unique-id", fileType = "pdf" });
+
+        FilesAccessor accessor = new(ActivityWith([attachment]), Log, Downloader);
+
+        Assert.Empty(await accessor.ListAsync());
     }
 
     [Fact]

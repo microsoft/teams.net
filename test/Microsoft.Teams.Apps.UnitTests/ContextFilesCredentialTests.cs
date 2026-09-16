@@ -96,7 +96,7 @@ public class ContextFilesCredentialTests
                 ContentType = AttachmentContentType.FileDownloadInfo,
                 ContentUrl = new Uri(ContentUrl),
                 Name = "report.pdf",
-                Content = new FileDownloadInfo { UniqueId = "odsp-unique-id", FileType = "pdf" },
+                Content = new { uniqueId = "odsp-unique-id", fileType = "pdf" },
             }
         ]);
 
