@@ -1,13 +1,9 @@
 # =============================================================================
 # This pipeline publishes NuGet packages. Manually triggered only.
 # Parameters:
-#   - packageSet: Legacy (Libraries/) or Core (core/)
 #   - publishType: Internal (unsigned, TeamsSDKPreviews feed) or Public (ESRP-
 #     signed, nuget.org, requires approval).
-# Versions come from Nerdbank.GitVersioning, per packageSet:
-#   - Legacy: root version.json
-#   - Core:   core/version.json (plus per-project overrides such as
-#             core/src/Microsoft.Teams.Apps/version.json)
+# Versions come from the root Nerdbank.GitVersioning version.json.
 #
 # Extends 1ES.Official.PipelineTemplate for M365 security compliance.
 # =============================================================================
@@ -24,13 +20,6 @@ trigger: none
 pr: none
 
 parameters:
-- name: packageSet
-  displayName: 'Package Set'
-  type: string
-  default: 'Core'
-  values:
-  - Legacy
-  - Core
 - name: publishType
   displayName: 'Publish Type'
   type: string
@@ -50,6 +39,9 @@ variables:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
+    settings:
+      networkIsolationPolicy: CFSClean
+
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
       image: ubuntu-22.04
@@ -75,36 +67,15 @@ extends:
           displayName: 'Build, Test, Pack, and Push to Internal Feed'
           steps:
             - checkout: self
-            - pwsh: |
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <clear />
-                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
-                  </packageSources>
-                </configuration>
-                "@
-                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
-              displayName: 'Create nuget.config'
+            - template: .azdo/templates/configure-cfs-nuget.yaml@self
 
-            - task: NuGetAuthenticate@1
-              displayName: 'Authenticate with NuGet feeds'
-
-            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
-              - template: .azdo/templates/build-test-pack.yaml@self
-                parameters:
-                  sourceRoot: '.'
-                  pack: true
-                  packPattern: 'Libraries/**/*.csproj'
-                  publishArtifact: false
-            - ${{ if eq(parameters.packageSet, 'Core') }}:
-              - template: .azdo/templates/build-test-pack.yaml@self
-                parameters:
-                  sourceRoot: 'core'
-                  pack: true
-                  packPattern: 'core/src/**/*.csproj'
-                  publishArtifact: false
+            - template: .azdo/templates/build-test-pack.yaml@self
+              parameters:
+                sourceRoot: '.'
+                pack: true
+                packPattern: 'src/**/*.csproj'
+                publishArtifact: false
+                useCfsNuGet: true
 
             - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
@@ -133,45 +104,19 @@ extends:
           steps:
             - checkout: self
 
-            - pwsh: |
-                $nugetConfig = @"
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <clear />
-                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
-                  </packageSources>
-                </configuration>
-                "@
-                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
-              displayName: 'Create nuget.config'
+            - template: .azdo/templates/configure-cfs-nuget.yaml@self
 
-            - task: NuGetAuthenticate@1
-              displayName: 'Authenticate with NuGet feeds'
+            - template: .azdo/templates/build-test-pack.yaml@self
+              parameters:
+                sourceRoot: '.'
+                pack: false
+                publishArtifact: false
+                useCfsNuGet: true
 
-            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
-              - template: .azdo/templates/build-test-pack.yaml@self
-                parameters:
-                  sourceRoot: '.'
-                  pack: false
-                  publishArtifact: false
-            - ${{ if eq(parameters.packageSet, 'Core') }}:
-              - template: .azdo/templates/build-test-pack.yaml@self
-                parameters:
-                  sourceRoot: 'core'
-                  pack: false
-                  publishArtifact: false
-
-            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
-              - template: .azdo/templates/sign-and-pack.yaml@self
-                parameters:
-                  assemblyPattern: 'Libraries/**/*.dll'
-                  packagePattern: 'Libraries/**/*.csproj'
-            - ${{ if eq(parameters.packageSet, 'Core') }}:
-              - template: .azdo/templates/sign-and-pack.yaml@self
-                parameters:
-                  assemblyPattern: 'core/src/**/*.dll'
-                  packagePattern: 'core/src/**/*.csproj'
+            - template: .azdo/templates/sign-and-pack.yaml@self
+              parameters:
+                assemblyPattern: 'src/**/*.dll'
+                packagePattern: 'src/**/*.csproj'
 
             - task: 1ES.PublishPipelineArtifact@1
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
@@ -186,15 +131,20 @@ extends:
         jobs:
         - deployment: PushPackages
           displayName: 'Manual Approval Required to Push Packages'
+          templateContext:
+            type: releaseJob
+            isProduction: true
+            inputs:
+            - input: pipelineArtifact
+              artifactName: Packages
+              targetPath: '$(Pipeline.Workspace)/Packages'
           environment:
             name: 'teams-net-publish'
           strategy:
             runOnce:
               deploy:
                 steps:
-                - download: current
-                  artifact: Packages
-
+                - checkout: none
                 - task: 1ES.PublishNuget@1
                   displayName: 'Push Packages to nuget.org'
                   inputs:

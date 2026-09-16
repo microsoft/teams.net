@@ -4,9 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
   pull_request:
-    branches: ['main', 'releases/v2', 'releases/core']
+    branches: ['main', 'releases/core']
   push:
-    branches: ['main', 'releases/v2', 'releases/core']
+    branches: ['main', 'releases/core']
 
   merge_group:
 
@@ -21,12 +21,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Detect code changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
         with:
           filters: |
@@ -34,13 +34,12 @@ jobs:
               - '**'
               - '!**/*.md'
               - '!docs/**'
-              - '!Assets/**'
 
       - name: Setup .NET
         if: steps.changes.outputs.code == 'true'
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: '9.0'
+          dotnet-version: '10.0.x'
 
       - name: Restore
         if: steps.changes.outputs.code == 'true'
@@ -60,7 +59,7 @@ jobs:
 
       - name: Upload nupkg as workflow artifact
         if: steps.changes.outputs.code == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nupkg
           path: ./nupkgs/*.nupkg

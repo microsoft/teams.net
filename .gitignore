@@ -494,4 +494,5 @@ $RECYCLE.BIN/
 .claude/settings.local.json
 
 # Integration test run settings (contain secrets)
+test/IntegrationTests/.runsettings/
 core/test/IntegrationTests/.runsettings/

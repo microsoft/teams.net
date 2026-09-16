@@ -1,0 +1,62 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Apps.State;
+using Microsoft.Teams.Core.Hosting;
+
+namespace Microsoft.Teams.Apps;
+
+/// <summary>
+/// Options for configuring a <see cref="TeamsBotApplication"/>.
+/// Inherits <see cref="BotApplicationOptions"/> so a single options object covers both Core and Teams settings.
+/// </summary>
+public sealed class TeamsBotApplicationOptions : BotApplicationOptions
+{
+    /// <summary>
+    /// Microsoft Graph host root the inbound-file path resolves drive items against, for files that arrive without a pre-authorized download URL.
+    /// Populated from <c>BotFramework:GraphBaseUrl</c> by the hosting extensions; <c>null</c> uses the public cloud.
+    /// <para>A host root, not a versioned endpoint: the API version is appended at the point of use, so a pre-versioned value produces <c>/v1.0/v1.0</c>.</para>
+    /// </summary>
+    public Uri? GraphBaseUrl { get; set; }
+
+    internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
+
+    /// <summary>
+    /// Register an OAuth flow with the given connection name and optional configuration.
+    /// </summary>
+    /// <param name="connectionName">The OAuth connection name configured on the bot.</param>
+    /// <param name="configure">Optional delegate to configure the <see cref="OAuthOptions"/> (card text, button text).</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions AddOAuthFlow(string connectionName, Action<OAuthOptions>? configure = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionName);
+
+        OAuthOptions options = new() { ConnectionName = connectionName };
+        configure?.Invoke(options);
+
+        OAuthFlows.Add(new OAuthFlowDescriptor(connectionName, options));
+        IsStateEnabled = true; // OAuthFlows require state; enable without overwriting existing StateConfiguration.
+        return this;
+    }
+
+    internal bool IsStateEnabled { get; private set; }
+
+    internal Action<TurnStateOptions>? StateConfiguration { get; private set; }
+
+    /// <summary>
+    /// Enables per-turn state management backed by <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/>.
+    /// An in-memory cache is used by default; register a custom <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/>
+    /// (Redis, SQL Server, etc.) to persist state across restarts.
+    /// </summary>
+    /// <param name="configure">Optional delegate to configure <see cref="TurnStateOptions"/> (e.g. cache entry TTL).</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions UseState(Action<TurnStateOptions>? configure = null)
+    {
+        IsStateEnabled = true;
+        StateConfiguration = configure;
+        return this;
+    }
+
+    internal sealed record OAuthFlowDescriptor(string ConnectionName, OAuthOptions Options);
+}
