@@ -99,7 +99,7 @@ public class CustomBotApplicationGraphWiringTests
                 ContentType = AttachmentContentType.FileDownloadInfo,
                 ContentUrl = new Uri("https://contoso.sharepoint.com/personal/a/Documents/report.pdf"),
                 Name = "report.pdf",
-                Content = new FileDownloadInfo { FileType = "pdf" },
+                Content = new { fileType = "pdf" },
             }
         ]);
 
