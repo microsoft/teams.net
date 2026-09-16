@@ -3,6 +3,10 @@
 # Parameters:
 #   - publishType: Internal (unsigned, TeamsSDKPreviews feed) or Public (ESRP-
 #     signed, nuget.org, requires approval).
+#   - promoteView: Internal only. Feed view to promote the published packages to
+#     (for example Prerelease). Blank skips promotion. Promotion is one-way:
+#     Azure Artifacts has no demotion, so a view can only be cleaned up by
+#     deleting the package version or the view itself.
 # Versions come from the root Nerdbank.GitVersioning version.json.
 #
 # Extends 1ES.Official.PipelineTemplate for M365 security compliance.
@@ -28,9 +32,15 @@ parameters:
   - Internal
   - Public
 
+- name: promoteView
+  displayName: 'Promote to feed view (Internal only, blank to skip)'
+  type: string
+  default: ''
+
 variables:
   buildConfiguration: 'Release'
   folderPath: '$(Build.SourcesDirectory)'
+  internalFeedName: 'TeamsSDKPreviews'
   ${{ if eq(parameters.publishType, 'Public') }}:
     appRegistrationTenantId: 'cdc5aeea-15c5-4db6-b079-fcadd2505dc2'
     authenticodeSignId: '2d5c4ab9-0b7e-4f60-bb92-70322df77b94'
@@ -88,6 +98,76 @@ extends:
                 allowPackageConflicts: true  # Treat 409 (version already in feed, including deleted versions) as success
                 publishPackageMetadata: true
                 retryCountOnTaskFailure: 2
+
+            # Promotion is one-way. Azure Artifacts has no demotion, so a version can
+            # only leave a view by deleting the version or the view itself. Views are
+            # for browsing and downstream consumption only; dependency resolution must
+            # keep pointing at the feed itself, which is where cached upstream
+            # packages live.
+            - ${{ if ne(parameters.promoteView, '') }}:
+              - pwsh: |
+                  $ErrorActionPreference = 'Stop'
+                  Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+                  $view = '${{ parameters.promoteView }}'
+                  $org = "$(System.CollectionUri)".TrimEnd('/').Split('/')[-1]
+                  $project = '$(System.TeamProject)'
+                  $feed = '$(internalFeedName)'
+                  $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
+
+                  # Only *.nupkg matches here; symbol packages are packed as .snupkg.
+                  $packages = @(Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Filter '*.nupkg')
+                  if ($packages.Count -eq 0) { throw 'No .nupkg files found to promote.' }
+
+                  $promoted = 0
+                  $failed = @()
+                  foreach ($file in $packages) {
+                    $fileName = $file.Name
+
+                    # Read id and version from the nuspec rather than parsing the file
+                    # name, which is ambiguous between package id and version.
+                    $zip = [System.IO.Compression.ZipFile]::OpenRead($file.FullName)
+                    try {
+                      $entry = $zip.Entries | Where-Object { $_.FullName -like '*.nuspec' -and $_.FullName -notmatch '/' } | Select-Object -First 1
+                      if ($null -eq $entry) { throw "No root .nuspec found in $fileName" }
+                      $reader = New-Object System.IO.StreamReader($entry.Open())
+                      try { $nuspec = [xml]$reader.ReadToEnd() } finally { $reader.Dispose() }
+                    } finally { $zip.Dispose() }
+
+                    $id = $nuspec.package.metadata.id
+                    $version = $nuspec.package.metadata.version
+
+                    # The feed is shared with other products, so only promote the
+                    # packages this SDK owns.
+                    if (-not $id.StartsWith('Microsoft.Teams.', [StringComparison]::OrdinalIgnoreCase)) {
+                      Write-Host "Skipping $id (not owned by this SDK)"
+                      continue
+                    }
+
+                    $uri = "https://pkgs.dev.azure.com/$org/$project/_apis/packaging/feeds/$feed/nuget/packages/$id/versions/$version" + '?api-version=7.2-preview.1'
+                    $body = @{ views = @{ op = 'add'; path = '/views/-'; value = $view } } | ConvertTo-Json -Compress
+
+                    Write-Host "Promoting $id $version to @$view"
+                    try {
+                      Invoke-RestMethod -Method Patch -Uri $uri -Headers $headers -ContentType 'application/json' -Body $body | Out-Null
+                      $promoted++
+                    } catch {
+                      $reason = $_.Exception.Message
+                      Write-Host "##vso[task.logissue type=error]Failed to promote $id $version : $reason"
+                      $failed += "$id $version"
+                    }
+                  }
+
+                  if ($failed.Count -gt 0) {
+                    $failedList = $failed -join ', '
+                    throw "Promotion failed for: $failedList"
+                  }
+                  if ($promoted -eq 0) { throw 'No Microsoft.Teams.* packages found to promote.' }
+
+                  Write-Host "Promoted $promoted package(s) to @$view"
+                displayName: 'Promote packages to @${{ parameters.promoteView }}'
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
             - task: 1ES.PublishPipelineArtifact@1
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
