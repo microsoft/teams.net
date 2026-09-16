@@ -176,6 +176,17 @@ public class FilesAccessorAgenticTests
     }
 
     [Fact]
+    public async Task DoesNotOpenTheGraphRouteWhenTheDownloadUrlIsNull()
+    {
+        TeamsAttachment attachment = RawContentAttachment(
+            new { downloadUrl = (string?)null, uniqueId = "odsp-unique-id", fileType = "pdf" });
+
+        FilesAccessor accessor = new(ActivityWith([attachment]), Log, Downloader);
+
+        Assert.Empty(await accessor.ListAsync());
+    }
+
+    [Fact]
     public async Task OpensTheGraphRouteForContentThatDeclaresNoDownloadUrl()
     {
         // The agentic shape itself, which is the one case the route exists for.
