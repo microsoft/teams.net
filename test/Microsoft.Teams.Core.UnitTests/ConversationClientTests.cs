@@ -160,7 +160,7 @@ public class ConversationClientTests
         Assert.Equal("reply123", result?.Id);
         Assert.NotNull(capturedRequest);
         Assert.Equal(
-            "https://test.service.url/v3/conversations/conv%2F123/activities/root%2F456",
+            "https://test.service.url/v3/conversations/conv%2F123/threads/root%2F456",
             capturedRequest.RequestUri?.ToString());
         Assert.Equal(HttpMethod.Post, capturedRequest.Method);
     }
@@ -193,7 +193,7 @@ public class ConversationClientTests
             isTargeted: true);
 
         Assert.Equal(
-            "https://test.service.url/v3/conversations/conv123/activities/root456?isTargetedActivity=true",
+            "https://test.service.url/v3/conversations/conv123/threads/root456?isTargetedActivity=true",
             capturedRequest?.RequestUri?.ToString());
     }
 

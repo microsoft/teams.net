@@ -101,7 +101,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/threads/{Uri.EscapeDataString(activityId)}";
         if (isTargeted)
         {
             url += "?isTargetedActivity=true";
