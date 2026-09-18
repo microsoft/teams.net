@@ -121,31 +121,33 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
-    /// Sends a text message that quotes the current activity when it has an ID.
+    /// Sends a text message that quotes the current activity when it has an id, rendered as a quote bubble above the response in Teams; otherwise sends without quoting.
     /// </summary>
+    /// <remarks>
+    /// Quoting is independent of placement. The response is placed as described on <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>, so a group chat root message is quoted without being threaded.
+    /// </remarks>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    [Obsolete("Use SendAsync. To quote a message, add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
-        => SendQuotedReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
+        => ReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
-    /// Sends an activity that quotes the current activity when it has an ID.
+    /// Sends an activity that quotes the current activity when it has an id, rendered as a quote bubble above the response in Teams; otherwise sends without quoting.
+    /// To send without quoting unconditionally, use <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// Quoting is independent of placement. The response is placed as described on <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>, so a group chat root message is quoted without being threaded.
+    /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    [Obsolete("Use SendAsync. To quote a message, add the quote to the MessageActivityInput with AddQuote before passing it to SendAsync.")]
     public Task<SendActivityResponse?> ReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken = default)
-        => SendQuotedReplyAsync(activity, cancellationToken);
-
-    private Task<SendActivityResponse?> SendQuotedReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
         if (!string.IsNullOrWhiteSpace(Activity.Id))
         {
-            activity.PrependQuote(Activity.Id);
+            return QuoteAsync(Activity.Id, activity, cancellationToken);
         }
 
         return SendAsync(activity, cancellationToken);
@@ -173,9 +175,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The response text, appended to the quoted message placeholder.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Obsolete("Add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
     public Task<SendActivityResponse?> QuoteAsync(string messageId, string text, CancellationToken cancellationToken = default)
-        => SendQuotedAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
+        => QuoteAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
     /// Send a message to the conversation with a quoted message reference prepended to the text.
@@ -185,11 +186,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send. A quote placeholder for messageId is prepended to its text.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Obsolete("Add the quote to the MessageActivityInput with AddQuote before passing it to SendAsync.")]
     public Task<SendActivityResponse?> QuoteAsync(string messageId, MessageActivityInput activity, CancellationToken cancellationToken = default)
-        => SendQuotedAsync(messageId, activity, cancellationToken);
-
-    private Task<SendActivityResponse?> SendQuotedAsync(string messageId, MessageActivityInput activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -215,12 +212,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     }
 
     /// <inheritdoc cref="ReplyAsync(string, CancellationToken)"/>
-    [Obsolete("Use SendAsync. To quote a message, add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
+    [Obsolete("Use ReplyAsync instead.")]
     public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
-        => SendQuotedReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
+        => ReplyAsync(text, cancellationToken);
 
     /// <inheritdoc cref="ReplyAsync(MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Use SendAsync. To quote a message, add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
+    [Obsolete("Use ReplyAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Reply(MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -249,12 +246,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => TeamsStreamingWriter.CreateFromContext(this);
 
     /// <inheritdoc cref="QuoteAsync(string, string, CancellationToken)"/>
-    [Obsolete("Add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
+    [Obsolete("Use QuoteAsync instead.")]
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
-        => SendQuotedAsync(messageId, new MessageActivityInput().WithText(text), cancellationToken);
+        => QuoteAsync(messageId, text, cancellationToken);
 
     /// <inheritdoc cref="QuoteAsync(string, MessageActivityInput, CancellationToken)"/>
-    [Obsolete("Add the quote to a MessageActivityInput with AddQuote and pass it to SendAsync.")]
+    [Obsolete("Use QuoteAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Quote(string messageId, MessageActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -282,6 +279,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// (a recipient with <c>IsTargeted</c> set), the message is sent as a
     /// targeted message visible only to that recipient.
     /// </summary>
+    /// <remarks>
+    /// Placement follows the inbound activity.
+    /// A message composed inside a thread is sent to that thread, and a channel root message is sent to that post's thread.
+    /// A group chat or personal root message is sent to the conversation without creating a thread.
+    /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>

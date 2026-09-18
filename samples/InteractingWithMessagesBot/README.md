@@ -14,9 +14,11 @@ in a separate handler class.
 
 | Command | Behavior |
 |---------|----------|
-| `quote reply` | `MessageActivityInput.AddQuote()` quotes the inbound message |
-| `quote message` | `MessageActivityInput.AddQuote()` quotes a previously sent message by ID |
+| `quote reply` | `context.ReplyAsync()` auto-quotes the inbound message |
+| `quote message` | `context.QuoteAsync()` quotes a previously sent message by ID |
+| `quote add` | `AddQuote()` composes a quote with a response |
 | `quote batch` | Combines multiple quotes with mixed responses |
+| `quote manual` | Combines `AddQuote()` and `AddText()` manually |
 | *(quote a message)* | Displays the quoted-message metadata |
 
 ### Threading

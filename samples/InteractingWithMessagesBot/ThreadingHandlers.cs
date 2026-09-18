@@ -10,7 +10,11 @@ internal static class ThreadingHandlers
     {
         teamsApp.OnMessage("(?i)^default send$", async (context, cancellationToken) =>
         {
-            await context.SendAsync("This is sent to the same thread, without quoting.", cancellationToken);
+            string? threadRootId = context.Activity.GetDefaultThreadId();
+            string where = threadRootId is null ? "at the top level" : "in this thread";
+            await context.SendAsync(
+                $"Sent with context.SendAsync() and no quote, so it landed {where}.",
+                cancellationToken);
         });
 
         teamsApp.OnMessage("(?i)^thread proactive$", async (context, cancellationToken) =>

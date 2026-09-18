@@ -22,14 +22,15 @@ teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
     await context.SendAsync(reply, cancellationToken);
 });
 
-// Targeted message that explicitly quotes the inbound message.
+// Targeted reply to the inbound message: same wire format as send, but goes through
+// Context.ReplyAsync which prepends a quoted reference to the inbound message.
 teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 {
     MessageActivityInput reply = new MessageActivityInput()
-        .AddQuote(context.Activity.Id!, "🔒 Targeted reply visible only to you.")
+        .WithText("🔒 Targeted reply visible only to you.")
         .WithRecipient(context.Activity.From!, isTargeted: true)
         ;
-    await context.SendAsync(reply, cancellationToken);
+    await context.ReplyAsync(reply, cancellationToken);
 });
 
 // Send → Update a targeted message after 3 seconds.

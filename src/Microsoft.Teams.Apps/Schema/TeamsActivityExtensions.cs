@@ -40,9 +40,12 @@ public static class TeamsActivityExtensions
     /// Gets the thread root ID used by default for a reactive reply.
     /// </summary>
     /// <remarks>
-    /// The thread root is resolved from typed channel data first, then from a legacy
-    /// <c>;messageid=</c> conversation ID suffix. For a channel root activity, the inbound
-    /// activity ID is used. Group-chat and personal root activities return <see langword="null"/>.
+    /// The thread root is resolved from typed channel data first, then from a legacy <c>;messageid=</c> conversation ID suffix.
+    /// For a channel root activity, the inbound activity ID is used. Group-chat and personal root activities return <see langword="null"/>.
+    /// <para>
+    /// Threading is determined by placement rather than by the method used to send.
+    /// An activity composed inside a thread stays in that thread, and a channel post is itself a thread root. A group chat or personal root activity is neither, so its reply is placed in the conversation.
+    /// </para>
     /// </remarks>
     /// <param name="activity">The inbound Teams activity.</param>
     /// <returns>The default thread root ID, or <see langword="null"/> for an unthreaded activity.</returns>

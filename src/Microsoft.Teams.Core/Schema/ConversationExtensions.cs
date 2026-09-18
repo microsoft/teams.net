@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.ComponentModel;
+
 namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
@@ -26,7 +28,11 @@ public static class ConversationExtensions
     /// <param name="conversationId">the conversation to thread into (e.g. <c>19:abc@thread.skype</c>)</param>
     /// <param name="messageId">the thread root message ID (must be a non-zero numeric string)</param>
     /// <returns>the threaded conversation ID (e.g. <c>19:abc@thread.skype;messageid=123</c>)</returns>
-    [Obsolete("Thread placement is endpoint-based. Use the base conversation ID with ReplyToActivityAsync instead.")]
+    /// <remarks>
+    /// Thread placement is endpoint-based. Pass the base conversation ID and the thread root ID separately to <see cref="ConversationClient.ReplyToActivityAsync"/>, or to <c>TeamsBotApplication.ReplyAsync</c> from an app, rather than folding them into one ID here.
+    /// </remarks>
+    [Obsolete("Thread placement is endpoint-based. Do not fold the thread root into the conversation ID; pass it separately to TeamsBotApplication.ReplyAsync or ConversationClient.ReplyToActivityAsync.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static string ToThreadedConversationId(string conversationId, string messageId)
     {
         if (string.IsNullOrEmpty(conversationId))

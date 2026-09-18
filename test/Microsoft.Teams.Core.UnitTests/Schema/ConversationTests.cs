@@ -5,6 +5,9 @@ using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core.UnitTests.Schema;
 
+// ToThreadedConversationId is obsolete because thread placement is endpoint-based, but the legacy suffix it builds is still honored, so its construction and validation stay under test.
+#pragma warning disable CS0618
+
 public class ConversationTests
 {
     [Fact]
@@ -84,3 +87,5 @@ public class ConversationTests
         Assert.Equal("19:abc@thread.skype", conv.ThreadId());
     }
 }
+
+#pragma warning restore CS0618

@@ -24,12 +24,14 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             **Interacting with Messages**
 
             **Quoting:**
-            - `quote reply` - quote your incoming message
+            - `quote reply` - auto-quote your message
             - `quote message` - quote a previously sent message
+            - `quote add` - compose a quote with the message builder
             - `quote batch` - combine multiple quotes
+            - `quote manual` - combine a quote and text manually
 
             **Threading:**
-            - `default send` - send to the same thread without quoting
+            - `default send` - send with the default placement for this scope, without quoting
             - `thread proactive` - send a proactive threaded reply
             - `thread proactive quote` - explicitly place and quote a threaded reply
             - `thread proactive targeted` - send a proactive targeted threaded reply
@@ -56,7 +58,7 @@ teamsApp.OnMessage("(?s)^.*$", async (context, cancellationToken) =>
     string text = context.Activity.TextWithoutMentions ?? "";
     if (Regex.IsMatch(
         text,
-        @"(?i)^(help|quote (reply|message|batch)|default send|thread proactive( quote| targeted( quote)?)?|reaction (add \S+|remove \S+|proactive))$"))
+        @"(?i)^(help|quote (reply|message|add|batch|manual)|default send|thread proactive( quote| targeted( quote)?)?|reaction (add \S+|remove \S+|proactive))$"))
     {
         return;
     }

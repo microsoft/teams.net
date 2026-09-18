@@ -12,10 +12,7 @@ internal static class QuotingHandlers
     {
         teamsApp.OnMessage("(?i)^quote reply$", async (context, cancellationToken) =>
         {
-            await context.SendAsync(
-                new MessageActivityInput()
-                    .AddQuote(context.Activity.Id!, "Thanks for your message!"),
-                cancellationToken);
+            await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
         });
 
         teamsApp.OnMessage("(?i)^quote message$", async (context, cancellationToken) =>
@@ -25,9 +22,22 @@ internal static class QuotingHandlers
                 cancellationToken);
             if (sent?.Id != null)
             {
+                await context.QuoteAsync(
+                    sent.Id,
+                    "Just to confirm - does the new time work for everyone?",
+                    cancellationToken);
+            }
+        });
+
+        teamsApp.OnMessage("(?i)^quote add$", async (context, cancellationToken) =>
+        {
+            SendActivityResponse? sent = await context.SendAsync(
+                "Please review the latest PR before end of day.",
+                cancellationToken);
+            if (sent?.Id != null)
+            {
                 await context.SendAsync(
-                    new MessageActivityInput()
-                        .AddQuote(sent.Id, "Just to confirm - does the new time work for everyone?"),
+                    new MessageActivityInput().AddQuote(sent.Id, "Done! Left my comments on the PR."),
                     cancellationToken);
             }
         });
@@ -51,6 +61,21 @@ internal static class QuotingHandlers
                     .AddQuote(sentB.Id, "Looks great, approved!")
                     .AddQuote(sentC.Id);
                 await context.SendAsync(message, cancellationToken);
+            }
+        });
+
+        teamsApp.OnMessage("(?i)^quote manual$", async (context, cancellationToken) =>
+        {
+            SendActivityResponse? sent = await context.SendAsync(
+                "Deployment to staging is complete.",
+                cancellationToken);
+            if (sent?.Id != null)
+            {
+                await context.SendAsync(
+                    new MessageActivityInput()
+                        .AddQuote(sent.Id)
+                        .AddText(" Verified - all smoke tests passing."),
+                    cancellationToken);
             }
         });
     }
