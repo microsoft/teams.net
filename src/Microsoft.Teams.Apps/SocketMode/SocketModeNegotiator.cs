@@ -8,9 +8,25 @@ using System.Net.Http.Headers;
 namespace Microsoft.Teams.Apps.SocketMode;
 
 /// <summary>
+/// Negotiates connection details for a Socket Mode connection.
+/// </summary>
+internal interface ISocketModeNegotiator
+{
+    /// <summary>
+    /// Negotiates the endpoint and access token for a Socket Mode connection.
+    /// </summary>
+    /// <param name="negotiateUri">The Socket Mode negotiate endpoint.</param>
+    /// <param name="cancellationToken">A token for cancelling the operation.</param>
+    /// <returns>The negotiated connection details.</returns>
+    Task<SocketModeNegotiateResponse> NegotiateAsync(
+        Uri negotiateUri,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
 /// Negotiates connection details for a Socket Mode transport.
 /// </summary>
-internal sealed class SocketModeNegotiator
+internal sealed class SocketModeNegotiator : ISocketModeNegotiator
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
@@ -52,7 +68,7 @@ internal sealed class SocketModeNegotiator
     /// <returns>The negotiated connection details.</returns>
     /// <exception cref="SocketModeNegotiateException">Thrown when the endpoint returns an unsuccessful status code.</exception>
     /// <exception cref="TimeoutException">Thrown when negotiation exceeds the configured timeout.</exception>
-    internal async Task<SocketModeNegotiateResponse> NegotiateAsync(
+    public async Task<SocketModeNegotiateResponse> NegotiateAsync(
         Uri negotiateUri,
         CancellationToken cancellationToken = default)
     {
