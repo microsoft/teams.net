@@ -7,7 +7,14 @@ using System.Net.Http.Headers;
 
 namespace Microsoft.Teams.Apps.SocketMode;
 
-internal sealed class SocketModeNegotiator
+internal interface ISocketModeNegotiator
+{
+    Task<SocketModeNegotiateResponse> NegotiateAsync(
+        Uri negotiateUri,
+        CancellationToken cancellationToken = default);
+}
+
+internal sealed class SocketModeNegotiator : ISocketModeNegotiator
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
@@ -33,7 +40,7 @@ internal sealed class SocketModeNegotiator
         }
     }
 
-    internal async Task<SocketModeNegotiateResponse> NegotiateAsync(
+    public async Task<SocketModeNegotiateResponse> NegotiateAsync(
         Uri negotiateUri,
         CancellationToken cancellationToken = default)
     {
