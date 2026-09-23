@@ -140,7 +140,7 @@ internal sealed class SocketModeNegotiator
                 nameof(uri));
         }
 
-        if (IsSecureOrLoopback(uri))
+        if (IsSecureOrLoopback(uri, allowWebSocketSchemes: false))
         {
             return;
         }
@@ -155,21 +155,22 @@ internal sealed class SocketModeNegotiator
     /// </summary>
     private static void EnsureSecureSignalRUri(Uri uri)
     {
-        if (IsSecureOrLoopback(uri))
+        if (IsSecureOrLoopback(uri, allowWebSocketSchemes: true))
         {
             return;
         }
 
         throw new InvalidDataException(
-            "Socket Mode negotiate response SignalR URL must use HTTPS unless it targets loopback.");
+            "Socket Mode negotiate response SignalR URL must use HTTPS or WSS unless it targets loopback.");
     }
 
     /// <summary>
-    /// Determines whether a URI is secure or an HTTP loopback endpoint.
+    /// Determines whether a URI uses an allowed secure scheme or its loopback equivalent.
     /// </summary>
-    private static bool IsSecureOrLoopback(Uri uri)
+    private static bool IsSecureOrLoopback(Uri uri, bool allowWebSocketSchemes)
     {
-        if (uri.Scheme == Uri.UriSchemeHttps)
+        if (uri.Scheme == Uri.UriSchemeHttps
+            || (allowWebSocketSchemes && uri.Scheme == "wss"))
         {
             return true;
         }
@@ -180,7 +181,9 @@ internal sealed class SocketModeNegotiator
             || host.Equals("127.0.0.1", StringComparison.Ordinal)
             || host.Equals("::1", StringComparison.Ordinal);
 
-        return uri.Scheme == Uri.UriSchemeHttp && isLoopback;
+        return isLoopback
+            && (uri.Scheme == Uri.UriSchemeHttp
+                || (allowWebSocketSchemes && uri.Scheme == "ws"));
     }
 
     /// <summary>

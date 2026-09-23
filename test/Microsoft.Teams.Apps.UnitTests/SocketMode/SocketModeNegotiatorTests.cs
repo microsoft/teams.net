@@ -25,15 +25,17 @@ public class SocketModeNegotiatorTests
 
         SocketModeNegotiateResponse response = await negotiator.NegotiateAsync(new Uri(uri));
 
-        Assert.Equal("https://signalr.example.test/client", response.Url);
+        Assert.Equal("wss://signalr.example.test/client", response.Url);
         Assert.Equal(1, handler.SendCount);
     }
 
     [Theory]
     [InlineData("http://botapi.skype.com/v3/websockets/connect")]
     [InlineData("http://127.0.0.2/v3/websockets/connect")]
+    [InlineData("wss://botapi.skype.com/v3/websockets/connect")]
+    [InlineData("ws://localhost:5000/v3/websockets/connect")]
     [InlineData("ftp://botapi.skype.com/v3/websockets/connect")]
-    public async Task NegotiateAsync_RejectsInsecureRemoteUris(string uri)
+    public async Task NegotiateAsync_RejectsUnsupportedNegotiateUris(string uri)
     {
         RecordingHandler handler = SuccessHandler();
         SocketModeNegotiator negotiator = CreateNegotiator(handler);
@@ -74,14 +76,14 @@ public class SocketModeNegotiatorTests
     [Theory]
     [InlineData("""
         {
-          "url": "https://signalr.example.test/client",
+          "url": "wss://signalr.example.test/client",
           "accessToken": "signalr-token",
           "expiresIn": 3600
         }
         """)]
     [InlineData("""
         {
-          "Url": "https://signalr.example.test/client",
+          "Url": "wss://signalr.example.test/client",
           "AccessToken": "signalr-token",
           "ExpiresIn": 3600
         }
@@ -93,16 +95,16 @@ public class SocketModeNegotiatorTests
 
         SocketModeNegotiateResponse response = await negotiator.NegotiateAsync(NegotiateUri);
 
-        Assert.Equal("https://signalr.example.test/client", response.Url);
+        Assert.Equal("wss://signalr.example.test/client", response.Url);
         Assert.Equal("signalr-token", response.AccessToken);
         Assert.Equal(3600, response.ExpiresIn);
     }
 
     [Theory]
     [InlineData("""{ "accessToken": "signalr-token" }""")]
-    [InlineData("""{ "url": "https://signalr.example.test/client" }""")]
+    [InlineData("""{ "url": "wss://signalr.example.test/client" }""")]
     [InlineData("""{ "url": "", "accessToken": "signalr-token" }""")]
-    [InlineData("""{ "url": "https://signalr.example.test/client", "accessToken": "" }""")]
+    [InlineData("""{ "url": "wss://signalr.example.test/client", "accessToken": "" }""")]
     public async Task NegotiateAsync_RejectsMissingResponseFields(string json)
     {
         RecordingHandler handler = JsonHandler(HttpStatusCode.OK, json);
@@ -259,7 +261,32 @@ public class SocketModeNegotiatorTests
     }
 
     [Theory]
+    [InlineData("wss://signalr.example.test/client")]
+    [InlineData("https://signalr.example.test/client")]
+    [InlineData("ws://localhost:5000/client")]
+    [InlineData("ws://127.0.0.1:5000/client")]
+    [InlineData("ws://[::1]:5000/client")]
+    [InlineData("http://localhost:5000/client")]
+    public async Task NegotiateAsync_AllowsSecureAndLoopbackSignalRUrls(string signalRUrl)
+    {
+        RecordingHandler handler = JsonHandler(
+            HttpStatusCode.OK,
+            $$"""
+                {
+                  "url": "{{signalRUrl}}",
+                  "accessToken": "signalr-token"
+                }
+                """);
+        SocketModeNegotiator negotiator = CreateNegotiator(handler);
+
+        SocketModeNegotiateResponse response = await negotiator.NegotiateAsync(NegotiateUri);
+
+        Assert.Equal(signalRUrl, response.Url);
+    }
+
+    [Theory]
     [InlineData("http://signalr.example.test/client")]
+    [InlineData("ws://signalr.example.test/client")]
     [InlineData("ftp://signalr.example.test/client")]
     [InlineData("/relative/client")]
     public async Task NegotiateAsync_RejectsInvalidSignalRUrl(string signalRUrl)
@@ -297,7 +324,7 @@ public class SocketModeNegotiatorTests
             HttpStatusCode.OK,
             """
             {
-              "url": "https://signalr.example.test/client",
+              "url": "wss://signalr.example.test/client",
               "accessToken": "signalr-token",
               "expiresIn": 3600
             }
