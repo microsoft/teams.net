@@ -244,6 +244,26 @@ public class SocketModeNegotiatorTests
     }
 
     [Fact]
+    public async Task NegotiateAsync_TimesOutHangingBotTokenAcquisition()
+    {
+        RecordingHandler handler = SuccessHandler();
+        SocketModeNegotiator negotiator = CreateNegotiator(
+            handler,
+            async cancellationToken =>
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return BotToken;
+            },
+            timeout: TimeSpan.FromMilliseconds(50));
+
+        TimeoutException exception = await Assert.ThrowsAsync<TimeoutException>(
+            () => negotiator.NegotiateAsync(NegotiateUri));
+
+        Assert.Contains("timed out", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, handler.SendCount);
+    }
+
+    [Fact]
     public async Task NegotiateAsync_DoesNotExposeSecretsInServiceFailure()
     {
         const string signalRToken = "signalr-secret";
