@@ -7,6 +7,9 @@ using System.Net.Http.Headers;
 
 namespace Microsoft.Teams.Apps.SocketMode;
 
+/// <summary>
+/// Negotiates connection details for a Socket Mode transport.
+/// </summary>
 internal sealed class SocketModeNegotiator
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
@@ -16,6 +19,14 @@ internal sealed class SocketModeNegotiator
     private readonly TimeSpan _timeout;
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>
+    /// Initializes a Socket Mode negotiator.
+    /// </summary>
+    /// <param name="httpClient">The client used to call the negotiate endpoint.</param>
+    /// <param name="getBotToken">Acquires a Bot Framework app token.</param>
+    /// <param name="timeout">The negotiate request timeout.</param>
+    /// <param name="timeProvider">The time provider used to evaluate retry delays.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is not positive.</exception>
     internal SocketModeNegotiator(
         HttpClient httpClient,
         Func<CancellationToken, Task<string?>> getBotToken,
@@ -33,6 +44,14 @@ internal sealed class SocketModeNegotiator
         }
     }
 
+    /// <summary>
+    /// Negotiates the endpoint and access token for a Socket Mode connection.
+    /// </summary>
+    /// <param name="negotiateUri">The Socket Mode negotiate endpoint.</param>
+    /// <param name="cancellationToken">A token for cancelling the operation.</param>
+    /// <returns>The negotiated connection details.</returns>
+    /// <exception cref="SocketModeNegotiateException">Thrown when the endpoint returns an unsuccessful status code.</exception>
+    /// <exception cref="TimeoutException">Thrown when negotiation exceeds the configured timeout.</exception>
     internal async Task<SocketModeNegotiateResponse> NegotiateAsync(
         Uri negotiateUri,
         CancellationToken cancellationToken = default)
@@ -109,6 +128,9 @@ internal sealed class SocketModeNegotiator
         }
     }
 
+    /// <summary>
+    /// Ensures that a negotiate URI uses an allowed scheme and host.
+    /// </summary>
     private static void EnsureSecureNegotiateUri(Uri uri)
     {
         if (!uri.IsAbsoluteUri)
@@ -128,6 +150,9 @@ internal sealed class SocketModeNegotiator
             nameof(uri));
     }
 
+    /// <summary>
+    /// Ensures that a negotiated SignalR URI uses an allowed scheme and host.
+    /// </summary>
     private static void EnsureSecureSignalRUri(Uri uri)
     {
         if (IsSecureOrLoopback(uri))
@@ -139,6 +164,9 @@ internal sealed class SocketModeNegotiator
             "Socket Mode negotiate response SignalR URL must use HTTPS unless it targets loopback.");
     }
 
+    /// <summary>
+    /// Determines whether a URI is secure or an HTTP loopback endpoint.
+    /// </summary>
     private static bool IsSecureOrLoopback(Uri uri)
     {
         if (uri.Scheme == Uri.UriSchemeHttps)
@@ -155,6 +183,9 @@ internal sealed class SocketModeNegotiator
         return uri.Scheme == Uri.UriSchemeHttp && isLoopback;
     }
 
+    /// <summary>
+    /// Gets the server-provided retry delay.
+    /// </summary>
     private TimeSpan? GetRetryAfter(HttpResponseMessage response)
     {
         RetryConditionHeaderValue? retryAfter = response.Headers.RetryAfter;
@@ -171,16 +202,24 @@ internal sealed class SocketModeNegotiator
     }
 }
 
+/// <summary>
+/// Represents an unsuccessful Socket Mode negotiate response.
+/// </summary>
 [SuppressMessage(
-    "Design",
-    "CA1032:Implement standard exception constructors",
-    Justification = "This internal transport exception is constructed only from an HTTP status and Retry-After value.")]
+   "Design",
+   "CA1032:Implement standard exception constructors",
+   Justification = "This internal transport exception is constructed only from an HTTP status and Retry-After value.")]
 [SuppressMessage(
     "Design",
     "CA1064:Exceptions should be public",
     Justification = "Socket Mode transport errors are internal implementation details, not public SDK contracts.")]
 internal sealed class SocketModeNegotiateException : Exception
 {
+    /// <summary>
+    /// Initializes a Socket Mode negotiation exception.
+    /// </summary>
+    /// <param name="statusCode">The HTTP status returned by the negotiate endpoint.</param>
+    /// <param name="retryAfter">The server-provided retry delay, when available.</param>
     internal SocketModeNegotiateException(
         HttpStatusCode statusCode,
         TimeSpan? retryAfter)
@@ -190,7 +229,13 @@ internal sealed class SocketModeNegotiateException : Exception
         RetryAfter = retryAfter;
     }
 
+    /// <summary>
+    /// Gets the HTTP status returned by the negotiate endpoint.
+    /// </summary>
     internal HttpStatusCode StatusCode { get; }
 
+    /// <summary>
+    /// Gets the server-provided retry delay, when available.
+    /// </summary>
     internal TimeSpan? RetryAfter { get; }
 }
