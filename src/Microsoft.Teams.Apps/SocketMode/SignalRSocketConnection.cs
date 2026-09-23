@@ -269,7 +269,10 @@ internal sealed class SignalRSocketConnection : ISocketConnection
 
     private void HandleClosed(Exception? error)
     {
-        if (Interlocked.CompareExchange(ref _readySettled, 1, 0) == 0)
+        bool planned = Volatile.Read(ref _stopped) != 0;
+
+        if (!planned
+            && Interlocked.CompareExchange(ref _readySettled, 1, 0) == 0)
         {
             _readySource.TrySetException(
                 error ?? new IOException(
@@ -281,7 +284,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
             return;
         }
 
-        _handlers.OnClosed(error);
+        _handlers.OnClosed(error, planned);
     }
 
     private async Task StopCoreAsync(CancellationToken cancellationToken)

@@ -76,7 +76,7 @@ public class SignalRSocketConnectionTests
         SocketConnectionHandlers handlers = new(
             _ => Task.FromResult<SocketReplyFrame?>(null),
             _ => throw new InvalidOperationException("observer failed"),
-            _ => { });
+            (_, _) => { });
         SignalRSocketConnection connection = CreateConnection(
             negotiator,
             signalRFactory,
@@ -136,7 +136,9 @@ public class SignalRSocketConnectionTests
 
         IOException actual = await Assert.ThrowsAsync<IOException>(() => start);
         Assert.Same(expected, actual);
-        Assert.Same(expected, Assert.Single(harness.CloseErrors));
+        (Exception? error, bool planned) = Assert.Single(harness.CloseEvents);
+        Assert.Same(expected, error);
+        Assert.False(planned);
         Assert.Equal(1, harness.SignalR.StopCount);
     }
 
@@ -154,7 +156,9 @@ public class SignalRSocketConnectionTests
         harness.SignalR.Close(expected);
         harness.SignalR.Close(new IOException("duplicate"));
 
-        Assert.Same(expected, Assert.Single(harness.CloseErrors));
+        (Exception? error, bool planned) = Assert.Single(harness.CloseEvents);
+        Assert.Same(expected, error);
+        Assert.False(planned);
     }
 
     [Fact]
@@ -185,6 +189,9 @@ public class SignalRSocketConnectionTests
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start);
         Assert.Equal(1, harness.SignalR.StopCount);
+        (Exception? error, bool planned) = Assert.Single(harness.CloseEvents);
+        Assert.Null(error);
+        Assert.True(planned);
     }
 
     [Fact]
@@ -302,11 +309,11 @@ public class SignalRSocketConnectionTests
         FakeSignalRClientConnection signalR = new();
         FakeSignalRConnectionFactory signalRFactory = new(signalR);
         List<SocketReadyFrame> readyFrames = [];
-        List<Exception?> closeErrors = [];
+        List<(Exception? Error, bool Planned)> closeEvents = [];
         SocketConnectionHandlers handlers = new(
             onActivity ?? (_ => Task.FromResult<SocketReplyFrame?>(null)),
             readyFrames.Add,
-            closeErrors.Add);
+            (error, planned) => closeEvents.Add((error, planned)));
 
         return new TestHarness(
             CreateConnection(
@@ -318,7 +325,7 @@ public class SignalRSocketConnectionTests
             signalRFactory,
             signalR,
             readyFrames,
-            closeErrors);
+            closeEvents);
     }
 
     private static SignalRSocketConnection CreateConnection(
@@ -349,7 +356,7 @@ public class SignalRSocketConnectionTests
         => new(
             _ => Task.FromResult<SocketReplyFrame?>(null),
             _ => { },
-            _ => { });
+            (_, _) => { });
 
     private sealed record TestHarness(
         SignalRSocketConnection Connection,
@@ -357,7 +364,7 @@ public class SignalRSocketConnectionTests
         FakeSignalRConnectionFactory SignalRFactory,
         FakeSignalRClientConnection SignalR,
         List<SocketReadyFrame> ReadyFrames,
-        List<Exception?> CloseErrors);
+        List<(Exception? Error, bool Planned)> CloseEvents);
 
     private sealed class FakeNegotiator(SocketModeNegotiateResponse response)
         : ISocketModeNegotiator
@@ -454,6 +461,7 @@ public class SignalRSocketConnectionTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             StopCount++;
+            _onClosed?.Invoke(null);
             return Task.CompletedTask;
         }
 
