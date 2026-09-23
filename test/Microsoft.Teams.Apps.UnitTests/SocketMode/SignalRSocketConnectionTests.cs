@@ -220,6 +220,29 @@ public class SignalRSocketConnectionTests
     }
 
     [Fact]
+    public async Task DisposeAsync_DisposesConnectionCreatedAfterShutdown()
+    {
+        DeferredNegotiator negotiator = new();
+        FakeSignalRClientConnection signalR = new();
+        FakeSignalRConnectionFactory signalRFactory = new(signalR);
+        SignalRSocketConnection connection = CreateConnection(
+            negotiator,
+            signalRFactory,
+            DefaultHandlers());
+
+        Task start = connection.StartAsync(CancellationToken.None);
+        await negotiator.Started.Task;
+        await connection.DisposeAsync();
+
+        negotiator.Complete(SuccessfulNegotiation());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start);
+        Assert.Equal(0, signalR.StartCount);
+        Assert.Equal(0, signalR.StopCount);
+        Assert.Equal(1, signalR.DisposeCount);
+    }
+
+    [Fact]
     public async Task StartAsync_CannotBeCalledTwice()
     {
         TestHarness harness = CreateHarness();
@@ -351,6 +374,26 @@ public class SignalRSocketConnectionTests
             NegotiateUri = negotiateUri;
             return Task.FromResult(response);
         }
+    }
+
+    private sealed class DeferredNegotiator : ISocketModeNegotiator
+    {
+        private readonly TaskCompletionSource<SocketModeNegotiateResponse>
+            _response = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal TaskCompletionSource Started { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<SocketModeNegotiateResponse> NegotiateAsync(
+            Uri negotiateUri,
+            CancellationToken cancellationToken = default)
+        {
+            Started.TrySetResult();
+            return _response.Task;
+        }
+
+        internal void Complete(SocketModeNegotiateResponse response)
+            => _response.TrySetResult(response);
     }
 
     private sealed class FakeSignalRConnectionFactory(

@@ -165,7 +165,13 @@ internal sealed class SignalRSocketConnection : ISocketConnection
                 negotiateResponse.AccessToken!,
                 _keepAliveInterval,
                 _serverTimeout);
-            _connection = connection;
+            if (!TryPublishConnection(connection))
+            {
+                await connection.DisposeAsync().ConfigureAwait(false);
+                throw new OperationCanceledException(
+                    "Socket Mode connection stopped before startup completed.",
+                    startSource.Token);
+            }
 
             connection.OnActivity(_handlers.OnActivity);
             connection.OnReady(HandleReady);
@@ -281,12 +287,32 @@ internal sealed class SignalRSocketConnection : ISocketConnection
 
         await _lifetimeSource.CancelAsync().ConfigureAwait(false);
 
-        ISignalRClientConnection? connection = _connection;
+        ISignalRClientConnection? connection;
+        lock (_stopLock)
+        {
+            connection = _connection;
+        }
+
         if (connection is not null)
         {
             await connection
                 .StopAsync(cancellationToken)
                 .ConfigureAwait(false);
+        }
+    }
+
+    private bool TryPublishConnection(ISignalRClientConnection connection)
+    {
+        lock (_stopLock)
+        {
+            if (Volatile.Read(ref _stopped) != 0
+                || Volatile.Read(ref _disposed) != 0)
+            {
+                return false;
+            }
+
+            _connection = connection;
+            return true;
         }
     }
 
