@@ -173,7 +173,13 @@ internal sealed class SignalRSocketConnection : ISocketConnection
                     startSource.Token);
             }
 
-            connection.OnActivity(_handlers.OnActivity);
+            connection.OnActivity(async envelope =>
+            {
+                await _readySource.Task
+                    .WaitAsync(_lifetimeSource.Token)
+                    .ConfigureAwait(false);
+                return await _handlers.OnActivity(envelope).ConfigureAwait(false);
+            });
             connection.OnReady(HandleReady);
             connection.OnClosed(HandleClosed);
 
