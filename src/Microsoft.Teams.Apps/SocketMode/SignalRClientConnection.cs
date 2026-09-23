@@ -65,6 +65,7 @@ internal sealed class SignalRClientConnection(HubConnection connection)
     private readonly HubConnection _connection =
         connection ?? throw new ArgumentNullException(nameof(connection));
     private readonly List<IDisposable> _subscriptions = [];
+    private readonly List<Func<Exception?, Task>> _closedHandlers = [];
     private int _disposed;
 
     /// <summary>
@@ -128,11 +129,13 @@ internal sealed class SignalRClientConnection(HubConnection connection)
         ArgumentNullException.ThrowIfNull(handler);
         ThrowIfDisposed();
 
-        _connection.Closed += exception =>
+        Func<Exception?, Task> closedHandler = exception =>
         {
             handler(exception);
             return Task.CompletedTask;
         };
+        _connection.Closed += closedHandler;
+        _closedHandlers.Add(closedHandler);
     }
 
     /// <inheritdoc />
@@ -160,6 +163,13 @@ internal sealed class SignalRClientConnection(HubConnection connection)
         {
             return;
         }
+
+        foreach (Func<Exception?, Task> closedHandler in _closedHandlers)
+        {
+            _connection.Closed -= closedHandler;
+        }
+
+        _closedHandlers.Clear();
 
         foreach (IDisposable subscription in _subscriptions)
         {
