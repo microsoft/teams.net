@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Apps.SocketMode;
 internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
 {
     private readonly ISocketModeNegotiator _negotiator;
-    private readonly SignalRConnectionBuilder _createSignalRConnection;
+    private readonly CreateSignalRClientConnection _createSignalRClientConnection;
     private readonly TimeSpan _readinessTimeout;
     private readonly TimeSpan _keepAliveInterval;
     private readonly TimeSpan _serverTimeout;
@@ -26,18 +26,18 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
     /// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
     /// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
     /// <param name="logger">The logger for connection lifecycle failures.</param>
-    /// <param name="createSignalRConnection">An optional SignalR client factory.</param>
+    /// <param name="createSignalRClientConnection">An optional SignalR client factory.</param>
     internal SignalRSocketConnectionFactory(
         ISocketModeNegotiator negotiator,
         TimeSpan readinessTimeout,
         TimeSpan keepAliveInterval,
         TimeSpan serverTimeout,
         ILogger logger,
-        SignalRConnectionBuilder? createSignalRConnection = null)
+        CreateSignalRClientConnection? createSignalRClientConnection = null)
     {
         _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
-        _createSignalRConnection =
-            createSignalRConnection ?? SignalRClientConnection.Create;
+        _createSignalRClientConnection =
+            createSignalRClientConnection ?? SignalRClientConnection.Create;
         _readinessTimeout = EnsurePositive(readinessTimeout, nameof(readinessTimeout));
         _keepAliveInterval = EnsurePositive(keepAliveInterval, nameof(keepAliveInterval));
         _serverTimeout = EnsurePositive(serverTimeout, nameof(serverTimeout));
@@ -56,7 +56,7 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
             negotiateUri,
             handlers,
             _negotiator,
-            _createSignalRConnection,
+            _createSignalRClientConnection,
             _readinessTimeout,
             _keepAliveInterval,
             _serverTimeout,
@@ -79,7 +79,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     private readonly Uri _negotiateUri;
     private readonly SocketConnectionHandlers _handlers;
     private readonly ISocketModeNegotiator _negotiator;
-    private readonly SignalRConnectionBuilder _createSignalRConnection;
+    private readonly CreateSignalRClientConnection _createSignalRClientConnection;
     private readonly TimeSpan _readinessTimeout;
     private readonly TimeSpan _keepAliveInterval;
     private readonly TimeSpan _serverTimeout;
@@ -103,7 +103,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     /// <param name="negotiateUri">The endpoint used to negotiate the connection.</param>
     /// <param name="handlers">Callbacks for frames and connection closure.</param>
     /// <param name="negotiator">Negotiates SignalR connection details.</param>
-    /// <param name="createSignalRConnection">Creates the SignalR client connection.</param>
+    /// <param name="createSignalRClientConnection">Creates the SignalR client connection.</param>
     /// <param name="readinessTimeout">The time allowed for the SocketReady frame.</param>
     /// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
     /// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
@@ -112,7 +112,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         Uri negotiateUri,
         SocketConnectionHandlers handlers,
         ISocketModeNegotiator negotiator,
-        SignalRConnectionBuilder createSignalRConnection,
+        CreateSignalRClientConnection createSignalRClientConnection,
         TimeSpan readinessTimeout,
         TimeSpan keepAliveInterval,
         TimeSpan serverTimeout,
@@ -121,9 +121,9 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         _negotiateUri = negotiateUri ?? throw new ArgumentNullException(nameof(negotiateUri));
         _handlers = handlers ?? throw new ArgumentNullException(nameof(handlers));
         _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
-        _createSignalRConnection =
-            createSignalRConnection
-            ?? throw new ArgumentNullException(nameof(createSignalRConnection));
+        _createSignalRClientConnection =
+            createSignalRClientConnection
+            ?? throw new ArgumentNullException(nameof(createSignalRClientConnection));
         _readinessTimeout = readinessTimeout;
         _keepAliveInterval = keepAliveInterval;
         _serverTimeout = serverTimeout;
@@ -160,7 +160,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
                 ? TimeSpan.FromSeconds(negotiateResponse.ExpiresIn)
                 : null;
 
-            ISignalRClientConnection connection = _createSignalRConnection(
+            ISignalRClientConnection connection = _createSignalRClientConnection(
                 new Uri(negotiateResponse.Url!, UriKind.Absolute),
                 negotiateResponse.AccessToken!,
                 _keepAliveInterval,

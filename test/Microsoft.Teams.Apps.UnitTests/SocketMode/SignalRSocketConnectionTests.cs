@@ -29,10 +29,10 @@ public class SignalRSocketConnectionTests
 
         Assert.Equal(1, harness.Negotiator.CallCount);
         Assert.Equal(NegotiateUri, harness.Negotiator.NegotiateUri);
-        Assert.Equal(SignalRUri, harness.SignalRBuilder.Url);
-        Assert.Equal("signalr-token", harness.SignalRBuilder.AccessToken);
-        Assert.Equal(TimeSpan.FromSeconds(15), harness.SignalRBuilder.KeepAliveInterval);
-        Assert.Equal(TimeSpan.FromSeconds(30), harness.SignalRBuilder.ServerTimeout);
+        Assert.Equal(SignalRUri, harness.SignalRFactory.Url);
+        Assert.Equal("signalr-token", harness.SignalRFactory.AccessToken);
+        Assert.Equal(TimeSpan.FromSeconds(15), harness.SignalRFactory.KeepAliveInterval);
+        Assert.Equal(TimeSpan.FromSeconds(30), harness.SignalRFactory.ServerTimeout);
         Assert.Equal(TimeSpan.FromHours(1), harness.Connection.TokenLifetime);
         Assert.Equal(1, harness.SignalR.StartCount);
         Assert.Equal(1, harness.ReadyFrames.Count);
@@ -72,14 +72,14 @@ public class SignalRSocketConnectionTests
     {
         FakeNegotiator negotiator = new(SuccessfulNegotiation());
         FakeSignalRClientConnection signalR = new();
-        FakeSignalRConnectionBuilder signalRBuilder = new(signalR);
+        FakeSignalRConnectionFactory signalRFactory = new(signalR);
         SocketConnectionHandlers handlers = new(
             _ => Task.FromResult<SocketReplyFrame?>(null),
             _ => throw new InvalidOperationException("observer failed"),
             _ => { });
         SignalRSocketConnection connection = CreateConnection(
             negotiator,
-            signalRBuilder,
+            signalRFactory,
             handlers);
 
         Task start = connection.StartAsync(CancellationToken.None);
@@ -253,7 +253,7 @@ public class SignalRSocketConnectionTests
     public void Factory_CreatesDistinctConnectionGenerations()
     {
         FakeNegotiator negotiator = new(SuccessfulNegotiation());
-        FakeSignalRConnectionBuilder signalRBuilder =
+        FakeSignalRConnectionFactory signalRFactory =
             new(new FakeSignalRClientConnection());
         SignalRSocketConnectionFactory factory = new(
             negotiator,
@@ -261,7 +261,7 @@ public class SignalRSocketConnectionTests
             TimeSpan.FromSeconds(15),
             TimeSpan.FromSeconds(30),
             NullLogger.Instance,
-            signalRBuilder.Create);
+            signalRFactory.Create);
         SocketConnectionHandlers handlers = DefaultHandlers();
 
         ISocketConnection first = factory.Create(NegotiateUri, handlers);
@@ -277,7 +277,7 @@ public class SignalRSocketConnectionTests
     {
         FakeNegotiator negotiator = new(SuccessfulNegotiation(expiresIn));
         FakeSignalRClientConnection signalR = new();
-        FakeSignalRConnectionBuilder signalRBuilder = new(signalR);
+        FakeSignalRConnectionFactory signalRFactory = new(signalR);
         List<SocketReadyFrame> readyFrames = [];
         List<Exception?> closeErrors = [];
         SocketConnectionHandlers handlers = new(
@@ -288,11 +288,11 @@ public class SignalRSocketConnectionTests
         return new TestHarness(
             CreateConnection(
                 negotiator,
-                signalRBuilder,
+                signalRFactory,
                 handlers,
                 readinessTimeout),
             negotiator,
-            signalRBuilder,
+            signalRFactory,
             signalR,
             readyFrames,
             closeErrors);
@@ -300,14 +300,14 @@ public class SignalRSocketConnectionTests
 
     private static SignalRSocketConnection CreateConnection(
         ISocketModeNegotiator negotiator,
-        FakeSignalRConnectionBuilder signalRBuilder,
+        FakeSignalRConnectionFactory signalRFactory,
         SocketConnectionHandlers handlers,
         TimeSpan? readinessTimeout = null)
         => new(
             NegotiateUri,
             handlers,
             negotiator,
-            signalRBuilder.Create,
+            signalRFactory.Create,
             readinessTimeout ?? TimeSpan.FromSeconds(30),
             TimeSpan.FromSeconds(15),
             TimeSpan.FromSeconds(30),
@@ -331,7 +331,7 @@ public class SignalRSocketConnectionTests
     private sealed record TestHarness(
         SignalRSocketConnection Connection,
         FakeNegotiator Negotiator,
-        FakeSignalRConnectionBuilder SignalRBuilder,
+        FakeSignalRConnectionFactory SignalRFactory,
         FakeSignalRClientConnection SignalR,
         List<SocketReadyFrame> ReadyFrames,
         List<Exception?> CloseErrors);
@@ -353,7 +353,7 @@ public class SignalRSocketConnectionTests
         }
     }
 
-    private sealed class FakeSignalRConnectionBuilder(
+    private sealed class FakeSignalRConnectionFactory(
         FakeSignalRClientConnection connection)
     {
         internal Uri? Url { get; private set; }

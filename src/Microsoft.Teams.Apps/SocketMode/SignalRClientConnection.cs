@@ -13,7 +13,7 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
 /// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
 /// <returns>A SignalR client connection.</returns>
-internal delegate ISignalRClientConnection SignalRConnectionBuilder(
+internal delegate ISignalRClientConnection CreateSignalRClientConnection(
     Uri url,
     string accessToken,
     TimeSpan keepAliveInterval,
