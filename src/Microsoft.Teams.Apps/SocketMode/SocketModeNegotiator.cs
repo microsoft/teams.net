@@ -59,21 +59,21 @@ internal sealed class SocketModeNegotiator
         ArgumentNullException.ThrowIfNull(negotiateUri);
         EnsureSecureNegotiateUri(negotiateUri);
 
-        string? token = await _getBotToken(cancellationToken).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            throw new InvalidOperationException(
-                "Socket Mode negotiate could not acquire a Bot Framework app token.");
-        }
-
-        using HttpRequestMessage request = new(HttpMethod.Post, negotiateUri);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
         using CancellationTokenSource timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutSource.CancelAfter(_timeout);
 
         try
         {
+            string? token = await _getBotToken(timeoutSource.Token).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new InvalidOperationException(
+                    "Socket Mode negotiate could not acquire a Bot Framework app token.");
+            }
+
+            using HttpRequestMessage request = new(HttpMethod.Post, negotiateUri);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
             using HttpResponseMessage response = await _httpClient
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeoutSource.Token)
                 .ConfigureAwait(false);
