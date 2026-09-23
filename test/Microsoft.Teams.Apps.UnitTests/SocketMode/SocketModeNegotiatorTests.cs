@@ -25,7 +25,7 @@ public class SocketModeNegotiatorTests
 
         SocketModeNegotiateResponse response = await negotiator.NegotiateAsync(new Uri(uri));
 
-        Assert.Equal("wss://signalr.example.test/client", response.Url);
+        Assert.Equal("https://signalr.example.test/client", response.Url);
         Assert.Equal(1, handler.SendCount);
     }
 
@@ -76,14 +76,14 @@ public class SocketModeNegotiatorTests
     [Theory]
     [InlineData("""
         {
-          "url": "wss://signalr.example.test/client",
+          "url": "https://signalr.example.test/client",
           "accessToken": "signalr-token",
           "expiresIn": 3600
         }
         """)]
     [InlineData("""
         {
-          "Url": "wss://signalr.example.test/client",
+          "Url": "https://signalr.example.test/client",
           "AccessToken": "signalr-token",
           "ExpiresIn": 3600
         }
@@ -95,16 +95,16 @@ public class SocketModeNegotiatorTests
 
         SocketModeNegotiateResponse response = await negotiator.NegotiateAsync(NegotiateUri);
 
-        Assert.Equal("wss://signalr.example.test/client", response.Url);
+        Assert.Equal("https://signalr.example.test/client", response.Url);
         Assert.Equal("signalr-token", response.AccessToken);
         Assert.Equal(3600, response.ExpiresIn);
     }
 
     [Theory]
     [InlineData("""{ "accessToken": "signalr-token" }""")]
-    [InlineData("""{ "url": "wss://signalr.example.test/client" }""")]
+    [InlineData("""{ "url": "https://signalr.example.test/client" }""")]
     [InlineData("""{ "url": "", "accessToken": "signalr-token" }""")]
-    [InlineData("""{ "url": "wss://signalr.example.test/client", "accessToken": "" }""")]
+    [InlineData("""{ "url": "https://signalr.example.test/client", "accessToken": "" }""")]
     public async Task NegotiateAsync_RejectsMissingResponseFields(string json)
     {
         RecordingHandler handler = JsonHandler(HttpStatusCode.OK, json);
@@ -261,13 +261,11 @@ public class SocketModeNegotiatorTests
     }
 
     [Theory]
-    [InlineData("wss://signalr.example.test/client")]
     [InlineData("https://signalr.example.test/client")]
-    [InlineData("ws://localhost:5000/client")]
-    [InlineData("ws://127.0.0.1:5000/client")]
-    [InlineData("ws://[::1]:5000/client")]
     [InlineData("http://localhost:5000/client")]
-    public async Task NegotiateAsync_AllowsSecureAndLoopbackSignalRUrls(string signalRUrl)
+    [InlineData("http://127.0.0.1:5000/client")]
+    [InlineData("http://[::1]:5000/client")]
+    public async Task NegotiateAsync_AllowsHttpsAndLoopbackHttpSignalRUrls(string signalRUrl)
     {
         RecordingHandler handler = JsonHandler(
             HttpStatusCode.OK,
@@ -286,7 +284,9 @@ public class SocketModeNegotiatorTests
 
     [Theory]
     [InlineData("http://signalr.example.test/client")]
+    [InlineData("wss://signalr.example.test/client")]
     [InlineData("ws://signalr.example.test/client")]
+    [InlineData("ws://localhost:5000/client")]
     [InlineData("ftp://signalr.example.test/client")]
     [InlineData("/relative/client")]
     public async Task NegotiateAsync_RejectsInvalidSignalRUrl(string signalRUrl)
@@ -324,7 +324,7 @@ public class SocketModeNegotiatorTests
             HttpStatusCode.OK,
             """
             {
-              "url": "wss://signalr.example.test/client",
+              "url": "https://signalr.example.test/client",
               "accessToken": "signalr-token",
               "expiresIn": 3600
             }
