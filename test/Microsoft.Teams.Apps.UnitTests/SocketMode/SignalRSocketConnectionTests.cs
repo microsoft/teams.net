@@ -35,7 +35,7 @@ public class SignalRSocketConnectionTests
         Assert.Equal(TimeSpan.FromSeconds(30), harness.SignalRFactory.ServerTimeout);
         Assert.Equal(TimeSpan.FromHours(1), harness.Connection.TokenLifetime);
         Assert.Equal(1, harness.SignalR.StartCount);
-        Assert.Equal(1, harness.ReadyFrames.Count);
+        Assert.Single(harness.ReadyFrames);
     }
 
     [Fact]
@@ -140,6 +140,7 @@ public class SignalRSocketConnectionTests
         Assert.Same(expected, error);
         Assert.False(planned);
         Assert.Equal(1, harness.SignalR.StopCount);
+        Assert.Equal(1, harness.SignalR.DisposeCount);
     }
 
     [Fact]
@@ -175,6 +176,10 @@ public class SignalRSocketConnectionTests
 
         Assert.Contains("readiness timed out", exception.Message, StringComparison.Ordinal);
         Assert.Equal(1, harness.SignalR.StopCount);
+        Assert.Equal(1, harness.SignalR.DisposeCount);
+
+        await harness.Connection.DisposeAsync();
+        Assert.Equal(1, harness.SignalR.DisposeCount);
     }
 
     [Fact]
@@ -189,6 +194,7 @@ public class SignalRSocketConnectionTests
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start);
         Assert.Equal(1, harness.SignalR.StopCount);
+        Assert.Equal(1, harness.SignalR.DisposeCount);
         (Exception? error, bool planned) = Assert.Single(harness.CloseEvents);
         Assert.Null(error);
         Assert.True(planned);

@@ -230,14 +230,14 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         }
         finally
         {
-            ISignalRClientConnection? connection = _connection;
-            _connection = null;
-            if (connection is not null)
+            try
             {
-                await connection.DisposeAsync().ConfigureAwait(false);
+                await DisposeConnectionAsync().ConfigureAwait(false);
             }
-
-            _lifetimeSource.Dispose();
+            finally
+            {
+                _lifetimeSource.Dispose();
+            }
         }
     }
 
@@ -325,6 +325,21 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         }
     }
 
+    private async ValueTask DisposeConnectionAsync()
+    {
+        ISignalRClientConnection? connection;
+        lock (_stopLock)
+        {
+            connection = _connection;
+            _connection = null;
+        }
+
+        if (connection is not null)
+        {
+            await connection.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -340,6 +355,17 @@ internal sealed class SignalRSocketConnection : ISocketConnection
             _logger.LogWarning(
                 exception,
                 "Socket Mode connection cleanup failed after startup failure.");
+        }
+
+        try
+        {
+            await DisposeConnectionAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "Socket Mode connection disposal failed after startup failure.");
         }
     }
 
