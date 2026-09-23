@@ -21,5 +21,5 @@ internal static class SocketModeProtocol
     /// <summary>
     /// The path for the Socket Mode negotiate endpoint.
     /// </summary>
-    internal const string NegotiatePath = "/v3/websockets/connect";
+    internal const string NegotiatePath = "/amer/v3/websockets/connect";
 }
