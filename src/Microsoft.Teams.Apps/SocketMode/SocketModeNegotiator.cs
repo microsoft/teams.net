@@ -169,7 +169,8 @@ internal sealed class SocketModeNegotiator
     /// </summary>
     private static bool IsSecureOrLoopback(Uri uri)
     {
-        if (uri.Scheme == Uri.UriSchemeHttps)
+        if (uri.Scheme == Uri.UriSchemeHttps
+            && !string.IsNullOrEmpty(uri.Host))
         {
             return true;
         }

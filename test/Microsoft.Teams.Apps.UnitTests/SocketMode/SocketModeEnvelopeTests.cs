@@ -80,6 +80,7 @@ public class SocketModeEnvelopeTests
     [InlineData("[]")]
     [InlineData("""{ "id": "missing-type" }""")]
     [InlineData("""{ "type": 42 }""")]
+    [InlineData("""{ "type": "message", "id": 42 }""")]
     public void TryReadActivity_FallsBackWhenPayloadIsMalformed(string malformedPayload)
     {
         SocketActivityEnvelope envelope = DeserializeEnvelope($$"""

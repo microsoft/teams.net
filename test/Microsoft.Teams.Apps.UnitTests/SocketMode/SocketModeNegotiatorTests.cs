@@ -309,6 +309,7 @@ public class SocketModeNegotiatorTests
     [InlineData("ws://localhost:5000/client")]
     [InlineData("ftp://signalr.example.test/client")]
     [InlineData("/relative/client")]
+    [InlineData("https:foo")]
     public async Task NegotiateAsync_RejectsInvalidSignalRUrl(string signalRUrl)
     {
         RecordingHandler handler = JsonHandler(
