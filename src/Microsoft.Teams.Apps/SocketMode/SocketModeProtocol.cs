@@ -19,7 +19,13 @@ internal static class SocketModeProtocol
     internal const string DefaultNegotiateBaseUrl = "https://botapi.skype.com";
 
     /// <summary>
-    /// The path for the Socket Mode negotiate endpoint.
+    /// The default geographies for Socket Mode connections.
     /// </summary>
-    internal const string NegotiatePath = "/amer/v3/websockets/connect";
+    internal static IReadOnlyList<string> DefaultGeos { get; } =
+        Array.AsReadOnly(["amer", "emea", "apac"]);
+
+    /// <summary>
+    /// The negotiate path appended after the geography segment.
+    /// </summary>
+    internal const string NegotiatePath = "/v3/websockets/connect";
 }
