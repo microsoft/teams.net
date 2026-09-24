@@ -286,8 +286,11 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             }
 
             _lifecycle = SocketModeStatus.Stopped;
-            GeoSocket[] geoSockets = _geoSockets;
-            _stopTask = Task.WhenAll(geoSockets.Select(geoSocket => geoSocket.DisposeAsync().AsTask()));
+            foreach (string geo in _geoStatuses.Keys.ToArray())
+            {
+                _geoStatuses[geo] = SocketModeStatus.Stopped;
+            }
+            _stopTask = Task.WhenAll(_geoSockets.Select(geoSocket => geoSocket.DisposeAsync().AsTask()));
             return _stopTask;
         }
     }
