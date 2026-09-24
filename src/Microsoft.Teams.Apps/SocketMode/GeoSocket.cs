@@ -104,7 +104,7 @@ internal sealed class GeoSocket : IAsyncDisposable
     /// Initializes a supervisor for one geo.
     /// </summary>
     /// <param name="owner">The transport that owns this geo.</param>
-    /// <param name="geo">The geo identifier.</param>
+    /// <param name="geo">The geo identifier. Empty when the negotiate URL has no geo segment.</param>
     /// <param name="negotiateUri">The negotiate endpoint for the geo.</param>
     /// <param name="connectionFactory">Creates one connection per generation.</param>
     /// <param name="logger">The logger for lifecycle events.</param>
@@ -118,8 +118,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         TimeProvider? timeProvider = null)
     {
         _owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        ArgumentException.ThrowIfNullOrWhiteSpace(geo);
-        Geo = geo;
+        Geo = geo ?? throw new ArgumentNullException(nameof(geo));
         _negotiateUri = negotiateUri ?? throw new ArgumentNullException(nameof(negotiateUri));
         _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
