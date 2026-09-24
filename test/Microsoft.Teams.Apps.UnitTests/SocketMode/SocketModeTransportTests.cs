@@ -99,6 +99,27 @@ public class SocketModeTransportTests
     }
 
     [Fact]
+    public async Task StartAsync_WhenCleanupFails_StillThrowsTheStartupFailure()
+    {
+        IOException failure = new("emea failed");
+        Harness harness = new(new SocketModeTransportOptions { StartupTimeout = TimeSpan.Zero });
+        harness.Factory.FailDispose("amer", new IOException("amer dispose failed"));
+        harness.Factory.FailDispose("apac", new IOException("apac dispose failed"));
+
+        Task start = harness.Transport.StartAsync();
+        FakeConnection[] connections = await harness.Factory.WaitForAsync(3);
+        connections.Single(connection => connection.Geo == "amer").Ready();
+        connections.Single(connection => connection.Geo == "apac").Ready();
+        connections.Single(connection => connection.Geo == "emea").Fail(failure);
+
+        IOException thrown = await Assert.ThrowsAsync<IOException>(() => start);
+
+        Assert.Same(failure, thrown);
+        Assert.Equal(SocketModeStatus.Stopped, harness.Transport.Status);
+        Assert.All(harness.Factory.Connections, connection => Assert.Equal(1, connection.DisposeCount));
+    }
+
+    [Fact]
     public async Task StopAsync_DuringStartup_CancelsStartAndDisposesConnections()
     {
         Harness harness = new();
@@ -368,6 +389,7 @@ public class SocketModeTransportTests
     private sealed class FakeConnectionFactory : ISocketConnectionFactory
     {
         private readonly Dictionary<string, Exception> _startFailures = [];
+        private readonly Dictionary<string, Exception> _disposeFailures = [];
         private readonly List<FakeConnection> _connections = [];
 
         internal FakeConnection[] Connections
@@ -383,6 +405,8 @@ public class SocketModeTransportTests
 
         internal void FailStart(string geo, Exception error) => _startFailures[geo] = error;
 
+        internal void FailDispose(string geo, Exception error) => _disposeFailures[geo] = error;
+
         internal async Task<FakeConnection[]> WaitForAsync(int count)
         {
             await WaitUntilAsync(() => Connections.Length >= count);
@@ -395,7 +419,12 @@ public class SocketModeTransportTests
         {
             string[] segments = negotiateUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
             string geo = segments.Length > 3 ? segments[0] : string.Empty;
-            FakeConnection connection = new(negotiateUri, geo, handlers, _startFailures.GetValueOrDefault(geo));
+            FakeConnection connection = new(
+                negotiateUri,
+                geo,
+                handlers,
+                _startFailures.GetValueOrDefault(geo),
+                _disposeFailures.GetValueOrDefault(geo));
             lock (_connections)
             {
                 _connections.Add(connection);
@@ -409,7 +438,8 @@ public class SocketModeTransportTests
         Uri negotiateUri,
         string geo,
         SocketConnectionHandlers handlers,
-        Exception? startError) : ISocketConnection
+        Exception? startError,
+        Exception? disposeError) : ISocketConnection
     {
         private readonly TaskCompletionSource _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _closed;
@@ -450,7 +480,7 @@ public class SocketModeTransportTests
         public ValueTask DisposeAsync()
         {
             Interlocked.Increment(ref _disposeCount);
-            return ValueTask.CompletedTask;
+            return disposeError is null ? ValueTask.CompletedTask : ValueTask.FromException(disposeError);
         }
 
         internal void Ready()
@@ -458,6 +488,8 @@ public class SocketModeTransportTests
             handlers.OnReady(new SocketReadyFrame { ConnectionId = NegotiateUri.AbsolutePath });
             _ready.TrySetResult();
         }
+
+        internal void Fail(Exception error) => _ready.TrySetException(error);
 
         internal void Close(Exception error) => RaiseClosed(error, planned: false);
 
