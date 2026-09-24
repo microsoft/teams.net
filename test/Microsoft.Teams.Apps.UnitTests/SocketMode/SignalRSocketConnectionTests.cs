@@ -216,6 +216,33 @@ public class SignalRSocketConnectionTests
     }
 
     [Fact]
+    public async Task StopAsync_CallerCancellationDoesNotPoisonDispose()
+    {
+        TestHarness harness = CreateHarness();
+        Task start = harness.Connection.StartAsync(CancellationToken.None);
+        await harness.SignalR.Started.Task;
+        harness.SignalR.Ready(new SocketReadyFrame());
+        await start;
+
+        harness.SignalR.StopCompletion =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        using CancellationTokenSource cancellationSource = new();
+        await cancellationSource.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => harness.Connection.StopAsync(cancellationSource.Token));
+
+        ValueTask dispose = harness.Connection.DisposeAsync();
+        Assert.False(dispose.IsCompleted);
+
+        harness.SignalR.StopCompletion.TrySetResult();
+        await dispose;
+
+        Assert.Equal(1, harness.SignalR.StopCount);
+        Assert.Equal(1, harness.SignalR.DisposeCount);
+    }
+
+    [Fact]
     public async Task DisposeAsync_StopsAndDisposesUnderlyingConnectionOnce()
     {
         TestHarness harness = CreateHarness();
@@ -444,6 +471,7 @@ public class SignalRSocketConnectionTests
         internal int StartCount { get; private set; }
         internal int StopCount { get; private set; }
         internal int DisposeCount { get; private set; }
+        internal TaskCompletionSource? StopCompletion { get; set; }
 
         public void OnActivity(
             Func<SocketActivityEnvelope, Task<SocketReplyFrame?>> handler)
@@ -468,7 +496,7 @@ public class SignalRSocketConnectionTests
             cancellationToken.ThrowIfCancellationRequested();
             StopCount++;
             _onClosed?.Invoke(null);
-            return Task.CompletedTask;
+            return StopCompletion?.Task ?? Task.CompletedTask;
         }
 
         public ValueTask DisposeAsync()

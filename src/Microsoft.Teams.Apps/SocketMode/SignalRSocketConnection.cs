@@ -210,10 +210,13 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
+        Task stopTask;
         lock (_stopLock)
         {
-            return _stopTask ??= StopCoreAsync(cancellationToken);
+            stopTask = _stopTask ??= StopCoreAsync();
         }
+
+        return stopTask.WaitAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -287,7 +290,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         _handlers.OnClosed(error, planned);
     }
 
-    private async Task StopCoreAsync(CancellationToken cancellationToken)
+    private async Task StopCoreAsync()
     {
         if (Interlocked.Exchange(ref _stopped, 1) != 0)
         {
@@ -305,7 +308,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         if (connection is not null)
         {
             await connection
-                .StopAsync(cancellationToken)
+                .StopAsync(CancellationToken.None)
                 .ConfigureAwait(false);
         }
     }
