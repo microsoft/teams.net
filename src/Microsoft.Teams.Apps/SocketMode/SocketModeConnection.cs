@@ -52,11 +52,11 @@ internal sealed class SocketConnectionHandlers
     /// </summary>
     /// <param name="onActivity">Handles an incoming activity envelope.</param>
     /// <param name="onReady">Handles the ready frame.</param>
-    /// <param name="onClosed">Handles connection closure.</param>
+    /// <param name="onClosed">Handles connection closure and indicates whether it was planned.</param>
     internal SocketConnectionHandlers(
         Func<SocketActivityEnvelope, Task<SocketReplyFrame?>> onActivity,
         Action<SocketReadyFrame> onReady,
-        Action<Exception?> onClosed)
+        Action<Exception?, bool> onClosed)
     {
         OnActivity = onActivity ?? throw new ArgumentNullException(nameof(onActivity));
         OnReady = onReady ?? throw new ArgumentNullException(nameof(onReady));
@@ -76,5 +76,5 @@ internal sealed class SocketConnectionHandlers
     /// <summary>
     /// Gets the connection-closed callback.
     /// </summary>
-    internal Action<Exception?> OnClosed { get; }
+    internal Action<Exception?, bool> OnClosed { get; }
 }
