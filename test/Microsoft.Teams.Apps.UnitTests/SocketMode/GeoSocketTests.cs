@@ -269,6 +269,26 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task StopAsync_CompletesWhenSupervisorHasFaulted()
+    {
+        Harness harness = new() { Backoff = _ => TimeSpan.Zero };
+        FakeConnection initial = harness.Factory.Enqueue();
+        FakeConnection replacement = harness.Factory.Enqueue();
+        harness.Owner.ReconnectedError = new InvalidOperationException("observer failed");
+        await harness.StartReadyAsync(initial);
+
+        initial.Close(new IOException("dropped"));
+        await replacement.Started.Task;
+        replacement.Ready("replacement");
+        await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
+
+        await harness.Socket.StopAsync();
+
+        Assert.Equal(1, replacement.StopCount);
+        Assert.Equal(1, replacement.DisposeCount);
+    }
+
+    [Fact]
     public async Task StopAsync_DuringReconnectDelay_CancelsWithoutNewGeneration()
     {
         Harness harness = new() { Backoff = _ => TimeSpan.FromMinutes(1) };
@@ -471,7 +491,16 @@ public class GeoSocketTests
             }
         }
 
-        public void OnGeoReconnected(string geo) => Interlocked.Increment(ref _reconnections);
+        internal Exception? ReconnectedError { get; set; }
+
+        public void OnGeoReconnected(string geo)
+        {
+            Interlocked.Increment(ref _reconnections);
+            if (ReconnectedError is not null)
+            {
+                throw ReconnectedError;
+            }
+        }
     }
 
     private sealed class FakeConnectionFactory : ISocketConnectionFactory

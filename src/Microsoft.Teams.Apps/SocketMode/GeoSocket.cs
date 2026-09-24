@@ -555,7 +555,7 @@ internal sealed class GeoSocket : IAsyncDisposable
             await Task.WhenAll(retirements).ConfigureAwait(false);
             if (supervisor is not null)
             {
-                await supervisor.ConfigureAwait(false);
+                await supervisor.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             }
         }
     }
