@@ -160,6 +160,7 @@ internal sealed class GeoSocket : IAsyncDisposable
 
     /// <summary>
     /// Stops supervision and stops and disposes every connection this geo owns.
+    /// Connection cleanup failures are logged rather than thrown.
     /// </summary>
     internal Task StopAsync()
     {
@@ -502,10 +503,6 @@ internal sealed class GeoSocket : IAsyncDisposable
             TaskScheduler.Default);
     }
 
-    [SuppressMessage(
-        "Design",
-        "CA1031:Do not catch general exception types",
-        Justification = "Retirement runs in the background; failures are logged so they cannot fault the supervisor.")]
     private async Task RetireAsync(Generation previous)
     {
         try
@@ -525,10 +522,6 @@ internal sealed class GeoSocket : IAsyncDisposable
         }
         catch (OperationCanceledException) when (_stopToken.IsCancellationRequested)
         {
-        }
-        catch (Exception exception)
-        {
-            _logger.LogWarning(exception, "Socket Mode geo {Geo} failed to retire a replaced connection.", Geo);
         }
     }
 
@@ -562,7 +555,7 @@ internal sealed class GeoSocket : IAsyncDisposable
             await Task.WhenAll(retirements).ConfigureAwait(false);
             if (supervisor is not null)
             {
-                await supervisor.ConfigureAwait(false);
+                await supervisor.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             }
         }
     }
@@ -580,15 +573,28 @@ internal sealed class GeoSocket : IAsyncDisposable
         await StopAndDisposeAsync(connection).ConfigureAwait(false);
     }
 
-    private static async Task StopAndDisposeAsync(ISocketConnection connection)
+    [SuppressMessage(
+        "Design",
+        "CA1031:Do not catch general exception types",
+        Justification = "Connection cleanup is best-effort; failures are logged so they cannot mask the caller's outcome.")]
+    private async Task StopAndDisposeAsync(ISocketConnection connection)
     {
         try
         {
             await connection.StopAsync(CancellationToken.None).ConfigureAwait(false);
         }
-        finally
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Socket Mode geo {Geo} failed to stop a connection.", Geo);
+        }
+
+        try
         {
             await connection.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Socket Mode geo {Geo} failed to dispose a connection.", Geo);
         }
     }
 

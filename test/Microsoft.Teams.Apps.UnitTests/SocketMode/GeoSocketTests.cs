@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Net;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.SocketMode;
 
 namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
@@ -269,6 +269,26 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task StopAsync_CompletesWhenSupervisorHasFaulted()
+    {
+        Harness harness = new() { Backoff = _ => TimeSpan.Zero };
+        FakeConnection initial = harness.Factory.Enqueue();
+        FakeConnection replacement = harness.Factory.Enqueue();
+        harness.Owner.ReconnectedError = new InvalidOperationException("observer failed");
+        await harness.StartReadyAsync(initial);
+
+        initial.Close(new IOException("dropped"));
+        await replacement.Started.Task;
+        replacement.Ready("replacement");
+        await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
+
+        await harness.Socket.StopAsync();
+
+        Assert.Equal(1, replacement.StopCount);
+        Assert.Equal(1, replacement.DisposeCount);
+    }
+
+    [Fact]
     public async Task StopAsync_DuringReconnectDelay_CancelsWithoutNewGeneration()
     {
         Harness harness = new() { Backoff = _ => TimeSpan.FromMinutes(1) };
@@ -327,6 +347,49 @@ public class GeoSocketTests
         Assert.Empty(harness.Owner.Disconnections);
     }
 
+    [Fact]
+    public async Task StopAsync_LogsConnectionCleanupFailuresAndStillDisposes()
+    {
+        Harness harness = new();
+        FakeConnection connection = harness.Factory.Enqueue();
+        connection.StopError = new IOException("stop failed");
+        connection.DisposeError = new IOException("dispose failed");
+        await harness.StartReadyAsync(connection);
+
+        await harness.Socket.StopAsync();
+
+        Assert.Equal(1, connection.StopCount);
+        Assert.Equal(1, connection.DisposeCount);
+        Assert.Equal(
+            [connection.StopError, connection.DisposeError],
+            harness.Logger.Warnings.Select(warning => warning.Exception));
+    }
+
+    [Fact]
+    public async Task Retirement_LogsDisposeFailureAndKeepsReplacementActive()
+    {
+        Harness harness = new() { HandoffWindow = TimeSpan.FromSeconds(5) };
+        FakeConnection retiring = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection active = harness.Factory.Enqueue();
+        retiring.DisposeError = new IOException("dispose failed");
+        await harness.StartReadyAsync(retiring);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await active.Started.Task;
+        active.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await WaitUntilAsync(() => harness.Logger.Warnings.Length > 0);
+
+        Assert.Same(retiring.DisposeError, Assert.Single(harness.Logger.Warnings).Exception);
+        Assert.NotNull(await active.Activity("after-retirement"));
+
+        await harness.Socket.StopAsync();
+
+        Assert.Equal(1, retiring.DisposeCount);
+        Assert.Equal(1, active.DisposeCount);
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
         Stopwatch elapsed = Stopwatch.StartNew();
@@ -351,6 +414,8 @@ public class GeoSocketTests
 
         internal FakeConnectionFactory Factory { get; } = new();
 
+        internal RecordingLogger Logger { get; } = new();
+
         internal TimeSpan StartupTimeout { init => Owner.StartupTimeout = value; }
 
         internal TimeSpan TokenRefreshMargin { init => Owner.TokenRefreshMargin = value; }
@@ -360,7 +425,7 @@ public class GeoSocketTests
         internal Func<int, TimeSpan> Backoff { init => Owner.Backoff = value; }
 
         internal GeoSocket Socket =>
-            _socket ??= new GeoSocket(Owner, "amer", NegotiateUri, Factory, NullLogger.Instance, Time);
+            _socket ??= new GeoSocket(Owner, "amer", NegotiateUri, Factory, Logger, Time);
 
         internal async Task StartReadyAsync(FakeConnection connection)
         {
@@ -426,7 +491,16 @@ public class GeoSocketTests
             }
         }
 
-        public void OnGeoReconnected(string geo) => Interlocked.Increment(ref _reconnections);
+        internal Exception? ReconnectedError { get; set; }
+
+        public void OnGeoReconnected(string geo)
+        {
+            Interlocked.Increment(ref _reconnections);
+            if (ReconnectedError is not null)
+            {
+                throw ReconnectedError;
+            }
+        }
     }
 
     private sealed class FakeConnectionFactory : ISocketConnectionFactory
@@ -480,6 +554,10 @@ public class GeoSocketTests
 
         internal int DisposeCount => Volatile.Read(ref _disposeCount);
 
+        internal Exception? StopError { get; set; }
+
+        internal Exception? DisposeError { get; set; }
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             Started.TrySetResult();
@@ -496,14 +574,14 @@ public class GeoSocketTests
             Interlocked.Increment(ref _stopCount);
             _ready.TrySetCanceled(CancellationToken.None);
             RaiseClosed(null, planned: true);
-            return Task.CompletedTask;
+            return StopError is null ? Task.CompletedTask : Task.FromException(StopError);
         }
 
         public ValueTask DisposeAsync()
         {
             Interlocked.Increment(ref _disposeCount);
             Disposed.TrySetResult();
-            return ValueTask.CompletedTask;
+            return DisposeError is null ? ValueTask.CompletedTask : ValueTask.FromException(DisposeError);
         }
 
         internal void Ready(string connectionId)
@@ -522,6 +600,43 @@ public class GeoSocketTests
             if (Interlocked.Exchange(ref _closed, 1) == 0)
             {
                 Handlers.OnClosed(error, planned);
+            }
+        }
+    }
+
+    private sealed class RecordingLogger : ILogger
+    {
+        private readonly List<(string Message, Exception? Exception)> _warnings = [];
+
+        internal (string Message, Exception? Exception)[] Warnings
+        {
+            get
+            {
+                lock (_warnings)
+                {
+                    return [.. _warnings];
+                }
+            }
+        }
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == LogLevel.Warning)
+            {
+                lock (_warnings)
+                {
+                    _warnings.Add((formatter(state, exception), exception));
+                }
             }
         }
     }

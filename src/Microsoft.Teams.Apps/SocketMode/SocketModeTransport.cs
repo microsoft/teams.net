@@ -274,7 +274,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     }
 
     /// <summary>
-    /// Stops every geo and disposes their connections. Idempotent.
+    /// Stops every geo and disposes their connections. Idempotent; connection cleanup failures are logged rather than thrown.
     /// </summary>
     internal Task StopAsync()
     {
