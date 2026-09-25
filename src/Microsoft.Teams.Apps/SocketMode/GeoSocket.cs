@@ -632,3 +632,4 @@ internal sealed class GeoSocket : IAsyncDisposable
 
     private sealed record CloseReason(Exception? Error, bool Planned);
 }
+
