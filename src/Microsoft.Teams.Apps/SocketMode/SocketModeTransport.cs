@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.SocketMode;
@@ -383,11 +384,16 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         }
         catch (Exception exception)
         {
-            _logger.LogError(
-                exception,
-                "Socket Mode failed to process activity {ActivityType} in envelope {EnvelopeId}.",
-                activity.Type,
-                envelope.EnvelopeId);
+            // The bot pipeline already logged handler failures before wrapping them in BotHandlerException.
+            if (exception is not BotHandlerException)
+            {
+                _logger.LogError(
+                    exception,
+                    "Socket Mode failed to process activity {ActivityType} in envelope {EnvelopeId}.",
+                    activity.Type,
+                    envelope.EnvelopeId);
+            }
+
             await ReportErrorAsync(exception).ConfigureAwait(false);
 
             return invoke
