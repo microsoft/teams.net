@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Clients;
+using Microsoft.Teams.Apps.SocketMode;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
@@ -171,6 +172,11 @@ public static class TeamsBotApplicationHostingExtensions
             app.TokenProvider ??= sp.GetKeyedService<BotTokenProvider>(sectionName);
             return app;
         });
+
+        if (teamsOptions.SocketMode is { } socketMode)
+        {
+            SocketModeServiceRegistration.AddSocketMode<TApp>(services, botConfig, socketMode);
+        }
 
         return services;
     }

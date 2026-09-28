@@ -28,4 +28,14 @@ internal static class SocketModeProtocol
     /// The negotiate path appended after the geography segment.
     /// </summary>
     internal const string NegotiatePath = "/v3/websockets/connect";
+
+    /// <summary>
+    /// The scope of the bot token sent with each negotiate request.
+    /// </summary>
+    internal const string BotFrameworkScope = "https://api.botframework.com/.default";
+
+    /// <summary>
+    /// The bot token issuer of the public cloud, the only cloud Socket Mode supports.
+    /// </summary>
+    internal const string PublicCloudTokenIssuer = "https://api.botframework.com";
 }

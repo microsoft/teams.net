@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Apps.SocketMode;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
 
@@ -55,6 +56,23 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     {
         IsStateEnabled = true;
         StateConfiguration = configure;
+        return this;
+    }
+
+    internal SocketModeOptions? SocketMode { get; private set; }
+
+    /// <summary>
+    /// Receives activities over Socket Mode: outbound WebSocket connections instead of an inbound HTTP endpoint.
+    /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.
+    /// Supported only in the public cloud.
+    /// </summary>
+    /// <param name="configure">Optional delegate to configure <see cref="SocketModeOptions"/>.</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions UseSocketMode(Action<SocketModeOptions>? configure = null)
+    {
+        SocketModeOptions options = new();
+        configure?.Invoke(options);
+        SocketMode = options;
         return this;
     }
 
