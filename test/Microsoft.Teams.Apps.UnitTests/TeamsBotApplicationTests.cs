@@ -57,11 +57,12 @@ public class TeamsBotApplicationTests
     [Fact]
     public async Task ProcessAsync_HttpContext_InvokeWritesStatusAndJsonBody()
     {
-        TeamsBotApplication app = CreateApp();
-        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(200, new { hello = "world" })));
         DefaultHttpContext httpContext = CreateHttpContext(new InvokeActivity(InvokeNames.TaskFetch));
         MemoryStream responseBody = new();
         httpContext.Response.Body = responseBody;
+        // ASP.NET populates the accessor for real requests; the invoke response is written through it.
+        TeamsBotApplication app = CreateApp(new HttpContextAccessor { HttpContext = httpContext });
+        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(200, new { hello = "world" })));
 
         await app.ProcessAsync(httpContext);
 
@@ -71,13 +72,13 @@ public class TeamsBotApplicationTests
     }
 
     [Fact]
-    public async Task ProcessAsync_CoreActivity_InvokeReturnsResponse()
+    public async Task ProcessWithInvokeResponseAsync_InvokeReturnsResponse()
     {
         TeamsBotApplication app = CreateApp();
         object body = new { hello = "world" };
         app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, body)));
 
-        CoreInvokeResponse? response = await app.ProcessAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+        InvokeResponse? response = await app.ProcessWithInvokeResponseAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
 
         Assert.NotNull(response);
         Assert.Equal(202, response.Status);
@@ -85,19 +86,19 @@ public class TeamsBotApplicationTests
     }
 
     [Fact]
-    public async Task ProcessAsync_CoreActivity_UnhandledInvokeReturnsNotImplemented()
+    public async Task ProcessWithInvokeResponseAsync_UnhandledInvokeReturnsNotImplemented()
     {
         TeamsBotApplication app = CreateApp();
         app.OnMessage((_, _) => Task.CompletedTask);
 
-        CoreInvokeResponse? response = await app.ProcessAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+        InvokeResponse? response = await app.ProcessWithInvokeResponseAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
 
         Assert.NotNull(response);
         Assert.Equal(501, response.Status);
     }
 
     [Fact]
-    public async Task ProcessAsync_CoreActivity_MessageReturnsNull()
+    public async Task ProcessWithInvokeResponseAsync_MessageReturnsNull()
     {
         TeamsBotApplication app = CreateApp();
         bool handled = false;
@@ -107,14 +108,61 @@ public class TeamsBotApplicationTests
             return Task.CompletedTask;
         });
 
-        CoreInvokeResponse? response = await app.ProcessAsync(new CoreActivity(ActivityType.Message), user: null, correlationVector: null);
+        InvokeResponse? response = await app.ProcessWithInvokeResponseAsync(new CoreActivity(ActivityType.Message), user: null, correlationVector: null);
 
         Assert.True(handled);
         Assert.Null(response);
     }
 
     [Fact]
-    public async Task ProcessAsync_CoreActivity_DoesNotWriteToAmbientHttpContext()
+    public async Task ProcessWithInvokeResponseAsync_ConcurrentTurnsReturnOwnResponses()
+    {
+        TeamsBotApplication app = CreateApp();
+        TaskCompletionSource bothStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        int started = 0;
+        app.OnInvoke(async (ctx, _) =>
+        {
+            if (Interlocked.Increment(ref started) == 2)
+            {
+                bothStarted.SetResult();
+            }
+
+            await bothStarted.Task;
+            return new InvokeResponse(200, ctx.Activity.Id);
+        });
+
+        Task<InvokeResponse?> first = app.ProcessWithInvokeResponseAsync(new InvokeActivity(InvokeNames.TaskFetch) { Id = "first" }, user: null, correlationVector: null);
+        Task<InvokeResponse?> second = app.ProcessWithInvokeResponseAsync(new InvokeActivity(InvokeNames.TaskFetch) { Id = "second" }, user: null, correlationVector: null);
+        InvokeResponse?[] responses = await Task.WhenAll(first, second);
+
+        Assert.Equal("first", responses[0]?.Body);
+        Assert.Equal("second", responses[1]?.Body);
+    }
+
+    [Fact]
+    public async Task ProcessWithInvokeResponseAsync_NestedAppDoesNotStealResponse()
+    {
+        DefaultHttpContext ambient = new();
+        MemoryStream responseBody = new();
+        ambient.Response.Body = responseBody;
+        TeamsBotApplication inner = CreateApp(new HttpContextAccessor { HttpContext = ambient });
+        inner.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(418)));
+        TeamsBotApplication outer = CreateApp();
+        outer.OnInvoke(async (_, ct) =>
+        {
+            // Another app's turn on the same async flow must not write into this turn's capture.
+            await inner.OnActivity!(new InvokeActivity(InvokeNames.TaskFetch), ct);
+            return new InvokeResponse(200);
+        });
+
+        InvokeResponse? response = await outer.ProcessWithInvokeResponseAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+
+        Assert.Equal(200, response?.Status);
+        Assert.Equal(418, ambient.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProcessWithInvokeResponseAsync_DoesNotWriteToAmbientHttpContext()
     {
         DefaultHttpContext ambient = new();
         MemoryStream responseBody = new();
@@ -122,7 +170,7 @@ public class TeamsBotApplicationTests
         TeamsBotApplication app = CreateApp(new HttpContextAccessor { HttpContext = ambient });
         app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, new { hello = "world" })));
 
-        await app.ProcessAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+        await app.ProcessWithInvokeResponseAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
 
         Assert.Equal(200, ambient.Response.StatusCode);
         Assert.Equal(0, responseBody.Length);

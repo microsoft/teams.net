@@ -293,37 +293,32 @@ public class BotApplicationTests
     }
 
     [Fact]
-    public async Task ProcessAsync_CoreActivity_NonInvoke_ReturnsNull()
+    public async Task ProcessAsync_CoreActivity_RunsMiddlewareAndOnActivity()
     {
         BotApplication botApp = CreateBotApplication();
-        bool onActivityCalled = false;
-        botApp.OnActivity = (_, _) =>
+        List<string> calls = [];
+        Mock<ITurnMiddleware> middleware = new();
+        middleware
+            .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
+            .Returns<BotApplication, CoreActivity, NextTurn, CancellationToken>((_, _, next, ct) =>
+            {
+                calls.Add("middleware");
+                return next(ct);
+            });
+        botApp.UseMiddleware(middleware.Object);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        CoreActivity? received = null;
+        botApp.OnActivity = (act, _) =>
         {
-            onActivityCalled = true;
+            calls.Add("onActivity");
+            received = act;
             return Task.CompletedTask;
         };
 
-        CoreInvokeResponse? response = await botApp.ProcessAsync(new CoreActivity(ActivityType.Message), user: null, correlationVector: null);
+        await botApp.ProcessAsync(activity, user: null, correlationVector: null);
 
-        Assert.True(onActivityCalled);
-        Assert.Null(response);
-    }
-
-    [Fact]
-    public async Task ProcessAsync_CoreActivity_ReturnsInvokeResponseSetByHandler()
-    {
-        InvokeRecordingBot botApp = new();
-        botApp.OnActivity = (_, _) =>
-        {
-            Assert.True(botApp.RecordInvokeResponse(new CoreInvokeResponse(200, new { hello = "world" })));
-            return Task.CompletedTask;
-        };
-
-        CoreInvokeResponse? response = await botApp.ProcessAsync(new CoreActivity("invoke"), user: null, correlationVector: null);
-
-        Assert.NotNull(response);
-        Assert.Equal(200, response.Status);
-        Assert.NotNull(response.Body);
+        Assert.Equal(["middleware", "onActivity"], calls);
+        Assert.Same(activity, received);
     }
 
     [Fact]
@@ -384,141 +379,36 @@ public class BotApplicationTests
     }
 
     [Fact]
-    public async Task ProcessAsync_HttpContext_WritesInvokeResponseStatusAndJsonBody()
+    public async Task ProcessAsync_HttpContext_DelegatesToCoreActivityOverload()
     {
-        InvokeRecordingBot botApp = new();
-        botApp.OnActivity = (_, _) =>
-        {
-            botApp.RecordInvokeResponse(new CoreInvokeResponse(201, new { hello = "world" }));
-            return Task.CompletedTask;
-        };
-        DefaultHttpContext httpContext = CreateHttpContextWithActivity(new CoreActivity("invoke"));
-        MemoryStream responseBody = new();
-        httpContext.Response.Body = responseBody;
+        RecordingBot botApp = new();
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.Request.Headers["MS-CV"] = "cv-123";
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("aud", "test-app-id")]));
+        httpContext.User = user;
 
         await botApp.ProcessAsync(httpContext);
 
-        Assert.Equal(201, httpContext.Response.StatusCode);
-        Assert.StartsWith("application/json", httpContext.Response.ContentType, StringComparison.Ordinal);
-        Assert.Equal("{\"hello\":\"world\"}", Encoding.UTF8.GetString(responseBody.ToArray()));
+        Assert.Equal("act123", botApp.Activity?.Id);
+        Assert.Same(user, botApp.User);
+        Assert.Equal("cv-123", botApp.CorrelationVector);
     }
 
-    [Fact]
-    public async Task ProcessAsync_HttpContext_InvokeResponseWithoutBody_WritesStatusOnly()
-    {
-        InvokeRecordingBot botApp = new();
-        botApp.OnActivity = (_, _) =>
-        {
-            botApp.RecordInvokeResponse(new CoreInvokeResponse(501));
-            return Task.CompletedTask;
-        };
-        DefaultHttpContext httpContext = CreateHttpContextWithActivity(new CoreActivity("invoke"));
-        MemoryStream responseBody = new();
-        httpContext.Response.Body = responseBody;
-
-        await botApp.ProcessAsync(httpContext);
-
-        Assert.Equal(501, httpContext.Response.StatusCode);
-        Assert.Equal(0, responseBody.Length);
-    }
-
-    [Fact]
-    public async Task ProcessAsync_HttpContext_NoInvokeResponse_LeavesResponseUntouched()
-    {
-        BotApplication botApp = CreateBotApplication();
-        botApp.OnActivity = (_, _) => Task.CompletedTask;
-        DefaultHttpContext httpContext = CreateHttpContextWithActivity(new CoreActivity(ActivityType.Message));
-        MemoryStream responseBody = new();
-        httpContext.Response.Body = responseBody;
-
-        await botApp.ProcessAsync(httpContext);
-
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Null(httpContext.Response.ContentType);
-        Assert.Equal(0, responseBody.Length);
-    }
-
-    [Fact]
-    public void TrySetInvokeResponse_OutsideTurn_ReturnsFalse()
-    {
-        InvokeRecordingBot botApp = new();
-
-        Assert.False(botApp.RecordInvokeResponse(new CoreInvokeResponse(200)));
-    }
-
-    [Fact]
-    public async Task TrySetInvokeResponse_AfterTurnCompletes_ReturnsFalse()
-    {
-        InvokeRecordingBot botApp = new();
-        TaskCompletionSource turnEnded = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        Task<bool>? lateSet = null;
-        botApp.OnActivity = (_, _) =>
-        {
-            // Work started inside the turn inherits its async-local slot but runs after the turn has ended.
-            lateSet = Task.Run(async () =>
-            {
-                await turnEnded.Task;
-                return botApp.RecordInvokeResponse(new CoreInvokeResponse(200));
-            });
-            return Task.CompletedTask;
-        };
-
-        CoreInvokeResponse? response = await botApp.ProcessAsync(new CoreActivity("invoke"), user: null, correlationVector: null);
-        turnEnded.SetResult();
-
-        Assert.Null(response);
-        Assert.NotNull(lateSet);
-        Assert.False(await lateSet);
-    }
-
-    [Fact]
-    public async Task TrySetInvokeResponse_FromAnotherApplication_ReturnsFalse()
-    {
-        InvokeRecordingBot botApp = new();
-        InvokeRecordingBot otherApp = new();
-        bool? otherAppResult = null;
-        botApp.OnActivity = (_, _) =>
-        {
-            otherAppResult = otherApp.RecordInvokeResponse(new CoreInvokeResponse(500));
-            return Task.CompletedTask;
-        };
-
-        CoreInvokeResponse? response = await botApp.ProcessAsync(new CoreActivity("invoke"), user: null, correlationVector: null);
-
-        Assert.False(otherAppResult);
-        Assert.Null(response);
-    }
-
-    [Fact]
-    public async Task ProcessAsync_CoreActivity_ConcurrentTurns_ReturnOwnInvokeResponses()
-    {
-        InvokeRecordingBot botApp = new();
-        TaskCompletionSource bothStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        int started = 0;
-        botApp.OnActivity = async (activity, _) =>
-        {
-            if (Interlocked.Increment(ref started) == 2)
-            {
-                bothStarted.SetResult();
-            }
-
-            await bothStarted.Task;
-            botApp.RecordInvokeResponse(new CoreInvokeResponse(200, activity.Id));
-        };
-
-        Task<CoreInvokeResponse?> first = botApp.ProcessAsync(new CoreActivity("invoke") { Id = "first" }, user: null, correlationVector: null);
-        Task<CoreInvokeResponse?> second = botApp.ProcessAsync(new CoreActivity("invoke") { Id = "second" }, user: null, correlationVector: null);
-
-        CoreInvokeResponse?[] responses = await Task.WhenAll(first, second);
-
-        Assert.Equal("first", responses[0]?.Body);
-        Assert.Equal("second", responses[1]?.Body);
-    }
-
-    private sealed class InvokeRecordingBot()
+    private sealed class RecordingBot()
         : BotApplication(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance)
     {
-        public bool RecordInvokeResponse(CoreInvokeResponse response) => TrySetInvokeResponse(response);
+        public CoreActivity? Activity { get; private set; }
+        public ClaimsPrincipal? User { get; private set; }
+        public string? CorrelationVector { get; private set; }
+
+        public override Task ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
+        {
+            Activity = activity;
+            User = user;
+            CorrelationVector = correlationVector;
+            return Task.CompletedTask;
+        }
     }
 
     private static BotApplicationOptions CreateOptions(string appId) =>

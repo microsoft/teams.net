@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.ComponentModel;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Clients;
@@ -23,6 +24,11 @@ public class TeamsBotApplication : BotApplication
 {
     private readonly TurnStateLoader? _stateLoader;
     private Uri? _lastServiceUrl;
+
+    // AsyncLocal rather than an instance field: one application processes many activities concurrently, and each
+    // turn's handlers must reach only their own capture. The capture is a mutable object so a value set deep inside
+    // the pipeline is visible to ProcessWithInvokeResponseAsync after the async-local value is restored.
+    private static readonly AsyncLocal<InvokeResponseCapture?> s_invokeResponseCapture = new();
 
     /// <summary>
     /// Gets the logger instance for this application, used by <see cref="Context{TActivity}.Log"/>.
@@ -120,7 +126,7 @@ public class TeamsBotApplication : BotApplication
     /// use the constructor that accepts a file downloader.</para>
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
-    /// <param name="httpContextAccessor">Accessor used to write invoke responses when <see cref="BotApplication.OnActivity"/> is invoked outside <see cref="BotApplication.ProcessAsync(HttpContext, CancellationToken)"/>. Within <c>ProcessAsync</c> the response is returned to the transport instead.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
@@ -139,7 +145,7 @@ public class TeamsBotApplication : BotApplication
     /// Initializes a new <see cref="TeamsBotApplication"/>.
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
-    /// <param name="httpContextAccessor">Accessor used to write invoke responses when <see cref="BotApplication.OnActivity"/> is invoked outside <see cref="BotApplication.ProcessAsync(HttpContext, CancellationToken)"/>. Within <c>ProcessAsync</c> the response is returned to the transport instead.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
@@ -222,24 +228,19 @@ public class TeamsBotApplication : BotApplication
                 else // invokes
                 {
                     InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                    if (invokeResponse is not null)
+                    HttpContext? httpContext = httpContextAccessor.HttpContext;
+                    if (invokeResponse is not null && TryCaptureInvokeResponse(invokeResponse))
                     {
+                        logger.LogDebug("Returning invoke response with status {Status} to the transport", invokeResponse.Status);
+                    }
+                    else if (httpContext is not null && invokeResponse is not null)
+                    {
+                        httpContext.Response.StatusCode = invokeResponse.Status;
                         logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
                         logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-
-                        // ProcessAsync returns the response to its transport, which delivers it once the turn ends.
-                        // The HttpContext write only remains for callers that invoke OnActivity outside ProcessAsync.
-                        if (!TrySetInvokeResponse(new CoreInvokeResponse(invokeResponse.Status, invokeResponse.Body)))
+                        if (invokeResponse.Body is not null)
                         {
-                            HttpContext? httpContext = httpContextAccessor.HttpContext;
-                            if (httpContext is not null)
-                            {
-                                httpContext.Response.StatusCode = invokeResponse.Status;
-                                if (invokeResponse.Body is not null)
-                                {
-                                    await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
-                                }
-                            }
+                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -255,6 +256,69 @@ public class TeamsBotApplication : BotApplication
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
+    }
+
+    /// <summary>
+    /// Processes an activity from a non-HTTP transport (such as Socket Mode) and returns its invoke response,
+    /// instead of writing it to the current <see cref="HttpContext"/>.
+    /// </summary>
+    /// <param name="activity">The activity to process.</param>
+    /// <param name="user">The authenticated caller, or <see langword="null"/> when the transport has no per-activity principal.</param>
+    /// <param name="correlationVector">Optional correlation vector used for logging.</param>
+    /// <param name="cancellationToken">Reserved for the caller's cancellation. A dedicated timeout governs activity processing.</param>
+    /// <returns>The invoke response produced by the turn, or <see langword="null"/> when there is none (for example, a non-invoke activity).</returns>
+    internal async Task<InvokeResponse?> ProcessWithInvokeResponseAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
+    {
+        InvokeResponseCapture capture = new(this);
+        s_invokeResponseCapture.Value = capture;
+        try
+        {
+            await ProcessAsync(activity, user, correlationVector, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            capture.Close();
+        }
+
+        return capture.Response;
+    }
+
+    private bool TryCaptureInvokeResponse(InvokeResponse response)
+    {
+        InvokeResponseCapture? capture = s_invokeResponseCapture.Value;
+        return capture is not null && ReferenceEquals(capture.Owner, this) && capture.TrySet(response);
+    }
+
+    private sealed class InvokeResponseCapture(TeamsBotApplication owner)
+    {
+        private readonly object _gate = new();
+        private bool _closed;
+
+        public TeamsBotApplication Owner { get; } = owner;
+
+        public InvokeResponse? Response { get; private set; }
+
+        public bool TrySet(InvokeResponse response)
+        {
+            lock (_gate)
+            {
+                if (_closed)
+                {
+                    return false;
+                }
+
+                Response = response;
+                return true;
+            }
+        }
+
+        public void Close()
+        {
+            lock (_gate)
+            {
+                _closed = true;
+            }
+        }
     }
     /// <summary>
     /// Acquires a Graph token for the app itself, reading with application permissions.
