@@ -16,7 +16,7 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 
 | Flow | Behavior |
 |---|---|
-| send any message | Bot replies with `Echo: <your text>` |
+| send any message | Bot quotes your message and replies `You said: <your text>` |
 
 ## Running the Sample
 

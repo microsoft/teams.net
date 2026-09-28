@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Schema;
 
 // Socket Mode receives activities over an outbound WebSocket, so the bot runs on a
 // generic host with no web server and no public messaging endpoint.
@@ -15,9 +14,8 @@ TeamsBotApplication teamsApp = host.UseTeamsSocketApplication();
 
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    await context.SendAsync(
-        new MessageActivityInput().WithText($"Echo: {context.Activity.Text}"),
-        cancellationToken);
+    // ReplyAsync quotes the user's message above the reply.
+    await context.ReplyAsync($"You said: {context.Activity.Text}", cancellationToken);
 });
 
 host.Run();
