@@ -25,9 +25,9 @@ public class SocketModeTransportTests
 
         Assert.Equal(
             [
-                "https://botapi.skype.com/amer/v3/websockets/connect",
-                "https://botapi.skype.com/apac/v3/websockets/connect",
-                "https://botapi.skype.com/emea/v3/websockets/connect",
+                "https://canary.botapi.skype.com/amer/v3/websockets/connect",
+                "https://canary.botapi.skype.com/apac/v3/websockets/connect",
+                "https://canary.botapi.skype.com/emea/v3/websockets/connect",
             ],
             SortedUris(connections));
         Assert.False(start.IsCompleted);

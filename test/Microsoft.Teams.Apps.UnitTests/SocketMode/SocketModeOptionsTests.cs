@@ -12,7 +12,7 @@ public class SocketModeOptionsTests
     {
         SocketModeOptions options = new();
 
-        Assert.Equal(new Uri("https://botapi.skype.com"), options.NegotiateBaseUrl);
+        Assert.Equal(new Uri("https://canary.botapi.skype.com"), options.NegotiateBaseUrl);
         Assert.Equal(["amer", "emea", "apac"], options.Geos);
         Assert.Equal(TimeSpan.FromSeconds(30), options.StartupTimeout);
         Assert.Null(options.ReconnectDelays);
