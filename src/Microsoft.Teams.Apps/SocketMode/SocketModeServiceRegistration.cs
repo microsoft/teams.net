@@ -19,14 +19,19 @@ internal static class SocketModeServiceRegistration
     /// </summary>
     internal const string NegotiatorHttpClientName = "SocketModeNegotiator";
 
+    // Core keeps its equivalents internal, so they are restated here for the only two places Socket Mode needs them.
+    private const string BotFrameworkScope = "https://api.botframework.com/.default";
+    private const string PublicCloudTokenIssuer = "https://api.botframework.com";
+
     /// <summary>
-    /// Validates the options and cloud, then registers Socket Mode for <typeparamref name="TApp"/>.
+    /// Checks the cloud, then registers Socket Mode for <typeparamref name="TApp"/>. The options themselves are
+    /// validated when the host starts, where the transport and connection factory are created.
     /// </summary>
     /// <typeparam name="TApp">The application that processes inbound activities.</typeparam>
     /// <param name="services">The service collection.</param>
     /// <param name="botConfig">The resolved bot configuration.</param>
     /// <param name="options">The Socket Mode options.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the options are invalid or the cloud is unsupported.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the cloud is unsupported.</exception>
     internal static void AddSocketMode<TApp>(IServiceCollection services, BotConfig botConfig, SocketModeOptions options)
         where TApp : TeamsBotApplication
     {
@@ -34,13 +39,8 @@ internal static class SocketModeServiceRegistration
         ArgumentNullException.ThrowIfNull(botConfig);
         ArgumentNullException.ThrowIfNull(options);
 
-        options.Validate();
         EnsureSupportedCloud(botConfig);
 
-        SocketModeTransportOptions transportOptions = options.ToTransportOptions();
-        TimeSpan readinessTimeout = options.ReadinessTimeout;
-        TimeSpan keepAliveInterval = options.KeepAliveInterval;
-        TimeSpan serverTimeout = options.ServerTimeout;
         string sectionName = botConfig.SectionName;
         string clientId = botConfig.ClientId;
 
@@ -55,21 +55,21 @@ internal static class SocketModeServiceRegistration
             BotTokenProvider tokenProvider = sp.GetRequiredKeyedService<BotTokenProvider>(sectionName);
             return new SocketModeNegotiator(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient(NegotiatorHttpClientName),
-                cancellationToken => tokenProvider.GetAppTokenAsync(SocketModeProtocol.BotFrameworkScope, tenantId: null, cancellationToken));
+                cancellationToken => tokenProvider.GetAppTokenAsync(BotFrameworkScope, tenantId: null, cancellationToken));
         });
 
         services.TryAddSingleton<ISocketConnectionFactory>(sp => new SignalRSocketConnectionFactory(
             sp.GetRequiredService<ISocketModeNegotiator>(),
-            readinessTimeout,
-            keepAliveInterval,
-            serverTimeout,
+            options.ReadinessTimeout,
+            options.KeepAliveInterval,
+            options.ServerTimeout,
             sp.GetRequiredService<ILoggerFactory>().CreateLogger<SignalRSocketConnectionFactory>()));
 
         services.TryAddSingleton(sp =>
         {
             TApp app = sp.GetRequiredService<TApp>();
             return new SocketModeTransport(
-                transportOptions,
+                options.ToTransportOptions(),
                 sp.GetRequiredService<ISocketConnectionFactory>(),
                 activity => DispatchAsync(app, activity),
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger<SocketModeTransport>(),
@@ -97,7 +97,7 @@ internal static class SocketModeServiceRegistration
     private static void EnsureSupportedCloud(BotConfig botConfig)
     {
         string issuer = botConfig.BotTokenIssuer?.Trim().TrimEnd('/') ?? string.Empty;
-        if (!string.Equals(issuer, SocketModeProtocol.PublicCloudTokenIssuer, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(issuer, PublicCloudTokenIssuer, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
                 $"Socket Mode is not supported in this cloud environment (tokenIssuer={botConfig.BotTokenIssuer}). "

@@ -4,6 +4,9 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -87,13 +90,28 @@ public class SocketModeHostingTests
         services.AddTeamsBotApplication(options => options.UseSocketMode());
     }
 
-    [Fact]
-    public void WithSocketMode_RejectsInvalidOptionsAtRegistration()
+    public static TheoryData<Action<SocketModeOptions>> InvalidOptions => new()
+    {
+        o => o.Geos = [],
+        o => o.Geos = ["amer", null!],
+        o => o.Geos = ["amer", " AMER/"],
+        o => o.StartupTimeout = TimeSpan.FromSeconds(-1),
+        o => o.ReadinessTimeout = TimeSpan.Zero,
+        o => o.KeepAliveInterval = TimeSpan.Zero,
+        o => o.ServerTimeout = TimeSpan.Zero,
+    };
+
+    [Theory]
+    [MemberData(nameof(InvalidOptions))]
+    public async Task InvalidOptions_AreAcceptedAtRegistrationAndRejectedWhenTheHostStarts(Action<SocketModeOptions> configure)
     {
         ServiceCollection services = CreateServices();
+        services.AddTeamsBotApplication(options => options.UseSocketMode(configure));
 
-        Assert.Throws<InvalidOperationException>(
-            () => services.AddTeamsBotApplication(options => options.UseSocketMode(socket => socket.Geos = [])));
+        await using ServiceProvider provider = services.BuildServiceProvider();
+        IHostedService hosted = Assert.Single(provider.GetServices<IHostedService>().OfType<SocketModeHostedService>());
+
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => hosted.StartAsync(CancellationToken.None));
     }
 
     [Fact]
@@ -120,7 +138,7 @@ public class SocketModeHostingTests
             .NegotiateAsync(new Uri("https://botapi.skype.com/amer/v3/websockets/connect"));
 
         Assert.Equal("signalr-token", response.AccessToken);
-        Assert.Equal([SocketModeProtocol.BotFrameworkScope], scopes);
+        Assert.Equal(["https://api.botframework.com/.default"], scopes);
         HttpRequestMessage request = Assert.Single(handler.Requests);
         Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
         Assert.Equal("bot-token", request.Headers.Authorization?.Parameter);
@@ -197,6 +215,102 @@ public class SocketModeHostingTests
 
         Assert.Equal(new SocketDispatchResult(200), result);
     }
+
+    [Fact]
+    public async Task UseTeamsBotApplication_WithSocketMode_ThrowsAndMapsNothing()
+    {
+        await using WebApplication app = BuildWebApplication(options => options.UseSocketMode());
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => app.UseTeamsBotApplication());
+
+        Assert.Contains("UseTeamsSocketApplication", exception.Message, StringComparison.Ordinal);
+        Assert.Empty(MappedRoutes(app));
+    }
+
+    [Fact]
+    public async Task WebApplication_WithSocketMode_FailsToStart()
+    {
+        FakeConnectionFactory factory = new();
+        await using WebApplication app = BuildWebApplication(options => options.UseSocketMode(), factory);
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
+
+        Assert.Contains("without a web server", exception.Message, StringComparison.Ordinal);
+        Assert.Empty(factory.Connections);
+    }
+
+    [Fact]
+    public async Task GenericHost_StartsSocketModeAndExposesTheApp()
+    {
+        FakeConnectionFactory factory = new();
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = [] });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = ClientId,
+            ["AzureAd:TenantId"] = "socket-tenant-id",
+        });
+        builder.Services.AddSingleton<ISocketConnectionFactory>(factory);
+        builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
+        using IHost host = builder.Build();
+
+        TeamsBotApplication app = host.UseTeamsSocketApplication();
+        await host.StartAsync();
+
+        Assert.Same(host.Services.GetRequiredService<TeamsBotApplication>(), app);
+        Assert.Equal(SocketModeStatus.Ready, host.Services.GetRequiredService<SocketModeTransport>().Status);
+        Assert.Equal(3, factory.Connections.Count);
+
+        await host.StopAsync();
+
+        Assert.Equal(SocketModeStatus.Stopped, host.Services.GetRequiredService<SocketModeTransport>().Status);
+    }
+
+    [Fact]
+    public void UseTeamsSocketApplication_WithoutSocketMode_Throws()
+    {
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = [] });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["AzureAd:ClientId"] = ClientId });
+        builder.Services.AddTeamsBotApplication();
+        using IHost host = builder.Build();
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => host.UseTeamsSocketApplication());
+
+        Assert.Contains("Socket Mode is not enabled", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UseTeamsBotApplication_WithoutSocketMode_MapsTheHttpEndpoint()
+    {
+        await using WebApplication app = BuildWebApplication(_ => { });
+
+        app.UseTeamsBotApplication();
+
+        Assert.Equal(["api/messages"], MappedRoutes(app));
+    }
+
+    private static WebApplication BuildWebApplication(Action<TeamsBotApplicationOptions> configure, ISocketConnectionFactory? factory = null)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = ClientId,
+            ["AzureAd:TenantId"] = "socket-tenant-id",
+        });
+        if (factory is not null)
+        {
+            builder.Services.AddSingleton(factory);
+        }
+
+        builder.Services.AddTeamsBotApplication(configure);
+        return builder.Build();
+    }
+
+    private static string[] MappedRoutes(WebApplication app)
+        => [.. ((IEndpointRouteBuilder)app).DataSources
+            .SelectMany(source => source.Endpoints)
+            .OfType<RouteEndpoint>()
+            .Select(endpoint => endpoint.RoutePattern.RawText ?? string.Empty)];
 
     private sealed class RecordingHandler : HttpMessageHandler
     {

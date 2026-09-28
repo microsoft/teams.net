@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.SocketMode;
 using Microsoft.Teams.Apps.State;
@@ -184,24 +185,34 @@ public static class TeamsBotApplicationHostingExtensions
     /// <summary>
     /// Configures a custom <typeparamref name="TApp"/> on the endpoint route builder.
     /// </summary>
+    /// <remarks>
+    /// Receives activities over HTTP. When Socket Mode is enabled with <see cref="TeamsBotApplicationOptions.UseSocketMode"/>,
+    /// this throws; use <c>UseTeamsSocketApplication</c> on a host without a web server instead.
+    /// </remarks>
     /// <typeparam name="TApp">The custom <see cref="TeamsBotApplication"/> type.</typeparam>
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
     /// <returns>The configured <typeparamref name="TApp"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when Socket Mode is enabled.</exception>
     public static TApp UseTeamsBotApplication<TApp>(this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
            where TApp : TeamsBotApplication
-        => endpoints.UseBotApplication<TApp>(routePath);
+        => UseTeamsBotApplicationCore<TApp>(endpoints, routePath);
 
     /// <summary>
     /// Configures the default <see cref="TeamsBotApplication"/> on the endpoint route builder.
     /// </summary>
+    /// <remarks>
+    /// Receives activities over HTTP. When Socket Mode is enabled with <see cref="TeamsBotApplicationOptions.UseSocketMode"/>,
+    /// this throws; use <c>UseTeamsSocketApplication</c> on a host without a web server instead.
+    /// </remarks>
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
     /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when Socket Mode is enabled.</exception>
     public static TeamsBotApplication UseTeamsBotApplication(this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
-        => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
+        => UseTeamsBotApplicationCore<TeamsBotApplication>(endpoints, routePath);
 
     /// <summary>
     /// Configures the default <see cref="TeamsBotApplication"/>. Alias for <see cref="UseTeamsBotApplication(IEndpointRouteBuilder, string)"/>.
@@ -211,7 +222,62 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
     [Obsolete("UseTeams is a backward-compatibility shim for the old library and will be removed. Use UseTeamsBotApplication instead.")]
     public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
-        => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
+        => UseTeamsBotApplicationCore<TeamsBotApplication>(endpoints, routePath);
+
+    /// <summary>
+    /// Gets the default <see cref="TeamsBotApplication"/> from a host running Socket Mode.
+    /// </summary>
+    /// <remarks>
+    /// Socket Mode runs on a host without a web server, such as one built with <c>Host.CreateApplicationBuilder()</c>.
+    /// The transport starts with the host, which does not finish starting until every geo is connected.
+    /// </remarks>
+    /// <param name="host">The built host.</param>
+    /// <returns>The registered <see cref="TeamsBotApplication"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when Socket Mode is not enabled or the application is not registered.</exception>
+    public static TeamsBotApplication UseTeamsSocketApplication(this IHost host)
+        => UseTeamsSocketApplication<TeamsBotApplication>(host);
+
+    /// <summary>
+    /// Gets a custom <typeparamref name="TApp"/> from a host running Socket Mode.
+    /// </summary>
+    /// <remarks>
+    /// Socket Mode runs on a host without a web server, such as one built with <c>Host.CreateApplicationBuilder()</c>.
+    /// The transport starts with the host, which does not finish starting until every geo is connected.
+    /// </remarks>
+    /// <typeparam name="TApp">The custom <see cref="TeamsBotApplication"/> type.</typeparam>
+    /// <param name="host">The built host.</param>
+    /// <returns>The registered <typeparamref name="TApp"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when Socket Mode is not enabled or the application is not registered.</exception>
+    public static TApp UseTeamsSocketApplication<TApp>(this IHost host)
+        where TApp : TeamsBotApplication
+    {
+        ArgumentNullException.ThrowIfNull(host);
+
+        if (host.Services.GetService<TeamsBotApplicationOptions>()?.SocketMode is null)
+        {
+            throw new InvalidOperationException(
+                "Socket Mode is not enabled. Call UseSocketMode() in AddTeamsBotApplication, or use "
+                + "UseTeamsBotApplication() on a WebApplication to receive activities over HTTP.");
+        }
+
+        return host.Services.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
+    }
+
+    // Socket Mode and the HTTP endpoint are exclusive: with Socket Mode on, the bot must not accept activities over HTTP.
+    private static TApp UseTeamsBotApplicationCore<TApp>(IEndpointRouteBuilder endpoints, string routePath)
+        where TApp : TeamsBotApplication
+    {
+        ArgumentNullException.ThrowIfNull(endpoints);
+
+        if (endpoints.ServiceProvider.GetService<TeamsBotApplicationOptions>()?.SocketMode is not null)
+        {
+            throw new InvalidOperationException(
+                "Socket Mode is enabled, so the bot does not use an HTTP endpoint. Build it with "
+                + "Host.CreateApplicationBuilder() and call host.UseTeamsSocketApplication() instead.");
+        }
+
+        return endpoints.UseBotApplication<TApp>(routePath);
+    }
 
     private static void AddTeamsBotApplicationState(IServiceCollection services, Action<TurnStateOptions>? configure)
     {

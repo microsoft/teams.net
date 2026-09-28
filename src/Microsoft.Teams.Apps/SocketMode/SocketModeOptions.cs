@@ -9,7 +9,8 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// </summary>
 /// <remarks>
 /// Socket Mode opens one connection per geo and waits until every geo is ready before the host finishes starting.
-/// It is supported only in the public cloud.
+/// It is supported only in the public cloud, and runs on a host without a web server
+/// (<c>Host.CreateApplicationBuilder</c>). Settings are validated when the host starts.
 /// </remarks>
 public sealed class SocketModeOptions
 {
@@ -47,101 +48,21 @@ public sealed class SocketModeOptions
     public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(15);
 
     /// <summary>
-    /// Gets or sets how long without a message from the service before the connection is considered lost. Must be
-    /// greater than <see cref="KeepAliveInterval"/>. Defaults to 30 seconds.
+    /// Gets or sets how long without a message from the service before the connection is considered lost.
+    /// Defaults to 30 seconds.
     /// </summary>
     public TimeSpan ServerTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Validates the options, so a misconfiguration fails at registration rather than when the host starts.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when a setting is invalid.</exception>
-    internal void Validate()
-    {
-        if (NegotiateBaseUrl is null || !NegotiateBaseUrl.IsAbsoluteUri)
-        {
-            throw Invalid($"{nameof(NegotiateBaseUrl)} must be an absolute URL.");
-        }
-
-        if (!IsSecureOrLoopback(NegotiateBaseUrl))
-        {
-            throw Invalid($"{nameof(NegotiateBaseUrl)} must use HTTPS unless it targets loopback.");
-        }
-
-        if (Geos is null || Geos.Count == 0)
-        {
-            throw Invalid($"{nameof(Geos)} must contain at least one geo. Use an empty string to connect without a geo segment.");
-        }
-
-        HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
-        foreach (string geo in Geos)
-        {
-            if (geo is null)
-            {
-                throw Invalid($"{nameof(Geos)} cannot contain null.");
-            }
-
-            if (!seen.Add(geo.Trim().Trim('/')))
-            {
-                throw Invalid($"Geo '{geo}' is listed more than once.");
-            }
-        }
-
-        if (StartupTimeout < TimeSpan.Zero)
-        {
-            throw Invalid($"{nameof(StartupTimeout)} cannot be negative.");
-        }
-
-        if (ReconnectDelays is not null && ReconnectDelays.Any(delay => delay < TimeSpan.Zero))
-        {
-            throw Invalid($"{nameof(ReconnectDelays)} cannot contain negative delays.");
-        }
-
-        EnsurePositive(ReadinessTimeout, nameof(ReadinessTimeout));
-        EnsurePositive(KeepAliveInterval, nameof(KeepAliveInterval));
-        EnsurePositive(ServerTimeout, nameof(ServerTimeout));
-
-        if (ServerTimeout <= KeepAliveInterval)
-        {
-            throw Invalid($"{nameof(ServerTimeout)} must be greater than {nameof(KeepAliveInterval)}.");
-        }
-    }
-
-    /// <summary>
     /// Snapshots the transport-level settings, so later changes to these options do not affect a running transport.
+    /// Invalid values are passed through for the transport to reject when it starts.
     /// </summary>
     /// <returns>The transport options.</returns>
     internal SocketModeTransportOptions ToTransportOptions() => new()
     {
         NegotiateBaseUri = NegotiateBaseUrl,
-        Geos = [.. Geos],
+        Geos = Geos is null ? null! : [.. Geos],
         StartupTimeout = StartupTimeout,
         ReconnectDelays = ReconnectDelays is { Count: > 0 } delays ? [.. delays] : null,
     };
-
-    private static void EnsurePositive(TimeSpan value, string name)
-    {
-        if (value <= TimeSpan.Zero)
-        {
-            throw Invalid($"{name} must be positive.");
-        }
-    }
-
-    // Matches the negotiator's own check, which runs again on every negotiate request.
-    private static bool IsSecureOrLoopback(Uri uri)
-    {
-        if (uri.Scheme == Uri.UriSchemeHttps && !string.IsNullOrEmpty(uri.Host))
-        {
-            return true;
-        }
-
-        string host = uri.Host.Trim('[', ']');
-        return uri.Scheme == Uri.UriSchemeHttp
-            && (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-                || host.Equals("127.0.0.1", StringComparison.Ordinal)
-                || host.Equals("::1", StringComparison.Ordinal));
-    }
-
-    private static InvalidOperationException Invalid(string message)
-        => new($"Invalid Socket Mode options: {message}");
 }

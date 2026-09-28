@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Teams.Apps.SocketMode;
@@ -10,16 +12,32 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// </summary>
 /// <remarks>
 /// Startup waits until every geo is ready, so the host does not report started while the bot cannot receive
-/// activities, and a startup failure surfaces from <c>app.Run()</c> instead of being swallowed in the background.
+/// activities, and a startup failure surfaces from <c>host.Run()</c> instead of being swallowed in the background.
 /// </remarks>
-/// <param name="transport">The transport to run.</param>
-internal sealed class SocketModeHostedService(SocketModeTransport transport) : IHostedService
+/// <param name="services">The host's service provider, used to create the transport and detect a web server.</param>
+internal sealed class SocketModeHostedService(IServiceProvider services) : IHostedService
 {
-    private readonly SocketModeTransport _transport = transport ?? throw new ArgumentNullException(nameof(transport));
+    private readonly IServiceProvider _services = services ?? throw new ArgumentNullException(nameof(services));
+    private SocketModeTransport? _transport;
 
     /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken) => _transport.StartAsync(cancellationToken);
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        // Socket Mode replaces inbound HTTP rather than running beside it, so a host that would also start a web
+        // server (for example a WebApplication) is rejected before any socket opens.
+        if (_services.GetService<IServiceProviderIsService>()?.IsService(typeof(IServer)) == true)
+        {
+            throw new InvalidOperationException(
+                "Socket Mode runs without a web server. Build the bot with Host.CreateApplicationBuilder() instead of "
+                + "WebApplication.CreateBuilder(), and get the app with host.UseTeamsSocketApplication().");
+        }
+
+        // Created here rather than injected, so invalid options fail when the host starts, as in the other SDKs.
+        _transport = _services.GetRequiredService<SocketModeTransport>();
+        return _transport.StartAsync(cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken) => _transport.StopAsync().WaitAsync(cancellationToken);
+    public Task StopAsync(CancellationToken cancellationToken)
+        => _transport is null ? Task.CompletedTask : _transport.StopAsync().WaitAsync(cancellationToken);
 }

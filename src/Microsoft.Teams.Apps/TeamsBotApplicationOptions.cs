@@ -64,7 +64,8 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// <summary>
     /// Receives activities over Socket Mode: outbound WebSocket connections instead of an inbound HTTP endpoint.
     /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.
-    /// Supported only in the public cloud.
+    /// Supported only in the public cloud. Build the bot with <c>Host.CreateApplicationBuilder()</c> (no web server) and
+    /// get the app with <c>host.UseTeamsSocketApplication()</c>.
     /// </summary>
     /// <param name="configure">Optional delegate to configure <see cref="SocketModeOptions"/>.</param>
     /// <returns>This instance for chaining.</returns>
