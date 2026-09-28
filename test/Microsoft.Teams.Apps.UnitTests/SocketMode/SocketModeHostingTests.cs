@@ -332,6 +332,77 @@ public class SocketModeHostingTests
             .OfType<RouteEndpoint>()
             .Select(endpoint => endpoint.RoutePattern.RawText ?? string.Empty)];
 
+    [Fact]
+    public async Task GenericHost_MessageOverSocket_RepliesThroughTheConversationApi()
+    {
+        FakeConnectionFactory factory = new();
+        OutboundHandler outbound = new();
+        Mock<IAuthorizationHeaderProvider> header = new();
+        header
+            .Setup(h => h.CreateAuthorizationHeaderForAppAsync(It.IsAny<string>(), It.IsAny<AuthorizationHeaderProviderOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("Bearer bot-token");
+
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = [] });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = ClientId,
+            ["AzureAd:TenantId"] = "socket-tenant-id",
+        });
+        builder.Services.AddSingleton<ISocketConnectionFactory>(factory);
+        builder.Services.AddTeamsBotApplication(options => options.UseSocketMode(socket => socket.Geos = ["amer"]));
+        builder.Services.AddSingleton(header.Object);
+        builder.Services.AddHttpClient("BotConversationClient").ConfigurePrimaryHttpMessageHandler(() => outbound);
+        using IHost host = builder.Build();
+
+        TeamsBotApplication app = host.UseTeamsSocketApplication();
+        app.OnMessage((context, cancellationToken) => context.SendAsync($"You said: {context.Activity.Text}", cancellationToken));
+        await host.StartAsync();
+
+        SocketReplyFrame? ack = await Assert.Single(factory.Connections).Handlers.OnActivity(new SocketActivityEnvelope
+        {
+            EnvelopeId = "envelope-1",
+            Type = TeamsActivityTypes.Message,
+            Payload = JsonSerializer.SerializeToElement(new
+            {
+                type = TeamsActivityTypes.Message,
+                id = "incoming-1",
+                text = "hello",
+                channelId = "msteams",
+                serviceUrl = "https://smba.trafficmanager.net/amer/",
+                conversation = new { id = "conversation-1" },
+                from = new { id = "user-1" },
+                recipient = new { id = ClientId },
+            }),
+        });
+        await host.StopAsync();
+
+        Assert.Equal(200, ack!.Status);
+        (HttpRequestMessage request, string body) = Assert.Single(outbound.Requests);
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.StartsWith("https://smba.trafficmanager.net/amer/v3/conversations/conversation-1/activities", request.RequestUri!.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Equal("bot-token", request.Headers.Authorization?.Parameter);
+        Assert.Equal("You said: hello", JsonDocument.Parse(body).RootElement.GetProperty("text").GetString());
+    }
+
+    private sealed class OutboundHandler : HttpMessageHandler
+    {
+        public List<(HttpRequestMessage Request, string Body)> Requests { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            string body = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
+            lock (Requests)
+            {
+                Requests.Add((request, body));
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"id":"reply-1"}""", Encoding.UTF8, "application/json"),
+            };
+        }
+    }
+
     private sealed class RecordingHandler : HttpMessageHandler
     {
         public List<HttpRequestMessage> Requests { get; } = [];

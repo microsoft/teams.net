@@ -98,6 +98,70 @@ public class GeoSocketTests
         Assert.Equal(1, harness.Factory.CreateCount);
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task StartAsync_AuthRejectionFailsWithoutRetry(HttpStatusCode status)
+    {
+        Harness harness = new();
+        SocketModeNegotiateException rejected = new(status, retryAfter: null);
+        FakeConnection connection = harness.Factory.Enqueue(startError: rejected);
+
+        SocketModeNegotiateException error =
+            await Assert.ThrowsAsync<SocketModeNegotiateException>(() => harness.Socket.StartAsync());
+
+        Assert.Same(rejected, error);
+        Assert.Equal(1, harness.Factory.CreateCount);
+        Assert.Equal(0, harness.Time.ScheduledTimerCount);
+        Assert.Equal(1, connection.DisposeCount);
+        Assert.Empty(harness.Logger.Warnings);
+    }
+
+    [Fact]
+    public async Task Reconnect_AuthRejectionStopsTheGeo()
+    {
+        Harness harness = new() { Backoff = _ => TimeSpan.FromSeconds(3) };
+        FakeConnection initial = harness.Factory.Enqueue();
+        SocketModeNegotiateException rejected = new(HttpStatusCode.Unauthorized, retryAfter: null);
+        FakeConnection rejectedAttempt = harness.Factory.Enqueue(startError: rejected);
+        await harness.StartReadyAsync(initial);
+
+        IOException dropped = new("dropped");
+        initial.Close(dropped);
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(3));
+        harness.Time.Advance(TimeSpan.FromSeconds(3));
+        await WaitUntilAsync(() => harness.Owner.Disconnections.Count == 2);
+        await harness.Socket.StopAsync();
+
+        Assert.Equal([dropped, rejected], harness.Owner.Disconnections);
+        Assert.Same(rejected, Assert.Single(harness.Logger.Errors));
+        Assert.Equal(2, harness.Factory.CreateCount);
+        Assert.Equal(0, harness.Time.ScheduledTimerCount);
+        Assert.Equal(1, rejectedAttempt.DisposeCount);
+        Assert.Equal(0, harness.Owner.Reconnections);
+    }
+
+    [Fact]
+    public async Task Rotation_AuthRejectionStopsTheConnectionStillServing()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        SocketModeNegotiateException rejected = new(HttpStatusCode.Forbidden, retryAfter: null);
+        harness.Factory.Enqueue(startError: rejected);
+        await harness.StartReadyAsync(initial);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await initial.Disposed.Task;
+        await WaitUntilAsync(() => harness.Owner.Disconnections.Count == 1);
+
+        Assert.Same(rejected, Assert.Single(harness.Owner.Disconnections));
+        Assert.Equal(1, initial.StopCount);
+        Assert.Null(await initial.Activity("after-rejection"));
+        Assert.DoesNotContain("after-rejection", harness.Owner.Dispatched);
+        Assert.Equal(2, harness.Factory.CreateCount);
+        Assert.DoesNotContain(harness.Logger.Warnings, warning => warning.Message.Contains("paused", StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task UnexpectedClose_ReportsDisconnectedThenReconnected()
     {
@@ -607,6 +671,18 @@ public class GeoSocketTests
     private sealed class RecordingLogger : ILogger
     {
         private readonly List<(string Message, Exception? Exception)> _warnings = [];
+        private readonly List<Exception?> _errors = [];
+
+        internal Exception?[] Errors
+        {
+            get
+            {
+                lock (_errors)
+                {
+                    return [.. _errors];
+                }
+            }
+        }
 
         internal (string Message, Exception? Exception)[] Warnings
         {
@@ -636,6 +712,13 @@ public class GeoSocketTests
                 lock (_warnings)
                 {
                     _warnings.Add((formatter(state, exception), exception));
+                }
+            }
+            else if (logLevel == LogLevel.Error)
+            {
+                lock (_errors)
+                {
+                    _errors.Add(exception);
                 }
             }
         }

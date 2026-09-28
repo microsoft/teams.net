@@ -136,6 +136,7 @@ internal sealed class GeoSocket : IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken">A token for cancelling startup.</param>
     /// <exception cref="TimeoutException">Thrown when no generation becomes ready within the startup budget.</exception>
+    /// <exception cref="SocketModeNegotiateException">Thrown without retrying when negotiate rejects the bot with HTTP 401 or 403.</exception>
     internal async Task StartAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
@@ -213,6 +214,11 @@ internal sealed class GeoSocket : IAsyncDisposable
             }
             catch (Exception exception) when (!startSource.IsCancellationRequested)
             {
+                if (SocketModeNegotiateException.IsNonRetryable(exception))
+                {
+                    throw;
+                }
+
                 Exception error = deadlineSource.IsCancellationRequested
                     ? new TimeoutException(
                         $"Socket Mode geo '{Geo}' did not become ready within {budget}.",
@@ -248,18 +254,28 @@ internal sealed class GeoSocket : IAsyncDisposable
             {
                 CloseReason reason = await current.Closed.Task.WaitAsync(_stopToken).ConfigureAwait(false);
 
+                Generation? replacement;
                 if (reason.Planned)
                 {
                     _logger.LogInformation("Socket Mode geo {Geo} rotating connection before token expiry.", Geo);
-                    Generation replacement = await ReconnectAsync(null, delayFirstAttempt: false).ConfigureAwait(false);
-                    StartRetirement(current);
-                    current = replacement;
+                    replacement = await ReconnectAsync(null, delayFirstAttempt: false).ConfigureAwait(false);
+                    if (replacement is not null)
+                    {
+                        StartRetirement(current);
+                    }
                 }
                 else
                 {
                     await ReleaseAsync(current.Connection).ConfigureAwait(false);
-                    current = await ReconnectAsync(reason.Error, delayFirstAttempt: true).ConfigureAwait(false);
+                    replacement = await ReconnectAsync(reason.Error, delayFirstAttempt: true).ConfigureAwait(false);
                 }
+
+                if (replacement is null)
+                {
+                    return;
+                }
+
+                current = replacement;
 
                 ReportReconnected();
             }
@@ -274,7 +290,8 @@ internal sealed class GeoSocket : IAsyncDisposable
         }
     }
 
-    private async Task<Generation> ReconnectAsync(Exception? previousError, bool delayFirstAttempt)
+    /// <returns>The ready replacement, or <see langword="null"/> when the geo gave up after a non-retryable failure.</returns>
+    private async Task<Generation?> ReconnectAsync(Exception? previousError, bool delayFirstAttempt)
     {
         Exception? error = previousError;
         int retry = 0;
@@ -292,6 +309,12 @@ internal sealed class GeoSocket : IAsyncDisposable
             }
             catch (Exception exception) when (!_stopToken.IsCancellationRequested)
             {
+                if (SocketModeNegotiateException.IsNonRetryable(exception))
+                {
+                    StopAfterNonRetryable(exception);
+                    return null;
+                }
+
                 error = exception;
                 _logger.LogWarning(
                     exception,
@@ -300,6 +323,24 @@ internal sealed class GeoSocket : IAsyncDisposable
                     attempt);
             }
         }
+    }
+
+    /// <summary>
+    /// Gives up on this geo: stops every connection it owns, including one still serving during a token rotation,
+    /// and reports it disconnected. Other geos are unaffected.
+    /// </summary>
+    /// <param name="error">The non-retryable failure.</param>
+    private void StopAfterNonRetryable(Exception error)
+    {
+        _logger.LogError(
+            error,
+            "Socket Mode geo {Geo} reconnect was rejected; inbound delivery for this geo has stopped until the app is restarted.",
+            Geo);
+
+        // Not awaited: stopping waits for this supervisor to finish. Marking the geo as stopping happens
+        // synchronously, so closing connections cannot report a second disconnect.
+        _ = StopAsync();
+        _owner.OnGeoDisconnected(Geo, error);
     }
 
     private async Task<Generation> ConnectAsync(CancellationToken cancellationToken)
