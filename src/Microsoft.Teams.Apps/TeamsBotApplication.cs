@@ -120,7 +120,7 @@ public class TeamsBotApplication : BotApplication
     /// use the constructor that accepts a file downloader.</para>
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
-    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses when <see cref="BotApplication.OnActivity"/> is invoked outside <see cref="BotApplication.ProcessAsync(HttpContext, CancellationToken)"/>. Within <c>ProcessAsync</c> the response is returned to the transport instead.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
@@ -139,7 +139,7 @@ public class TeamsBotApplication : BotApplication
     /// Initializes a new <see cref="TeamsBotApplication"/>.
     /// </summary>
     /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
-    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses when <see cref="BotApplication.OnActivity"/> is invoked outside <see cref="BotApplication.ProcessAsync(HttpContext, CancellationToken)"/>. Within <c>ProcessAsync</c> the response is returned to the transport instead.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
@@ -222,15 +222,24 @@ public class TeamsBotApplication : BotApplication
                 else // invokes
                 {
                     InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                    HttpContext? httpContext = httpContextAccessor.HttpContext;
-                    if (httpContext is not null && invokeResponse is not null)
+                    if (invokeResponse is not null)
                     {
-                        httpContext.Response.StatusCode = invokeResponse.Status;
                         logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
                         logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                        if (invokeResponse.Body is not null)
+
+                        // ProcessAsync returns the response to its transport, which delivers it once the turn ends.
+                        // The HttpContext write only remains for callers that invoke OnActivity outside ProcessAsync.
+                        if (!TrySetInvokeResponse(new CoreInvokeResponse(invokeResponse.Status, invokeResponse.Body)))
                         {
-                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                            HttpContext? httpContext = httpContextAccessor.HttpContext;
+                            if (httpContext is not null)
+                            {
+                                httpContext.Response.StatusCode = invokeResponse.Status;
+                                if (invokeResponse.Body is not null)
+                                {
+                                    await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                                }
+                            }
                         }
                     }
                 }

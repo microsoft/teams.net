@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -53,7 +54,104 @@ public class TeamsBotApplicationTests
         Assert.False(app.HasMatchingRoute(new CoreActivity(ActivityType.Message)));
     }
 
-    private static TeamsBotApplication CreateApp()
+    [Fact]
+    public async Task ProcessAsync_HttpContext_InvokeWritesStatusAndJsonBody()
+    {
+        TeamsBotApplication app = CreateApp();
+        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(200, new { hello = "world" })));
+        DefaultHttpContext httpContext = CreateHttpContext(new InvokeActivity(InvokeNames.TaskFetch));
+        MemoryStream responseBody = new();
+        httpContext.Response.Body = responseBody;
+
+        await app.ProcessAsync(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.StartsWith("application/json", httpContext.Response.ContentType, StringComparison.Ordinal);
+        Assert.Equal("{\"hello\":\"world\"}", Encoding.UTF8.GetString(responseBody.ToArray()));
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_InvokeReturnsResponse()
+    {
+        TeamsBotApplication app = CreateApp();
+        object body = new { hello = "world" };
+        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, body)));
+
+        CoreInvokeResponse? response = await app.ProcessAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+
+        Assert.NotNull(response);
+        Assert.Equal(202, response.Status);
+        Assert.Same(body, response.Body);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_UnhandledInvokeReturnsNotImplemented()
+    {
+        TeamsBotApplication app = CreateApp();
+        app.OnMessage((_, _) => Task.CompletedTask);
+
+        CoreInvokeResponse? response = await app.ProcessAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+
+        Assert.NotNull(response);
+        Assert.Equal(501, response.Status);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_MessageReturnsNull()
+    {
+        TeamsBotApplication app = CreateApp();
+        bool handled = false;
+        app.OnMessage((_, _) =>
+        {
+            handled = true;
+            return Task.CompletedTask;
+        });
+
+        CoreInvokeResponse? response = await app.ProcessAsync(new CoreActivity(ActivityType.Message), user: null, correlationVector: null);
+
+        Assert.True(handled);
+        Assert.Null(response);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_DoesNotWriteToAmbientHttpContext()
+    {
+        DefaultHttpContext ambient = new();
+        MemoryStream responseBody = new();
+        ambient.Response.Body = responseBody;
+        TeamsBotApplication app = CreateApp(new HttpContextAccessor { HttpContext = ambient });
+        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, new { hello = "world" })));
+
+        await app.ProcessAsync(new InvokeActivity(InvokeNames.TaskFetch), user: null, correlationVector: null);
+
+        Assert.Equal(200, ambient.Response.StatusCode);
+        Assert.Equal(0, responseBody.Length);
+    }
+
+    [Fact]
+    public async Task OnActivity_InvokedDirectly_FallsBackToHttpContextWrite()
+    {
+        DefaultHttpContext ambient = new();
+        MemoryStream responseBody = new();
+        ambient.Response.Body = responseBody;
+        TeamsBotApplication app = CreateApp(new HttpContextAccessor { HttpContext = ambient });
+        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, new { hello = "world" })));
+
+        await app.OnActivity!(new InvokeActivity(InvokeNames.TaskFetch), CancellationToken.None);
+
+        Assert.Equal(202, ambient.Response.StatusCode);
+        Assert.Equal("{\"hello\":\"world\"}", Encoding.UTF8.GetString(responseBody.ToArray()));
+    }
+
+    private static DefaultHttpContext CreateHttpContext(CoreActivity activity)
+    {
+        DefaultHttpContext httpContext = new();
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(activity.ToJson()));
+        httpContext.Request.ContentType = "application/json";
+        return httpContext;
+    }
+
+    private static TeamsBotApplication CreateApp(IHttpContextAccessor? httpContextAccessor = null)
     {
         Mock<UserTokenClient> mockUserTokenClient = new(
             new HttpClient(),
@@ -71,7 +169,7 @@ public class TeamsBotApplicationTests
 
         return new TeamsBotApplication(
             apiClient,
-            new HttpContextAccessor(),
+            httpContextAccessor ?? new HttpContextAccessor(),
             NullLogger<TeamsBotApplication>.Instance,
             new TeamsBotApplicationOptions { AppId = "test-app-id" });
     }

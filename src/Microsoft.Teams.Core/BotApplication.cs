@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -80,6 +81,12 @@ public class BotApplication
     private readonly ConversationClient? _conversationClient;
     private readonly UserTokenClient? _userTokenClient;
     private readonly TimeSpan _processActivityTimeout = TimeSpan.FromMinutes(5);
+
+    // AsyncLocal rather than an instance field: one application processes many activities concurrently, and each
+    // turn's handlers must reach only their own slot. The slot is a mutable object so a value set deep inside the
+    // pipeline is visible to ProcessAsync, whose own async-local value is restored when it returns.
+    private static readonly AsyncLocal<InvokeResponseSlot?> s_invokeResponseSlot = new();
+
     internal TurnMiddleware MiddleWare { get; }
 
     /// <summary>
@@ -169,8 +176,11 @@ public class BotApplication
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The request body is deserialized into a <see cref="CoreActivity"/>, run through the registered
-    /// middleware pipeline (see <see cref="UseMiddleware"/>), and finally dispatched to <see cref="OnActivity"/>.
+    /// The request body is deserialized into a <see cref="CoreActivity"/> and handed to
+    /// <see cref="ProcessAsync(CoreActivity, ClaimsPrincipal?, string?, CancellationToken)"/> together with the
+    /// request's authenticated <see cref="HttpContext.User"/> and <c>MS-CV</c> correlation vector. If processing
+    /// produces an invoke response, it is written to <see cref="HttpContext.Response"/> as the status code and a
+    /// JSON body.
     /// </para>
     /// <para>
     /// A dedicated internal timeout (configurable via <see cref="BotApplicationOptions.ProcessActivityTimeout"/>,
@@ -179,9 +189,10 @@ public class BotApplication
     /// </para>
     /// </remarks>
     /// <param name="httpContext">The HTTP context containing the incoming bot activity request.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the initial deserialization. Note: a dedicated timeout governs activity processing.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the initial deserialization and the invoke response write. Note: a dedicated timeout governs activity processing.</param>
     /// <returns>A task that represents the asynchronous activity processing operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the request body cannot be deserialized into a valid activity.</exception>
+    /// <exception cref="InvalidDataException">Thrown if the activity's service URL does not match the <c>serviceurl</c> claim of the authenticated caller.</exception>
     /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
     public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
@@ -192,7 +203,51 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        string? correlationVector = httpContext.Request.GetCorrelationVector();
+        CoreInvokeResponse? invokeResponse = await ProcessAsync(
+            activity,
+            httpContext.User,
+            httpContext.Request.GetCorrelationVector(),
+            cancellationToken).ConfigureAwait(false);
+
+        if (invokeResponse is not null && !httpContext.Response.HasStarted)
+        {
+            httpContext.Response.StatusCode = invokeResponse.Status;
+            if (invokeResponse.Body is not null)
+            {
+                await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes an already-received bot activity, independent of the transport it arrived on.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The activity is run through the registered middleware pipeline (see <see cref="UseMiddleware"/>) and
+    /// finally dispatched to <see cref="OnActivity"/>. The HTTP overload
+    /// <see cref="ProcessAsync(HttpContext, CancellationToken)"/> delegates here; other transports call this
+    /// overload directly and deliver the returned invoke response themselves.
+    /// </para>
+    /// <para>
+    /// A dedicated internal timeout (configurable via <see cref="BotApplicationOptions.ProcessActivityTimeout"/>,
+    /// default 5 minutes) governs processing, because streaming handlers may outlive the inbound connection.
+    /// When a debugger is attached the timeout is disabled.
+    /// </para>
+    /// </remarks>
+    /// <param name="activity">The activity to process. Cannot be null.</param>
+    /// <param name="user">The authenticated caller. When it carries a <c>serviceurl</c> claim, the claim must match
+    /// <see cref="CoreActivity.ServiceUrl"/> exactly. Pass <see langword="null"/> when the transport has no per-activity principal.</param>
+    /// <param name="correlationVector">Optional correlation vector used for logging (the HTTP transport supplies the <c>MS-CV</c> header).</param>
+    /// <param name="cancellationToken">Reserved for the caller's cancellation. Note: a dedicated timeout governs activity processing.</param>
+    /// <returns>The invoke response to deliver to the caller, or <see langword="null"/> when the activity produced none (for example, a non-invoke activity).</returns>
+    /// <exception cref="InvalidDataException">Thrown if the activity's service URL does not match the <c>serviceurl</c> claim of <paramref name="user"/>.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
+    public virtual async Task<CoreInvokeResponse?> ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(_conversationClient);
+
         _logger.ActivityReceived(activity.Type, activity.Id, activity.ServiceUrl, correlationVector);
 
         if (_logger.IsEnabled(LogLevel.Trace))
@@ -200,7 +255,7 @@ public class BotApplication
             _logger.ReceivedActivityJson(activity.ToJson());
         }
 
-        string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
+        string serviceUrlFromClaims = user?.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
         if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
         {
             _logger.LogServiceUrlClaimMismatch(activity.ServiceUrl, serviceUrlFromClaims);
@@ -230,6 +285,8 @@ public class BotApplication
             // The HTTP token fires when the client disconnects, which is expected for
             // streaming handlers that outlive the original request.
             using CancellationTokenSource cts = new(_processActivityTimeout);
+            InvokeResponseSlot slot = new(this);
+            s_invokeResponseSlot.Value = slot;
             try
             {
                 CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cts.Token;
@@ -250,11 +307,34 @@ public class BotApplication
             }
             finally
             {
+                slot.Close();
                 _logger.ActivityProcessingFinished(activity.Id);
                 double elapsedMs = Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds;
                 Telemetry.TurnDuration.Record(elapsedMs, activityTypeTag);
             }
+
+            return slot.Response;
         }
+    }
+
+    /// <summary>
+    /// Records the invoke response for the activity currently being processed by
+    /// <see cref="ProcessAsync(CoreActivity, ClaimsPrincipal?, string?, CancellationToken)"/>, which returns it to
+    /// the transport once the turn completes.
+    /// </summary>
+    /// <remarks>
+    /// Call this from <see cref="OnActivity"/> or middleware. A later call in the same turn replaces an earlier one.
+    /// </remarks>
+    /// <param name="response">The invoke response to return. Cannot be null.</param>
+    /// <returns><see langword="true"/> if the response was recorded; <see langword="false"/> if no turn of this
+    /// application is in progress on the current async flow (for example, when <see cref="OnActivity"/> is invoked
+    /// directly, or from work that outlives the turn).</returns>
+    protected bool TrySetInvokeResponse(CoreInvokeResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        InvokeResponseSlot? slot = s_invokeResponseSlot.Value;
+        return slot is not null && ReferenceEquals(slot.Owner, this) && slot.TrySet(response);
     }
 
     /// <summary>
@@ -327,4 +407,36 @@ public class BotApplication
     /// Gets the version of the Microsoft.Teams.Core SDK (for example, <c>"1.0.0"</c>).
     /// </summary>
     public static string Version => ThisAssembly.NuGetPackageVersion;
+
+    private sealed class InvokeResponseSlot(BotApplication owner)
+    {
+        private readonly object _gate = new();
+        private bool _closed;
+
+        public BotApplication Owner { get; } = owner;
+
+        public CoreInvokeResponse? Response { get; private set; }
+
+        public bool TrySet(CoreInvokeResponse response)
+        {
+            lock (_gate)
+            {
+                if (_closed)
+                {
+                    return false;
+                }
+
+                Response = response;
+                return true;
+            }
+        }
+
+        public void Close()
+        {
+            lock (_gate)
+            {
+                _closed = true;
+            }
+        }
+    }
 }
