@@ -41,6 +41,10 @@ internal static class SocketModeServiceRegistration
 
         EnsureSupportedCloud(botConfig);
 
+        // The bot's HTTP authorization services depend on routing, which only a web app registers. Without it a
+        // generic host fails service validation (on by default in Development) even though nothing resolves them.
+        services.AddRouting();
+
         string sectionName = botConfig.SectionName;
         string clientId = botConfig.ClientId;
 

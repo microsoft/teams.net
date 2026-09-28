@@ -5,23 +5,7 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 ## Prerequisites
 
 - Bot registered in the public cloud and installed in Teams, with Socket Mode enabled for the bot.
-- Bot credentials in `appsettings.Development.json` (git-ignored) or environment variables:
-
-~~~json
-{
-  "AzureAd": {
-    "Instance": "https://login.microsoftonline.com/",
-    "TenantId": "<your-tenant-id>",
-    "ClientId": "<your-client-id>",
-    "ClientCredentials": [
-      {
-        "SourceType": "ClientSecret",
-        "ClientSecret": "<your-entra-app-secret>"
-      }
-    ]
-  }
-}
-~~~
+- Bot credentials: copy `Properties/launchSettings.TEMPLATE.json` to `Properties/launchSettings.json` (git-ignored) and fill in `AzureAd__TenantId`, `AzureAd__ClientId`, and `AzureAd__ClientCredentials__0__ClientSecret`.
 
 ## What it shows
 
@@ -37,7 +21,9 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 ## Running the Sample
 
 ~~~bash
-DOTNET_ENVIRONMENT=Development dotnet run --project samples/SocketModeBot/SocketModeBot.csproj
+dotnet run --project samples/SocketModeBot/SocketModeBot.csproj
 ~~~
+
+`dotnet run` and IDEs apply the launch profile, which sets `DOTNET_ENVIRONMENT=Development` and the credentials.
 
 The bot is ready when the log shows `Socket Mode ready across 3 geo(s).` (amer, emea, apac). Startup fails if any geo cannot connect within the startup timeout.

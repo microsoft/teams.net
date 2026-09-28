@@ -11,8 +11,4 @@
 		<ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Update="appsettings*.json" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
-
 </Project>

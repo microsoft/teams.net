@@ -240,6 +240,26 @@ public class SocketModeHostingTests
     }
 
     [Fact]
+    public void GenericHost_InDevelopment_PassesServiceValidation()
+    {
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            Args = [],
+            EnvironmentName = Environments.Development,
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = ClientId,
+            ["AzureAd:TenantId"] = "socket-tenant-id",
+        });
+        builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
+
+        using IHost host = builder.Build();
+
+        Assert.NotNull(host.UseTeamsSocketApplication());
+    }
+
+    [Fact]
     public async Task GenericHost_StartsSocketModeAndExposesTheApp()
     {
         FakeConnectionFactory factory = new();
