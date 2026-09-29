@@ -161,8 +161,8 @@ host.Run();
 - **Public cloud only** &mdash; Registration fails for bots configured for another cloud.
 - **Classic bot identity only** &mdash; The connection is negotiated with the bot's app ID and credentials. Agentic
   identities are not supported.
-- **Canary endpoint** &mdash; Socket Mode is currently available only on the canary ring, which `NegotiateBaseUrl`
-  targets by default.
+- **Canary endpoint** &mdash; Socket Mode is currently available only on the canary ring. Set `NegotiateBaseUrl` to
+  `https://canary.botapi.skype.com` until it is enabled on the default production endpoint.
 - **Rejected credentials are not retried** &mdash; If negotiation returns HTTP 401 or 403, startup fails immediately.
   After startup, the affected geo stops reconnecting until the app restarts.
 - **Idempotent handlers** &mdash; The service can redeliver an activity, for example after a reconnect, so handlers

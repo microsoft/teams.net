@@ -16,11 +16,7 @@ internal static class SocketModeProtocol
     /// <summary>
     /// The default base URL for Socket Mode negotiation.
     /// </summary>
-    /// <remarks>
-    /// Socket Mode negotiate is only available on the canary ring for now; production (<c>https://botapi.skype.com</c>)
-    /// returns 503. Switch back once Socket Mode is enabled in production.
-    /// </remarks>
-    internal const string DefaultNegotiateBaseUrl = "https://canary.botapi.skype.com";
+    internal const string DefaultNegotiateBaseUrl = "https://botapi.skype.com";
 
     /// <summary>
     /// The default geographies for Socket Mode connections.

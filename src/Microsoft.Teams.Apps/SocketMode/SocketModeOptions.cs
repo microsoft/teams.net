@@ -16,7 +16,7 @@ public sealed class SocketModeOptions
 {
     /// <summary>
     /// Gets or sets the base URL used to negotiate each geo connection. Must use HTTPS unless it targets loopback.
-    /// Defaults to <c>https://canary.botapi.skype.com</c>, the only ring where Socket Mode is available today.
+    /// Defaults to <c>https://botapi.skype.com</c>.
     /// </summary>
     public Uri NegotiateBaseUrl { get; set; } = new(SocketModeProtocol.DefaultNegotiateBaseUrl);
 

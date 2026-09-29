@@ -34,9 +34,9 @@ public class SocketModeEndToEndTests
         Assert.Equal(SocketModeStatus.Ready, stack.Transport.Status);
         Assert.Equal(
             [
-                "https://canary.botapi.skype.com/amer/v3/websockets/connect",
-                "https://canary.botapi.skype.com/apac/v3/websockets/connect",
-                "https://canary.botapi.skype.com/emea/v3/websockets/connect",
+                "https://botapi.skype.com/amer/v3/websockets/connect",
+                "https://botapi.skype.com/apac/v3/websockets/connect",
+                "https://botapi.skype.com/emea/v3/websockets/connect",
             ],
             stack.Http.Requests.Select(request => request.AbsoluteUri).Order(StringComparer.Ordinal));
         Assert.All(stack.Http.Authorizations, authorization => Assert.Equal("Bearer bot-token", authorization));
