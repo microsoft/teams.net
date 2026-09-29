@@ -9,8 +9,8 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 
 ## What it shows
 
-- `UseSocketMode()` on `AddTeamsBotApplication` to receive activities over Socket Mode, with `NegotiateBaseUrl` set to the canary ring, the only ring where Socket Mode is available today.
-- A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsBotApplication(socket: true)` to get the app.
+- `UseSocketMode(...)` on `AddTeamsBotApplication` to receive activities over Socket Mode, with `NegotiateBaseUrl` set to the canary ring, the only ring where Socket Mode is available today.
+- A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsBotApplication()` to get the app.
 
 ## Commands / Flows
 

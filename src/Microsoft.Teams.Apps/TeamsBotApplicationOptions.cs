@@ -62,17 +62,41 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     internal SocketModeOptions? SocketMode { get; private set; }
 
     /// <summary>
-    /// Receives activities over Socket Mode: outbound WebSocket connections instead of an inbound HTTP endpoint.
+    /// Enables or disables Socket Mode with the default <see cref="SocketModeOptions"/>. Socket Mode receives activities
+    /// over outbound WebSocket connections instead of an inbound HTTP endpoint.
+    /// </summary>
+    /// <remarks>
     /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.
     /// Supported only in the public cloud. Build the bot with <c>Host.CreateApplicationBuilder()</c> (no web server) and
-    /// get the app with <c>host.UseTeamsBotApplication(socket: true)</c>.
-    /// </summary>
-    /// <param name="configure">Optional delegate to configure <see cref="SocketModeOptions"/>.</param>
+    /// get the app with <c>host.UseTeamsBotApplication()</c>. Passing <see langword="false"/> clears any earlier Socket
+    /// Mode configuration, so the bot receives activities over HTTP.
+    /// </remarks>
+    /// <param name="enabled">Whether to receive activities over Socket Mode. Default is <see langword="true"/>.</param>
     /// <returns>This instance for chaining.</returns>
-    public TeamsBotApplicationOptions UseSocketMode(Action<SocketModeOptions>? configure = null)
+    public TeamsBotApplicationOptions UseSocketMode(bool enabled = true)
     {
+        SocketMode = enabled ? new SocketModeOptions() : null;
+        return this;
+    }
+
+    /// <summary>
+    /// Enables Socket Mode and configures its <see cref="SocketModeOptions"/>, such as the negotiate URL, geos, and
+    /// connection timeouts. Socket Mode receives activities over outbound WebSocket connections instead of an inbound
+    /// HTTP endpoint.
+    /// </summary>
+    /// <remarks>
+    /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.
+    /// Supported only in the public cloud. Build the bot with <c>Host.CreateApplicationBuilder()</c> (no web server) and
+    /// get the app with <c>host.UseTeamsBotApplication()</c>.
+    /// </remarks>
+    /// <param name="configure">Delegate to configure <see cref="SocketModeOptions"/>.</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions UseSocketMode(Action<SocketModeOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
         SocketModeOptions options = new();
-        configure?.Invoke(options);
+        configure(options);
         SocketMode = options;
         return this;
     }

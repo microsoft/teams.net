@@ -71,7 +71,7 @@ public class SocketModeOptionsTests
     }
 
     [Fact]
-    public void UseSocketMode_WithoutDelegateUsesDefaults()
+    public void UseSocketMode_WithoutArgumentsUsesDefaults()
     {
         TeamsBotApplicationOptions options = new();
 
@@ -79,4 +79,29 @@ public class SocketModeOptionsTests
 
         Assert.Equal(SocketModeProtocol.DefaultGeos, options.SocketMode!.Geos);
     }
+
+    [Fact]
+    public void UseSocketMode_TrueUsesDefaults()
+    {
+        TeamsBotApplicationOptions options = new();
+
+        Assert.Same(options, options.UseSocketMode(true));
+
+        Assert.Equal(SocketModeProtocol.DefaultGeos, options.SocketMode!.Geos);
+    }
+
+    [Fact]
+    public void UseSocketMode_FalseClearsEarlierConfiguration()
+    {
+        TeamsBotApplicationOptions options = new();
+        options.UseSocketMode(o => o.Geos = ["emea"]);
+
+        Assert.Same(options, options.UseSocketMode(false));
+
+        Assert.Null(options.SocketMode);
+    }
+
+    [Fact]
+    public void UseSocketMode_NullDelegateThrows()
+        => Assert.Throws<ArgumentNullException>(() => new TeamsBotApplicationOptions().UseSocketMode(null!));
 }

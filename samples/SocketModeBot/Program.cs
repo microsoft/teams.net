@@ -14,7 +14,7 @@ builder.Services.AddTeamsBotApplication(options => options.UseSocketMode(socket 
 }));
 IHost host = builder.Build();
 
-TeamsBotApplication teamsApp = host.UseTeamsBotApplication(socket: true);
+TeamsBotApplication teamsApp = host.UseTeamsBotApplication();
 
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
