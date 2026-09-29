@@ -223,7 +223,7 @@ public class SocketModeHostingTests
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => app.UseTeamsBotApplication());
 
-        Assert.Contains("UseTeamsSocketApplication", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("UseTeamsBotApplication(socket: true)", exception.Message, StringComparison.Ordinal);
         Assert.Empty(MappedRoutes(app));
     }
 
@@ -256,7 +256,7 @@ public class SocketModeHostingTests
 
         using IHost host = builder.Build();
 
-        Assert.NotNull(host.UseTeamsSocketApplication());
+        Assert.NotNull(host.UseTeamsBotApplication(socket: true));
     }
 
     [Fact]
@@ -273,7 +273,7 @@ public class SocketModeHostingTests
         builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
         using IHost host = builder.Build();
 
-        TeamsBotApplication app = host.UseTeamsSocketApplication();
+        TeamsBotApplication app = host.UseTeamsBotApplication(socket: true);
         await host.StartAsync();
 
         Assert.Same(host.Services.GetRequiredService<TeamsBotApplication>(), app);
@@ -286,16 +286,16 @@ public class SocketModeHostingTests
     }
 
     [Fact]
-    public void UseTeamsSocketApplication_WithoutSocketMode_Throws()
+    public void UseTeamsBotApplication_SocketTrueWithoutSocketMode_Throws()
     {
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = [] });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["AzureAd:ClientId"] = ClientId });
         builder.Services.AddTeamsBotApplication();
         using IHost host = builder.Build();
 
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => host.UseTeamsSocketApplication());
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => host.UseTeamsBotApplication(socket: true));
 
-        Assert.Contains("Socket Mode is not enabled", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("requires Socket Mode", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -306,6 +306,77 @@ public class SocketModeHostingTests
         app.UseTeamsBotApplication();
 
         Assert.Equal(["api/messages"], MappedRoutes(app));
+    }
+
+    [Fact]
+    public void GenericHost_WithSocketMode_SocketFalseThrows()
+    {
+        using IHost host = BuildGenericHost(options => options.UseSocketMode());
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => host.UseTeamsBotApplication());
+
+        Assert.Contains("UseTeamsBotApplication(socket: true)", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GenericHost_WithSocketMode_CustomAppSocketFalseThrows()
+    {
+        using IHost host = BuildGenericHost(options => options.UseSocketMode());
+
+        Assert.Throws<InvalidOperationException>(() => host.UseTeamsBotApplication<TeamsBotApplication>(socket: false));
+    }
+
+    [Fact]
+    public void GenericHost_WithoutSocketMode_SocketFalseThrowsForMissingWebServer()
+    {
+        using IHost host = BuildGenericHost(_ => { });
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => host.UseTeamsBotApplication());
+
+        Assert.Contains("requires a web server", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task WebApplication_SocketTrue_ThrowsAndMapsNothing()
+    {
+        await using WebApplication app = BuildWebApplication(options => options.UseSocketMode());
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => app.UseTeamsBotApplication(socket: true));
+
+        Assert.Contains("without a web server", exception.Message, StringComparison.Ordinal);
+        Assert.Empty(MappedRoutes(app));
+    }
+
+    [Fact]
+    public async Task WebApplication_AsHost_SocketFalseMapsTheHttpEndpoint()
+    {
+        await using WebApplication app = BuildWebApplication(_ => { });
+
+        ((IHost)app).UseTeamsBotApplication();
+
+        Assert.Equal(["api/messages"], MappedRoutes(app));
+    }
+
+    [Fact]
+    public async Task WebApplication_CustomRoute_MapsTheHttpEndpoint()
+    {
+        await using WebApplication app = BuildWebApplication(_ => { });
+
+        app.UseTeamsBotApplication<TeamsBotApplication>("custom/messages");
+
+        Assert.Equal(["custom/messages"], MappedRoutes(app));
+    }
+
+    private static IHost BuildGenericHost(Action<TeamsBotApplicationOptions> configure)
+    {
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = [] });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = ClientId,
+            ["AzureAd:TenantId"] = "socket-tenant-id",
+        });
+        builder.Services.AddTeamsBotApplication(configure);
+        return builder.Build();
     }
 
     private static WebApplication BuildWebApplication(Action<TeamsBotApplicationOptions> configure, ISocketConnectionFactory? factory = null)
@@ -354,7 +425,7 @@ public class SocketModeHostingTests
         builder.Services.AddHttpClient("BotConversationClient").ConfigurePrimaryHttpMessageHandler(() => outbound);
         using IHost host = builder.Build();
 
-        TeamsBotApplication app = host.UseTeamsSocketApplication();
+        TeamsBotApplication app = host.UseTeamsBotApplication(socket: true);
         app.OnMessage((context, cancellationToken) => context.SendAsync($"You said: {context.Activity.Text}", cancellationToken));
         await host.StartAsync();
 

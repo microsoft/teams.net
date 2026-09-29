@@ -10,7 +10,7 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 ## What it shows
 
 - `UseSocketMode()` on `AddTeamsBotApplication` to receive activities over Socket Mode.
-- A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsSocketApplication()` to get the app.
+- A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsBotApplication(socket: true)` to get the app.
 
 ## Commands / Flows
 

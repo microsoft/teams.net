@@ -143,7 +143,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
 
 var host = builder.Build();
-var teams = host.UseTeamsSocketApplication();
+var teams = host.UseTeamsBotApplication(socket: true);
 
 teams.OnMessage(async (context, ct) =>
 {
@@ -156,8 +156,8 @@ host.Run();
 - **One connection per geo** &mdash; The bot connects to `amer`, `emea`, and `apac` by default. Startup waits until
   every geo is ready and fails if any geo cannot connect within `StartupTimeout`. Dropped connections reconnect
   automatically, and connection tokens are rotated before they expire.
-- **No web server** &mdash; `UseTeamsBotApplication()` throws when Socket Mode is enabled, and a host that includes a
-  web server fails to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.
+- **No web server** &mdash; `UseTeamsBotApplication(socket: true)` is required when Socket Mode is enabled, and
+  throws on a `WebApplication`; a host that includes a web server fails to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.
 - **Public cloud only** &mdash; Registration fails for bots configured for another cloud.
 - **Classic bot identity only** &mdash; The connection is negotiated with the bot's app ID and credentials. Agentic
   identities are not supported.

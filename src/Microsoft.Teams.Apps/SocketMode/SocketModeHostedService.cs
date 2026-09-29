@@ -27,9 +27,7 @@ internal sealed class SocketModeHostedService(IServiceProvider services) : IHost
         // server (for example a WebApplication) is rejected before any socket opens.
         if (_services.GetService<IServiceProviderIsService>()?.IsService(typeof(IServer)) == true)
         {
-            throw new InvalidOperationException(
-                "Socket Mode runs without a web server. Build the bot with Host.CreateApplicationBuilder() instead of "
-                + "WebApplication.CreateBuilder(), and get the app with host.UseTeamsSocketApplication().");
+            throw new InvalidOperationException(TeamsBotApplicationHostingExtensions.SocketWithWebServerMessage);
         }
 
         // Created here rather than injected, so invalid options fail when the host starts, as in the other SDKs.
