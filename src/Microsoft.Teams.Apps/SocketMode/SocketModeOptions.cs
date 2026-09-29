@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Teams.Apps.SocketMode;
 
 /// <summary>
@@ -11,7 +13,9 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// Socket Mode opens one connection per geo and waits until every geo is ready before the host finishes starting.
 /// It is supported only in the public cloud, and runs on a host without a web server
 /// (<c>Host.CreateApplicationBuilder</c>). Settings are validated when the host starts.
+/// Socket Mode is experimental: the API is in preview and may change, and it is recommended only for developing agents.
 /// </remarks>
+[Experimental("ExperimentalTeamsSocketMode")]
 public sealed class SocketModeOptions
 {
     /// <summary>

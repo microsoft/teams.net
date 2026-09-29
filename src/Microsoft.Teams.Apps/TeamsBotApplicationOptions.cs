@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.SocketMode;
 using Microsoft.Teams.Apps.State;
@@ -59,7 +60,10 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
         return this;
     }
 
+    // The SDK's own Socket Mode wiring uses the experimental options; the diagnostic is for callers of UseSocketMode.
+#pragma warning disable ExperimentalTeamsSocketMode
     internal SocketModeOptions? SocketMode { get; private set; }
+#pragma warning restore ExperimentalTeamsSocketMode
 
     /// <summary>
     /// Enables or disables Socket Mode with the default <see cref="SocketModeOptions"/>. Socket Mode receives activities
@@ -69,10 +73,12 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.
     /// Supported only in the public cloud. Build the bot with <c>Host.CreateApplicationBuilder()</c> (no web server) and
     /// get the app with <c>host.UseTeamsBotApplication()</c>. Passing <see langword="false"/> clears any earlier Socket
-    /// Mode configuration, so the bot receives activities over HTTP.
+    /// Mode configuration, so the bot receives activities over HTTP. Socket Mode is experimental: the API is in preview
+    /// and may change, and it is recommended only for developing agents.
     /// </remarks>
     /// <param name="enabled">Whether to receive activities over Socket Mode. Default is <see langword="true"/>.</param>
     /// <returns>This instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsSocketMode")]
     public TeamsBotApplicationOptions UseSocketMode(bool enabled = true)
     {
         SocketMode = enabled ? new SocketModeOptions() : null;
@@ -87,10 +93,12 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// <remarks>
     /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.
     /// Supported only in the public cloud. Build the bot with <c>Host.CreateApplicationBuilder()</c> (no web server) and
-    /// get the app with <c>host.UseTeamsBotApplication()</c>.
+    /// get the app with <c>host.UseTeamsBotApplication()</c>. Socket Mode is experimental: the API is in preview and may
+    /// change, and it is recommended only for developing agents.
     /// </remarks>
     /// <param name="configure">Delegate to configure <see cref="SocketModeOptions"/>.</param>
     /// <returns>This instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsSocketMode")]
     public TeamsBotApplicationOptions UseSocketMode(Action<SocketModeOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);

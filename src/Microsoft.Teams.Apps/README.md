@@ -133,6 +133,10 @@ changes: handlers and outbound sends work the same way.
 WebSocket is only recommended for use when developing agents. Socket Mode bots should not be submitted to
 Marketplace for publishing.
 
+Socket Mode is experimental, and its API may change. `UseSocketMode` and `SocketModeOptions` report the
+`ExperimentalTeamsSocketMode` diagnostic, which fails the build until you suppress it, for example with
+`<NoWarn>$(NoWarn);ExperimentalTeamsSocketMode</NoWarn>` in the project file.
+
 Socket Mode runs on a generic host with no web server:
 
 ```csharp

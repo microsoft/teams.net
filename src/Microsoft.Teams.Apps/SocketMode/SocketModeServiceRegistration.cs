@@ -32,7 +32,9 @@ internal static class SocketModeServiceRegistration
     /// <param name="botConfig">The resolved bot configuration.</param>
     /// <param name="options">The Socket Mode options.</param>
     /// <exception cref="InvalidOperationException">Thrown when the cloud is unsupported.</exception>
+#pragma warning disable ExperimentalTeamsSocketMode // Internal wiring for the experimental options passed to UseSocketMode.
     internal static void AddSocketMode<TApp>(IServiceCollection services, BotConfig botConfig, SocketModeOptions options)
+#pragma warning restore ExperimentalTeamsSocketMode
         where TApp : TeamsBotApplication
     {
         ArgumentNullException.ThrowIfNull(services);
