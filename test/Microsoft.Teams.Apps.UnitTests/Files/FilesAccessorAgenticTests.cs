@@ -19,6 +19,10 @@ public class FilesAccessorAgenticTests
 
     private const string ContentUrl = "https://contoso.sharepoint.com/personal/a/Documents/report.pdf";
 
+    private static readonly GraphCredential AppCredential = new(FileActor.App, _ => Task.FromResult<string?>("app-token"));
+
+    private static readonly GraphCredential AgenticCredential = new(FileActor.AgenticUser, _ => Task.FromResult<string?>("agent-token"));
+
     /// <summary>An attachment shaped the way the platform sends one to an Agentic User: a browsable <c>contentUrl</c>, and no <c>downloadUrl</c> anywhere in <c>content</c>.</summary>
     private static TeamsAttachment AgenticAttachment(
         string? name = "report.pdf",
@@ -61,11 +65,44 @@ public class FilesAccessorAgenticTests
     [Theory]
     [InlineData("groupChat")]
     [InlineData("channel")]
-    public async Task SkipsAContentUrlOnlyAttachmentOutsidePersonalScope(string scope)
+    public async Task SkipsAContentUrlOnlyAttachmentOutsidePersonalScopeOnATurnWithNoCredential(string scope)
     {
-        // The platform's agentic path applies no scope filter, so an agent in a group chat does receive these.
-        // Admitting them would put a handle in ListAsync() that then fails at DownloadAsync() with the scope error.
+        // The platform's agentic path applies no scope filter, so an agent in a group chat does receive these. Without an agentic user credential the dispatcher refuses them outside `personal`, so surfacing one would put a handle in ListAsync() that then fails at DownloadAsync() with the scope error.
         FilesAccessor accessor = new(ActivityWith([AgenticAttachment()], scope), Log, Downloader);
+
+        Assert.Empty(await accessor.ListAsync());
+    }
+
+    [Theory]
+    [InlineData("groupChat")]
+    [InlineData("channel")]
+    public async Task SurfacesAContentUrlOnlyAttachmentInGroupChatAndChannelOnAnAgenticUserTurn(string scope)
+    {
+        // An @mentioned agent receives these outside `personal`, and Graph reads them as the agent's own identity.
+        FilesAccessor accessor = new(ActivityWith([AgenticAttachment()], scope), Log, Downloader, AgenticCredential);
+
+        IncomingFile file = Assert.Single(await accessor.ListAsync());
+
+        Assert.Equal(new ConversationType(scope), file.Scope);
+        Assert.Equal(new Uri(ContentUrl), file.ContentUrl);
+    }
+
+    [Theory]
+    [InlineData("groupChat")]
+    [InlineData("channel")]
+    public async Task SkipsAContentUrlOnlyAttachmentInGroupChatAndChannelOnAnAppTurn(string scope)
+    {
+        // The platform delivers files outside `personal` only to an agentic user, so an app identity keeps the scope gate.
+        FilesAccessor accessor = new(ActivityWith([AgenticAttachment()], scope), Log, Downloader, AppCredential);
+
+        Assert.Empty(await accessor.ListAsync());
+    }
+
+    [Fact]
+    public async Task SkipsAContentUrlOnlyAttachmentInAScopeItDoesNotRecognizeEvenOnAnAgenticUserTurn()
+    {
+        // A conversation type the SDK has not seen stays closed, whoever the actor is.
+        FilesAccessor accessor = new(ActivityWith([AgenticAttachment()], "meeting"), Log, Downloader, AgenticCredential);
 
         Assert.Empty(await accessor.ListAsync());
     }
@@ -73,7 +110,7 @@ public class FilesAccessorAgenticTests
     [Fact]
     public async Task StillSurfacesADownloadUrlAttachmentOutsidePersonalScope()
     {
-        // The scope condition rides on the contentUrl branch only, so traditional-bot behavior is unchanged: these are surfaced by ListAsync() and throw the scope error at download time.
+        // The scope condition rides on the contentUrl branch only, so ListAsync() still surfaces a pre-authorized `downloadUrl` outside `personal`, and DownloadAsync() throws the scope error. The platform delivers no `downloadUrl` there today, so this pins a defensive path.
         TeamsAttachment attachment = AgenticAttachment(content: new FileDownloadInfo
         {
             DownloadUrl = new Uri("https://download.example/r.pdf?tempauth=abc"),
@@ -137,7 +174,7 @@ public class FilesAccessorAgenticTests
     public async Task KeepsThePreauthRouteWhenAMetadataFieldIsWrongTyped()
     {
         // `uniqueId` and `fileType` are metadata. Rejecting the whole `content` over one of them drops the `downloadUrl` beside it, and the file then routes through Graph and fails on a bot holding no Graph credential, reporting a consent problem for what is really bad data.
-        // Asserted outside personal scope because the Graph route is personal-only, so a file surfaced here can only have reached the list on its `downloadUrl`.
+        // Asserted in a group chat on a turn with no credential, where the Graph route is closed, so a file surfaced here can only have reached the list on its `downloadUrl`.
         TeamsAttachment attachment = RawContentAttachment(
             new { downloadUrl = "https://download.example/tempauth=abc", uniqueId = 42, fileType = 7 });
 

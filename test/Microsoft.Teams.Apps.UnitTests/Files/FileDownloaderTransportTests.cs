@@ -4,11 +4,14 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Files;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests.Files;
 
@@ -181,6 +184,45 @@ public class FileDownloaderTransportTests
         Assert.Equal("Bearer agent-token", handler.Requests[0].Headers.Authorization?.ToString());
         Assert.Null(handler.Requests[1].Headers.Authorization);
     }
+
+    /// <summary>
+    /// The accessor and the dispatcher share one scope check. This walks both, so a group chat file an agentic user's <see cref="FilesAccessor.ListAsync"/> surfaces is shown to also download, through Graph and as the agent.
+    /// </summary>
+    [Fact]
+    public async Task Download_FetchesAGroupChatFileTheAccessorSurfacedForAnAgenticUser_ThroughGraphAsTheAgent()
+    {
+        // Unencoded, spaces included, the way the platform delivers it.
+        const string contentUrl = "https://contoso.sharepoint.com/personal/a/Documents/Microsoft Teams Chat Files/report.txt";
+
+        CoreActivity core = new() { Type = TeamsActivityTypes.Message };
+        core.Properties["attachments"] = JsonSerializer.SerializeToElement<IList<TeamsAttachment>>(
+        [
+            new TeamsAttachment
+            {
+                ContentType = AttachmentContentType.FileDownloadInfo,
+                ContentUrl = new Uri(contentUrl),
+                Name = "report.txt",
+                Content = new { uniqueId = "odsp-unique-id", fileType = "txt" },
+            }
+        ]);
+
+        Conversation conversation = new("conv-1");
+        conversation.Properties["conversationType"] = JsonSerializer.SerializeToElement("groupChat");
+        core.Conversation = conversation;
+
+        RecordingHandler handler = new();
+        GraphCredential credential = new(FileActor.AgenticUser, _ => Task.FromResult<string?>("agent-token"));
+        FilesAccessor accessor = new(MessageActivity.FromActivity(core), NullLogger.Instance, new FileDownloader(new HttpClient(handler)), credential);
+
+        IncomingFile? file = await accessor.FirstAsync();
+
+        Assert.NotNull(file);
+        Assert.Equal("bytes", (await file.DownloadAsync()).Text());
+        HttpRequestMessage request = handler.Last;
+        Assert.Contains($"/shares/{GraphShare.EncodeSharingUrl(contentUrl)}/driveItem/content", request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("agent-token", request.Headers.Authorization?.ToString(), StringComparison.Ordinal);
+    }
+
     /// <summary>Answers with a response whose final hop left HTTPS, which is what a storage 302 to a plaintext host produces once the handler has followed it.</summary>
     private sealed class DowngradingHandler : HttpMessageHandler
     {

@@ -100,12 +100,9 @@ public sealed class FilesAccessor
         // The Agentic User shape: `content` that parsed and declares no `downloadUrl` at all. Content that failed to parse, or that declares a `downloadUrl` too malformed to use, is a broken attachment rather than an agentic one. Both are excluded from the Graph route because both were skipped before it existed, and resolving one would spend a Graph credential on a payload the SDK has already judged untrustworthy.
         bool isAgenticShape = content is not null && !declaresDownloadUrl;
 
-        // `downloadUrl` is fetched directly. A `contentUrl` without one is the Agentic User case and resolves through
-        // Graph, restricted to `personal` because agentic delivery in other scopes is unvalidated: surfacing a handle
-        // there will produce a `ListAsync()` entry that then fails at `DownloadAsync()`. The `downloadUrl` branch
-        // keeps its existing scope behavior.
+        // `downloadUrl` is fetched directly. A `contentUrl` without one is the agentic user case and resolves through Graph, only where `FileDownloader.IsGraphRouteOpen` allows: the dispatcher applies the same check, so a handle surfaced here cannot then fail at `DownloadAsync()` on scope. The `downloadUrl` branch keeps its existing scope behavior.
         bool hasLocator = downloadUrl is not null || contentUrl is not null;
-        bool canFetch = downloadUrl is not null || (scope == ConversationType.Personal && isAgenticShape && contentUrl is not null);
+        bool canFetch = downloadUrl is not null || (FileDownloader.IsGraphRouteOpen(scope, _credential?.Actor) && isAgenticShape && contentUrl is not null);
 
         if (!canFetch || string.IsNullOrEmpty(name))
         {
