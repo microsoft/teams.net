@@ -72,9 +72,10 @@ public class FileDownloaderGraphTests
         Uri? downloadUrl,
         Uri? contentUrl,
         GraphCredential? credential,
-        bool priorFetchSucceeded = false)
+        bool priorFetchSucceeded = false,
+        ConversationType? scope = null)
         => downloader.OpenFileStreamAsync(
-            ConversationType.Personal,
+            scope ?? ConversationType.Personal,
             downloadUrl,
             contentUrl,
             contentType: null,
@@ -268,6 +269,75 @@ public class FileDownloaderGraphTests
         Assert.Contains("AgenticUser", error.Message, StringComparison.Ordinal);
         Assert.Contains("404", error.Message, StringComparison.Ordinal);
         Assert.Contains("mysite", error.Message, StringComparison.Ordinal);
+    }
+
+    // ==================== the Graph route outside personal scope ====================
+
+    [Theory]
+    [InlineData("groupChat")]
+    [InlineData("channel")]
+    public async Task OpensForAnAgenticUser_InGroupChatAndChannel_AsOneSharesReadCarryingTheAgentToken(string scope)
+    {
+        RecordingHandler handler = new((HttpStatusCode.OK, null));
+
+        await using OpenedFileStream opened = await OpenAsync(DownloaderFor(handler), null, ContentUrl, Agentic(handler), scope: new ConversationType(scope));
+
+        (Uri? url, string? authorization) = Assert.Single(handler.Calls);
+        Assert.Contains($"/shares/{GraphShare.EncodeSharingUrl(ContentUrl.OriginalString)}/driveItem/content", url!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("agent-token", authorization, StringComparison.Ordinal);
+        Assert.Equal("application/pdf; charset=utf-8", opened.ContentType);
+    }
+
+    [Theory]
+    [InlineData("groupChat")]
+    [InlineData("channel")]
+    public async Task StaysClosedToAnAppCredential_InGroupChatAndChannel_BeforeAnyRequest(string scope)
+    {
+        RecordingHandler handler = new((HttpStatusCode.OK, null));
+
+        FileScopeNotSupportedException error = await Assert.ThrowsAsync<FileScopeNotSupportedException>(
+            () => OpenAsync(DownloaderFor(handler), null, ContentUrl, App(handler), scope: new ConversationType(scope)));
+
+        Assert.Equal(new ConversationType(scope), error.Scope);
+        Assert.Empty(handler.Calls);
+    }
+
+    [Fact]
+    public async Task ReportsTheScope_NotAMissingCredential_WhenNoCredentialExists()
+    {
+        // In `personal` the same file fails as a credential problem. Here no identity could open the route, so naming a credential would send the reader after the wrong fix.
+        RecordingHandler handler = new((HttpStatusCode.OK, null));
+
+        await Assert.ThrowsAsync<FileScopeNotSupportedException>(
+            () => OpenAsync(DownloaderFor(handler), null, ContentUrl, null, scope: ConversationType.GroupChat));
+
+        Assert.Empty(handler.Calls);
+    }
+
+    [Fact]
+    public async Task KeepsTheScopeError_ForAFileCarryingADownloadUrl_EvenForAnAgenticUser()
+    {
+        // Graph is never substituted for a URL the platform supplied, and the pre-authorized route is unvalidated outside `personal`.
+        RecordingHandler handler = new((HttpStatusCode.OK, null));
+
+        FileScopeNotSupportedException error = await Assert.ThrowsAsync<FileScopeNotSupportedException>(
+            () => OpenAsync(DownloaderFor(handler), DownloadUrl, ContentUrl, Agentic(handler), scope: ConversationType.GroupChat));
+
+        Assert.Equal(ConversationType.GroupChat, error.Scope);
+        Assert.Empty(handler.Calls);
+    }
+
+    [Fact]
+    public async Task StaysClosedInAScopeItDoesNotRecognize_EvenForAnAgenticUser()
+    {
+        RecordingHandler handler = new((HttpStatusCode.OK, null));
+        ConversationType meeting = new("meeting");
+
+        FileScopeNotSupportedException error = await Assert.ThrowsAsync<FileScopeNotSupportedException>(
+            () => OpenAsync(DownloaderFor(handler), null, ContentUrl, Agentic(handler), scope: meeting));
+
+        Assert.Equal(meeting, error.Scope);
+        Assert.Empty(handler.Calls);
     }
 
     // ==================== an expired pre-authorized URL ====================
