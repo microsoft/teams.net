@@ -11,6 +11,9 @@
 > a follow-up PR stack based on
 > [#686](https://github.com/microsoft/teams.net/pull/686). This document
 > describes the complete, intended design regardless of what has merged so far.
+>
+> For an implementation-level walkthrough of `SocketModeTransport`, see
+> [SocketModeTransport-Walkthrough.md](./SocketModeTransport-Walkthrough.md).
 
 ## Overview
 
