@@ -12,10 +12,10 @@
 > [#686](https://github.com/microsoft/teams.net/pull/686). This document
 > describes the complete, intended design regardless of what has merged so far.
 >
-> For implementation-level walkthroughs, see
-> [SocketModeTransport-Walkthrough.md](./SocketModeTransport-Walkthrough.md),
-> [GeoSocket-Walkthrough.md](./GeoSocket-Walkthrough.md), and
-> [SignalRClientConnection-and-SocketModeConnection-Walkthrough.md](./SignalRClientConnection-and-SocketModeConnection-Walkthrough.md).
+> For an implementation-level walkthrough of the transport, see
+> [SocketMode-Flow-Walkthrough.md](./SocketMode-Flow-Walkthrough.md), which
+> covers startup, steady-state dispatch, token rotation, and reconnect flows
+> as sequence diagrams.
 
 ## Overview
 
