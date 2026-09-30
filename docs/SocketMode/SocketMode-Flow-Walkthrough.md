@@ -7,12 +7,6 @@
 > **unexpected disconnect / reconnect**. See
 > [SocketMode-Design.md](./SocketMode-Design.md) for the user-facing design
 > and options.
->
-> `SignalRClientConnection`, `SignalRSocketConnection`/
-> `SignalRSocketConnectionFactory`, and `SocketModeConnection.cs`
-> (`ISocketConnection`, `ISocketConnectionFactory`, `SocketConnectionHandlers`)
-> are already on `main`. `GeoSocket` and `SocketModeTransport` are still
-> landing via [PR #686](https://github.com/microsoft/teams.net/pull/686).
 
 ## Component map
 

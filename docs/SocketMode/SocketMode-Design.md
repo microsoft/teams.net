@@ -1,21 +1,8 @@
 # Socket Mode Design
 
-> **Status note:** This branch contains only the low-level Socket Mode transport
-> primitives (`SignalRClientConnection`, `SignalRSocketConnection`,
-> `SocketModeConnection`, `SocketModeEnvelope`, `SocketModeJson`,
-> `SocketModeNegotiator`, `SocketModeProtocol`, `SocketModeProtocolModels` under
-> `src/Microsoft.Teams.Apps/SocketMode/`). The higher-level pieces described
-> below (`GeoSocket`, `SocketModeTransport`, `SocketModeOptions`,
-> `SocketModeHostedService`, `SocketModeServiceRegistration`, and the
-> `UseSocketMode` / `host.UseTeamsBotApplication()` integration) are landing via
-> a follow-up PR stack based on
-> [#686](https://github.com/microsoft/teams.net/pull/686). This document
-> describes the complete, intended design regardless of what has merged so far.
->
-> For an implementation-level walkthrough of the transport, see
-> [SocketMode-Flow-Walkthrough.md](./SocketMode-Flow-Walkthrough.md), which
-> covers startup, steady-state dispatch, token rotation, and reconnect flows
-> as sequence diagrams.
+> See [SocketMode-Flow-Walkthrough.md](./SocketMode-Flow-Walkthrough.md) for
+> an implementation-level walkthrough with sequence diagrams covering
+> startup, steady-state dispatch, token rotation, and reconnect flows.
 
 ## Overview
 
