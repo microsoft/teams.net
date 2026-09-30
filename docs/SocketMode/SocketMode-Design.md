@@ -2,7 +2,10 @@
 
 > See [SocketMode-Flow-Walkthrough.md](./SocketMode-Flow-Walkthrough.md) for
 > an implementation-level walkthrough with sequence diagrams covering
-> startup, steady-state dispatch, token rotation, and reconnect flows.
+> startup, steady-state dispatch, token rotation, and reconnect flows, and
+> [SocketMode-Hosting-Integration.md](./SocketMode-Hosting-Integration.md)
+> for how Socket Mode plugs into DI registration, host startup, and the
+> shared `TeamsBotApplication` activity pipeline.
 
 ## Overview
 
