@@ -127,6 +127,17 @@ captured through an `AsyncLocal` capture object scoped to the turn. After the
 pipeline completes, the captured status and body are serialized and sent back
 over the socket as the reply frame for that activity.
 
+> **Note:** `AsyncLocal` is used deliberately, not as a default choice. The
+> base `BotApplication.OnActivity` delegate is a public, `Task`-returning
+> extensibility point shared with the HTTP transport, so its signature can't
+> be widened to return a value without a breaking API change. `AsyncLocal`
+> gives each concurrent turn an isolated slot without touching that contract.
+> The capture is private to `TeamsBotApplication`, has exactly one writer and
+> one reader, and is opened/closed within a single `try`/`finally` around one
+> `ProcessAsync` call, which avoids the usual debugging pitfalls (stale
+> values from lost `ExecutionContext` flow, unclear ownership) as long as
+> that scoping discipline is preserved.
+
 ## Options (`SocketModeOptions`)
 
 | Option | Default | Purpose |
