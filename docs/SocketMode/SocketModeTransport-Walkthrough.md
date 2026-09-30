@@ -6,7 +6,9 @@
 > architecture overview. The class described here lives on the
 > `teddyam-socket-mode-app-integration` branch
 > ([#686](https://github.com/microsoft/teams.net/pull/686)) and is not yet on
-> `main`.
+> `main`. See also
+> [GeoSocket-Walkthrough.md](./GeoSocket-Walkthrough.md) for the per-geo
+> connection supervisor that `SocketModeTransport` owns.
 
 `SocketModeTransport` is the coordinator that owns one `GeoSocket` per
 configured geo, supplies them with retry/backoff policy (as their

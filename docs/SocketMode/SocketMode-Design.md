@@ -12,8 +12,9 @@
 > [#686](https://github.com/microsoft/teams.net/pull/686). This document
 > describes the complete, intended design regardless of what has merged so far.
 >
-> For an implementation-level walkthrough of `SocketModeTransport`, see
-> [SocketModeTransport-Walkthrough.md](./SocketModeTransport-Walkthrough.md).
+> For implementation-level walkthroughs, see
+> [SocketModeTransport-Walkthrough.md](./SocketModeTransport-Walkthrough.md) and
+> [GeoSocket-Walkthrough.md](./GeoSocket-Walkthrough.md).
 
 ## Overview
 
