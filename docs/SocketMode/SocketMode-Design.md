@@ -13,8 +13,9 @@
 > describes the complete, intended design regardless of what has merged so far.
 >
 > For implementation-level walkthroughs, see
-> [SocketModeTransport-Walkthrough.md](./SocketModeTransport-Walkthrough.md) and
-> [GeoSocket-Walkthrough.md](./GeoSocket-Walkthrough.md).
+> [SocketModeTransport-Walkthrough.md](./SocketModeTransport-Walkthrough.md),
+> [GeoSocket-Walkthrough.md](./GeoSocket-Walkthrough.md), and
+> [SignalRClientConnection-and-SocketModeConnection-Walkthrough.md](./SignalRClientConnection-and-SocketModeConnection-Walkthrough.md).
 
 ## Overview
 
