@@ -216,6 +216,36 @@ public class SocketModeNegotiatorTests
         Assert.Null(exception.RetryAfter);
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "verify the bot credentials")]
+    [InlineData(HttpStatusCode.Forbidden, "not authorized to use Socket Mode")]
+    public async Task NegotiateAsync_AuthFailureIsNonRetryableWithActionableMessage(HttpStatusCode status, string guidance)
+    {
+        RecordingHandler handler = new((_, _) => Task.FromResult(new HttpResponseMessage(status)));
+        SocketModeNegotiator negotiator = CreateNegotiator(handler);
+
+        SocketModeNegotiateException exception =
+            await Assert.ThrowsAsync<SocketModeNegotiateException>(
+                () => negotiator.NegotiateAsync(NegotiateUri));
+
+        Assert.True(exception.IsAuthError);
+        Assert.True(SocketModeNegotiateException.IsNonRetryable(exception));
+        Assert.Contains($"HTTP {(int)status}", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(guidance, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    public void OtherNegotiateFailuresRemainRetryable(HttpStatusCode status)
+    {
+        SocketModeNegotiateException exception = new(status, retryAfter: null);
+
+        Assert.False(exception.IsAuthError);
+        Assert.False(SocketModeNegotiateException.IsNonRetryable(exception));
+        Assert.False(SocketModeNegotiateException.IsNonRetryable(new IOException("dropped")));
+    }
+
     [Fact]
     public async Task NegotiateAsync_HonorsCallerCancellation()
     {

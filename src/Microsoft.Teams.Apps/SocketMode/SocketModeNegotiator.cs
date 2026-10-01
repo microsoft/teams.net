@@ -240,7 +240,7 @@ internal sealed class SocketModeNegotiateException : Exception
     internal SocketModeNegotiateException(
         HttpStatusCode statusCode,
         TimeSpan? retryAfter)
-        : base($"Socket Mode negotiate failed with HTTP {(int)statusCode}.")
+        : base(CreateMessage(statusCode))
     {
         StatusCode = statusCode;
         RetryAfter = retryAfter;
@@ -255,4 +255,32 @@ internal sealed class SocketModeNegotiateException : Exception
     /// Gets the server-provided retry delay, when available.
     /// </summary>
     internal TimeSpan? RetryAfter { get; }
+
+    /// <summary>
+    /// Gets whether the service rejected the bot (HTTP 401 or 403), which retrying cannot fix.
+    /// </summary>
+    internal bool IsAuthError => StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
+
+    /// <summary>
+    /// Determines whether a connection failure must not be retried.
+    /// </summary>
+    /// <param name="error">The connection failure.</param>
+    /// <returns><see langword="true"/> when negotiate rejected the bot with HTTP 401 or 403.</returns>
+    internal static bool IsNonRetryable(Exception? error)
+        => error is SocketModeNegotiateException { IsAuthError: true };
+
+    private static string CreateMessage(HttpStatusCode statusCode)
+    {
+        string failure = $"Socket Mode negotiate failed with HTTP {(int)statusCode}.";
+        return statusCode switch
+        {
+            HttpStatusCode.Unauthorized =>
+                $"{failure} The bot could not be authenticated: verify the bot credentials (client ID and secret, "
+                + "certificate, or managed identity) and restart the app after correcting them.",
+            HttpStatusCode.Forbidden =>
+                $"{failure} This bot is not authorized to use Socket Mode: verify the bot registration and Socket Mode "
+                + "access for this environment, then restart the app.",
+            _ => failure,
+        };
+    }
 }
