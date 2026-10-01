@@ -147,10 +147,11 @@ public class GeoSocketTests
         Harness harness = new();
         FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
         SocketModeNegotiateException rejected = new(HttpStatusCode.Forbidden, retryAfter: null);
-        harness.Factory.Enqueue(startError: rejected);
+        FakeConnection rejectedAttempt = harness.Factory.Enqueue(startError: rejected);
         await harness.StartReadyAsync(initial);
 
         harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await harness.AdvanceThroughBackoffAsync(rejectedAttempt);
         await initial.Disposed.Task;
         await WaitUntilAsync(() => harness.Owner.Disconnections.Count == 1);
 
@@ -195,7 +196,7 @@ public class GeoSocketTests
         await harness.StartReadyAsync(initial);
 
         harness.Time.Advance(TimeSpan.FromSeconds(5));
-        await replacement.Started.Task;
+        await harness.AdvanceThroughBackoffAsync(replacement);
         Assert.NotNull(await initial.Activity("during-replacement-startup"));
         Assert.Equal(0, initial.StopCount);
 
@@ -226,7 +227,44 @@ public class GeoSocketTests
 
         Assert.True(harness.Time.HasTimerDueIn(TimeSpan.FromSeconds(1)));
         harness.Time.Advance(TimeSpan.FromSeconds(1));
+        await harness.AdvanceThroughBackoffAsync(replacement);
+    }
+
+    [Fact]
+    public async Task Rotation_WaitsForFirstBackoffDelayBeforeConnectingReplacement()
+    {
+        List<int> attempts = [];
+        Harness harness = new()
+        {
+            Backoff = attempt =>
+            {
+                lock (attempts)
+                {
+                    attempts.Add(attempt);
+                }
+
+                return TimeSpan.FromMilliseconds(700);
+            },
+        };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.StartReadyAsync(initial);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromMilliseconds(700));
+
+        Assert.Equal(1, harness.Factory.CreateCount);
+        lock (attempts)
+        {
+            Assert.Equal([0], attempts);
+        }
+
+        Assert.NotNull(await initial.Activity("during-backoff"));
+
+        harness.Time.Advance(TimeSpan.FromMilliseconds(700));
         await replacement.Started.Task;
+
+        Assert.Equal(2, harness.Factory.CreateCount);
     }
 
     [Fact]
@@ -251,7 +289,7 @@ public class GeoSocketTests
         await harness.StartReadyAsync(initial);
 
         harness.Time.Advance(TimeSpan.FromSeconds(5));
-        await replacement.Started.Task;
+        await harness.AdvanceThroughBackoffAsync(replacement);
         initial.Close(new IOException("dropped"));
 
         Assert.Single(harness.Owner.Disconnections);
@@ -283,7 +321,7 @@ public class GeoSocketTests
         {
             await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
             harness.Time.Advance(TimeSpan.FromSeconds(5));
-            await connections[i].Started.Task;
+            await harness.AdvanceThroughBackoffAsync(connections[i]);
             connections[i].Ready($"gen-{i}");
             await connections[i - 1].Disposed.Task;
         }
@@ -378,7 +416,7 @@ public class GeoSocketTests
         await harness.StartReadyAsync(active);
 
         harness.Time.Advance(TimeSpan.FromSeconds(5));
-        await connecting.Started.Task;
+        await harness.AdvanceThroughBackoffAsync(connecting);
         await harness.Socket.StopAsync();
 
         Assert.Equal(1, active.StopCount);
@@ -398,7 +436,7 @@ public class GeoSocketTests
         await harness.StartReadyAsync(retiring);
 
         harness.Time.Advance(TimeSpan.FromSeconds(5));
-        await active.Started.Task;
+        await harness.AdvanceThroughBackoffAsync(active);
         active.Ready("replacement");
         await harness.Time.WaitForTimerAsync(TimeSpan.FromMinutes(1));
         await harness.Socket.StopAsync();
@@ -439,7 +477,7 @@ public class GeoSocketTests
         await harness.StartReadyAsync(retiring);
 
         harness.Time.Advance(TimeSpan.FromSeconds(5));
-        await active.Started.Task;
+        await harness.AdvanceThroughBackoffAsync(active);
         active.Ready("replacement");
         await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
         harness.Time.Advance(TimeSpan.FromSeconds(5));
@@ -497,6 +535,14 @@ public class GeoSocketTests
             await connection.Started.Task;
             connection.Ready("initial");
             await start;
+        }
+
+        internal async Task AdvanceThroughBackoffAsync(FakeConnection next)
+        {
+            TimeSpan delay = Owner.Backoff(0);
+            await Time.WaitForTimerAsync(delay);
+            Time.Advance(delay);
+            await next.Started.Task;
         }
     }
 

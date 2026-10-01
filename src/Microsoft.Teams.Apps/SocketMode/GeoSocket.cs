@@ -258,7 +258,7 @@ internal sealed class GeoSocket : IAsyncDisposable
                 if (reason.Planned)
                 {
                     _logger.LogInformation("Socket Mode geo {Geo} rotating connection before token expiry.", Geo);
-                    replacement = await ReconnectAsync(null, delayFirstAttempt: false).ConfigureAwait(false);
+                    replacement = await ReconnectAsync(null).ConfigureAwait(false);
                     if (replacement is not null)
                     {
                         StartRetirement(current);
@@ -267,7 +267,7 @@ internal sealed class GeoSocket : IAsyncDisposable
                 else
                 {
                     await ReleaseAsync(current.Connection).ConfigureAwait(false);
-                    replacement = await ReconnectAsync(reason.Error, delayFirstAttempt: true).ConfigureAwait(false);
+                    replacement = await ReconnectAsync(reason.Error).ConfigureAwait(false);
                 }
 
                 if (replacement is null)
@@ -291,17 +291,13 @@ internal sealed class GeoSocket : IAsyncDisposable
     }
 
     /// <returns>The ready replacement, or <see langword="null"/> when the geo gave up after a non-retryable failure.</returns>
-    private async Task<Generation?> ReconnectAsync(Exception? previousError, bool delayFirstAttempt)
+    private async Task<Generation?> ReconnectAsync(Exception? previousError)
     {
         Exception? error = previousError;
-        int retry = 0;
 
         for (int attempt = 1; ; attempt++)
         {
-            if (delayFirstAttempt || attempt > 1)
-            {
-                await Task.Delay(GetRetryDelay(error, retry++), _timeProvider, _stopToken).ConfigureAwait(false);
-            }
+            await Task.Delay(GetRetryDelay(error, attempt - 1), _timeProvider, _stopToken).ConfigureAwait(false);
 
             try
             {
