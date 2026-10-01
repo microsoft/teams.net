@@ -89,6 +89,7 @@ internal sealed class GeoSocket : IAsyncDisposable
     private readonly HashSet<ISocketConnection> _owned = [];
     private readonly HashSet<long> _retiring = [];
     private readonly HashSet<Task> _retirements = [];
+    private readonly HashSet<Task> _releases = [];
 
     private long _generation;
     private Generation? _active;
@@ -449,14 +450,20 @@ internal sealed class GeoSocket : IAsyncDisposable
                 disconnected = !planned && !_stopping;
                 _disconnected |= disconnected;
             }
-
-            generation.Closed.TrySetResult(new CloseReason(error, planned));
         }
 
-        if (disconnected)
+        // Report the disconnect before waking the supervisor so a fast reconnect cannot be reported first.
+        try
         {
-            _logger.LogWarning(error, "Socket Mode geo {Geo} disconnected; inbound delivery paused.", Geo);
-            _owner.OnGeoDisconnected(Geo, error);
+            if (disconnected)
+            {
+                _logger.LogWarning(error, "Socket Mode geo {Geo} disconnected; inbound delivery paused.", Geo);
+                _owner.OnGeoDisconnected(Geo, error);
+            }
+        }
+        finally
+        {
+            generation.Closed.TrySetResult(new CloseReason(error, planned));
         }
     }
 
@@ -570,6 +577,7 @@ internal sealed class GeoSocket : IAsyncDisposable
 
         ISocketConnection[] connections;
         Task[] retirements;
+        Task[] releases;
         Task? supervisor;
         lock (_sync)
         {
@@ -580,6 +588,7 @@ internal sealed class GeoSocket : IAsyncDisposable
             connections = [.. _owned];
             _owned.Clear();
             retirements = [.. _retirements];
+            releases = [.. _releases];
             supervisor = _supervisor;
         }
 
@@ -590,6 +599,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         finally
         {
             await Task.WhenAll(retirements).ConfigureAwait(false);
+            await Task.WhenAll(releases).ConfigureAwait(false);
             if (supervisor is not null)
             {
                 await supervisor.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
@@ -599,15 +609,31 @@ internal sealed class GeoSocket : IAsyncDisposable
 
     private async Task ReleaseAsync(ISocketConnection connection)
     {
+        TaskCompletionSource released = new(TaskCreationOptions.RunContinuationsAsynchronously);
         lock (_sync)
         {
             if (!_owned.Remove(connection))
             {
                 return;
             }
+
+            // Registered with the ownership claim so StopAsync can await cleanup it no longer owns.
+            _releases.Add(released.Task);
         }
 
-        await StopAndDisposeAsync(connection).ConfigureAwait(false);
+        try
+        {
+            await StopAndDisposeAsync(connection).ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (_sync)
+            {
+                _releases.Remove(released.Task);
+            }
+
+            released.TrySetResult();
+        }
     }
 
     [SuppressMessage(
