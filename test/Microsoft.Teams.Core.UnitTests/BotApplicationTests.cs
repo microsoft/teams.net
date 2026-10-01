@@ -292,6 +292,125 @@ public class BotApplicationTests
         Assert.True(onActivityCalled);
     }
 
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_RunsMiddlewareAndOnActivity()
+    {
+        BotApplication botApp = CreateBotApplication();
+        List<string> calls = [];
+        Mock<ITurnMiddleware> middleware = new();
+        middleware
+            .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
+            .Returns<BotApplication, CoreActivity, NextTurn, CancellationToken>((_, _, next, ct) =>
+            {
+                calls.Add("middleware");
+                return next(ct);
+            });
+        botApp.UseMiddleware(middleware.Object);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        CoreActivity? received = null;
+        botApp.OnActivity = (act, _) =>
+        {
+            calls.Add("onActivity");
+            received = act;
+            return Task.CompletedTask;
+        };
+
+        await botApp.ProcessAsync(activity, user: null, correlationVector: null);
+
+        Assert.Equal(["middleware", "onActivity"], calls);
+        Assert.Same(activity, received);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_ServiceUrlClaimMismatch_ThrowsInvalidDataException()
+    {
+        BotApplication botApp = CreateBotApplication();
+        bool onActivityCalled = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+        CoreActivity activity = new(ActivityType.Message) { ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/") };
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("serviceurl", "https://evil.example.com/")]));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => botApp.ProcessAsync(activity, user, correlationVector: null));
+
+        Assert.False(onActivityCalled);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_ServiceUrlClaimMatches_ProcessesSuccessfully()
+    {
+        BotApplication botApp = CreateBotApplication();
+        bool onActivityCalled = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+        CoreActivity activity = new(ActivityType.Message) { ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/") };
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("serviceurl", "https://smba.trafficmanager.net/teams/")]));
+
+        await botApp.ProcessAsync(activity, user, correlationVector: null);
+
+        Assert.True(onActivityCalled);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_HandlerThrows_ThrowsBotHandlerException()
+    {
+        BotApplication botApp = CreateBotApplication();
+        botApp.OnActivity = (_, _) => throw new InvalidOperationException("Test exception");
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(new CoreActivity(ActivityType.Message), user: null, correlationVector: null));
+
+        Assert.IsType<InvalidOperationException>(exception.InnerException);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_NullActivity_ThrowsArgumentNullException()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            botApp.ProcessAsync((CoreActivity)null!, user: null, correlationVector: null));
+    }
+
+    [Fact]
+    public async Task ProcessAsync_HttpContext_DelegatesToCoreActivityOverload()
+    {
+        RecordingBot botApp = new();
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.Request.Headers["MS-CV"] = "cv-123";
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("aud", "test-app-id")]));
+        httpContext.User = user;
+
+        await botApp.ProcessAsync(httpContext);
+
+        Assert.Equal("act123", botApp.Activity?.Id);
+        Assert.Same(user, botApp.User);
+        Assert.Equal("cv-123", botApp.CorrelationVector);
+    }
+
+    private sealed class RecordingBot()
+        : BotApplication(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance)
+    {
+        public CoreActivity? Activity { get; private set; }
+        public ClaimsPrincipal? User { get; private set; }
+        public string? CorrelationVector { get; private set; }
+
+        public override Task ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
+        {
+            Activity = activity;
+            User = user;
+            CorrelationVector = correlationVector;
+            return Task.CompletedTask;
+        }
+    }
+
     private static BotApplicationOptions CreateOptions(string appId) =>
         new() { AppId = appId };
 

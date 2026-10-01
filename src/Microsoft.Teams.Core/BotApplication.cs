@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -169,8 +170,9 @@ public class BotApplication
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The request body is deserialized into a <see cref="CoreActivity"/>, run through the registered
-    /// middleware pipeline (see <see cref="UseMiddleware"/>), and finally dispatched to <see cref="OnActivity"/>.
+    /// The request body is deserialized into a <see cref="CoreActivity"/> and handed to
+    /// <see cref="ProcessAsync(CoreActivity, ClaimsPrincipal?, string?, CancellationToken)"/> together with the
+    /// request's authenticated <see cref="HttpContext.User"/> and <c>MS-CV</c> correlation vector.
     /// </para>
     /// <para>
     /// A dedicated internal timeout (configurable via <see cref="BotApplicationOptions.ProcessActivityTimeout"/>,
@@ -182,6 +184,7 @@ public class BotApplication
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the initial deserialization. Note: a dedicated timeout governs activity processing.</param>
     /// <returns>A task that represents the asynchronous activity processing operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the request body cannot be deserialized into a valid activity.</exception>
+    /// <exception cref="InvalidDataException">Thrown if the activity's service URL does not match the <c>serviceurl</c> claim of the authenticated caller.</exception>
     /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
     public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
@@ -192,7 +195,42 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        string? correlationVector = httpContext.Request.GetCorrelationVector();
+        await ProcessAsync(
+            activity,
+            httpContext.User,
+            httpContext.Request.GetCorrelationVector(),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Processes an already-received bot activity, independent of the transport it arrived on.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The activity is run through the registered middleware pipeline (see <see cref="UseMiddleware"/>) and
+    /// finally dispatched to <see cref="OnActivity"/>. The HTTP overload
+    /// <see cref="ProcessAsync(HttpContext, CancellationToken)"/> delegates here; other transports call this
+    /// overload directly. Any response to the sender (such as an invoke response) is the handler's concern, not this method's.
+    /// </para>
+    /// <para>
+    /// A dedicated internal timeout (configurable via <see cref="BotApplicationOptions.ProcessActivityTimeout"/>,
+    /// default 5 minutes) governs processing, because streaming handlers may outlive the inbound connection.
+    /// When a debugger is attached the timeout is disabled.
+    /// </para>
+    /// </remarks>
+    /// <param name="activity">The activity to process. Cannot be null.</param>
+    /// <param name="user">The authenticated caller. When it carries a <c>serviceurl</c> claim, the claim must match
+    /// <see cref="CoreActivity.ServiceUrl"/> exactly. Pass <see langword="null"/> when the transport has no per-activity principal.</param>
+    /// <param name="correlationVector">Optional correlation vector used for logging (the HTTP transport supplies the <c>MS-CV</c> header).</param>
+    /// <param name="cancellationToken">Reserved for the caller's cancellation. Note: a dedicated timeout governs activity processing.</param>
+    /// <returns>A task that represents the asynchronous activity processing operation.</returns>
+    /// <exception cref="InvalidDataException">Thrown if the activity's service URL does not match the <c>serviceurl</c> claim of <paramref name="user"/>.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
+    public virtual async Task ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(_conversationClient);
+
         _logger.ActivityReceived(activity.Type, activity.Id, activity.ServiceUrl, correlationVector);
 
         if (_logger.IsEnabled(LogLevel.Trace))
@@ -200,7 +238,7 @@ public class BotApplication
             _logger.ReceivedActivityJson(activity.ToJson());
         }
 
-        string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
+        string serviceUrlFromClaims = user?.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
         if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
         {
             _logger.LogServiceUrlClaimMismatch(activity.ServiceUrl, serviceUrlFromClaims);

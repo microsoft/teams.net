@@ -17,6 +17,7 @@ A high-level framework for building Microsoft Teams bots in .NET. Built on top o
 - **Targeted Messages** &mdash; Send messages visible only to a selected participant in supported conversations
 - **Observability** &mdash; OpenTelemetry spans, metrics, and Agent 365 baggage propagation
 - **Fluent Configuration** &mdash; Chainable handler registration and options-based service configuration
+- **Socket Mode** &mdash; Receive activities over an outbound WebSocket during development, with no public endpoint or tunnel
 
 ## Installation
 
@@ -122,6 +123,59 @@ builder.Services.AddTeamsBotApplication(options =>
 `UseState()` uses an in-memory `IDistributedCache` by default. Register another
 `IDistributedCache` implementation, such as Redis, for state that must survive
 process restarts or be shared across instances.
+
+## Socket Mode
+
+Socket Mode receives activities over outbound WebSocket connections that the bot opens to the Teams service,
+instead of an HTTP messaging endpoint, so there is no public URL or dev tunnel to expose. Only inbound delivery
+changes: handlers and outbound sends work the same way.
+
+WebSocket is only recommended for use when developing agents. Socket Mode bots should not be submitted to
+Marketplace for publishing.
+
+Socket Mode is experimental, and its API may change. `UseSocketMode` and `SocketModeOptions` report the
+`ExperimentalTeamsSocketMode` diagnostic, which fails the build until you suppress it, for example with
+`<NoWarn>$(NoWarn);ExperimentalTeamsSocketMode</NoWarn>` in the project file.
+
+Socket Mode runs on a generic host with no web server:
+
+```csharp
+using Microsoft.Extensions.Hosting;
+using Microsoft.Teams.Apps;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
+
+var host = builder.Build();
+var teams = host.UseTeamsBotApplication();
+
+teams.OnMessage(async (context, ct) =>
+{
+    await context.ReplyAsync($"You said: {context.Activity.Text}", ct);
+});
+
+host.Run();
+```
+
+- **One connection per geo** &mdash; The bot connects to `amer`, `emea`, and `apac` by default. Startup waits until
+  every geo is ready and fails if any geo cannot connect within `StartupTimeout`. Dropped connections reconnect
+  automatically, and connection tokens are rotated before they expire.
+- **No web server** &mdash; `UseSocketMode` is the only switch; `UseTeamsBotApplication()` is the same call for both
+  transports. With Socket Mode enabled it throws on a `WebApplication`, and a host that includes a web server fails
+  to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.
+- **Public cloud only** &mdash; Registration fails for bots configured for another cloud.
+- **Classic bot identity only** &mdash; The connection is negotiated with the bot's app ID and credentials. Agentic
+  identities are not supported.
+- **Canary endpoint** &mdash; Socket Mode is currently available only on the canary ring. Set `NegotiateBaseUrl` to
+  `https://canary.botapi.skype.com` until it is enabled on the default production endpoint.
+- **Rejected credentials are not retried** &mdash; If negotiation returns HTTP 401 or 403, startup fails immediately.
+  After startup, the affected geo stops reconnecting until the app restarts.
+- **Idempotent handlers** &mdash; The service can redeliver an activity, for example after a reconnect, so handlers
+  should tolerate running more than once for the same activity.
+
+`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change the geos, negotiate URL, and connection
+timeouts. `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier
+configuration so the bot uses HTTP.
 
 ## Main Types
 

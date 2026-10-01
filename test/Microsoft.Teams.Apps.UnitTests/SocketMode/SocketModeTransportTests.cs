@@ -3,8 +3,10 @@
 
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.SocketMode;
+using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
@@ -238,6 +240,36 @@ public class SocketModeTransportTests
     }
 
     [Fact]
+    public async Task Dispatch_LogsFailuresThePipelineHasNotAlreadyLogged()
+    {
+        ErrorLogger logger = new();
+        InvalidOperationException failure = new("dispatch failed");
+        Harness harness = new() { Logger = logger, Dispatch = _ => throw failure };
+        FakeConnection connection = (await harness.StartReadyAsync())[0];
+
+        await connection.ActivityAsync(Envelope("message", """{"type":"message"}"""));
+
+        Assert.Same(failure, Assert.Single(logger.Errors));
+    }
+
+    [Fact]
+    public async Task Dispatch_DoesNotLogHandlerFailuresTheBotAlreadyLogged()
+    {
+        ErrorLogger logger = new();
+        Harness harness = new()
+        {
+            Logger = logger,
+            Dispatch = activity => throw new BotHandlerException("handler failed", new InvalidOperationException(), activity),
+        };
+        FakeConnection connection = (await harness.StartReadyAsync())[0];
+
+        SocketReplyFrame? reply = await connection.ActivityAsync(Envelope("invoke", """{"type":"invoke"}"""));
+
+        Assert.Equal(500, reply?.Status);
+        Assert.Empty(logger.Errors);
+    }
+
+    [Fact]
     public async Task Dispatch_FailingErrorObserverStillReturns500()
     {
         Harness harness = new()
@@ -333,6 +365,38 @@ public class SocketModeTransportTests
         }
     }
 
+    private sealed class ErrorLogger : ILogger
+    {
+        private readonly List<Exception?> _errors = [];
+
+        internal Exception?[] Errors
+        {
+            get
+            {
+                lock (_errors)
+                {
+                    return [.. _errors];
+                }
+            }
+        }
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == LogLevel.Error)
+            {
+                lock (_errors)
+                {
+                    _errors.Add(exception);
+                }
+            }
+        }
+    }
+
     private sealed class Harness
     {
         private readonly SocketModeTransportOptions _options;
@@ -354,6 +418,8 @@ public class SocketModeTransportTests
 
         internal Random? Random { get; init; }
 
+        internal ILogger Logger { get; init; } = NullLogger.Instance;
+
         internal SocketModeTransport Transport => _transport ??= new SocketModeTransport(
             _options,
             Factory,
@@ -366,7 +432,7 @@ public class SocketModeTransportTests
 
                 return Dispatch(activity);
             },
-            NullLogger.Instance,
+            Logger,
             "bot-id",
             OnError,
             new FixedTimeProvider(),
