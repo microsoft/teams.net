@@ -105,7 +105,7 @@ public class FileUrlExpiredException : FileException
 
 /// <summary>
 /// Raised when file bytes are requested for a conversation scope whose download path is not implemented.
-/// <para>Only <c>personal</c> (1:1) uploaded files download directly. <c>groupChat</c> files are surfaced by <c>ListAsync()</c>, but fetching their bytes needs Graph; <c>DownloadAsync()</c>/<c>StreamAsync()</c> throws until that path lands.</para>
+/// <para><c>personal</c> (1:1) files download through either route. In <c>groupChat</c> and <c>channel</c> the platform delivers file attachments only to an agentic user, and they download only through Graph at this time. <c>ListAsync()</c> would still surface a pre-authorized <c>downloadUrl</c>, but <c>DownloadAsync()</c>/<c>StreamAsync()</c> throws, as it does for any other scope.</para>
 /// </summary>
 public class FileScopeNotSupportedException : FileException
 {

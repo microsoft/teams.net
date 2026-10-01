@@ -112,8 +112,7 @@ public class FilesIntegrationTests : IClassFixture<IntegrationTestFixture>
     [Trait("Category", "Files")]
     public async Task OpenFileStream_RejectsUnsupportedScopesAndNonHttpsUrls_BeforeAnyNetworkCall()
     {
-        // Non-personal scopes have no receive path yet; this pins the current behaviour so it has to change
-        // deliberately rather than by accident.
+        // The call passes a pre-authorized URL in a group chat, which still has no validated route outside personal (the platform delivers files there only to an agentic user, each carrying just a contentUrl, and those open through Graph); this pins the current behaviour so it has to change deliberately rather than by accident.
         FileScopeNotSupportedException scopeEx = await Assert.ThrowsAsync<FileScopeNotSupportedException>(
             () => Downloader.OpenFileStreamAsync(
                 ConversationType.GroupChat, PublicBytesUrl, contentType: null, priorFetchSucceeded: false, CancellationToken.None));

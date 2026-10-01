@@ -133,7 +133,23 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     /// </summary>
     internal static FileDownloader CreateDefault() => new(SharedClient);
 
-    /// <summary>Open a byte stream for an inbound file. Only <c>personal</c> is implemented; other scopes throw <see cref="FileScopeNotSupportedException"/> until their Graph receive path lands.</summary>
+    /// <summary>
+    /// Whether a file that arrived with only a <c>contentUrl</c> may be read through Graph in this scope, as this actor.
+    /// <para>Shared by the attachment mapper and the download dispatcher so the two cannot drift: a file <see cref="FilesAccessor.ListAsync"/> surfaces on its <c>contentUrl</c> is always one <see cref="IncomingFile.DownloadAsync"/> will open. <c>personal</c> is open to every actor. <c>groupChat</c> and <c>channel</c> are open only to an agentic user, the only identity the platform delivers files to there at this time. Any other scope stays closed.</para>
+    /// </summary>
+    /// <param name="scope">Conversation scope the file arrived in.</param>
+    /// <param name="actor">Identity the Graph read would run as, or <c>null</c> when the turn has no credential.</param>
+    internal static bool IsGraphRouteOpen(ConversationType? scope, FileActor? actor)
+    {
+        if (scope == ConversationType.Personal)
+        {
+            return true;
+        }
+
+        return actor == FileActor.AgenticUser && (scope == ConversationType.GroupChat || scope == ConversationType.Channel);
+    }
+
+    /// <summary>Open a byte stream for an inbound file through its pre-authorized download URL. Only <c>personal</c> opens this way, and every other scope throws <see cref="FileScopeNotSupportedException"/>: the Graph route that serves an agentic user's <c>groupChat</c> and <c>channel</c> files needs the <c>contentUrl</c> and credential that only the full overload takes.</summary>
     public Task<OpenedFileStream> OpenFileStreamAsync(
         ConversationType? scope,
         Uri? downloadUrl,
@@ -144,7 +160,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
 
     /// <summary>
     /// Open a byte stream for an inbound file, resolving it through Microsoft Graph when the pre-authorized download URL is absent.
-    /// <para>Only <c>personal</c> is implemented; other scopes throw <see cref="FileScopeNotSupportedException"/> until their Graph receive path lands.</para>
+    /// <para><c>personal</c> takes either route. In <c>groupChat</c> and <c>channel</c> the platform delivers file attachments only to an agentic user, each carrying just a <c>contentUrl</c>, so they open only through Graph, as <c>IsGraphRouteOpen</c> decides. Everything else throws <see cref="FileScopeNotSupportedException"/>.</para>
     /// </summary>
     /// <param name="scope">Conversation scope; the dispatcher is keyed on this.</param>
     /// <param name="downloadUrl">Short-lived, pre-authorized download URL (personal scope).</param>
@@ -165,6 +181,12 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
         if (scope == ConversationType.Personal)
         {
             return OpenPersonalFileStreamAsync(downloadUrl, contentUrl, contentType, priorFetchSucceeded, credential, cancellationToken);
+        }
+
+        // A `downloadUrl` outside `personal` keeps the scope error: that route is unvalidated there, and Graph is never substituted for a URL the platform supplied.
+        if (downloadUrl is null && contentUrl is not null && IsGraphRouteOpen(scope, credential?.Actor))
+        {
+            return OpenGraphFileStreamAsync(contentUrl, contentType, credential, cancellationToken);
         }
 
         throw new FileScopeNotSupportedException(scope);

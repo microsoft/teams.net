@@ -188,6 +188,38 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task UnexpectedClose_ReportsDisconnectedBeforeSupervisorReconnects()
+    {
+        Harness harness = new() { Backoff = _ => TimeSpan.Zero };
+        FakeConnection initial = harness.Factory.Enqueue();
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.StartReadyAsync(initial);
+
+        using ManualResetEventSlim entered = new();
+        using ManualResetEventSlim release = new();
+        harness.Owner.Disconnecting = () =>
+        {
+            entered.Set();
+            release.Wait(TimeSpan.FromSeconds(5));
+        };
+
+        Task closing = Task.Run(() => initial.Close(new IOException("dropped")));
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+
+        Assert.False(SpinWait.SpinUntil(() => initial.DisposeCount > 0, TimeSpan.FromMilliseconds(200)));
+        Assert.Equal(1, harness.Factory.CreateCount);
+
+        release.Set();
+        await closing;
+        await replacement.Started.Task;
+        replacement.Ready("replacement");
+        await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
+
+        Assert.Single(harness.Owner.Disconnections);
+        Assert.Equal(1, initial.DisposeCount);
+    }
+
+    [Fact]
     public async Task Rotation_IsMakeBeforeBreakWithHandoff()
     {
         Harness harness = new();
@@ -450,6 +482,29 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task StopAsync_WaitsForFailedStartupAttemptCleanup()
+    {
+        Harness harness = new();
+        TaskCompletionSource disposeGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        FakeConnection failed = harness.Factory.Enqueue(startError: new IOException("connect failed"));
+        failed.DisposeGate = disposeGate.Task;
+
+        Task start = harness.Socket.StartAsync();
+        await failed.Disposed.Task;
+
+        Task stop = harness.Socket.StopAsync();
+        Assert.NotSame(stop, await Task.WhenAny(stop, Task.Delay(TimeSpan.FromMilliseconds(200))));
+
+        disposeGate.SetResult();
+        await stop;
+        await Assert.ThrowsAsync<IOException>(() => start);
+
+        Assert.Equal(1, failed.StopCount);
+        Assert.Equal(1, failed.DisposeCount);
+        Assert.Equal(1, harness.Factory.CreateCount);
+    }
+
+    [Fact]
     public async Task StopAsync_LogsConnectionCleanupFailuresAndStillDisposes()
     {
         Harness harness = new();
@@ -593,8 +648,11 @@ public class GeoSocketTests
             }
         }
 
+        internal Action? Disconnecting { get; set; }
+
         public void OnGeoDisconnected(string geo, Exception? error)
         {
+            Disconnecting?.Invoke();
             lock (_sync)
             {
                 _disconnections.Add(error);
@@ -687,11 +745,21 @@ public class GeoSocketTests
             return StopError is null ? Task.CompletedTask : Task.FromException(StopError);
         }
 
-        public ValueTask DisposeAsync()
+        internal Task? DisposeGate { get; set; }
+
+        public async ValueTask DisposeAsync()
         {
             Interlocked.Increment(ref _disposeCount);
             Disposed.TrySetResult();
-            return DisposeError is null ? ValueTask.CompletedTask : ValueTask.FromException(DisposeError);
+            if (DisposeGate is not null)
+            {
+                await DisposeGate;
+            }
+
+            if (DisposeError is not null)
+            {
+                throw DisposeError;
+            }
         }
 
         internal void Ready(string connectionId)
