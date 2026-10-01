@@ -411,11 +411,57 @@ public class BotApplicationTests
         }
     }
 
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_Timeout_ThrowsBotHandlerExceptionWithTimeoutInner()
+    {
+        BotApplication botApp = CreateBotApplication(TimeSpan.FromMilliseconds(50));
+        botApp.OnActivity = (_, ct) => Task.Delay(Timeout.Infinite, ct);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(activity, user: null, correlationVector: null));
+
+        Assert.IsType<TimeoutException>(exception.InnerException);
+        Assert.Same(activity, exception.Activity);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_HttpContext_Timeout_ThrowsBotHandlerException()
+    {
+        BotApplication botApp = CreateBotApplication(TimeSpan.FromMilliseconds(50));
+        botApp.OnActivity = (_, ct) => Task.Delay(Timeout.Infinite, ct);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(httpContext));
+
+        Assert.IsType<TimeoutException>(exception.InnerException);
+        Assert.Equal("act123", exception.Activity?.Id);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_HandlerThrowsTimeoutException_ThrowsBotHandlerException()
+    {
+        BotApplication botApp = CreateBotApplication();
+        TimeoutException handlerException = new("handler timeout");
+        botApp.OnActivity = (_, _) => throw handlerException;
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(activity, user: null, correlationVector: null));
+
+        Assert.Same(handlerException, exception.InnerException);
+        Assert.Equal("Error processing activity", exception.Message);
+        Assert.Same(activity, exception.Activity);
+    }
+
     private static BotApplicationOptions CreateOptions(string appId) =>
         new() { AppId = appId };
 
-    private static BotApplication CreateBotApplication() =>
-        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
+    private static BotApplication CreateBotApplication(TimeSpan? processActivityTimeout = null) =>
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance,
+            processActivityTimeout is null ? null : new BotApplicationOptions { ProcessActivityTimeout = processActivityTimeout.Value });
 
     private static ConversationClient CreateMockConversationClient()
     {

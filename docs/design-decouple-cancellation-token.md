@@ -57,19 +57,32 @@ await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token);
 
 The HTTP request's `cancellationToken` is no longer forwarded to the handler pipeline.
 
-#### 3. Graceful timeout handling
+#### 3. Timeout handling
 
-A new catch clause handles the timeout without crashing:
+A dedicated catch clause records the timeout (log, `HandlerErrors` metric, and an error status on the turn span) and then surfaces it as a failure:
 
 ```csharp
 catch (OperationCanceledException) when (cts.IsCancellationRequested)
 {
-    _logger.LogWarning("Activity processing timed out after {Timeout}: Id={Id}",
-        _processActivityTimeout, activity.Id);
+    _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
+    Telemetry.HandlerErrors.Add(1, activityTypeTag);
+    span?.SetStatus(ActivityStatusCode.Error, "timeout");
+    throw new BotHandlerException(
+        "Activity processing timed out",
+        new TimeoutException($"Activity processing exceeded the configured ProcessActivityTimeout of {_processActivityTimeout}."),
+        activity);
 }
 ```
 
-This prevents `BotHandlerException` from being thrown when the timeout fires, which is a recoverable situation (the handler simply took too long).
+The timeout surfaces as a `BotHandlerException` wrapping a `TimeoutException` (with the offending activity attached), so every transport reports the turn as failed instead of successful:
+
+- **HTTP**: the exception propagates to the endpoint like any other handler failure, producing a 500 if the response has not started.
+- **Socket Mode**: `SocketModeTransport` converts the `BotHandlerException` into a 500 reply (or 500 ack for non-invoke activities) and invokes the error hook.
+- **BotBuilder compat**: `TeamsBotFrameworkHttpAdapter` invokes `OnTurnError`.
+
+Callers can distinguish a framework timeout from other handler failures by checking `BotHandlerException.InnerException is TimeoutException`.
+
+> **History:** this clause originally swallowed the timeout and returned normally, treating it as recoverable. That caused timed-out turns to be acknowledged as successful (HTTP 200, Socket Mode 200), hiding failures from the sender, so timeouts are now surfaced.
 
 ## Design Decisions
 

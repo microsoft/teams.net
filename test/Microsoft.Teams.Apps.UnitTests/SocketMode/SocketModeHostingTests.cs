@@ -217,6 +217,23 @@ public class SocketModeHostingTests
     }
 
     [Fact]
+    public async Task DispatchAsync_ProcessingTimeout_ThrowsBotHandlerException()
+    {
+        ServiceCollection services = CreateServices();
+        services.AddTeamsBotApplication(options => options.ProcessActivityTimeout = TimeSpan.FromMilliseconds(50));
+        await using ServiceProvider provider = services.BuildServiceProvider();
+        TeamsBotApplication app = provider.GetRequiredService<TeamsBotApplication>();
+        app.OnMessage((_, ct) => Task.Delay(Timeout.Infinite, ct));
+
+        Core.BotHandlerException exception = await Assert.ThrowsAsync<Core.BotHandlerException>(() =>
+            SocketModeServiceRegistration.DispatchAsync(
+                app,
+                new Core.Schema.CoreActivity { Type = TeamsActivityTypes.Message }));
+
+        Assert.IsType<TimeoutException>(exception.InnerException);
+    }
+
+    [Fact]
     public async Task UseTeamsBotApplication_WithSocketMode_ThrowsAndMapsNothing()
     {
         await using WebApplication app = BuildWebApplication(options => options.UseSocketMode());

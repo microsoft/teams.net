@@ -185,7 +185,9 @@ public class BotApplication
     /// <returns>A task that represents the asynchronous activity processing operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the request body cannot be deserialized into a valid activity.</exception>
     /// <exception cref="InvalidDataException">Thrown if the activity's service URL does not match the <c>serviceurl</c> claim of the authenticated caller.</exception>
-    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.
+    /// Also thrown when processing exceeds <see cref="BotApplicationOptions.ProcessActivityTimeout"/>, in which case
+    /// <see cref="Exception.InnerException"/> is a <see cref="TimeoutException"/>.</exception>
     public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -225,7 +227,9 @@ public class BotApplication
     /// <param name="cancellationToken">Reserved for the caller's cancellation. Note: a dedicated timeout governs activity processing.</param>
     /// <returns>A task that represents the asynchronous activity processing operation.</returns>
     /// <exception cref="InvalidDataException">Thrown if the activity's service URL does not match the <c>serviceurl</c> claim of <paramref name="user"/>.</exception>
-    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.
+    /// Also thrown when processing exceeds <see cref="BotApplicationOptions.ProcessActivityTimeout"/>, in which case
+    /// <see cref="Exception.InnerException"/> is a <see cref="TimeoutException"/>.</exception>
     public virtual async Task ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -278,6 +282,10 @@ public class BotApplication
                 _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
                 Telemetry.HandlerErrors.Add(1, activityTypeTag);
                 span?.SetStatus(ActivityStatusCode.Error, "timeout");
+                throw new BotHandlerException(
+                    "Activity processing timed out",
+                    new TimeoutException($"Activity processing exceeded the configured ProcessActivityTimeout of {_processActivityTimeout}."),
+                    activity);
             }
             catch (Exception ex)
             {
