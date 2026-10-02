@@ -188,6 +188,8 @@ public class BotApplication
     /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.
     /// Also thrown when processing exceeds <see cref="BotApplicationOptions.ProcessActivityTimeout"/> and the pipeline observes
     /// the resulting cancellation, in which case <see cref="Exception.InnerException"/> is a <see cref="TimeoutException"/>.
+    /// A <see cref="TimeoutException"/> thrown by a handler is wrapped the same way, so an inner <see cref="TimeoutException"/>
+    /// does not by itself indicate that <see cref="BotApplicationOptions.ProcessActivityTimeout"/> elapsed.
     /// The timeout is cooperative: a handler that ignores its cancellation token or performs blocking I/O keeps running past
     /// the timeout and is not surfaced this way. The timeout is disabled when a debugger is attached.</exception>
     public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
@@ -232,6 +234,8 @@ public class BotApplication
     /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.
     /// Also thrown when processing exceeds <see cref="BotApplicationOptions.ProcessActivityTimeout"/> and the pipeline observes
     /// the resulting cancellation, in which case <see cref="Exception.InnerException"/> is a <see cref="TimeoutException"/>.
+    /// A <see cref="TimeoutException"/> thrown by a handler is wrapped the same way, so an inner <see cref="TimeoutException"/>
+    /// does not by itself indicate that <see cref="BotApplicationOptions.ProcessActivityTimeout"/> elapsed.
     /// The timeout is cooperative: a handler that ignores its cancellation token or performs blocking I/O keeps running past
     /// the timeout and is not surfaced this way. The timeout is disabled when a debugger is attached.</exception>
     public virtual async Task ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
