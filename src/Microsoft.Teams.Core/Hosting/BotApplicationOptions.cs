@@ -18,9 +18,11 @@ public class BotApplicationOptions
     /// This timeout replaces the HTTP request's cancellation token so that handlers
     /// (especially streaming handlers) are not canceled when the incoming HTTP connection closes.
     /// Defaults to 5 minutes. Set to <see cref="Timeout.InfiniteTimeSpan"/> to disable the timeout.
-    /// When the timeout elapses, processing fails with a <see cref="BotHandlerException"/> whose
-    /// <see cref="Exception.InnerException"/> is a <see cref="TimeoutException"/>, so the inbound
-    /// transport reports the turn as failed rather than successful.
+    /// The timeout is cooperative: it cancels the token passed to middleware and handlers. When the pipeline
+    /// observes that cancellation, processing fails with a <see cref="BotHandlerException"/> whose
+    /// <see cref="Exception.InnerException"/> is a <see cref="TimeoutException"/>, so the inbound transport
+    /// reports the turn as failed. Handlers that ignore the token or perform blocking I/O are not interrupted.
+    /// The timeout is disabled when a debugger is attached.
     /// </summary>
     public TimeSpan ProcessActivityTimeout { get; set; } = TimeSpan.FromMinutes(5);
 }

@@ -223,7 +223,8 @@ public class SocketModeHostingTests
         services.AddTeamsBotApplication(options => options.ProcessActivityTimeout = TimeSpan.FromMilliseconds(50));
         await using ServiceProvider provider = services.BuildServiceProvider();
         TeamsBotApplication app = provider.GetRequiredService<TeamsBotApplication>();
-        app.OnMessage((_, ct) => Task.Delay(Timeout.Infinite, ct));
+        // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
+        app.OnMessage((_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct));
 
         Core.BotHandlerException exception = await Assert.ThrowsAsync<Core.BotHandlerException>(() =>
             SocketModeServiceRegistration.DispatchAsync(

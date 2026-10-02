@@ -183,9 +183,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             };
 
             Mock<IBot> mockBot = new();
+            // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
             mockBot
                 .Setup(b => b.OnTurnAsync(It.IsAny<ITurnContext>(), It.IsAny<CancellationToken>()))
-                .Returns<ITurnContext, CancellationToken>((_, ct) => Task.Delay(Timeout.Infinite, ct));
+                .Returns<ITurnContext, CancellationToken>((_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct));
 
             CoreActivity activity = new()
             {

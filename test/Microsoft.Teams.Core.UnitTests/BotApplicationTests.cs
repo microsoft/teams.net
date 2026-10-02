@@ -415,7 +415,8 @@ public class BotApplicationTests
     public async Task ProcessAsync_CoreActivity_Timeout_ThrowsBotHandlerExceptionWithTimeoutInner()
     {
         BotApplication botApp = CreateBotApplication(TimeSpan.FromMilliseconds(50));
-        botApp.OnActivity = (_, ct) => Task.Delay(Timeout.Infinite, ct);
+        // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
+        botApp.OnActivity = (_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct);
         CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
 
         BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
@@ -429,7 +430,8 @@ public class BotApplicationTests
     public async Task ProcessAsync_HttpContext_Timeout_ThrowsBotHandlerException()
     {
         BotApplication botApp = CreateBotApplication(TimeSpan.FromMilliseconds(50));
-        botApp.OnActivity = (_, ct) => Task.Delay(Timeout.Infinite, ct);
+        // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
+        botApp.OnActivity = (_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct);
         CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
