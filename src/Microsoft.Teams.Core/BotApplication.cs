@@ -289,11 +289,11 @@ public class BotApplication
             {
                 _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
                 Telemetry.HandlerErrors.Add(1, activityTypeTag);
+                TimeoutException timeoutException = new($"Activity processing exceeded the configured ProcessActivityTimeout of {_processActivityTimeout}.");
+                // RecordException sets the status from the exception message; set "timeout" afterward so it wins.
+                span.RecordException(timeoutException);
                 span?.SetStatus(ActivityStatusCode.Error, "timeout");
-                throw new BotHandlerException(
-                    "Activity processing timed out",
-                    new TimeoutException($"Activity processing exceeded the configured ProcessActivityTimeout of {_processActivityTimeout}."),
-                    activity);
+                throw new BotHandlerException("Activity processing timed out", timeoutException, activity);
             }
             catch (Exception ex)
             {
