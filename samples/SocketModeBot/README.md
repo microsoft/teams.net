@@ -9,7 +9,7 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 
 ## What it shows
 
-- `UseSocketMode(...)` on `AddTeamsBotApplication` to receive activities over Socket Mode, with `NegotiateBaseUrl` set to the canary ring, the only ring where Socket Mode is available today.
+- `UseSocketMode(...)` on `AddTeamsBotApplication` to receive activities over Socket Mode, with `NegotiateBaseUrl` set to the canary ring. Socket Mode is currently only available on the Canary (`https://canary.botapi.skype.com`) and Pilot1 (`https://pilot1.botapi.skype.com`) rings.
 - `<NoWarn>$(NoWarn);ExperimentalTeamsSocketMode</NoWarn>` in the project file, because Socket Mode is experimental.
 - A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsBotApplication()` to get the app.
 

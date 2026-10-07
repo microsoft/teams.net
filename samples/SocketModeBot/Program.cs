@@ -9,7 +9,8 @@ using Microsoft.Teams.Apps;
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddTeamsBotApplication(options => options.UseSocketMode(socket =>
 {
-    // Socket Mode is only available on the canary ring for now.
+    // Socket Mode is only available on the Canary and Pilot1 rings for now.
+    // Pilot1 (https://pilot1.botapi.skype.com) is supported as well.
     socket.NegotiateBaseUrl = new Uri("https://canary.botapi.skype.com");
 }));
 IHost host = builder.Build();
