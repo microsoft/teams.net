@@ -442,6 +442,16 @@ public class JwtExtensionsTests
     }
 
     [Fact]
+    public async Task OnTokenValidated_EntraEmptyAzp_DoesNotFallBackToAppId()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(
+            EntraIssuer,
+            new() { ["azp"] = string.Empty, ["appid"] = JwtExtensions.Agent365PlatformAppId });
+
+        Assert.Equal(string.Empty, httpContext.Items[JwtExtensions.EntraCallerAppNotAllowedKey]);
+    }
+
+    [Fact]
     public async Task OnTokenValidated_BotFrameworkToken_IsNotCheckedForCallerApp()
     {
         HttpContext httpContext = await RunOnTokenValidatedAsync("https://api.botframework.com", new() { ["appid"] = OtherAppId });

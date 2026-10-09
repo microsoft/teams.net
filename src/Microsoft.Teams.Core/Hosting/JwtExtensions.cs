@@ -219,6 +219,7 @@ namespace Microsoft.Teams.Core.Hosting
         /// <summary>
         /// Returns the client app that requested an Entra token when it is not <see cref="Agent365PlatformAppId"/>, or <see langword="null"/> when it is allowed or the token is a Bot Framework token.
         /// Entra v2 tokens carry the caller in <c>azp</c> and v1 tokens carry it in <c>appid</c>.
+        /// <c>appid</c> is only consulted when <c>azp</c> is absent, so a present but invalid <c>azp</c> is rejected.
         /// </summary>
         internal static string? GetDisallowedEntraCallerApp(JsonWebToken token, string botTokenIssuer)
         {
@@ -227,8 +228,8 @@ namespace Microsoft.Teams.Core.Hosting
                 return null;
             }
 
-            string? callerAppId = token.TryGetPayloadValue("azp", out string? azp) && !string.IsNullOrEmpty(azp)
-                ? azp
+            string? callerAppId = token.TryGetClaim("azp", out Claim? azp)
+                ? azp.Value
                 : token.TryGetPayloadValue("appid", out string? appid) ? appid : null;
 
             return string.Equals(callerAppId, Agent365PlatformAppId, StringComparison.OrdinalIgnoreCase)

@@ -180,7 +180,7 @@ public class BotApplication
     /// may outlive the original HTTP connection. When a debugger is attached the timeout is disabled.
     /// </para>
     /// <para>
-    /// Entra tokens not issued to the Agent 365 platform are rejected with 401 Unauthorized.
+    /// Entra tokens not requested by the Agent 365 platform are rejected with 401 Unauthorized.
     /// </para>
     /// </remarks>
     /// <param name="httpContext">The HTTP context containing the incoming bot activity request.</param>
