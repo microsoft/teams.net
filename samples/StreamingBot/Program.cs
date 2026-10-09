@@ -200,7 +200,6 @@ static async Task RunExtendedMarkdownDemoAsync(TeamsStreamingWriter writer, Canc
         "- [x] Strikethrough renders too\n",
     ];
 
-#pragma warning disable ExperimentalTeamsExtendedMarkdown
     // The informative update carries its own format (plain markdown here); the streamed chunks
     // set extended markdown per-chunk via MessageActivityInput, which also formats the final message.
     await writer.SendInformativeUpdateAsync("Starting the *extended* markdown stream…", TextFormats.Markdown, cancellationToken);
@@ -211,7 +210,6 @@ static async Task RunExtendedMarkdownDemoAsync(TeamsStreamingWriter writer, Canc
         await Task.Delay(500, cancellationToken);
         await writer.AppendResponseAsync(new MessageActivityInput().WithText(message, TextFormats.ExtendedMarkdown), cancellationToken);
     }
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await writer.FinalizeResponseAsync(cancellationToken: cancellationToken);
 }

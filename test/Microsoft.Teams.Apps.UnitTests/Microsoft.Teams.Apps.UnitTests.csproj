@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);ExperimentalTeamsHtmlWidget;ExperimentalTeamsExtendedMarkdown;ExperimentalTeamsSocketMode</NoWarn>
+    <NoWarn>$(NoWarn);ExperimentalTeamsHtmlWidget;ExperimentalTeamsSocketMode</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
