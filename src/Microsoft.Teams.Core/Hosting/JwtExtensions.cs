@@ -25,6 +25,18 @@ namespace Microsoft.Teams.Core.Hosting
     public static class JwtExtensions
     {
         /// <summary>
+        /// App ID of the Agent 365 platform.
+        /// </summary>
+        internal const string Agent365PlatformAppId = "5a807f24-c9de-44ee-a3a7-329e88a00ffc";
+
+        /// <summary>
+        /// <see cref="HttpContext.Items"/> key set when an Entra token validated, but its caller app is not <see cref="Agent365PlatformAppId"/>.
+        /// The value is the caller app ID, or an empty string when the token carries none.
+        /// Read by <see cref="BotApplication.ProcessAsync(HttpContext, CancellationToken)"/>.
+        /// </summary>
+        internal static readonly object EntraCallerAppNotAllowedKey = new();
+
+        /// <summary>
         /// Adds JWT authentication for bots and agents using configuration from appsettings.
         /// </summary>
         /// <param name="services">The service collection to add authentication to.</param>
@@ -204,6 +216,27 @@ namespace Microsoft.Teams.Core.Hosting
                 : $"{entraInstance}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
         }
 
+        /// <summary>
+        /// Returns the client app that requested an Entra token when it is not <see cref="Agent365PlatformAppId"/>, or <see langword="null"/> when it is allowed or the token is a Bot Framework token.
+        /// Entra v2 tokens carry the caller in <c>azp</c> and v1 tokens carry it in <c>appid</c>.
+        /// <c>appid</c> is only consulted when <c>azp</c> is absent, so a present but invalid <c>azp</c> is rejected.
+        /// </summary>
+        internal static string? GetDisallowedEntraCallerApp(JsonWebToken token, string botTokenIssuer)
+        {
+            if (token.Issuer.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string? callerAppId = token.TryGetClaim("azp", out Claim? azp)
+                ? azp.Value
+                : token.TryGetPayloadValue("appid", out string? appid) ? appid : null;
+
+            return string.Equals(callerAppId, Agent365PlatformAppId, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : callerAppId ?? string.Empty;
+        }
+
         private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) =>
             token is JsonWebToken jwt
                 ? (jwt.Issuer, jwt.TryGetClaim("tid", out Claim? c) ? c.Value : null)
@@ -345,10 +378,19 @@ namespace Microsoft.Teams.Core.Hosting
                     {
                         ILogger log = GetLogger(context.HttpContext, logger);
                         log.TokenValidated(schemeName);
-                        if (log.IsEnabled(LogLevel.Trace) && context.SecurityToken is JsonWebToken jwt)
+                        if (context.SecurityToken is JsonWebToken jwt)
                         {
-                            string claims = Environment.NewLine + string.Join(Environment.NewLine, jwt.Claims.Select(c => $"  {c.Type}: {c.Value}"));
-                            log.IncomingTokenClaims(claims);
+                            if (log.IsEnabled(LogLevel.Trace))
+                            {
+                                string claims = Environment.NewLine + string.Join(Environment.NewLine, jwt.Claims.Select(c => $"  {c.Type}: {c.Value}"));
+                                log.IncomingTokenClaims(claims);
+                            }
+
+                            string? disallowedCallerApp = GetDisallowedEntraCallerApp(jwt, botTokenIssuer);
+                            if (disallowedCallerApp is not null)
+                            {
+                                context.HttpContext.Items[EntraCallerAppNotAllowedKey] = disallowedCallerApp;
+                            }
                         }
                         return Task.CompletedTask;
                     },
