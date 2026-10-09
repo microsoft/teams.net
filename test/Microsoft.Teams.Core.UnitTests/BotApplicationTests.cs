@@ -458,6 +458,43 @@ public class BotApplicationTests
         Assert.Same(activity, exception.Activity);
     }
 
+    [Fact]
+    public async Task ProcessAsync_EntraCallerAppNotAllowed_Returns401WithoutProcessing()
+    {
+        BotApplication botApp = CreateBotApplication();
+        bool onActivityCalled = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(new CoreActivity(ActivityType.Message) { Id = "act123" });
+        httpContext.Items[JwtExtensions.EntraCallerAppNotAllowedKey] = "22222222-2222-2222-2222-222222222222";
+
+        await botApp.ProcessAsync(httpContext);
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.False(onActivityCalled);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_EntraCallerAppNotMarked_ProcessesActivity()
+    {
+        BotApplication botApp = CreateBotApplication();
+        bool onActivityCalled = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(new CoreActivity(ActivityType.Message) { Id = "act123" });
+
+        await botApp.ProcessAsync(httpContext);
+
+        Assert.NotEqual(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.True(onActivityCalled);
+    }
+
     private static BotApplicationOptions CreateOptions(string appId) =>
         new() { AppId = appId };
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -356,5 +357,95 @@ public class JwtExtensionsTests
         Assert.Equal(
             [ClientId, $"api://{ClientId}", $"api://botid-{ClientId}"],
             options.TokenValidationParameters.ValidAudiences);
+    }
+
+    private const string OtherAppId = "22222222-2222-2222-2222-222222222222";
+    private const string EntraIssuer = $"https://login.microsoftonline.com/{Tenant}/v2.0";
+
+    private static async Task<HttpContext> RunOnTokenValidatedAsync(string issuer, Dictionary<string, object> claims)
+    {
+        ServiceCollection services = new();
+        services.AddLogging();
+        services.AddBotAuthentication(ClientId, Tenant);
+        ServiceProvider provider = services.BuildServiceProvider();
+        JwtBearerOptions options = provider
+            .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(BotConfig.DefaultSectionName);
+
+        JsonWebTokenHandler handler = new();
+        SecurityTokenDescriptor descriptor = new() { Issuer = issuer, Claims = claims };
+        DefaultHttpContext httpContext = new() { RequestServices = provider };
+        TokenValidatedContext context = new(
+            httpContext,
+            new AuthenticationScheme(BotConfig.DefaultSectionName, null, typeof(JwtBearerHandler)),
+            options)
+        {
+            Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+            SecurityToken = new JsonWebToken(handler.CreateToken(descriptor)),
+        };
+
+        await options.Events.OnTokenValidated(context);
+        Assert.Null(context.Result);
+        return httpContext;
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_EntraCallerAppInAzp_IsAllowed()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(EntraIssuer, new() { ["azp"] = JwtExtensions.Agent365PlatformAppId });
+
+        Assert.False(httpContext.Items.ContainsKey(JwtExtensions.EntraCallerAppNotAllowedKey));
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_EntraCallerAppInAppIdWithoutAzp_IsAllowed()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(
+            $"https://sts.windows.net/{Tenant}/",
+            new() { ["appid"] = JwtExtensions.Agent365PlatformAppId.ToUpperInvariant() });
+
+        Assert.False(httpContext.Items.ContainsKey(JwtExtensions.EntraCallerAppNotAllowedKey));
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_EntraOtherCallerAppInAzp_IsMarkedNotAllowed()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(EntraIssuer, new() { ["azp"] = OtherAppId });
+
+        Assert.Equal(OtherAppId, httpContext.Items[JwtExtensions.EntraCallerAppNotAllowedKey]);
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_EntraOtherCallerAppInAppId_IsMarkedNotAllowed()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(EntraIssuer, new() { ["appid"] = OtherAppId });
+
+        Assert.Equal(OtherAppId, httpContext.Items[JwtExtensions.EntraCallerAppNotAllowedKey]);
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_EntraWithoutCallerAppClaims_IsMarkedNotAllowed()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(EntraIssuer, new() { ["tid"] = Tenant });
+
+        Assert.Equal(string.Empty, httpContext.Items[JwtExtensions.EntraCallerAppNotAllowedKey]);
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_EntraAzpTakesPrecedenceOverAppId()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync(
+            EntraIssuer,
+            new() { ["azp"] = OtherAppId, ["appid"] = JwtExtensions.Agent365PlatformAppId });
+
+        Assert.Equal(OtherAppId, httpContext.Items[JwtExtensions.EntraCallerAppNotAllowedKey]);
+    }
+
+    [Fact]
+    public async Task OnTokenValidated_BotFrameworkToken_IsNotCheckedForCallerApp()
+    {
+        HttpContext httpContext = await RunOnTokenValidatedAsync("https://api.botframework.com", new() { ["appid"] = OtherAppId });
+
+        Assert.False(httpContext.Items.ContainsKey(JwtExtensions.EntraCallerAppNotAllowedKey));
     }
 }
