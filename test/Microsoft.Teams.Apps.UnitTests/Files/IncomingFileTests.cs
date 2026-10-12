@@ -311,4 +311,10 @@ public class IncomingFileTests
             File.Delete(path);
         }
     }
+
+    [Fact]
+    public void AttachmentStyle_DefaultsToFile_WhenNotGiven()
+    {
+        Assert.Equal(AttachmentStyle.File, PersonalFile(new SequenceHttpMessageHandler()).AttachmentStyle);
+    }
 }
