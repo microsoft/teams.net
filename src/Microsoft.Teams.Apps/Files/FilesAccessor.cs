@@ -80,7 +80,7 @@ public sealed class FilesAccessor
 
         IList<TeamsAttachment> attachments = message.Attachments ?? [];
         ConversationType scope = DetectScope();
-        Dictionary<string, string> hints = InlineImageHints(attachments);
+        Dictionary<string, string> hints = attachmentStyle == AttachmentStyle.File ? new(StringComparer.Ordinal) : InlineImageHints(attachments);
 
         List<IncomingFile> files = [];
 

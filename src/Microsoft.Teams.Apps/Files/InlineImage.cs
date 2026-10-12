@@ -40,9 +40,10 @@ internal static class InlineImage
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
         MatchTimeout);
 
-    // Each <img ...> start tag
+    // Each <img ...> start tag, skipping a `>` inside a quoted value.
+    // Each character of the tag can be consumed by only one alternative, so a tag that never closes fails without retrying other splits of its text.
     private static readonly Regex ImgTag = new(
-        @"<img\b[^>]*>",
+        @"<img\b(?:[^<>""']|""[^""]*""|'[^']*')*>",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
         MatchTimeout);
 

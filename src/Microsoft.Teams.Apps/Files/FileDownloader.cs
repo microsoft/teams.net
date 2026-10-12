@@ -383,8 +383,32 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
         }
 
         // Normalizes to exactly one trailing `/` so a path such as `/amer` cannot match `/americas`.
-        string basePath = $"{serviceUrl.AbsolutePath.TrimEnd('/')}/";
-        return url.AbsolutePath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
+        // Paths are case-sensitive, so only the hex digits of percent escapes such as `%2f` are compared without regard to case.
+        string basePath = $"{UpperCaseEscapes(serviceUrl.AbsolutePath).TrimEnd('/')}/";
+        return UpperCaseEscapes(url.AbsolutePath).StartsWith(basePath, StringComparison.Ordinal);
+    }
+
+    // Upper-cases the two hex digits after each `%`, since a parsed path keeps the case of escapes it does not decode.
+    private static string UpperCaseEscapes(string path)
+    {
+        if (!path.Contains('%', StringComparison.Ordinal))
+        {
+            return path;
+        }
+
+        char[] chars = path.ToCharArray();
+
+        for (int i = 0; i < chars.Length - 2; i++)
+        {
+            if (chars[i] == '%' && Uri.IsHexDigit(chars[i + 1]) && Uri.IsHexDigit(chars[i + 2]))
+            {
+                chars[i + 1] = char.ToUpperInvariant(chars[i + 1]);
+                chars[i + 2] = char.ToUpperInvariant(chars[i + 2]);
+                i += 2;
+            }
+        }
+
+        return new string(chars);
     }
 
     /// <summary>

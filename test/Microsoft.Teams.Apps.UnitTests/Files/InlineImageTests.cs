@@ -104,6 +104,26 @@ public class InlineImageTests
         Assert.True(started.ElapsedMilliseconds < 250, $"took {started.ElapsedMilliseconds}ms");
     }
 
+    [Theory]
+    [InlineData("<img ")]
+    [InlineData("<img \"")]
+    [InlineData("<img '")]
+    [InlineData("<img a=\"x")]
+    [InlineData("<img a=\"x\" ")]
+    [InlineData("<img a=\"' ")]
+    public void ParseInlineImageHints_ReadsManyUnclosedTagsInLinearTime(string fragment)
+    {
+        string html = string.Concat(Enumerable.Repeat(fragment, 100_000));
+        Stopwatch started = Stopwatch.StartNew();
+
+        Assert.Empty(Hints(html));
+        Assert.True(started.ElapsedMilliseconds < 250, $"took {started.ElapsedMilliseconds}ms");
+    }
+
+    [Fact]
+    public void ParseInlineImageHints_ReadsATagWhoseQuotedValueHoldsAGreaterThanSign()
+        => Assert.Equal(new Dictionary<string, string> { ["a"] = "png" }, Hints($"<img alt=\"1 > 0\" src=\"x\" itemtype=\"{ItemType}\" itemscope=\"png\" itemid=\"a\">"));
+
     [Fact]
     public void ParseInlineImageHints_MatchesTagAndAttributeNamesInAnyCase()
         => Assert.Equal(new Dictionary<string, string> { ["a"] = "png" }, Hints($"<IMG ITEMTYPE=\"{ItemType}\" ItemScope=\"png\" ITEMID=\"a\">"));

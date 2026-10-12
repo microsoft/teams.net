@@ -179,6 +179,7 @@ public class FileDownloaderInlineTests
     [InlineData("a host that differs only in case", "https://SMBA.trafficmanager.net/amer/v3/x", ServiceUrl)]
     [InlineData("a service URL with no path", "https://smba.trafficmanager.net/v3/x", "https://smba.trafficmanager.net")]
     [InlineData("a dot segment that stays inside", $"{ServiceUrl}v3/../v3/x", ServiceUrl)]
+    [InlineData("a percent escape that differs only in the case of its hex digits", "https://smba.trafficmanager.net/a%2fb/v3/x", "https://smba.trafficmanager.net/a%2Fb/")]
     public void IsUnderServiceUrl_Accepts(string description, string url, string serviceUrl)
     {
         _ = description;
@@ -191,6 +192,7 @@ public class FileDownloaderInlineTests
     [InlineData("a percent-encoded dot segment that climbs out", $"{ServiceUrl}%2e%2e/v3/x", ServiceUrl)]
     [InlineData("an upper-case percent-encoded dot segment that climbs out", $"{ServiceUrl}%2E%2E/v3/x", ServiceUrl)]
     [InlineData("a mixed dot segment that climbs out", $"{ServiceUrl}.%2e/v3/x", ServiceUrl)]
+    [InlineData("a path that differs only in case", "https://smba.trafficmanager.net/AMER/v3/x", ServiceUrl)]
     [InlineData("another host", "https://attacker.example/amer/v3/x", ServiceUrl)]
     [InlineData("a lookalike host", "https://smba.trafficmanager.net.attacker.example/amer/v3/x", "https://smba.trafficmanager.net")]
     [InlineData("another port", "https://smba.trafficmanager.net:8443/amer/v3/x", ServiceUrl)]
