@@ -353,12 +353,13 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Whether the turn's Bot API calls are made as the Agentic User rather than the app.
     /// <para>Mirrors the branch the outbound Bot API handler takes, so the inline image token belongs to the same identity as the turn's API client.</para>
+    /// <para>An Agentic User ID that is not a GUID still reads as the Agentic User, so no app token is acquired for it; the agentic acquisition then reports no token.</para>
     /// </summary>
     /// <param name="identity">The agentic identity on the inbound activity's recipient, or <c>null</c> for an ordinary bot.</param>
     internal static bool ReadsBotApiAsAgenticUser(AgenticIdentity? identity)
         => identity is not null
             && !string.IsNullOrEmpty(identity.AgenticAppId)
-            && Guid.TryParse(identity.AgenticUserId, out _);
+            && !string.IsNullOrEmpty(identity.AgenticUserId);
 
     /// <summary>
     /// Acquires the turn's Bot API token, the one its API client sends, for reading inline images.

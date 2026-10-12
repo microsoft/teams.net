@@ -317,7 +317,6 @@ public class ContextFilesCredentialTests
     [InlineData("none")]
     [InlineData("blueprint")]
     [InlineData("no app")]
-    [InlineData("non-GUID user")]
     [InlineData("agentic user")]
     public async Task InlineImageToken_MatchesWhatTheTurnsApiClientSends(string shape)
     {
@@ -340,5 +339,29 @@ public class ContextFilesCredentialTests
         Assert.Equal(handlerHeaders.Calls, helperHeaders.Calls);
         Assert.Equal(request.Headers.Authorization?.Parameter, token);
         Assert.Equal(Assert.Single(handlerHeaders.Calls).StartsWith("agentic ", StringComparison.Ordinal) ? FileActor.AgenticUser : FileActor.App, credential.Actor);
+    }
+
+    [Fact]
+    public async Task InlineImageToken_IsNotAnAppToken_WhenTheAgenticUserIdIsNotAGuid()
+    {
+        // The turn's API client throws for this identity rather than sending an app token, so the inline image must not read as the app either.
+        AgenticIdentity identity = BotApiIdentity("non-GUID user")!;
+
+        RecordingHeaderProvider handlerHeaders = new();
+        using BotAuthenticationHandler handler = new(handlerHeaders.Object, NullLogger<BotAuthenticationHandler>.Instance) { InnerHandler = new OkHandler() };
+        using HttpMessageInvoker invoker = new(handler);
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri($"{ServiceUrl}v3/conversations"));
+        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, identity);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => invoker.SendAsync(request, CancellationToken.None));
+
+        RecordingHeaderProvider helperHeaders = new();
+        TeamsBotApplication app = BuildApp();
+        app.TokenProvider = new BotTokenProvider(helperHeaders.Object);
+        BotApiCredential credential = FilesCredential.SelectInlineImage(identity, new Uri(ServiceUrl), app.GetBotApiTokenAsync);
+
+        Assert.Null(await credential.GetTokenAsync());
+        Assert.Equal(FileActor.AgenticUser, credential.Actor);
+        Assert.Empty(handlerHeaders.Calls);
+        Assert.Empty(helperHeaders.Calls);
     }
 }

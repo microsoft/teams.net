@@ -158,13 +158,21 @@ public class FilesCredentialTests
     [Theory]
     [InlineData(null, "31e29ddb-e4ce-427e-8bda-1a37eb12d43f")]
     [InlineData("agentic-app-1", null)]
-    [InlineData("agentic-app-1", "agentic-user-1")]
     public void InlineImage_ReadsAsTheApp_WhenTheAgenticIdentityCannotBackAnAgenticToken(string? agenticAppId, string? agenticUserId)
     {
         // The turn's API client sends an app token for these, so that is the identity a refusal names.
         AgenticIdentity identity = new() { AgenticAppBlueprintId = "blueprint-1", AgenticAppId = agenticAppId, AgenticUserId = agenticUserId };
 
         Assert.Equal(FileActor.App, InlineImage(() => Token("bot-token"), identity).Actor);
+    }
+
+    [Fact]
+    public void InlineImage_ReadsAsTheAgenticUser_WhenTheAgenticUserIdIsNotAGuid()
+    {
+        // The turn's API client refuses to send any token for this identity, so the inline image is never read as the app.
+        AgenticIdentity identity = new() { AgenticAppBlueprintId = "blueprint-1", AgenticAppId = "agentic-app-1", AgenticUserId = "agentic-user-1" };
+
+        Assert.Equal(FileActor.AgenticUser, InlineImage(() => Token("bot-token"), identity).Actor);
     }
 
     [Fact]
