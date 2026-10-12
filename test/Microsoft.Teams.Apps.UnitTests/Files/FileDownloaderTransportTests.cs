@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,7 @@ namespace Microsoft.Teams.Apps.UnitTests.Files;
 /// <para><b>Where the invariant actually lives.</b> <see cref="FileDownloader"/> does not strip anything. It issues a
 /// plain GET and inherits whatever its <see cref="HttpClient"/> carries, because <see cref="HttpClient"/> merges
 /// <c>DefaultRequestHeaders</c> into every request. The guarantee therefore rests entirely on the registration:
-/// <c>AddHttpClient&lt;FileDownloader&gt;()</c> is deliberately bare, and the <c>AddBotHttpClient</c> call above it,
+/// <c>AddHttpClient&lt;FileDownloader&gt;()</c> adds no credential of its own, and the <c>AddBotHttpClient</c> call above it,
 /// which is what attaches bot authentication, is deliberately not applied to it.</para>
 /// <para>These tests assert the invariant at the level that holds it, the DI container, rather than at a level that would require changing the shipped downloader.</para>
 /// <para>This matters now that the downloader has a Graph path that <em>does</em> authenticate. One path attaches a
@@ -186,7 +187,7 @@ public class FileDownloaderTransportTests
     }
 
     /// <summary>
-    /// The accessor and the dispatcher share one scope check. This walks both, so a group chat file an agentic user's <see cref="FilesAccessor.ListAsync"/> surfaces is shown to also download, through Graph and as the agent.
+    /// The accessor and the dispatcher share one scope check. This walks both, so a group chat file an agentic user's <see cref="FilesAccessor.ListAsync(CancellationToken)"/> surfaces is shown to also download, through Graph and as the agent.
     /// </summary>
     [Fact]
     public async Task Download_FetchesAGroupChatFileTheAccessorSurfacedForAnAgenticUser_ThroughGraphAsTheAgent()
@@ -261,5 +262,123 @@ public class FileDownloaderTransportTests
         DownloadedFile downloaded = await PersonalFile(provider.GetRequiredService<FileDownloader>()).DownloadAsync();
 
         Assert.Equal("bytes", Encoding.UTF8.GetString(downloaded.Bytes.ToArray()));
+    }
+
+    /// <summary>A loopback HTTP server that answers each request with the next canned response and records the headers it arrived with.</summary>
+    private sealed class LoopbackServer : IDisposable
+    {
+        private readonly TcpListener _listener = new(IPAddress.Loopback, 0);
+
+        public List<string> RequestHeaders { get; } = [];
+
+        public int Port => ((IPEndPoint)_listener.LocalEndpoint).Port;
+
+        public LoopbackServer() => _listener.Start();
+
+        public async Task ServeAsync(params Func<string>[] responses)
+        {
+            foreach (Func<string> response in responses)
+            {
+                using TcpClient client = await _listener.AcceptTcpClientAsync();
+                using NetworkStream stream = client.GetStream();
+                using StreamReader reader = new(stream, Encoding.ASCII, leaveOpen: true);
+
+                StringBuilder headers = new();
+                for (string? line = await reader.ReadLineAsync(); !string.IsNullOrEmpty(line); line = await reader.ReadLineAsync())
+                {
+                    headers.AppendLine(line);
+                }
+
+                RequestHeaders.Add(headers.ToString());
+                await stream.WriteAsync(Encoding.ASCII.GetBytes(response()));
+            }
+        }
+
+        public static string Redirect(string location) => $"HTTP/1.1 302 Found\r\nLocation: {location}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+
+        public static string Ok() => "HTTP/1.1 200 OK\r\nContent-Length: 5\r\nConnection: close\r\n\r\nbytes";
+
+        public void Dispose() => _listener.Stop();
+    }
+
+    /// <summary>
+    /// Storage answers with a 302 to the host actually holding the bytes, so redirects must be followed.
+    /// The downloader's client keeps <c>Authorization</c> on a hop that stays on the original scheme, host, and port, and drops it on a hop to another host or port, so a token never reaches a host it was not sent to.
+    /// Runs the shipped registration against loopback servers, because a fake primary handler would not exercise the redirect.
+    /// </summary>
+    [Theory]
+    [InlineData("a different host", false)]
+    [InlineData("another port on the original host", false)]
+    [InlineData("the original host", true)]
+    public async Task DiRegisteredClient_KeepsAuthorizationOnlyOnASameOriginRedirect(string destination, bool keepsAuthorization)
+    {
+        using LoopbackServer origin = new();
+        using LoopbackServer otherPort = new();
+
+        Task serving = destination switch
+        {
+            "a different host" => origin.ServeAsync(() => LoopbackServer.Redirect($"http://localhost:{origin.Port}/next"), LoopbackServer.Ok),
+            "another port on the original host" => Task.WhenAll(
+                origin.ServeAsync(() => LoopbackServer.Redirect($"http://127.0.0.1:{otherPort.Port}/next")),
+                otherPort.ServeAsync(LoopbackServer.Ok)),
+            _ => origin.ServeAsync(() => LoopbackServer.Redirect($"http://127.0.0.1:{origin.Port}/next"), LoopbackServer.Ok),
+        };
+        LoopbackServer destinationServer = destination == "another port on the original host" ? otherPort : origin;
+
+        using ServiceProvider provider = BuildShippedContainer();
+        HttpClient client = provider.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(FileDownloader));
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri($"http://127.0.0.1:{origin.Port}/start"));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "test-credential");
+
+        using HttpResponseMessage response = await client.SendAsync(request);
+        await serving;
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Authorization: Bearer test-credential", origin.RequestHeaders[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("/next", destinationServer.RequestHeaders[^1], StringComparison.Ordinal);
+
+        if (keepsAuthorization)
+        {
+            Assert.Contains("test-credential", destinationServer.RequestHeaders[^1], StringComparison.Ordinal);
+        }
+        else
+        {
+            Assert.DoesNotContain("Authorization", destinationServer.RequestHeaders[^1], StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
+    public void DiRegisteredClient_FollowsRedirectsThroughTheFileRedirectHandler()
+    {
+        using ServiceProvider provider = BuildShippedContainer();
+        HttpMessageHandler? handler = provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler(nameof(FileDownloader));
+
+        bool hasRedirectHandler = false;
+        while (handler is DelegatingHandler delegating)
+        {
+            hasRedirectHandler |= delegating is FileRedirectHandler;
+            handler = delegating.InnerHandler;
+        }
+
+        Assert.True(hasRedirectHandler);
+        HttpClientHandler primary = Assert.IsType<HttpClientHandler>(handler);
+        Assert.False(primary.AllowAutoRedirect);
+    }
+
+    /// <summary>The container the hosting extensions build, with every registration left as shipped, primary handler included.</summary>
+    private static ServiceProvider BuildShippedContainer()
+    {
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "files-transport-client-id",
+                ["AzureAd:TenantId"] = "files-transport-tenant-id",
+            })
+            .Build());
+        services.AddLogging();
+        services.AddTeamsBotApplication();
+
+        return services.BuildServiceProvider();
     }
 }

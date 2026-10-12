@@ -160,7 +160,10 @@ public static class TeamsBotApplicationHostingExtensions
 
         // Typed client for file downloads. Deliberately separate from the ApiClient's: a file download URL embeds its
         // own `tempauth` credential, so the request must not carry bot credentials.
-        services.AddHttpClient<Files.FileDownloader>();
+        // Redirects are followed by FileRedirectHandler rather than the primary handler, which would drop the caller's Authorization even on a hop back to the same host.
+        services.AddHttpClient<Files.FileDownloader>()
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .AddHttpMessageHandler(() => new Files.FileRedirectHandler());
 
         services.AddTeamsApiClient(nameof(ApiClient));
 

@@ -501,6 +501,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     /// Refuse a response whose final hop left HTTPS.
     /// <para>Storage answers with a 302 to the host actually holding the bytes, so redirects have to be followed. They must not be followed <em>down</em> to plaintext: an <c>https</c> to <c>http</c> hop would put the file on the wire in the clear.</para>
     /// <para>Checked after the fact rather than by disabling <see cref="HttpClientHandler.AllowAutoRedirect"/>, because the downloader is handed an <see cref="HttpClient"/> it does not own and cannot reconfigure. Paired with <see cref="HttpCompletionOption.ResponseHeadersRead"/> this still runs before the body is read, so the file's bytes never cross the downgraded hop.</para>
+    /// <para>The registered client follows redirects through <see cref="FileRedirectHandler"/>, which refuses the downgrade before the hop is sent and keeps <c>Authorization</c> only on the original scheme, host, and port. This check covers a client registered without it.</para>
     /// </summary>
     private static void EnsureFinalHopIsHttps(HttpResponseMessage response)
     {
