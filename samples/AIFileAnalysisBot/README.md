@@ -57,7 +57,7 @@ dotnet run --project samples/AIFileAnalysisBot
 
 ## What happens to an attached file
 
-1. `context.Files.ListAsync()` returns the files on the incoming activity.
+1. `context.Files.ListAsync()` returns the files on the incoming activity. Images pasted into the message are listed alongside attached files, with `AttachmentStyle.InlineImage`. To filter by type, use filter options, e.g. `context.Files.ListAsync(new FileListOptions { AttachmentStyle = AttachmentStyle.File })`.
 2. Each file is downloaded once and reused from memory, rather than refetched through the short-lived URL.
 3. `FileContext.Classify` sorts each download into `Text`, `Image`, or `Unsupported`.
 4. Unsupported files get the basic Adaptive Card. No model call is made for them.
@@ -71,6 +71,7 @@ A file arrives as metadata, not as bytes. Which route turns that metadata into b
 
 - **A bot reads through the pre-authorized download URL.** Teams provides a URL on the attachment and the SDK fetches it directly, with no tokens attached, shown in this example.
 - **An agentic user reads through Microsoft Graph.** Agentic users never receive a pre-authorized URL, so the SDK resolves the file through Graph's `/shares` endpoint using the agent's own credential.
+- **A pasted image reads through the Bot API.** The SDK downloads it with the same token the app uses to reply in that conversation, not Graph. Some image formats, such as BMP and AVIF, cannot be converted by the platform, so Teams shows a placeholder, and they cannot be downloaded. For those, `DownloadAsync()` throws `InlineImageTransformationException`. Teams saves a pasted GIF as a static PNG, so it is listed as `.gif` and `image/gif` but downloads as a PNG.
 
 ### The download URL expires, and that is final
 
