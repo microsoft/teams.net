@@ -134,4 +134,85 @@ public class FilesCredentialTests
 
         Assert.Null(await credential.GetTokenAsync());
     }
+
+    // ==================== SelectInlineImage ====================
+
+    private static readonly AgenticIdentity AgenticUser = new()
+    {
+        AgenticAppBlueprintId = "blueprint-1",
+        AgenticAppId = "agentic-app-1",
+        AgenticUserId = "31e29ddb-e4ce-427e-8bda-1a37eb12d43f",
+        TenantId = "tenant-1",
+    };
+
+    private static BotApiCredential InlineImage(Func<Task<string?>> token, AgenticIdentity? agenticIdentity = null, Uri? serviceUrl = null)
+        => FilesCredential.SelectInlineImage(agenticIdentity, serviceUrl, (_, _) => token());
+
+    [Fact]
+    public void InlineImage_ReadsAsTheApp_WhenThereIsNoAgenticIdentity_AndAsTheAgenticUser_WhenThereIs()
+    {
+        Assert.Equal(FileActor.App, InlineImage(() => Token("bot-token")).Actor);
+        Assert.Equal(FileActor.AgenticUser, InlineImage(() => Token("bot-token"), AgenticUser).Actor);
+    }
+
+    [Theory]
+    [InlineData(null, "31e29ddb-e4ce-427e-8bda-1a37eb12d43f")]
+    [InlineData("agentic-app-1", null)]
+    [InlineData("agentic-app-1", "agentic-user-1")]
+    public void InlineImage_ReadsAsTheApp_WhenTheAgenticIdentityCannotBackAnAgenticToken(string? agenticAppId, string? agenticUserId)
+    {
+        // The turn's API client sends an app token for these, so that is the identity a refusal names.
+        AgenticIdentity identity = new() { AgenticAppBlueprintId = "blueprint-1", AgenticAppId = agenticAppId, AgenticUserId = agenticUserId };
+
+        Assert.Equal(FileActor.App, InlineImage(() => Token("bot-token"), identity).Actor);
+    }
+
+    [Fact]
+    public async Task InlineImage_HandsTheAgenticIdentityToTheTokenSource()
+    {
+        AgenticIdentity? seen = null;
+        BotApiCredential credential = FilesCredential.SelectInlineImage(AgenticUser, null, (identity, _) =>
+        {
+            seen = identity;
+            return Token("bot-token");
+        });
+
+        await credential.GetTokenAsync();
+
+        Assert.Same(AgenticUser, seen);
+    }
+
+    [Fact]
+    public async Task InlineImage_ResolvesTheToken()
+    {
+        Assert.Equal("plain", await InlineImage(() => Token("plain")).GetTokenAsync());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  ")]
+    public async Task InlineImage_ReportsNoToken_ForAnAbsentOrBlankSource(string? token)
+    {
+        Assert.Null(await InlineImage(() => Token(token)).GetTokenAsync());
+    }
+
+    [Fact]
+    public void InlineImage_CarriesTheServiceUrlItWasGivenAsTheAllowedDestination()
+    {
+        BotApiCredential credential = InlineImage(() => Token("bot-token"), serviceUrl: new Uri("https://smba.trafficmanager.net/amer/"));
+
+        Assert.Equal(new Uri("https://smba.trafficmanager.net/amer/"), credential.ServiceUrl);
+    }
+
+    [Fact]
+    public async Task InlineImage_ReadsTheTokenSourceAtFetchTime_RatherThanWhenBuilt()
+    {
+        string current = "first";
+        BotApiCredential credential = InlineImage(() => Token(current));
+
+        current = "second";
+
+        Assert.Equal("second", await credential.GetTokenAsync());
+    }
 }

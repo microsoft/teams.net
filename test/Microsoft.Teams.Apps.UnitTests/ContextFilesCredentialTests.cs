@@ -195,4 +195,150 @@ public class ContextFilesCredentialTests
 
         Assert.Null(await credential!.GetTokenAsync());
     }
+
+    // ==================== Inline images ====================
+
+    private const string ServiceUrl = "https://smba.trafficmanager.net/amer/";
+
+    /// <summary>An inbound message carrying one pasted inline image, and optionally an agentic recipient.</summary>
+    private static MessageActivity InlineImageActivityWith(bool agenticRecipient)
+    {
+        MessageActivity activity = ActivityWith(agenticRecipient);
+        CoreActivity core = new()
+        {
+            Type = TeamsActivityTypes.Message,
+            ServiceUrl = new Uri(ServiceUrl),
+            Conversation = activity.Conversation,
+            Recipient = activity.Recipient,
+        };
+
+        core.Properties["attachments"] = JsonSerializer.SerializeToElement<IList<TeamsAttachment>>(
+        [
+            new TeamsAttachment
+            {
+                ContentType = new AttachmentContentType("image/*"),
+                ContentUrl = new Uri($"{ServiceUrl}v3/attachments/a1/views/original"),
+            }
+        ]);
+
+        return MessageActivity.FromActivity(core);
+    }
+
+    [Theory]
+    [InlineData(true, "https://botapi.skype.com/.default")]
+    [InlineData(false, "https://api.botframework.com/.default")]
+    public async Task ReadsInlineImagesWithTheTurnsBotApiToken_AndCarriesTheActivityServiceUrl(bool agenticRecipient, string expectedScope)
+    {
+        // Drives the real token provider, the shape production installs, rather than a stand-in token function.
+        RecordingTokenProvider provider = new();
+        Context<MessageActivity> context = new(BuildApp(tokenProvider: provider), InlineImageActivityWith(agenticRecipient));
+
+        IncomingFile image = Assert.Single(await context.Files.ListAsync());
+        BotApiCredential credential = image.BotApiCredential!;
+
+        Assert.Equal(agenticRecipient ? FileActor.AgenticUser : FileActor.App, credential.Actor);
+        Assert.Equal(new Uri(ServiceUrl), credential.ServiceUrl);
+        Assert.Empty(provider.Scopes);
+
+        Assert.NotNull(await credential.GetTokenAsync());
+        Assert.Equal(expectedScope, Assert.Single(provider.Scopes));
+    }
+
+    [Fact]
+    public async Task AcquiresTheBotApiAppTokenWithoutATenantOverride_MatchingTheTurnsApiClient()
+    {
+        RecordingTokenProvider provider = new();
+        Context<MessageActivity> context = new(BuildApp(tokenProvider: provider), InlineImageActivityWith(agenticRecipient: false));
+
+        IncomingFile image = Assert.Single(await context.Files.ListAsync());
+        await image.BotApiCredential!.GetTokenAsync();
+
+        Assert.Null(Assert.Single(provider.Tenants));
+    }
+
+    [Fact]
+    public async Task ReportsNoInlineImageToken_WhenTheAppWasBuiltWithoutATokenProvider()
+    {
+        Context<MessageActivity> context = new(BuildApp(), InlineImageActivityWith(agenticRecipient: false));
+
+        IncomingFile image = Assert.Single(await context.Files.ListAsync());
+
+        Assert.Null(await image.BotApiCredential!.GetTokenAsync());
+    }
+
+    /// <summary>Records which acquisition each call makes, and hands back a token that names it.</summary>
+    private sealed class RecordingHeaderProvider
+    {
+        public List<string> Calls { get; } = [];
+
+        public IAuthorizationHeaderProvider Object { get; }
+
+        public RecordingHeaderProvider()
+        {
+            Mock<IAuthorizationHeaderProvider> header = new();
+
+            header
+                .Setup(h => h.CreateAuthorizationHeaderForAppAsync(It.IsAny<string>(), It.IsAny<AuthorizationHeaderProviderOptions>(), It.IsAny<CancellationToken>()))
+                .Returns((string scope, AuthorizationHeaderProviderOptions _, CancellationToken __) =>
+                {
+                    Calls.Add($"app {scope}");
+                    return Task.FromResult("Bearer app-token");
+                });
+
+            header
+                .Setup(h => h.CreateAuthorizationHeaderAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<AuthorizationHeaderProviderOptions>(), It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<CancellationToken>()))
+                .Returns((IEnumerable<string> scopes, AuthorizationHeaderProviderOptions _, System.Security.Claims.ClaimsPrincipal? __, CancellationToken ___) =>
+                {
+                    Calls.Add($"agentic {scopes.Single()}");
+                    return Task.FromResult("Bearer agentic-token");
+                });
+
+            Object = header.Object;
+        }
+    }
+
+    private sealed class OkHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
+    }
+
+    private static AgenticIdentity? BotApiIdentity(string shape) => shape switch
+    {
+        "none" => null,
+        "blueprint" => new AgenticIdentity { AgenticAppId = "agent-app", AgenticAppBlueprintId = "blueprint-id" },
+        "no app" => new AgenticIdentity { AgenticUserId = "31e29ddb-e4ce-427e-8bda-1a37eb12d43f" },
+        "non-GUID user" => new AgenticIdentity { AgenticAppId = "agent-app", AgenticUserId = "agentic-user" },
+        "agentic user" => new AgenticIdentity { AgenticAppId = "agent-app", AgenticUserId = "31e29ddb-e4ce-427e-8bda-1a37eb12d43f" },
+        _ => throw new ArgumentOutOfRangeException(nameof(shape)),
+    };
+
+    [Theory]
+    [InlineData("none")]
+    [InlineData("blueprint")]
+    [InlineData("no app")]
+    [InlineData("non-GUID user")]
+    [InlineData("agentic user")]
+    public async Task InlineImageToken_MatchesWhatTheTurnsApiClientSends(string shape)
+    {
+        // The inline image token is acquired beside the Bot API handler rather than through it, so this pins the two to the same identity and scope.
+        AgenticIdentity? identity = BotApiIdentity(shape);
+
+        RecordingHeaderProvider handlerHeaders = new();
+        using BotAuthenticationHandler handler = new(handlerHeaders.Object, NullLogger<BotAuthenticationHandler>.Instance) { InnerHandler = new OkHandler() };
+        using HttpMessageInvoker invoker = new(handler);
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri($"{ServiceUrl}v3/conversations"));
+        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, identity);
+        using HttpResponseMessage response = await invoker.SendAsync(request, CancellationToken.None);
+
+        RecordingHeaderProvider helperHeaders = new();
+        TeamsBotApplication app = BuildApp();
+        app.TokenProvider = new BotTokenProvider(helperHeaders.Object);
+        BotApiCredential credential = FilesCredential.SelectInlineImage(identity, new Uri(ServiceUrl), app.GetBotApiTokenAsync);
+        string? token = await credential.GetTokenAsync();
+
+        Assert.Equal(handlerHeaders.Calls, helperHeaders.Calls);
+        Assert.Equal(request.Headers.Authorization?.Parameter, token);
+        Assert.Equal(Assert.Single(handlerHeaders.Calls).StartsWith("agentic ", StringComparison.Ordinal) ? FileActor.AgenticUser : FileActor.App, credential.Actor);
+    }
 }
