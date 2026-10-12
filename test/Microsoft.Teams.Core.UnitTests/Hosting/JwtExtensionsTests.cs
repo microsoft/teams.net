@@ -458,4 +458,57 @@ public class JwtExtensionsTests
 
         Assert.False(httpContext.Items.ContainsKey(JwtExtensions.EntraCallerAppNotAllowedKey));
     }
+
+    [Fact]
+    public void GetDisallowedEntraCallerApp_ClaimsIdentity_Agent365InAzp_IsAllowed()
+    {
+        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("azp", JwtExtensions.Agent365PlatformAppId)]);
+
+        Assert.Null(JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
+    }
+
+    [Fact]
+    public void GetDisallowedEntraCallerApp_ClaimsIdentity_Agent365InAppIdWithoutAzp_IsAllowed()
+    {
+        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("appid", JwtExtensions.Agent365PlatformAppId.ToUpperInvariant())]);
+
+        Assert.Null(JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
+    }
+
+    [Fact]
+    public void GetDisallowedEntraCallerApp_ClaimsIdentity_OtherAppInAzp_IsDisallowed()
+    {
+        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("azp", OtherAppId)]);
+
+        Assert.Equal(OtherAppId, JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
+    }
+
+    [Fact]
+    public void GetDisallowedEntraCallerApp_ClaimsIdentity_MultipleAzpClaims_IsDisallowed()
+    {
+        // A ClaimsIdentity flattens an array-valued azp into multiple claims, so more than one azp is not a single string and is rejected rather than falling back to appid.
+        ClaimsIdentity identity = new(
+        [
+            new Claim("iss", EntraIssuer),
+            new Claim("azp", JwtExtensions.Agent365PlatformAppId),
+            new Claim("azp", OtherAppId),
+            new Claim("appid", JwtExtensions.Agent365PlatformAppId),
+        ]);
+
+        Assert.Equal(string.Empty, JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
+    }
+
+    [Fact]
+    public void GetDisallowedEntraCallerApp_ClaimsIdentity_BotFrameworkIssuer_IsNotChecked()
+    {
+        ClaimsIdentity identity = new([new Claim("iss", "https://api.botframework.com"), new Claim("azp", OtherAppId)]);
+
+        Assert.Null(JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
+    }
+
+    [Fact]
+    public void Agent365PlatformAppId_HasExpectedValue()
+    {
+        Assert.Equal("5a807f24-c9de-44ee-a3a7-329e88a00ffc", JwtExtensions.Agent365PlatformAppId);
+    }
 }
