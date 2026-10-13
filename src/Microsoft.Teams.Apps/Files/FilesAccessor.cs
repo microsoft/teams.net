@@ -87,15 +87,15 @@ public sealed class FilesAccessor
         for (int index = 0; index < attachments.Count; index++)
         {
             TeamsAttachment attachment = attachments[index];
-            bool inline = IsInlineImage(attachment);
+            string? imageId = InlineImageId(attachment);
 
             // Checked before mapping, so an attachment of the excluded style is never mapped and never logs a warning.
-            if (attachmentStyle is not null && attachmentStyle != (inline ? AttachmentStyle.InlineImage : AttachmentStyle.File))
+            if (attachmentStyle is not null && attachmentStyle != (imageId is null ? AttachmentStyle.File : AttachmentStyle.InlineImage))
             {
                 continue;
             }
 
-            IncomingFile? file = inline ? ToInlineImage(attachment, index, scope, hints) : ToIncomingFile(attachment, index, scope);
+            IncomingFile? file = imageId is null ? ToIncomingFile(attachment, index, scope) : ToInlineImage(attachment, imageId, index, scope, hints);
 
             if (file is not null)
             {
@@ -168,19 +168,18 @@ public sealed class FilesAccessor
         return hints;
     }
 
-    /// <summary>Whether an attachment is an image pasted inline: an <c>image/*</c> attachment located at a Bot API inline image path.</summary>
-    private static bool IsInlineImage(TeamsAttachment attachment)
-        => attachment.ContentType?.Value is string contentType
-            && contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
-            && InlineImage.InlineImageId(attachment.ContentUrl) is not null;
+    /// <summary>The inline image id when an attachment is an image pasted inline (an <c>image/*</c> attachment located at a Bot API inline image path), otherwise <c>null</c>.</summary>
+    private static string? InlineImageId(TeamsAttachment attachment)
+        => attachment.ContentType?.Value is string contentType && contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+            ? InlineImage.InlineImageId(attachment.ContentUrl)
+            : null;
 
     /// <summary>
     /// Map an inline image attachment to an <see cref="IncomingFile"/>, or <c>null</c> when its location is not on the activity's service URL.
     /// </summary>
-    private IncomingFile? ToInlineImage(TeamsAttachment attachment, int index, ConversationType scope, Dictionary<string, string> hints)
+    private IncomingFile? ToInlineImage(TeamsAttachment attachment, string id, int index, ConversationType scope, Dictionary<string, string> hints)
     {
         Uri contentUrl = attachment.ContentUrl!;
-        string id = InlineImage.InlineImageId(contentUrl)!;
 
         if (!IsOnServiceUrl(contentUrl))
         {
