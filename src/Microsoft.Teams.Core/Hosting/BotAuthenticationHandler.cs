@@ -43,8 +43,6 @@ internal sealed class BotAuthenticationHandler(
         LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Acquiring app-only token for scope: {Scope}");
     private static readonly Action<ILogger, string, Exception?> _logTokenClaims =
         LoggerMessage.Define<string>(LogLevel.Trace, new(4), "Acquired token claims:{Claims}");
-    private static readonly Action<ILogger, string, Exception?> _logInvalidAgenticUserId =
-        LoggerMessage.Define<string>(LogLevel.Warning, new(5), "Invalid AgenticUserId '{AgenticUserId}'; falling back to app-only token.");
     private static readonly Action<ILogger, Exception?> _logTokenParseFailure =
         LoggerMessage.Define(LogLevel.Warning, new(6), "Failed to parse JWT token for trace logging.");
 
@@ -103,15 +101,13 @@ internal sealed class BotAuthenticationHandler(
 
                 if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
                 {
-                    _logInvalidAgenticUserId(_logger, agenticIdentity.AgenticUserId, null);
+                    throw new InvalidOperationException("AgenticUserId is not a valid GUID, so an agentic user token cannot be acquired.");
                 }
-                else
-                {
-                    span?.SetTag(Telemetry.Tags.AuthFlow, "agentic");
-                    options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
-                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, null, cancellationToken).ConfigureAwait(false);
-                    return token;
-                }
+
+                span?.SetTag(Telemetry.Tags.AuthFlow, "agentic");
+                options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
+                string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, null, cancellationToken).ConfigureAwait(false);
+                return token;
             }
             span?.SetTag(Telemetry.Tags.AuthScope, BotAppScope);
             _logAppOnlyToken(_logger, BotAppScope, null);
