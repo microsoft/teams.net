@@ -278,7 +278,7 @@ public class FileDownloaderInlineTests
         Assert.Equal("TransformationFailed: Failed to transform the image", error.Details);
         Assert.Equal(FileActor.App, error.Actor);
         Assert.Equal(
-            "cannot download inline image: the platform could not convert it for download (status 415, code TransformationFailed). Some image formats, such as BMP and AVIF, cannot be converted by the platform, so Teams shows a placeholder, and they cannot be downloaded. Ask the user to send the image as a file attachment instead (service said: TransformationFailed: Failed to transform the image)",
+            "cannot download inline image: the Teams service could not convert it for download (status 415, code TransformationFailed). Some image formats, such as BMP and AVIF, cannot be converted by the Teams service, so Teams shows a placeholder, and they cannot be downloaded. Ask the user to send the image as a file attachment instead (service said: TransformationFailed: Failed to transform the image)",
             error.Message);
     }
 

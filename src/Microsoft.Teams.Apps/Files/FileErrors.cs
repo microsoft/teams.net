@@ -286,7 +286,7 @@ public class FileAccessException : FileException
 }
 
 /// <summary>
-/// Raised when the platform could not convert an inline image for download, answering <c>415</c>.
+/// Raised when the Teams service could not convert an inline image for download, answering <c>415</c>.
 /// <para>The same image sent as a file attachment downloads normally.</para>
 /// </summary>
 public class InlineImageTransformationException : FileException
@@ -303,13 +303,13 @@ public class InlineImageTransformationException : FileException
     /// <summary>The identity the fetch was attempted as.</summary>
     public FileActor? Actor { get; }
 
-    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with the status the platform returned, its error code and message, and the identity the fetch was attempted as.</summary>
-    /// <param name="status">The HTTP status the platform returned.</param>
+    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with the status the Teams service returned, its error code and message, and the identity the fetch was attempted as.</summary>
+    /// <param name="status">The HTTP status the Teams service returned.</param>
     /// <param name="code">The service's error code, when the response carried one.</param>
     /// <param name="details">What the service said, already truncated.</param>
     /// <param name="actor">The identity the fetch was attempted as.</param>
     public InlineImageTransformationException(int status, string? code = null, string? details = null, FileActor? actor = null)
-        : base(WithDetails($"cannot download inline image: the platform could not convert it for download ({(string.IsNullOrEmpty(code) ? $"status {status}" : $"status {status}, code {code}")}). Some image formats, such as BMP and AVIF, cannot be converted by the platform, so Teams shows a placeholder, and they cannot be downloaded. Ask the user to send the image as a file attachment instead", details))
+        : base(WithDetails($"cannot download inline image: the Teams service could not convert it for download ({(string.IsNullOrEmpty(code) ? $"status {status}" : $"status {status}, code {code}")}). Some image formats, such as BMP and AVIF, cannot be converted by the Teams service, so Teams shows a placeholder, and they cannot be downloaded. Ask the user to send the image as a file attachment instead", details))
     {
         Status = status;
         Code = code;
@@ -318,7 +318,7 @@ public class InlineImageTransformationException : FileException
     }
 
     /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class. <see cref="Status"/> is left <c>0</c>.</summary>
-    public InlineImageTransformationException() : base("cannot download inline image: the platform could not convert it for download")
+    public InlineImageTransformationException() : base("cannot download inline image: the Teams service could not convert it for download")
     {
     }
 

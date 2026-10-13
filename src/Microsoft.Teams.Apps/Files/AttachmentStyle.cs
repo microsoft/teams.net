@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Apps.Files;
 /// <item><description><see cref="File"/>: sent as a file attachment</description></item>
 /// <item><description><see cref="InlineImage"/>: pasted into the message body</description></item>
 /// </list>
-/// <para>Some image formats, such as BMP and AVIF, cannot be converted by the platform, so Teams shows a placeholder, and they cannot be downloaded.
+/// <para>Some image formats, such as BMP and AVIF, cannot be converted by the Teams service, so Teams shows a placeholder, and they cannot be downloaded.
 /// The same image sent as a file attachment downloads normally.</para>
 /// </summary>
 [JsonConverter(typeof(StringEnumJsonConverter<AttachmentStyle>))]

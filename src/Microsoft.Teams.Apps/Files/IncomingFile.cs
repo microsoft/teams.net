@@ -133,7 +133,7 @@ public sealed class IncomingFile
 
     /// <summary>
     /// The filename and MIME type for downloaded bytes.
-    /// <para>For an inline image, recognized bytes decide, then the hint-derived name and type, because the platform can return a different format from the hint (a GIF downloads as a static PNG).</para>
+    /// <para>For an inline image, recognized bytes decide, then the hint-derived name and type, because the Teams service can return a different format from the hint (a GIF downloads as a static PNG).</para>
     /// </summary>
     private (string Filename, string ContentType) ResolveDownloadedType(byte[] bytes, string responseContentType)
     {

@@ -141,7 +141,7 @@ internal static class InlineImage
 
     /// <summary>
     /// The format the bytes actually are, read from their leading magic bytes, or <c>null</c> when they are none of <see cref="InlineImageFormat"/>.
-    /// <para>The platform can return bytes in a different format from the hint (a GIF downloads as a static PNG), so the bytes are the stronger signal.</para>
+    /// <para>The Teams service can return bytes in a different format from the hint (a GIF downloads as a static PNG), so the bytes are the stronger signal.</para>
     /// </summary>
     internal static InlineImageFormat? SniffImageFormat(ReadOnlySpan<byte> bytes)
     {
