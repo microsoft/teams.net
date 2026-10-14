@@ -43,6 +43,9 @@ internal static partial class Log
     [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = "ServiceUrl in activity ({ActivityServiceUrl}) does not match serviceUrl claim ({ClaimServiceUrl}).")]
     public static partial void LogServiceUrlClaimMismatch(this ILogger logger, Uri? activityServiceUrl, string claimServiceUrl);
 
+    [LoggerMessage(EventId = 9, Level = LogLevel.Warning, Message = "Rejecting activity: Entra inbound token caller app '{CallerAppId}' is not allowed.")]
+    public static partial void EntraCallerAppNotAllowed(this ILogger logger, string callerAppId);
+
     // ── ConversationClient ──────────────────────────────────────────────
 
     [LoggerMessage(EventId = 11, Level = LogLevel.Trace, Message = "Updating activity at {Url}: {Activity}")]
