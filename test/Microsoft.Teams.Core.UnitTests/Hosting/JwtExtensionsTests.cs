@@ -462,7 +462,7 @@ public class JwtExtensionsTests
     [Fact]
     public void GetDisallowedEntraCallerApp_ClaimsIdentity_Agent365InAzp_IsAllowed()
     {
-        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("azp", JwtExtensions.Agent365PlatformAppId)]);
+        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("azp", JwtExtensions.Agent365PlatformAppId)], "TestAuth");
 
         Assert.Null(JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
     }
@@ -470,7 +470,7 @@ public class JwtExtensionsTests
     [Fact]
     public void GetDisallowedEntraCallerApp_ClaimsIdentity_Agent365InAppIdWithoutAzp_IsAllowed()
     {
-        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("appid", JwtExtensions.Agent365PlatformAppId.ToUpperInvariant())]);
+        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("appid", JwtExtensions.Agent365PlatformAppId.ToUpperInvariant())], "TestAuth");
 
         Assert.Null(JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
     }
@@ -478,7 +478,7 @@ public class JwtExtensionsTests
     [Fact]
     public void GetDisallowedEntraCallerApp_ClaimsIdentity_OtherAppInAzp_IsDisallowed()
     {
-        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("azp", OtherAppId)]);
+        ClaimsIdentity identity = new([new Claim("iss", EntraIssuer), new Claim("azp", OtherAppId)], "TestAuth");
 
         Assert.Equal(OtherAppId, JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
     }
@@ -493,7 +493,7 @@ public class JwtExtensionsTests
             new Claim("azp", JwtExtensions.Agent365PlatformAppId),
             new Claim("azp", OtherAppId),
             new Claim("appid", JwtExtensions.Agent365PlatformAppId),
-        ]);
+        ], "TestAuth");
 
         Assert.Equal(string.Empty, JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
     }
@@ -501,7 +501,7 @@ public class JwtExtensionsTests
     [Fact]
     public void GetDisallowedEntraCallerApp_ClaimsIdentity_BotFrameworkIssuer_IsNotChecked()
     {
-        ClaimsIdentity identity = new([new Claim("iss", "https://api.botframework.com"), new Claim("azp", OtherAppId)]);
+        ClaimsIdentity identity = new([new Claim("iss", "https://api.botframework.com"), new Claim("azp", OtherAppId)], "TestAuth");
 
         Assert.Null(JwtExtensions.GetDisallowedEntraCallerApp(identity, "https://api.botframework.com"));
     }

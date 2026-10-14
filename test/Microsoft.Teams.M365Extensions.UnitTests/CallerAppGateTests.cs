@@ -53,6 +53,22 @@ public class CallerAppGateTests
         Assert.False(nextInvoked);
     }
 
+    [Fact]
+    public async Task OnTurnAsync_UnauthenticatedIdentity_ReachesHandler()
+    {
+        bool handlerInvoked = false;
+        bool nextInvoked = false;
+        TeamsSdkMiddleware middleware = CreateMiddleware(() => handlerInvoked = true, out _);
+
+        await middleware.OnTurnAsync(
+            CreateTurnContext(new ClaimsIdentity()),
+            _ => { nextInvoked = true; return Task.CompletedTask; },
+            CancellationToken.None);
+
+        Assert.True(handlerInvoked);
+        Assert.False(nextInvoked);
+    }
+
     private static TeamsSdkMiddleware CreateMiddleware(Action onMessage, out TeamsBotApplication app)
     {
         app = CreateApp();
@@ -86,7 +102,7 @@ public class CallerAppGateTests
     }
 
     private static ClaimsIdentity CreateEntraIdentity(string callerClaimType, string callerAppId) =>
-        new([new Claim("iss", EntraIssuer), new Claim(callerClaimType, callerAppId)]);
+        new([new Claim("iss", EntraIssuer), new Claim(callerClaimType, callerAppId)], "TestAuth");
 
     private static ITurnContext CreateTurnContext(ClaimsIdentity identity)
     {

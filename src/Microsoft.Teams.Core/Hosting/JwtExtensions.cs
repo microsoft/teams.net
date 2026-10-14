@@ -240,6 +240,12 @@ namespace Microsoft.Teams.Core.Hosting
         /// </summary>
         internal static string? GetDisallowedEntraCallerApp(ClaimsIdentity identity, string botTokenIssuer)
         {
+            // An unauthenticated identity carries no validated caller app to enforce, which is the shape the Agents SDK produces when bot authentication is not configured, so there is nothing to gate.
+            if (!identity.IsAuthenticated)
+            {
+                return null;
+            }
+
             string? issuer = identity.FindFirst("iss")?.Value;
             if (issuer is not null && issuer.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase))
             {
