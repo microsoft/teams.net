@@ -151,6 +151,25 @@ public class FileDownloaderInlineTests
     }
 
     [Fact]
+    public async Task ReportsTheMissingToken_NotTheServiceUrl_WhenThereIsNoBotApiCredential()
+    {
+        RecordingHandler handler = new(HttpStatusCode.OK, Png);
+        IncomingFile file = new("image-a1.gif", ConversationType.GroupChat, FileSource.BotActivity, new FileDownloader(new HttpClient(handler)))
+        {
+            ContentType = "image/gif",
+            Extension = "gif",
+            AttachmentStyle = AttachmentStyle.InlineImage,
+            ContentUrl = new Uri(ContentUrl),
+            InlineImageBaseName = "image-a1",
+        };
+
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() => file.DownloadAsync());
+
+        Assert.Equal("cannot download inline image: no Bot API token is available", error.Message);
+        Assert.Empty(handler.Calls);
+    }
+
+    [Fact]
     public async Task RefusesAContentUrlThatIsNotHttps()
     {
         RecordingHandler handler = new(HttpStatusCode.OK, Png);
@@ -335,7 +354,9 @@ public class FileDownloaderInlineTests
         Assert.Equal(FileActor.AgenticUser, error.Actor);
         Assert.Equal("Unauthorized: nope", error.Details);
         Assert.Equal(
-            $"cannot download inline image: the Bot API token presented for the agentic user was rejected with status {status} (service said: Unauthorized: nope)",
+            status == 401
+                ? "cannot download inline image: the Bot API token presented for the agentic user was rejected (status 401). It may have expired, or been issued for the wrong audience or tenant (service said: Unauthorized: nope)"
+                : "cannot download inline image: access was denied for the agentic user (status 403). The identity is not allowed to read the image (service said: Unauthorized: nope)",
             error.Message);
     }
 

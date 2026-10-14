@@ -100,7 +100,7 @@ public class TeamsBotApplication : BotApplication
     /// Opens byte streams for inbound files, backing <c>ctx.Files</c>. Registered as a typed client by the hosting
     /// extensions, so its <see cref="HttpClient"/> is factory-managed.
     /// </summary>
-    internal Files.FileDownloader FileDownloader { get; }
+    internal Files.FileDownloader FileDownloader { get; set; }
 
     /// <summary>
     /// Acquires Graph tokens for the inbound-file path.

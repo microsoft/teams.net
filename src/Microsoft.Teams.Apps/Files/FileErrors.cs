@@ -303,12 +303,12 @@ public class InlineImageTransformationException : FileException
     /// <summary>The identity the fetch was attempted as.</summary>
     public FileActor? Actor { get; }
 
-    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with the status the Teams service returned, its error code and message, and the identity the fetch was attempted as.</summary>
+    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with the status the Teams service returned, the identity the fetch was attempted as, its message, and its error code.</summary>
     /// <param name="status">The HTTP status the Teams service returned.</param>
-    /// <param name="code">The service's error code, when the response carried one.</param>
-    /// <param name="details">What the service said, already truncated.</param>
     /// <param name="actor">The identity the fetch was attempted as.</param>
-    public InlineImageTransformationException(int status, string? code = null, string? details = null, FileActor? actor = null)
+    /// <param name="details">What the service said, already truncated.</param>
+    /// <param name="code">The service's error code, when the response carried one.</param>
+    public InlineImageTransformationException(int status, FileActor? actor = null, string? details = null, string? code = null)
         : base(WithDetails($"cannot download inline image: the Teams service could not convert it for download ({(string.IsNullOrEmpty(code) ? $"status {status}" : $"status {status}, code {code}")}). Some image formats, such as BMP and AVIF, cannot be converted by the Teams service, so Teams shows a placeholder, and they cannot be downloaded. Ask the user to send the image as a file attachment instead", details))
     {
         Status = status;
@@ -360,8 +360,8 @@ public class InlineImageAccessException : FileException
     /// <param name="details">What the service said, already truncated.</param>
     public InlineImageAccessException(int status, FileActor? actor = null, string? details = null)
         : base(string.IsNullOrEmpty(details)
-            ? $"cannot download inline image: the Bot API token presented for {DescribeActor(actor)} was rejected with status {status}"
-            : $"cannot download inline image: the Bot API token presented for {DescribeActor(actor)} was rejected with status {status} (service said: {details})")
+            ? $"cannot download inline image: {AccessGuidance(status, actor)}"
+            : $"cannot download inline image: {AccessGuidance(status, actor)} (service said: {details})")
     {
         Status = status;
         Actor = actor;
@@ -384,5 +384,18 @@ public class InlineImageAccessException : FileException
     /// <param name="innerException">The underlying exception that caused this exception.</param>
     public InlineImageAccessException(string message, Exception innerException) : base(message, innerException)
     {
+    }
+
+    /// <summary>Say what a refusal means, which depends on the status: a rejected token and a denied identity have different remedies.</summary>
+    private static string AccessGuidance(int status, FileActor? actor)
+    {
+        string asWho = DescribeActor(actor);
+
+        return status switch
+        {
+            401 => $"the Bot API token presented for {asWho} was rejected (status 401). It may have expired, or been issued for the wrong audience or tenant",
+            403 => $"access was denied for {asWho} (status 403). The identity is not allowed to read the image",
+            _ => $"the Bot API token presented for {asWho} was rejected with status {status}",
+        };
     }
 }

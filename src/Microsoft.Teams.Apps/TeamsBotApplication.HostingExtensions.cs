@@ -174,6 +174,12 @@ public static class TeamsBotApplicationHostingExtensions
         {
             TApp app = ActivatorUtilities.CreateInstance<TApp>(sp);
             app.TokenProvider ??= sp.GetKeyedService<BotTokenProvider>(sectionName);
+
+            if (app.FileDownloader.UsesSharedClient)
+            {
+                app.FileDownloader = sp.GetRequiredService<Files.FileDownloader>();
+            }
+
             return app;
         });
 

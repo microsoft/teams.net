@@ -119,7 +119,8 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
 {
     // Shared by apps built outside DI, where there is no factory to ask. Static so it is created once and never
     // disposed, which is the supported lifetime for a long-lived HttpClient.
-    private static readonly HttpClient SharedClient = new();
+    // Built the same way as the DI typed client, so a same-host redirect keeps its Authorization here too.
+    private static readonly HttpClient SharedClient = new(new FileRedirectHandler { InnerHandler = new HttpClientHandler { AllowAutoRedirect = false } });
 
     /// <summary>How much of an error body to keep.</summary>
     private const int ErrorBodyLimit = 2048;
@@ -132,6 +133,9 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     /// Prefer the DI-registered typed client.
     /// </summary>
     internal static FileDownloader CreateDefault() => new(SharedClient);
+
+    /// <summary>Whether this downloader is backed by the process-wide client from <see cref="CreateDefault"/> rather than a DI-managed one.</summary>
+    internal bool UsesSharedClient => ReferenceEquals(_httpClient, SharedClient);
 
     /// <summary>
     /// Whether a file that arrived with only a <c>contentUrl</c> may be read through Graph in this scope, as this actor.
@@ -431,13 +435,18 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
             throw new InvalidOperationException("cannot download inline image: content URL must use https");
         }
 
-        if (!IsUnderServiceUrl(url, credential?.ServiceUrl))
+        if (credential is null)
+        {
+            throw new InvalidOperationException("cannot download inline image: no Bot API token is available");
+        }
+
+        if (!IsUnderServiceUrl(url, credential.ServiceUrl))
         {
             throw new InvalidOperationException("cannot download inline image: content URL is not under the activity's service URL");
         }
 
-        FileActor? actor = credential?.Actor;
-        string? token = credential is null ? null : await credential.GetTokenAsync(cancellationToken).ConfigureAwait(false);
+        FileActor actor = credential.Actor;
+        string? token = await credential.GetTokenAsync(cancellationToken).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(token))
         {
@@ -462,7 +471,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
             if (status == 415)
             {
                 string? body = await ReadErrorBodyAsync(response, cancellationToken).ConfigureAwait(false);
-                throw new InlineImageTransformationException(status, ExtractServiceErrorCode(body), ExtractServiceError(body), actor);
+                throw new InlineImageTransformationException(status, actor, ExtractServiceError(body), ExtractServiceErrorCode(body));
             }
 
             if (status is 401 or 403)
@@ -473,7 +482,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
             if (!response.IsSuccessStatusCode)
             {
                 string? details = await ReadServiceErrorAsync(response, cancellationToken).ConfigureAwait(false);
-                string message = $"failed to download inline image as '{actor ?? FileActor.App}': {status} {response.ReasonPhrase}".Trim();
+                string message = $"failed to download inline image as '{actor}': {status} {response.ReasonPhrase}".Trim();
                 throw new HttpRequestException(string.IsNullOrEmpty(details) ? message : $"{message} ({details})");
             }
 
