@@ -179,6 +179,9 @@ public class BotApplication
     /// default 5 minutes) is used instead of the HTTP request's cancellation token, because streaming handlers
     /// may outlive the original HTTP connection. When a debugger is attached the timeout is disabled.
     /// </para>
+    /// <para>
+    /// Entra tokens not requested by the Agent 365 platform are rejected with 401 Unauthorized.
+    /// </para>
     /// </remarks>
     /// <param name="httpContext">The HTTP context containing the incoming bot activity request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the initial deserialization. Note: a dedicated timeout governs activity processing.</param>
@@ -198,6 +201,13 @@ public class BotApplication
         ArgumentNullException.ThrowIfNull(_conversationClient);
 
         _logger.StartProcessingActivity();
+
+        if (httpContext.Items.TryGetValue(JwtExtensions.EntraCallerAppNotAllowedKey, out object? callerAppId))
+        {
+            _logger.EntraCallerAppNotAllowed(callerAppId as string ?? string.Empty);
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 

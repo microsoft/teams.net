@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 using System.Security.Claims;
 using System.Text;
@@ -126,6 +127,15 @@ public class TeamsSdkMiddleware : IMiddleware
             // Unmatched activities fall through to the Agents SDK pipeline.
             if (_teamsBot.HasMatchingRoute(routeCheckActivity))
             {
+                if (turnContext.Identity is ClaimsIdentity callerIdentity
+                    && JwtExtensions.GetDisallowedEntraCallerApp(callerIdentity, BotConfig.DefaultBotTokenIssuer) is not null)
+                {
+                    // The caller app on an Entra inbound token is not the Agent 365 platform.
+                    // Tokens on this path are validated by the Agents SDK, which has usually already written the response, so there is no 401 to return here; drop the turn without routing to Teams handlers or continuing the pipeline.
+                    _logger.LogWarning("TeamsSdkMiddleware: rejecting Teams activity {ActivityId}; Entra inbound token caller app is not allowed", turnContext.Activity.Id);
+                    return;
+                }
+
                 _logger.LogDebug("TeamsSdkMiddleware: routing msteams activity {ActivityId} to Teams SDK", turnContext.Activity.Id);
 
                 // Make the Agents SDK turn context available to Teams SDK handlers.
