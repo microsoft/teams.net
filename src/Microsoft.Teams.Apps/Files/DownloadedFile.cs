@@ -27,10 +27,18 @@ public sealed class DownloadedFile
     public byte[] Bytes => _bytes;
 #pragma warning restore CA1819 // Properties should not return arrays
 
-    /// <summary>MIME type resolved from the download response header, or the incoming file's metadata type if the response omits one. Falls back to <c>application/octet-stream</c> when neither provides a type, so this is never empty.</summary>
+    /// <summary>
+    /// MIME type resolved from the download response header, or the incoming file's metadata type if the response omits one. Falls back to <c>application/octet-stream</c> when neither provides a type, so this is never empty.
+    /// For an inline image, the response header is ignored and the type is detected from the bytes.
+    /// If the bytes are not PNG, JPEG, GIF, or WebP, it falls back to <see cref="IncomingFile.ContentType"/>.
+    /// </summary>
     public string ContentType { get; }
 
-    /// <summary>Resolved filename.</summary>
+    /// <summary>
+    /// Resolved filename.
+    /// For an inline image, the extension follows <see cref="ContentType"/>, meaning the filename can differ from <see cref="IncomingFile.Name"/>.
+    /// For an uploaded file, the name comes from the sender and can contain path separators, so reduce it to its last segment (for example by splitting on both <c>/</c> and <c>\</c>, since <see cref="Path.GetFileName(string)"/> splits only on the current platform's separators) before using it in a local path.
+    /// </summary>
     public string Filename { get; }
 
     /// <summary>The URL the bytes were actually fetched from.</summary>

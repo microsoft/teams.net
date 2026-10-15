@@ -6,7 +6,7 @@ using Microsoft.Teams.Apps.Schema;
 namespace Microsoft.Teams.Apps.Files;
 
 /// <summary>
-/// Base class for the diagnosable failures on the inbound-file path: an expired URL, an unsupported scope, and a refused Graph read.
+/// Base class for the diagnosable failures on the inbound-file path: an expired URL, an unsupported scope, a refused Graph read, and an inline image that was refused or could not be converted.
 /// <para>Lets a caller catch those with one <c>catch</c> clause, so a new one can be added without callers changing. A transport or service failure the SDK cannot attribute, such as a Graph 5xx, is not one of these and surfaces as an <see cref="HttpRequestException"/>.</para>
 /// </summary>
 public class FileException : Exception
@@ -28,6 +28,19 @@ public class FileException : Exception
     public FileException(string message, Exception innerException) : base(message, innerException)
     {
     }
+
+    /// <summary>
+    /// Names the identity in prose.
+    /// Exhaustive on purpose: a new <see cref="FileActor"/> must fail the build here rather than silently inherit the app's wording, which would send that identity's failures to the wrong remedy.
+    /// </summary>
+#pragma warning disable CS8524
+    private protected static string DescribeActor(FileActor? actor) => actor switch
+    {
+        FileActor.AgenticUser => "the agentic user",
+        FileActor.App => "the app",
+        null => "the identity used",
+    };
+#pragma warning restore CS8524
 }
 
 /// <summary>
@@ -261,20 +274,128 @@ public class FileAccessException : FileException
     /// <summary>Say what a refusal means, which depends on the status: a rejected token and an insufficient grant have different remedies.</summary>
     private static string AccessGuidance(int status, FileActor? actor)
     {
-#pragma warning disable CS8524
-        string asWho = actor switch
-        {
-            FileActor.AgenticUser => "the agentic user",
-            FileActor.App => "the app",
-            null => "the identity used",
-        };
-#pragma warning restore CS8524
+        string asWho = DescribeActor(actor);
 
         return status switch
         {
             401 => $"the token presented for {asWho} was rejected. It may have expired, or been issued for the wrong audience or tenant",
             403 => $"access was denied for {asWho}. The required scope may not be consented, the file may never have been shared with that identity, or the drive item may not exist",
             _ => $"the request for {asWho} was refused with status {status}",
+        };
+    }
+}
+
+/// <summary>
+/// Raised when the Teams service could not convert an inline image for download, answering <c>415</c>.
+/// <para>The same image sent as a file attachment downloads normally.</para>
+/// </summary>
+public class InlineImageTransformationException : FileException
+{
+    /// <summary>The HTTP status, <c>415</c>.</summary>
+    public int Status { get; }
+
+    /// <summary>The service's error code, such as <c>TransformationFailed</c>, when the response carried one.</summary>
+    public string? Code { get; }
+
+    /// <summary>The service's message, verbatim and truncated, when present.</summary>
+    public string? Details { get; }
+
+    /// <summary>The identity the fetch was attempted as.</summary>
+    public FileActor? Actor { get; }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with the status the Teams service returned, the identity the fetch was attempted as, its message, and its error code.</summary>
+    /// <param name="status">The HTTP status the Teams service returned.</param>
+    /// <param name="actor">The identity the fetch was attempted as.</param>
+    /// <param name="details">What the service said, already truncated.</param>
+    /// <param name="code">The service's error code, when the response carried one.</param>
+    public InlineImageTransformationException(int status, FileActor? actor = null, string? details = null, string? code = null)
+        : base(WithDetails($"cannot download inline image: the Teams service could not convert it for download ({(string.IsNullOrEmpty(code) ? $"status {status}" : $"status {status}, code {code}")}). Some image formats, such as BMP and AVIF, cannot be converted by the Teams service, so Teams shows a placeholder, and they cannot be downloaded. Ask the user to send the image as a file attachment instead", details))
+    {
+        Status = status;
+        Code = code;
+        Details = details;
+        Actor = actor;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class. <see cref="Status"/> is left <c>0</c>.</summary>
+    public InlineImageTransformationException() : base("cannot download inline image: the Teams service could not convert it for download")
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with a specified error message. <see cref="Status"/> is left <c>0</c>.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    public InlineImageTransformationException(string message) : base(message)
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageTransformationException"/> class with a specified error message and inner exception. <see cref="Status"/> is left <c>0</c>.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    /// <param name="innerException">The underlying exception that caused this exception.</param>
+    public InlineImageTransformationException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    private static string WithDetails(string message, string? details)
+        => string.IsNullOrEmpty(details) ? message : $"{message} (service said: {details})";
+}
+
+/// <summary>
+/// Raised when the Bot API refused the token presented for an inline image, answering <c>401</c> or <c>403</c>.
+/// <para>Inline images are read with the same Bot API token the app uses to reply in that conversation (an agentic user token for agentic identities), not Graph, so this is distinct from <see cref="FileAccessException"/>.</para>
+/// </summary>
+public class InlineImageAccessException : FileException
+{
+    /// <summary><c>401</c> means the token itself was rejected; <c>403</c> means the identity is not allowed to read the image.</summary>
+    public int Status { get; }
+
+    /// <summary>The identity the fetch was attempted as.</summary>
+    public FileActor? Actor { get; }
+
+    /// <summary>The service's message, verbatim and truncated, when present.</summary>
+    public string? Details { get; }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageAccessException"/> class with the status the Bot API returned, the identity the fetch was attempted as, and whatever the service said.</summary>
+    /// <param name="status">The HTTP status the Bot API returned.</param>
+    /// <param name="actor">The identity the fetch was attempted as.</param>
+    /// <param name="details">What the service said, already truncated.</param>
+    public InlineImageAccessException(int status, FileActor? actor = null, string? details = null)
+        : base(string.IsNullOrEmpty(details)
+            ? $"cannot download inline image: {AccessGuidance(status, actor)}"
+            : $"cannot download inline image: {AccessGuidance(status, actor)} (service said: {details})")
+    {
+        Status = status;
+        Actor = actor;
+        Details = details;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageAccessException"/> class. <see cref="Status"/> is left <c>0</c>.</summary>
+    public InlineImageAccessException() : base("cannot download inline image: the Bot API token was rejected")
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageAccessException"/> class with a specified error message. <see cref="Status"/> is left <c>0</c>.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    public InlineImageAccessException(string message) : base(message)
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="InlineImageAccessException"/> class with a specified error message and inner exception. <see cref="Status"/> is left <c>0</c>.</summary>
+    /// <param name="message">The error message that describes the reason for the exception.</param>
+    /// <param name="innerException">The underlying exception that caused this exception.</param>
+    public InlineImageAccessException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    /// <summary>Say what a refusal means, which depends on the status: a rejected token and a denied identity have different remedies.</summary>
+    private static string AccessGuidance(int status, FileActor? actor)
+    {
+        string asWho = DescribeActor(actor);
+
+        return status switch
+        {
+            401 => $"the Bot API token presented for {asWho} was rejected (status 401). It may have expired, or been issued for the wrong audience or tenant",
+            403 => $"access was denied for {asWho} (status 403). The identity is not allowed to read the image",
+            _ => $"the Bot API token presented for {asWho} was rejected with status {status}",
         };
     }
 }

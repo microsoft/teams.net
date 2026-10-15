@@ -54,7 +54,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     private Files.FilesAccessor? _files;
 
     /// <summary>
-    /// Gets the uploaded files attached to the current inbound activity, exposed as lazy <see cref="Files.IncomingFile"/> handles. See <see cref="Files.FilesAccessor"/> for the full contract.
+    /// Gets the uploaded files attached to the current inbound activity, plus images pasted inline, exposed as lazy <see cref="Files.IncomingFile"/> handles. See <see cref="Files.FilesAccessor"/> for the full contract.
     /// </summary>
     public Files.FilesAccessor Files => _files ??= new Files.FilesAccessor(
         Activity,
@@ -68,7 +68,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             TeamsBotApplication.GraphBaseUrl,
             // The activity's tenant, not the app's: a multi-tenant app has to read in the tenant the file lives in.
             ct => TeamsBotApplication.GetAppGraphTokenAsync(Activity.TenantId, ct),
-            TeamsBotApplication.GetAgenticGraphTokenAsync));
+            TeamsBotApplication.GetAgenticGraphTokenAsync),
+        // Inline images are read with the turn's Bot API token, not Graph.
+        FilesCredential.SelectInlineImage(
+            Activity.Recipient?.GetAgenticIdentity(),
+            Activity.ServiceUrl,
+            TeamsBotApplication.GetBotApiTokenAsync));
 
     // ==================== Turn State ====================
 

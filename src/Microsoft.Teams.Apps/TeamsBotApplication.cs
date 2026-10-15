@@ -100,7 +100,7 @@ public class TeamsBotApplication : BotApplication
     /// Opens byte streams for inbound files, backing <c>ctx.Files</c>. Registered as a typed client by the hosting
     /// extensions, so its <see cref="HttpClient"/> is factory-managed.
     /// </summary>
-    internal Files.FileDownloader FileDownloader { get; }
+    internal Files.FileDownloader FileDownloader { get; set; }
 
     /// <summary>
     /// Acquires Graph tokens for the inbound-file path.
@@ -345,6 +345,37 @@ public class TeamsBotApplication : BotApplication
         }
 
         return TokenProvider?.GetAgenticUserTokenAsync(identity, GraphScope, cancellationToken) ?? Task.FromResult<string?>(null);
+    }
+
+    private const string BotApiAgenticScope = "https://botapi.skype.com/.default";
+    private const string BotApiAppScope = "https://api.botframework.com/.default";
+
+    /// <summary>
+    /// Whether the turn's Bot API calls are made as the Agentic User rather than the app.
+    /// <para>Mirrors the branch the outbound Bot API handler takes, so the inline image token belongs to the same identity as the turn's API client.</para>
+    /// <para>An Agentic User ID that is not a GUID still reads as the Agentic User, so no app token is acquired for it; the agentic acquisition then reports no token.</para>
+    /// </summary>
+    /// <param name="identity">The agentic identity on the inbound activity's recipient, or <c>null</c> for an ordinary bot.</param>
+    internal static bool ReadsBotApiAsAgenticUser(AgenticIdentity? identity)
+        => identity is not null
+            && !string.IsNullOrEmpty(identity.AgenticAppId)
+            && !string.IsNullOrEmpty(identity.AgenticUserId);
+
+    /// <summary>
+    /// Acquires the turn's Bot API token, the one its API client sends, for reading inline images.
+    /// </summary>
+    /// <param name="identity">The agentic identity on the inbound activity's recipient, or <c>null</c> for an ordinary bot.</param>
+    /// <param name="cancellationToken">A token to cancel the acquisition.</param>
+    internal Task<string?> GetBotApiTokenAsync(AgenticIdentity? identity, CancellationToken cancellationToken = default)
+    {
+        if (TokenProvider is null)
+        {
+            return Task.FromResult<string?>(null);
+        }
+
+        return ReadsBotApiAsAgenticUser(identity)
+            ? TokenProvider.GetAgenticUserTokenAsync(identity!, BotApiAgenticScope, cancellationToken)
+            : TokenProvider.GetAppTokenAsync(BotApiAppScope, tenantId: null, cancellationToken);
     }
 
     // ==================== Proactive Messaging ====================

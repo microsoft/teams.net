@@ -119,7 +119,8 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
 {
     // Shared by apps built outside DI, where there is no factory to ask. Static so it is created once and never
     // disposed, which is the supported lifetime for a long-lived HttpClient.
-    private static readonly HttpClient SharedClient = new();
+    // Built the same way as the DI typed client, so a same-host redirect keeps its Authorization here too.
+    private static readonly HttpClient SharedClient = new(new FileRedirectHandler { InnerHandler = new HttpClientHandler { AllowAutoRedirect = false } });
 
     /// <summary>How much of an error body to keep.</summary>
     private const int ErrorBodyLimit = 2048;
@@ -133,9 +134,12 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     /// </summary>
     internal static FileDownloader CreateDefault() => new(SharedClient);
 
+    /// <summary>Whether this downloader is backed by the process-wide client from <see cref="CreateDefault"/> rather than a DI-managed one.</summary>
+    internal bool UsesSharedClient => ReferenceEquals(_httpClient, SharedClient);
+
     /// <summary>
     /// Whether a file that arrived with only a <c>contentUrl</c> may be read through Graph in this scope, as this actor.
-    /// <para>Shared by the attachment mapper and the download dispatcher so the two cannot drift: a file <see cref="FilesAccessor.ListAsync"/> surfaces on its <c>contentUrl</c> is always one <see cref="IncomingFile.DownloadAsync"/> will open. <c>personal</c> is open to every actor. <c>groupChat</c> and <c>channel</c> are open only to an agentic user, the only identity the platform delivers files to there at this time. Any other scope stays closed.</para>
+    /// <para>Shared by the attachment mapper and the download dispatcher so the two cannot drift: a file <see cref="FilesAccessor.ListAsync(CancellationToken)"/> surfaces on its <c>contentUrl</c> is always one <see cref="IncomingFile.DownloadAsync"/> will open. <c>personal</c> is open to every actor. <c>groupChat</c> and <c>channel</c> are open only to an agentic user, the only identity the platform delivers files to there at this time. Any other scope stays closed.</para>
     /// </summary>
     /// <param name="scope">Conversation scope the file arrived in.</param>
     /// <param name="actor">Identity the Graph read would run as, or <c>null</c> when the turn has no credential.</param>
@@ -177,7 +181,39 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
         bool priorFetchSucceeded,
         GraphCredential? credential,
         CancellationToken cancellationToken)
+        => OpenFileStreamAsync(scope, downloadUrl, contentUrl, contentType, priorFetchSucceeded, credential, attachmentStyle: null, botApiCredential: null, cancellationToken);
+
+    /// <summary>
+    /// Open a byte stream for an inbound file or inline image.
+    /// <para>An <c>inlineImage</c> is read from <c>contentUrl</c> with the Bot API credential, in any scope.
+    /// Every other file opens as the overload without <paramref name="attachmentStyle"/> describes.</para>
+    /// </summary>
+    /// <param name="scope">Conversation scope; the dispatcher is keyed on this.</param>
+    /// <param name="downloadUrl">Short-lived, pre-authorized download URL (personal scope).</param>
+    /// <param name="contentUrl">Browsable URL to the item, used as the Graph sharing locator when no <paramref name="downloadUrl"/> is present. For an inline image, it is the image's Bot API location instead.</param>
+    /// <param name="contentType">MIME type reported by the incoming file, used as a fallback when the response omits one.</param>
+    /// <param name="priorFetchSucceeded">Whether an earlier fetch through the same handle already succeeded.</param>
+    /// <param name="credential">Credential used for the Graph fetch path. Absent means no Graph route is available, so an expired URL cannot be recovered.</param>
+    /// <param name="attachmentStyle">How the file was attached; see <see cref="AttachmentStyle"/>. Defaults to <c>file</c>.</param>
+    /// <param name="botApiCredential">Credential used for inline images. Absent means inline images cannot be downloaded.</param>
+    /// <param name="cancellationToken">A token to cancel opening the stream.</param>
+    public Task<OpenedFileStream> OpenFileStreamAsync(
+        ConversationType? scope,
+        Uri? downloadUrl,
+        Uri? contentUrl,
+        string? contentType,
+        bool priorFetchSucceeded,
+        GraphCredential? credential,
+        AttachmentStyle? attachmentStyle,
+        BotApiCredential? botApiCredential,
+        CancellationToken cancellationToken)
     {
+        // Inline images live on the Bot API, so neither file route nor its scope restriction applies.
+        if (attachmentStyle == AttachmentStyle.InlineImage)
+        {
+            return OpenInlineImageStreamAsync(contentUrl, contentType, botApiCredential, cancellationToken);
+        }
+
         if (scope == ConversationType.Personal)
         {
             return OpenPersonalFileStreamAsync(downloadUrl, contentUrl, contentType, priorFetchSucceeded, credential, cancellationToken);
@@ -334,6 +370,138 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     }
 
     /// <summary>
+    /// Whether <paramref name="url"/> is under <paramref name="serviceUrl"/>: both https, the same origin, and a path starting with the service URL's path.
+    /// <para>Both are parsed first, so dot segments are resolved before the comparison and cannot climb out of the service URL's path.</para>
+    /// </summary>
+    internal static bool IsUnderServiceUrl(Uri? url, Uri? serviceUrl)
+    {
+        if (url is null || serviceUrl is null || !url.IsAbsoluteUri || !serviceUrl.IsAbsoluteUri)
+        {
+            return false;
+        }
+
+        if (!string.Equals(serviceUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal)
+            || Uri.Compare(url, serviceUrl, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
+        {
+            return false;
+        }
+
+        // Normalizes to exactly one trailing `/` so a path such as `/amer` cannot match `/americas`.
+        // Paths are case-sensitive, so only the hex digits of percent escapes such as `%2f` are compared without regard to case.
+        string basePath = $"{UpperCaseEscapes(serviceUrl.AbsolutePath).TrimEnd('/')}/";
+        return UpperCaseEscapes(url.AbsolutePath).StartsWith(basePath, StringComparison.Ordinal);
+    }
+
+    // Upper-cases the two hex digits after each `%`, since a parsed path keeps the case of escapes it does not decode.
+    private static string UpperCaseEscapes(string path)
+    {
+        if (!path.Contains('%', StringComparison.Ordinal))
+        {
+            return path;
+        }
+
+        char[] chars = path.ToCharArray();
+
+        for (int i = 0; i < chars.Length - 2; i++)
+        {
+            if (chars[i] == '%' && Uri.IsHexDigit(chars[i + 1]) && Uri.IsHexDigit(chars[i + 2]))
+            {
+                chars[i + 1] = char.ToUpperInvariant(chars[i + 1]);
+                chars[i + 2] = char.ToUpperInvariant(chars[i + 2]);
+                i += 2;
+            }
+        }
+
+        return new string(chars);
+    }
+
+    /// <summary>
+    /// Fetch an inline image's bytes from the Bot API with the turn's Bot API token.
+    /// <para>The token is sent only to a URL under <see cref="BotApiCredential.ServiceUrl"/>.</para>
+    /// </summary>
+    private async Task<OpenedFileStream> OpenInlineImageStreamAsync(
+        Uri? url,
+        string? contentType,
+        BotApiCredential? credential,
+        CancellationToken cancellationToken)
+    {
+        if (url is null)
+        {
+            throw new InvalidOperationException("cannot download inline image: no content URL is available");
+        }
+
+        if (!url.IsAbsoluteUri || !string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("cannot download inline image: content URL must use https");
+        }
+
+        if (credential is null)
+        {
+            throw new InvalidOperationException("cannot download inline image: no Bot API token is available");
+        }
+
+        if (!IsUnderServiceUrl(url, credential.ServiceUrl))
+        {
+            throw new InvalidOperationException("cannot download inline image: content URL is not under the activity's service URL");
+        }
+
+        FileActor actor = credential.Actor;
+        string? token = await credential.GetTokenAsync(cancellationToken).ConfigureAwait(false);
+
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new InvalidOperationException("cannot download inline image: no Bot API token is available");
+        }
+
+        _logger.LogDebug("files: reading inline image bytes from the Bot API as '{Actor}'", actor);
+
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        HttpResponseMessage response = await _httpClient
+            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+
+        EnsureFinalHopIsHttps(response);
+
+        try
+        {
+            int status = (int)response.StatusCode;
+
+            if (status == 415)
+            {
+                string? body = await ReadErrorBodyAsync(response, cancellationToken).ConfigureAwait(false);
+                throw new InlineImageTransformationException(status, actor, ExtractServiceError(body), ExtractServiceErrorCode(body));
+            }
+
+            if (status is 401 or 403)
+            {
+                throw new InlineImageAccessException(status, actor, await ReadServiceErrorAsync(response, cancellationToken).ConfigureAwait(false));
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string? details = await ReadServiceErrorAsync(response, cancellationToken).ConfigureAwait(false);
+                string message = $"failed to download inline image as '{actor}': {status} {response.ReasonPhrase}".Trim();
+                throw new HttpRequestException(string.IsNullOrEmpty(details) ? message : $"{message} ({details})");
+            }
+
+            string resolvedContentType = response.Content.Headers.ContentType?.ToString()
+                ?? contentType
+                ?? InlineImage.OctetStream;
+
+            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+
+            return new OpenedFileStream(stream, url, resolvedContentType, response);
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Resolve a Graph token without throwing.
     /// <para>On the expiry path the caller already holds a more precise error, so an acquisition failure must leave it intact rather than surfacing as an unrelated exception.</para>
     /// </summary>
@@ -363,15 +531,10 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     }
 
     /// <summary>
-    /// Pull the human-readable part out of a Graph error envelope, falling back to the raw text.
-    /// <para>Graph replies <c>{ "error": { "code", "message" } }</c>, but a 401 can also come from the edge as HTML, so this must not assume JSON.
-    /// Bounded because it runs on a stream the SDK does not size, and lands in an exception message.</para>
-    /// </summary>
-
-    /// <summary>
     /// Refuse a response whose final hop left HTTPS.
     /// <para>Storage answers with a 302 to the host actually holding the bytes, so redirects have to be followed. They must not be followed <em>down</em> to plaintext: an <c>https</c> to <c>http</c> hop would put the file on the wire in the clear.</para>
     /// <para>Checked after the fact rather than by disabling <see cref="HttpClientHandler.AllowAutoRedirect"/>, because the downloader is handed an <see cref="HttpClient"/> it does not own and cannot reconfigure. Paired with <see cref="HttpCompletionOption.ResponseHeadersRead"/> this still runs before the body is read, so the file's bytes never cross the downgraded hop.</para>
+    /// <para>The registered client follows redirects through <see cref="FileRedirectHandler"/>, which refuses the downgrade before the hop is sent and keeps <c>Authorization</c> only on the original scheme, host, and port. This check covers a client registered without it.</para>
     /// </summary>
     private static void EnsureFinalHopIsHttps(HttpResponseMessage response)
     {
@@ -386,9 +549,11 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
     }
 
     private static async Task<string?> ReadServiceErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        string raw;
+        => ExtractServiceError(await ReadErrorBodyAsync(response, cancellationToken).ConfigureAwait(false));
 
+    /// <summary>Read up to <see cref="ErrorBodyLimit"/> bytes of an error body, or <c>null</c> when it cannot be read.</summary>
+    private static async Task<string?> ReadErrorBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
         try
         {
             Stream body = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -407,7 +572,7 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
                 read += chunk;
             }
 
-            raw = Encoding.UTF8.GetString(buffer, 0, read);
+            return Encoding.UTF8.GetString(buffer, 0, read);
         }
         catch (OperationCanceledException)
         {
@@ -416,6 +581,19 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
 #pragma warning disable CA1031 // diagnostics must never mask the error being raised
         catch (Exception)
 #pragma warning restore CA1031
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Pull the human-readable part out of a Graph error envelope, falling back to the raw text.
+    /// <para>Graph replies <c>{ "error": { "code", "message" } }</c>, but a 401 can also come from the edge as HTML, so this must not assume JSON.
+    /// Bounded because it runs on a stream the SDK does not size, and lands in an exception message.</para>
+    /// </summary>
+    private static string? ExtractServiceError(string? raw)
+    {
+        if (string.IsNullOrEmpty(raw))
         {
             return null;
         }
@@ -448,6 +626,35 @@ public sealed class FileDownloader(HttpClient httpClient, ILogger<FileDownloader
         }
 
         return Truncate(raw);
+    }
+
+    /// <summary>The <c>error.code</c> from a JSON error envelope, or <c>null</c> when the body is not one.</summary>
+    private static string? ExtractServiceErrorCode(string? raw)
+    {
+        if (string.IsNullOrEmpty(raw))
+        {
+            return null;
+        }
+
+        try
+        {
+            using JsonDocument envelope = JsonDocument.Parse(raw);
+
+            if (envelope.RootElement.ValueKind == JsonValueKind.Object
+                && envelope.RootElement.TryGetProperty("error", out JsonElement error)
+                && error.ValueKind == JsonValueKind.Object
+                && error.TryGetProperty("code", out JsonElement code)
+                && code.ValueKind == JsonValueKind.String)
+            {
+                string? trimmed = code.GetString()?.Trim();
+                return string.IsNullOrEmpty(trimmed) ? null : trimmed;
+            }
+        }
+        catch (JsonException)
+        {
+        }
+
+        return null;
     }
 
     private static string? Truncate(string text)
