@@ -39,7 +39,7 @@ internal sealed class SocketModeNegotiator : ISocketModeNegotiator
     /// Initializes a Socket Mode negotiator.
     /// </summary>
     /// <param name="httpClient">The client used to call the negotiate endpoint.</param>
-    /// <param name="getBotToken">Acquires a Bot Framework app token.</param>
+    /// <param name="getBotToken">Acquires the negotiate token: the Bot Framework app token, or the agent instance token for an agentic connection.</param>
     /// <param name="timeout">The negotiate request timeout.</param>
     /// <param name="timeProvider">The time provider used to evaluate retry delays.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is not positive.</exception>
@@ -84,7 +84,7 @@ internal sealed class SocketModeNegotiator : ISocketModeNegotiator
             if (string.IsNullOrWhiteSpace(token))
             {
                 throw new InvalidOperationException(
-                    "Socket Mode negotiate could not acquire a Bot Framework app token.");
+                    "Socket Mode negotiate could not acquire a connection token. Check that the bot credentials are configured.");
             }
 
             using HttpRequestMessage request = new(HttpMethod.Post, negotiateUri);

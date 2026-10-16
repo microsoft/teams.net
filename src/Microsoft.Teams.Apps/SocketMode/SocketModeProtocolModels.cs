@@ -72,6 +72,12 @@ internal sealed class SocketActivityEnvelope
     public string? Type { get; init; }
 
     /// <summary>
+    /// Gets the key identifying the bot the envelope is addressed to, when the service sends one.
+    /// </summary>
+    [JsonPropertyName("botKey")]
+    public string? BotKey { get; init; }
+
+    /// <summary>
     /// Gets whether the envelope requires a reply.
     /// </summary>
     [JsonPropertyName("ackRequired")]
