@@ -22,9 +22,15 @@ internal interface IGeoSocketOwner
     TimeSpan TokenRefreshMargin { get; }
 
     /// <summary>
-    /// Gets how long a replaced connection keeps dispatching after its successor is ready.
+    /// Gets how long a retired connection stays open after its successor is ready, even when nothing is in flight
+    /// on it, because the service can still route a few deliveries to it from its socket cache.
     /// </summary>
-    TimeSpan HandoffWindow { get; }
+    TimeSpan RetirementMinimumDrain { get; }
+
+    /// <summary>
+    /// Gets how long a retired connection stays open after its last reply so the reply can be sent before closing.
+    /// </summary>
+    TimeSpan ReplyFlushDelay { get; }
 
     /// <summary>
     /// Gets the server-requested retry delay for a failure, when one was provided.
@@ -72,7 +78,10 @@ internal interface IGeoSocketOwner
 /// </summary>
 /// <remarks>
 /// Each connection attempt is a new generation. Activities are dispatched only from the active ready generation
-/// or a predecessor that is explicitly retiring during a token rotation handoff.
+/// or a predecessor that is explicitly retiring during a token rotation handoff. A planned rotation names the
+/// still-open predecessor on the connect request so the service can stop routing to it, then drains the predecessor:
+/// it stays open until nothing is in flight on it and the minimum drain has elapsed, but never past the latest
+/// deadline among its in-flight envelopes.
 /// </remarks>
 internal sealed class GeoSocket : IAsyncDisposable
 {
@@ -211,7 +220,7 @@ internal sealed class GeoSocket : IAsyncDisposable
 
             try
             {
-                return await ConnectAsync(attemptSource.Token).ConfigureAwait(false);
+                return await ConnectAsync(replacesConnectionId: null, attemptSource.Token).ConfigureAwait(false);
             }
             catch (Exception exception) when (!startSource.IsCancellationRequested)
             {
@@ -259,16 +268,16 @@ internal sealed class GeoSocket : IAsyncDisposable
                 if (reason.Planned)
                 {
                     _logger.LogInformation("Socket Mode geo {Geo} rotating connection before token expiry.", Geo);
-                    replacement = await ReconnectAsync(null).ConfigureAwait(false);
+                    replacement = await ReconnectAsync(null, replacing: current).ConfigureAwait(false);
                     if (replacement is not null)
                     {
-                        StartRetirement(current);
+                        StartRetirement(current, replacement);
                     }
                 }
                 else
                 {
                     await ReleaseAsync(current.Connection).ConfigureAwait(false);
-                    replacement = await ReconnectAsync(reason.Error).ConfigureAwait(false);
+                    replacement = await ReconnectAsync(reason.Error, replacing: null).ConfigureAwait(false);
                 }
 
                 if (replacement is null)
@@ -291,8 +300,10 @@ internal sealed class GeoSocket : IAsyncDisposable
         }
     }
 
+    /// <param name="previousError">The failure that triggered the reconnect, or <see langword="null"/> for a planned rotation.</param>
+    /// <param name="replacing">The generation a planned rotation replaces; <see langword="null"/> after a drop.</param>
     /// <returns>The ready replacement, or <see langword="null"/> when the geo gave up after a non-retryable failure.</returns>
-    private async Task<Generation?> ReconnectAsync(Exception? previousError)
+    private async Task<Generation?> ReconnectAsync(Exception? previousError, Generation? replacing)
     {
         Exception? error = previousError;
 
@@ -302,7 +313,9 @@ internal sealed class GeoSocket : IAsyncDisposable
 
             try
             {
-                return await ConnectAsync(_stopToken).ConfigureAwait(false);
+                // Re-evaluated per attempt: once the replaced socket closes (for example at token expiry after
+                // repeated 429s), later attempts connect without naming it.
+                return await ConnectAsync(GetReplacedConnectionId(replacing), _stopToken).ConfigureAwait(false);
             }
             catch (Exception exception) when (!_stopToken.IsCancellationRequested)
             {
@@ -340,7 +353,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         _owner.OnGeoDisconnected(Geo, error);
     }
 
-    private async Task<Generation> ConnectAsync(CancellationToken cancellationToken)
+    private async Task<Generation> ConnectAsync(string? replacesConnectionId, CancellationToken cancellationToken)
     {
         Generation generation;
         lock (_sync)
@@ -349,12 +362,21 @@ internal sealed class GeoSocket : IAsyncDisposable
             generation = new Generation(++_generation);
         }
 
+        if (replacesConnectionId is not null)
+        {
+            _logger.LogDebug(
+                "Socket Mode geo {Geo} connecting a replacement for connection {ConnectionId}.",
+                Geo,
+                replacesConnectionId);
+        }
+
         generation.Connection = _connectionFactory.Create(
             _negotiateUri,
             new SocketConnectionHandlers(
                 envelope => DispatchAsync(generation, envelope),
                 frame => HandleReady(generation, frame),
-                (error, planned) => HandleClosed(generation, error, planned)));
+                (error, planned) => HandleClosed(generation, error, planned)),
+            replacesConnectionId);
 
         bool owned;
         lock (_sync)
@@ -370,6 +392,8 @@ internal sealed class GeoSocket : IAsyncDisposable
 
         try
         {
+            // The token lifetime counts from negotiate, which happens inside StartAsync.
+            generation.ConnectStartedAt = _timeProvider.GetTimestamp();
             await generation.Connection.StartAsync(cancellationToken).ConfigureAwait(false);
 
             // StartAsync completes after SocketReady, but the ready callback may still be running.
@@ -393,21 +417,49 @@ internal sealed class GeoSocket : IAsyncDisposable
         return generation;
     }
 
-    private Task<SocketReplyFrame?> DispatchAsync(Generation generation, SocketActivityEnvelope envelope)
+    private async Task<SocketReplyFrame?> DispatchAsync(Generation generation, SocketActivityEnvelope envelope)
     {
+        long envelopeToken;
         lock (_sync)
         {
             if (_stopping || (_active != generation && !_retiring.Contains(generation.Id)))
             {
-                return Task.FromResult<SocketReplyFrame?>(null);
+                return null;
             }
+
+            // Tracked on every generation, not only retiring ones, so work that arrived before a rotation still
+            // holds the predecessor open while it drains.
+            envelopeToken = generation.BeginEnvelope(_timeProvider.GetTimestamp(), GetEnvelopeDeadline(envelope));
         }
 
-        return _owner.DispatchAsync(Geo, envelope);
+        try
+        {
+            return await _owner.DispatchAsync(Geo, envelope).ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (_sync)
+            {
+                generation.EndEnvelope(envelopeToken, _timeProvider.GetTimestamp());
+
+                // Arrivals can only extend a drain, so only wake it when this reply lets it close sooner.
+                if (generation.DrainReadyAt is long readyAt
+                    && generation.DrainWake is TimeSpan scheduledWake
+                    && _timeProvider.GetElapsedTime(readyAt) + GetDrainWait(generation, readyAt) < scheduledWake)
+                {
+                    generation.Signal();
+                }
+            }
+        }
     }
 
     private void HandleReady(Generation generation, SocketReadyFrame frame)
     {
+        lock (_sync)
+        {
+            generation.ConnectionId ??= frame.ConnectionId;
+        }
+
         if (TryPromote(generation))
         {
             _owner.OnGeoReady(Geo, frame);
@@ -429,6 +481,7 @@ internal sealed class GeoSocket : IAsyncDisposable
             }
 
             _active = generation;
+            generation.ReadyAt ??= _timeProvider.GetTimestamp();
             return true;
         }
     }
@@ -440,6 +493,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         lock (_sync)
         {
             generation.IsClosed = true;
+            generation.Signal();
             _retiring.Remove(generation.Id);
 
             if (_active == generation)
@@ -490,7 +544,7 @@ internal sealed class GeoSocket : IAsyncDisposable
             return;
         }
 
-        TimeSpan delay = lifetime - _owner.TokenRefreshMargin;
+        TimeSpan delay = lifetime - _owner.TokenRefreshMargin - _timeProvider.GetElapsedTime(generation.ConnectStartedAt);
         if (delay < MinimumRefreshDelay)
         {
             delay = MinimumRefreshDelay;
@@ -523,9 +577,9 @@ internal sealed class GeoSocket : IAsyncDisposable
         }
     }
 
-    private void StartRetirement(Generation previous)
+    private void StartRetirement(Generation previous, Generation replacement)
     {
-        Task retirement = RetireAsync(previous);
+        Task retirement = RetireAsync(previous, replacement);
         lock (_sync)
         {
             if (!retirement.IsCompleted)
@@ -547,19 +601,72 @@ internal sealed class GeoSocket : IAsyncDisposable
             TaskScheduler.Default);
     }
 
-    private async Task RetireAsync(Generation previous)
+    /// <summary>
+    /// Drains a retired generation, then stops it. It keeps serving until nothing is in flight on it and the minimum
+    /// drain has elapsed since its replacement became ready, but never waits past the latest deadline among the
+    /// envelopes still in flight. A close by the service (for example
+    /// "Replaced by a newer socket.") ends the drain without reconnecting: the replacement is already serving.
+    /// </summary>
+    private async Task RetireAsync(Generation previous, Generation replacement)
     {
         try
         {
-            TimeSpan handoff = _owner.HandoffWindow;
-            await Task.Delay(
-                handoff > TimeSpan.Zero ? handoff : TimeSpan.Zero,
-                _timeProvider,
-                _stopToken).ConfigureAwait(false);
+            long readyAt;
+            lock (_sync)
+            {
+                readyAt = replacement.ReadyAt ?? _timeProvider.GetTimestamp();
+                previous.DrainReadyAt = readyAt;
+            }
 
+            _logger.LogDebug(
+                "Socket Mode geo {Geo} draining replaced connection {ConnectionId}.",
+                Geo,
+                previous.ConnectionId);
+
+            while (true)
+            {
+                Task changed;
+                TimeSpan wait;
+                lock (_sync)
+                {
+                    if (_stopping || previous.IsClosed)
+                    {
+                        break;
+                    }
+
+                    wait = GetDrainWait(previous, readyAt);
+                    if (wait <= TimeSpan.Zero)
+                    {
+                        break;
+                    }
+
+                    previous.DrainWake = _timeProvider.GetElapsedTime(readyAt) + wait;
+                    changed = previous.Changed;
+                }
+
+                try
+                {
+                    await changed.WaitAsync(wait, _timeProvider, _stopToken).ConfigureAwait(false);
+                }
+                catch (TimeoutException)
+                {
+                }
+            }
+
+            int abandoned;
             lock (_sync)
             {
                 _retiring.Remove(previous.Id);
+                abandoned = previous.InFlightCount;
+            }
+
+            if (abandoned > 0)
+            {
+                _logger.LogDebug(
+                    "Socket Mode geo {Geo} closing replaced connection {ConnectionId} with {Count} envelope(s) past their deadline.",
+                    Geo,
+                    previous.ConnectionId,
+                    abandoned);
             }
 
             await ReleaseAsync(previous.Connection).ConfigureAwait(false);
@@ -567,6 +674,22 @@ internal sealed class GeoSocket : IAsyncDisposable
         catch (OperationCanceledException) when (_stopToken.IsCancellationRequested)
         {
         }
+    }
+
+    /// <returns>How much longer the retired generation must stay open; zero or less when it can close now.</returns>
+    private TimeSpan GetDrainWait(Generation previous, long readyAt)
+    {
+        TimeSpan wait = _owner.RetirementMinimumDrain - _timeProvider.GetElapsedTime(readyAt);
+        if (previous.GetLatestInFlightDeadline(_timeProvider) is TimeSpan untilDeadline)
+        {
+            wait = Max(wait, untilDeadline);
+        }
+        else if (previous.LastReplyAt is long lastReplyAt)
+        {
+            wait = Max(wait, _owner.ReplyFlushDelay - _timeProvider.GetElapsedTime(lastReplyAt));
+        }
+
+        return wait;
     }
 
     private async Task StopCoreAsync()
@@ -667,6 +790,29 @@ internal sealed class GeoSocket : IAsyncDisposable
         return delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
     }
 
+    private string? GetReplacedConnectionId(Generation? replacing)
+    {
+        if (replacing is null)
+        {
+            return null;
+        }
+
+        lock (_sync)
+        {
+            return replacing.IsClosed || string.IsNullOrEmpty(replacing.ConnectionId)
+                ? null
+                : replacing.ConnectionId;
+        }
+    }
+
+    // A missing or invalid deadlineMs gives no drain budget beyond the minimum drain, matching the other SDKs.
+    private static TimeSpan GetEnvelopeDeadline(SocketActivityEnvelope envelope)
+        => envelope.DeadlineMs is int deadlineMs && deadlineMs > 0
+            ? TimeSpan.FromMilliseconds(deadlineMs)
+            : TimeSpan.Zero;
+
+    private static TimeSpan Max(TimeSpan left, TimeSpan right) => left > right ? left : right;
+
     private TimeSpan RemainingBudget(TimeSpan budget, long startedAt)
     {
         TimeSpan remaining = budget - _timeProvider.GetElapsedTime(startedAt);
@@ -681,8 +827,15 @@ internal sealed class GeoSocket : IAsyncDisposable
         }
     }
 
+    /// <remarks>
+    /// Mutable state is guarded by the owning <see cref="GeoSocket"/>'s lock.
+    /// </remarks>
     private sealed class Generation(long id)
     {
+        private readonly Dictionary<long, (long ArrivedAt, TimeSpan Deadline)> _inFlight = [];
+        private TaskCompletionSource _changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private long _nextEnvelope;
+
         internal long Id { get; } = id;
 
         internal ISocketConnection Connection { get; set; } = null!;
@@ -691,6 +844,75 @@ internal sealed class GeoSocket : IAsyncDisposable
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         internal bool IsClosed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server connection ID from this generation's SocketReady frame, exactly as received.
+        /// </summary>
+        internal string? ConnectionId { get; set; }
+
+        internal long ConnectStartedAt { get; set; }
+
+        internal long? ReadyAt { get; set; }
+
+        internal long? LastReplyAt { get; private set; }
+
+        /// <summary>
+        /// Gets or sets when this generation's replacement became ready, once it is draining.
+        /// </summary>
+        internal long? DrainReadyAt { get; set; }
+
+        /// <summary>
+        /// Gets or sets when the drain next re-evaluates, measured from <see cref="DrainReadyAt"/>.
+        /// </summary>
+        internal TimeSpan? DrainWake { get; set; }
+
+        internal int InFlightCount => _inFlight.Count;
+
+        /// <summary>
+        /// Gets a task that completes when <see cref="Signal"/> is next called.
+        /// </summary>
+        internal Task Changed => _changed.Task;
+
+        internal long BeginEnvelope(long arrivedAt, TimeSpan deadline)
+        {
+            long token = ++_nextEnvelope;
+            _inFlight[token] = (arrivedAt, deadline);
+            return token;
+        }
+
+        internal void EndEnvelope(long token, long repliedAt)
+        {
+            if (_inFlight.Remove(token))
+            {
+                LastReplyAt = repliedAt;
+            }
+        }
+
+        /// <returns>
+        /// The time until the latest deadline among envelopes still in flight, ignoring those already past their
+        /// deadline because the service has discarded their replies; <see langword="null"/> when none remain.
+        /// </returns>
+        internal TimeSpan? GetLatestInFlightDeadline(TimeProvider timeProvider)
+        {
+            TimeSpan? latest = null;
+            foreach ((long arrivedAt, TimeSpan deadline) in _inFlight.Values)
+            {
+                TimeSpan remaining = deadline - timeProvider.GetElapsedTime(arrivedAt);
+                if (remaining > TimeSpan.Zero && (latest is null || remaining > latest))
+                {
+                    latest = remaining;
+                }
+            }
+
+            return latest;
+        }
+
+        internal void Signal()
+        {
+            TaskCompletionSource changed = _changed;
+            _changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            changed.TrySetResult();
+        }
     }
 
     private sealed record CloseReason(Exception? Error, bool Planned);

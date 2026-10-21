@@ -78,7 +78,12 @@ internal sealed class SocketModeTransportOptions
 internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
 {
     private static readonly TimeSpan TokenRefreshMargin = TimeSpan.FromSeconds(60);
-    private static readonly TimeSpan HandoffWindow = TimeSpan.FromSeconds(5);
+
+    // The service caches a bot's sockets for up to 5 seconds, so late deliveries can still reach a replaced socket.
+    private static readonly TimeSpan RetirementMinimumDrain = TimeSpan.FromSeconds(5);
+
+    // SignalR sends a client result after the handler returns, without StopAsync waiting for it.
+    private static readonly TimeSpan ReplyFlushDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan ReconnectInitialDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan ReconnectMaxDelay = TimeSpan.FromSeconds(15);
 
@@ -183,7 +188,10 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     TimeSpan IGeoSocketOwner.TokenRefreshMargin => TokenRefreshMargin;
 
     /// <inheritdoc />
-    TimeSpan IGeoSocketOwner.HandoffWindow => HandoffWindow;
+    TimeSpan IGeoSocketOwner.RetirementMinimumDrain => RetirementMinimumDrain;
+
+    /// <inheritdoc />
+    TimeSpan IGeoSocketOwner.ReplyFlushDelay => ReplyFlushDelay;
 
     /// <summary>
     /// Connects every geo. Completes once all are ready; otherwise stops the transport and throws the first

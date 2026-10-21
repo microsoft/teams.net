@@ -36,10 +36,15 @@ internal interface ISocketConnectionFactory
     /// </summary>
     /// <param name="negotiateUri">The endpoint used to negotiate the connection.</param>
     /// <param name="handlers">Callbacks for frames and connection closure.</param>
+    /// <param name="replacesConnectionId">
+    /// The server connection ID of the still-open socket this connection replaces during a planned token refresh, or
+    /// <see langword="null"/> on a first connect, after a drop, or once the replaced socket has closed.
+    /// </param>
     /// <returns>A new Socket Mode connection.</returns>
     ISocketConnection Create(
         Uri negotiateUri,
-        SocketConnectionHandlers handlers);
+        SocketConnectionHandlers handlers,
+        string? replacesConnectionId = null);
 }
 
 /// <summary>

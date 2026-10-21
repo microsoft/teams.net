@@ -28,4 +28,9 @@ internal static class SocketModeProtocol
     /// The negotiate path appended after the geography segment.
     /// </summary>
     internal const string NegotiatePath = "/v3/websockets/connect";
+
+    /// <summary>
+    /// The connect request header naming the live socket that a planned token refresh replaces.
+    /// </summary>
+    internal const string ReplacesConnectionIdHeader = "x-ms-socket-replaces-connection-id";
 }

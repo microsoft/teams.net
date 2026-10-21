@@ -74,6 +74,32 @@ public class SocketModeNegotiatorTests
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task NegotiateAsync_OmitsReplacesHeaderWithoutReplacedConnection(string? replacesConnectionId)
+    {
+        RecordingHandler handler = SuccessHandler();
+        SocketModeNegotiator negotiator = CreateNegotiator(handler);
+
+        await negotiator.NegotiateAsync(NegotiateUri, replacesConnectionId);
+
+        Assert.Null(handler.ReplacesConnectionId);
+    }
+
+    [Theory]
+    [InlineData("connection-1")]
+    [InlineData("AbC/+=_- 123")]
+    public async Task NegotiateAsync_SendsReplacesHeaderExactlyAsReceived(string replacesConnectionId)
+    {
+        RecordingHandler handler = SuccessHandler();
+        SocketModeNegotiator negotiator = CreateNegotiator(handler);
+
+        await negotiator.NegotiateAsync(NegotiateUri, replacesConnectionId);
+
+        Assert.Equal([replacesConnectionId], Assert.IsType<string[]>(handler.ReplacesConnectionId));
+    }
+
+    [Theory]
     [InlineData("""
         {
           "url": "https://signalr.example.test/client",
@@ -256,7 +282,7 @@ public class SocketModeNegotiatorTests
         cancellationSource.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => negotiator.NegotiateAsync(NegotiateUri, cancellationSource.Token));
+            () => negotiator.NegotiateAsync(NegotiateUri, cancellationToken: cancellationSource.Token));
     }
 
     [Fact]
@@ -403,6 +429,7 @@ public class SocketModeNegotiatorTests
         internal Uri? RequestUri { get; private set; }
         internal AuthenticationHeaderValue? Authorization { get; private set; }
         internal bool HadContent { get; private set; }
+        internal string[]? ReplacesConnectionId { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -413,6 +440,9 @@ public class SocketModeNegotiatorTests
             RequestUri = request.RequestUri;
             Authorization = request.Headers.Authorization;
             HadContent = request.Content is not null;
+            ReplacesConnectionId = request.Headers.TryGetValues(
+                "x-ms-socket-replaces-connection-id",
+                out IEnumerable<string>? values) ? [.. values] : null;
             return send(request, cancellationToken);
         }
     }

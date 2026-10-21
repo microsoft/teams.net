@@ -16,10 +16,15 @@ internal interface ISocketModeNegotiator
     /// Negotiates the endpoint and access token for a Socket Mode connection.
     /// </summary>
     /// <param name="negotiateUri">The Socket Mode negotiate endpoint.</param>
+    /// <param name="replacesConnectionId">
+    /// The server connection ID of the live socket this connection replaces during a planned token refresh, or
+    /// <see langword="null"/> for any other connect.
+    /// </param>
     /// <param name="cancellationToken">A token for cancelling the operation.</param>
     /// <returns>The negotiated connection details.</returns>
     Task<SocketModeNegotiateResponse> NegotiateAsync(
         Uri negotiateUri,
+        string? replacesConnectionId = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -64,12 +69,17 @@ internal sealed class SocketModeNegotiator : ISocketModeNegotiator
     /// Negotiates the endpoint and access token for a Socket Mode connection.
     /// </summary>
     /// <param name="negotiateUri">The Socket Mode negotiate endpoint.</param>
+    /// <param name="replacesConnectionId">
+    /// The server connection ID of the live socket this connection replaces during a planned token refresh, sent
+    /// exactly as received; <see langword="null"/> or empty sends no replacement header.
+    /// </param>
     /// <param name="cancellationToken">A token for cancelling the operation.</param>
     /// <returns>The negotiated connection details.</returns>
     /// <exception cref="SocketModeNegotiateException">Thrown when the endpoint returns an unsuccessful status code.</exception>
     /// <exception cref="TimeoutException">Thrown when negotiation exceeds the configured timeout.</exception>
     public async Task<SocketModeNegotiateResponse> NegotiateAsync(
         Uri negotiateUri,
+        string? replacesConnectionId = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(negotiateUri);
@@ -89,6 +99,12 @@ internal sealed class SocketModeNegotiator : ISocketModeNegotiator
 
             using HttpRequestMessage request = new(HttpMethod.Post, negotiateUri);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            if (!string.IsNullOrEmpty(replacesConnectionId))
+            {
+                request.Headers.TryAddWithoutValidation(
+                    SocketModeProtocol.ReplacesConnectionIdHeader,
+                    replacesConnectionId);
+            }
 
             using HttpResponseMessage response = await _httpClient
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeoutSource.Token)

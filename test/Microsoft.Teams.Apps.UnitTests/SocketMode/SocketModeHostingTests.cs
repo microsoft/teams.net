@@ -514,7 +514,7 @@ public class SocketModeHostingTests
 
         public List<FakeConnection> Connections { get; } = [];
 
-        public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers)
+        public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers, string? replacesConnectionId = null)
         {
             FakeConnection connection = new(handlers, StartError);
             lock (Connections)

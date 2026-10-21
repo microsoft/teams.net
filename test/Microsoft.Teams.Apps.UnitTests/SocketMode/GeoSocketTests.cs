@@ -233,12 +233,12 @@ public class GeoSocketTests
         Assert.Equal(0, initial.StopCount);
 
         replacement.Ready("replacement");
-        await harness.Time.WaitForTimerAsync(harness.Owner.HandoffWindow);
+        await harness.Time.WaitForTimerAsync(harness.Owner.RetirementMinimumDrain);
         Assert.NotNull(await initial.Activity("retiring"));
         Assert.NotNull(await replacement.Activity("active"));
         Assert.Equal(0, initial.StopCount);
 
-        harness.Time.Advance(harness.Owner.HandoffWindow);
+        harness.Time.Advance(harness.Owner.RetirementMinimumDrain);
         await initial.Disposed.Task;
 
         Assert.Equal(1, initial.StopCount);
@@ -329,17 +329,332 @@ public class GeoSocketTests
 
         replacement.Ready("replacement");
         await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
-        await harness.Time.WaitForTimerAsync(harness.Owner.HandoffWindow);
-        harness.Time.Advance(harness.Owner.HandoffWindow);
+
+        // The predecessor already closed, so there is nothing to drain.
         await initial.Disposed.Task;
 
         Assert.Equal(1, initial.DisposeCount);
     }
 
     [Fact]
+    public async Task FirstConnect_DoesNotNameAReplacedConnection()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        await harness.StartReadyAsync(initial);
+
+        Assert.Null(initial.ReplacesConnectionId);
+    }
+
+    [Fact]
+    public async Task PlannedRefresh_NamesReplacedConnectionExactlyAsReceived()
+    {
+        const string ConnectionId = "AbC-123_=/+ opaque";
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.StartReadyAsync(initial, ConnectionId);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await harness.AdvanceThroughBackoffAsync(replacement);
+
+        Assert.Equal(ConnectionId, replacement.ReplacesConnectionId);
+    }
+
+    [Fact]
+    public async Task ReconnectAfterDrop_DoesNotNameAReplacedConnection()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.StartReadyAsync(initial);
+
+        initial.Close(new IOException("dropped"));
+        await harness.AdvanceThroughBackoffAsync(replacement);
+        replacement.Ready("replacement");
+        await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
+
+        Assert.Null(replacement.ReplacesConnectionId);
+    }
+
+    [Theory]
+    [InlineData(300, 240)]
+    [InlineData(3600, 3540)]
+    [InlineData(86400, 86340)]
+    public async Task Refresh_IsScheduledFromEachConnectsExpiresIn(int expiresInSeconds, int expectedRefreshSeconds)
+    {
+        Harness harness = new() { TokenRefreshMargin = TimeSpan.FromSeconds(60) };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(expiresInSeconds));
+        await harness.StartReadyAsync(initial);
+
+        Assert.True(harness.Time.HasTimerDueIn(TimeSpan.FromSeconds(expectedRefreshSeconds)));
+    }
+
+    [Fact]
+    public async Task Refresh_ReadsExpiresInAgainOnEveryConnect()
+    {
+        Harness harness = new() { TokenRefreshMargin = TimeSpan.FromSeconds(60), RetirementMinimumDrain = TimeSpan.Zero };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(3600));
+        FakeConnection replacement = harness.Factory.Enqueue(TimeSpan.FromSeconds(300));
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(3540));
+        replacement.Ready("replacement");
+        await initial.Disposed.Task;
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(240));
+    }
+
+    [Fact]
+    public async Task RefreshThrottled_KeepsServingOldSocketAndRetriesAfterRetryAfterWithHeader()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection throttled = harness.Factory.Enqueue(startError: new SocketModeNegotiateException(
+            HttpStatusCode.TooManyRequests,
+            TimeSpan.FromSeconds(15)));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, throttled, TimeSpan.FromSeconds(5));
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(15));
+        Assert.Equal("initial", throttled.ReplacesConnectionId);
+        Assert.NotNull(await initial.Activity("while-throttled"));
+        Assert.Equal(0, initial.StopCount);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(15));
+        await replacement.Started.Task;
+        Assert.Equal("initial", replacement.ReplacesConnectionId);
+
+        replacement.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(harness.Owner.RetirementMinimumDrain);
+
+        Assert.Contains("while-throttled", harness.Owner.Dispatched);
+        Assert.Empty(harness.Owner.Disconnections);
+        Assert.Equal(0, harness.Owner.Reconnections);
+    }
+
+    [Fact]
+    public async Task RefreshThrottledUntilOldTokenExpires_ReconnectsWithoutHeader()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection throttled = harness.Factory.Enqueue(startError: new SocketModeNegotiateException(
+            HttpStatusCode.TooManyRequests,
+            TimeSpan.FromSeconds(15)));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, throttled, TimeSpan.FromSeconds(5));
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(15));
+
+        IOException expired = new("token expired");
+        initial.Close(expired);
+        Assert.Equal([expired], harness.Owner.Disconnections);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(15));
+        await replacement.Started.Task;
+        replacement.Ready("replacement");
+        await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
+
+        Assert.Null(replacement.ReplacesConnectionId);
+    }
+
+    [Fact]
+    public async Task Drain_IdleRetiredSocketClosesAtMinimumDrain()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        replacement.Ready("replacement");
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
+        harness.Time.Advance(TimeSpan.FromSeconds(5) - TimeSpan.FromTicks(1));
+        Assert.Equal(0, initial.StopCount);
+
+        harness.Time.Advance(TimeSpan.FromTicks(1));
+        await initial.Disposed.Task;
+        Assert.Equal(1, initial.StopCount);
+    }
+
+    [Fact]
+    public async Task Drain_InFlightInvokeHoldsRetiredSocketUntilItReplies()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource slow = harness.Owner.Hold("slow-invoke");
+        Task<SocketReplyFrame?> reply = initial.Activity("slow-invoke", deadlineMs: 25_000);
+        replacement.Ready("replacement");
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(25));
+        harness.Time.Advance(TimeSpan.FromSeconds(12));
+        Assert.Equal(0, initial.StopCount);
+
+        slow.SetResult();
+        Assert.NotNull(await reply);
+        await initial.Disposed.Task;
+        Assert.Equal(1, initial.StopCount);
+        Assert.Empty(harness.Owner.Disconnections);
+    }
+
+    [Fact]
+    public async Task Drain_WaitsForReplyFlushAfterLastReply()
+    {
+        Harness harness = new() { ReplyFlushDelay = TimeSpan.FromSeconds(1) };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource slow = harness.Owner.Hold("slow-invoke");
+        Task<SocketReplyFrame?> reply = initial.Activity("slow-invoke", deadlineMs: 25_000);
+        replacement.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(25));
+        harness.Time.Advance(TimeSpan.FromSeconds(10));
+
+        slow.SetResult();
+        Assert.NotNull(await reply);
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(1));
+        Assert.Equal(0, initial.StopCount);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(1));
+        await initial.Disposed.Task;
+    }
+
+    [Fact]
+    public async Task Drain_NeverWaitsPastLatestInFlightDeadline()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource stuck = harness.Owner.Hold("stuck-invoke");
+        Task<SocketReplyFrame?> reply = initial.Activity("stuck-invoke", deadlineMs: 25_000);
+        replacement.Ready("replacement");
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(25));
+        harness.Time.Advance(TimeSpan.FromSeconds(25));
+        await initial.Disposed.Task;
+
+        Assert.False(reply.IsCompleted);
+        stuck.SetResult();
+        await reply;
+    }
+
+    [Fact]
+    public async Task Drain_MessageArrivingDuringDrainExtendsIt()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        replacement.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
+
+        harness.Time.Advance(TimeSpan.FromSeconds(3));
+        TaskCompletionSource late = harness.Owner.Hold("late-invoke");
+        Task<SocketReplyFrame?> reply = initial.Activity("late-invoke", deadlineMs: 10_000);
+        harness.Time.Advance(TimeSpan.FromSeconds(2));
+
+        // Re-armed for the late envelope's deadline: 3s + 10s after the replacement became ready.
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(8));
+        Assert.Equal(0, initial.StopCount);
+
+        late.SetResult();
+        Assert.NotNull(await reply);
+        await initial.Disposed.Task;
+    }
+
+    [Fact]
+    public async Task Drain_OnlyCountsEnvelopesStillInFlight()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.StartReadyAsync(initial);
+        TaskCompletionSource expired = harness.Owner.Hold("expired-invoke");
+        Task<SocketReplyFrame?> expiredReply = initial.Activity("expired-invoke", deadlineMs: 2_000);
+        Assert.NotNull(await initial.Activity("answered", deadlineMs: 120_000));
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await harness.AdvanceThroughBackoffAsync(replacement);
+        replacement.Ready("replacement");
+
+        // Neither the expired envelope nor the answered one's long deadline holds the socket open.
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await initial.Disposed.Task;
+
+        expired.SetResult();
+        await expiredReply;
+    }
+
+    [Fact]
+    public async Task Drain_EnvelopeWithoutDeadlineHoldsOnlyForMinimumDrain()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource stuck = harness.Owner.Hold("no-deadline");
+        Task<SocketReplyFrame?> reply = initial.Activity("no-deadline");
+        replacement.Ready("replacement");
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(5));
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        await initial.Disposed.Task;
+
+        stuck.SetResult();
+        await reply;
+    }
+
+    [Fact]
+    public async Task Drain_FollowsEnvelopeDeadlineWithoutAnUpperCap()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource stuck = harness.Owner.Hold("long-invoke");
+        Task<SocketReplyFrame?> reply = initial.Activity("long-invoke", deadlineMs: 120_000);
+        replacement.Ready("replacement");
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(120));
+        harness.Time.Advance(TimeSpan.FromSeconds(119));
+        Assert.Equal(0, initial.StopCount);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(1));
+        await initial.Disposed.Task;
+
+        stuck.SetResult();
+        await reply;
+    }
+
+    [Fact]
+    public async Task RetiredSocketClosedByServer_DoesNotReconnect()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource stuck = harness.Owner.Hold("in-flight");
+        Task<SocketReplyFrame?> reply = initial.Activity("in-flight", deadlineMs: 25_000);
+        replacement.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(25));
+
+        initial.Close(new IOException("Replaced by a newer socket."));
+        await initial.Disposed.Task;
+
+        Assert.Empty(harness.Owner.Disconnections);
+        Assert.Equal(0, harness.Owner.Reconnections);
+        Assert.Equal(2, harness.Factory.CreateCount);
+        Assert.NotNull(await replacement.Activity("after-replace"));
+
+        stuck.SetResult();
+        await reply;
+    }
+
+    [Fact]
     public async Task RepeatedRotation_ReleasesEveryPredecessorOnce()
     {
-        Harness harness = new() { HandoffWindow = TimeSpan.Zero };
+        Harness harness = new() { RetirementMinimumDrain = TimeSpan.Zero };
         FakeConnection[] connections =
         [
             harness.Factory.Enqueue(TimeSpan.FromSeconds(10)),
@@ -462,7 +777,7 @@ public class GeoSocketTests
     [Fact]
     public async Task StopAsync_DuringHandoff_DisposesActiveAndRetiringOnce()
     {
-        Harness harness = new() { HandoffWindow = TimeSpan.FromMinutes(1) };
+        Harness harness = new() { RetirementMinimumDrain = TimeSpan.FromMinutes(1) };
         FakeConnection retiring = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
         FakeConnection active = harness.Factory.Enqueue();
         await harness.StartReadyAsync(retiring);
@@ -525,7 +840,7 @@ public class GeoSocketTests
     [Fact]
     public async Task Retirement_LogsDisposeFailureAndKeepsReplacementActive()
     {
-        Harness harness = new() { HandoffWindow = TimeSpan.FromSeconds(5) };
+        Harness harness = new() { RetirementMinimumDrain = TimeSpan.FromSeconds(5) };
         FakeConnection retiring = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
         FakeConnection active = harness.Factory.Enqueue();
         retiring.DisposeError = new IOException("dispose failed");
@@ -577,18 +892,29 @@ public class GeoSocketTests
 
         internal TimeSpan TokenRefreshMargin { init => Owner.TokenRefreshMargin = value; }
 
-        internal TimeSpan HandoffWindow { init => Owner.HandoffWindow = value; }
+        internal TimeSpan RetirementMinimumDrain { init => Owner.RetirementMinimumDrain = value; }
+
+        internal TimeSpan ReplyFlushDelay { init => Owner.ReplyFlushDelay = value; }
+
+        /// <summary>Starts with <paramref name="initial"/>, then rotates to <paramref name="replacement"/> and makes it ready.</summary>
+        internal async Task RotateAsync(FakeConnection initial, FakeConnection replacement, TimeSpan refreshAt)
+        {
+            await StartReadyAsync(initial);
+            await Time.WaitForTimerAsync(refreshAt);
+            Time.Advance(refreshAt);
+            await AdvanceThroughBackoffAsync(replacement);
+        }
 
         internal Func<int, TimeSpan> Backoff { init => Owner.Backoff = value; }
 
         internal GeoSocket Socket =>
             _socket ??= new GeoSocket(Owner, "amer", NegotiateUri, Factory, Logger, Time);
 
-        internal async Task StartReadyAsync(FakeConnection connection)
+        internal async Task StartReadyAsync(FakeConnection connection, string connectionId = "initial")
         {
             Task start = Socket.StartAsync();
             await connection.Started.Task;
-            connection.Ready("initial");
+            connection.Ready(connectionId);
             await start;
         }
 
@@ -613,7 +939,23 @@ public class GeoSocketTests
 
         public TimeSpan TokenRefreshMargin { get; set; } = TimeSpan.FromSeconds(5);
 
-        public TimeSpan HandoffWindow { get; set; } = TimeSpan.FromSeconds(5);
+        public TimeSpan RetirementMinimumDrain { get; set; } = TimeSpan.FromSeconds(5);
+
+        public TimeSpan ReplyFlushDelay { get; set; } = TimeSpan.Zero;
+
+        private readonly Dictionary<string, TaskCompletionSource> _held = [];
+
+        /// <summary>Holds the reply to <paramref name="envelopeId"/> until the returned source completes.</summary>
+        internal TaskCompletionSource Hold(string envelopeId)
+        {
+            TaskCompletionSource held = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            lock (_sync)
+            {
+                _held[envelopeId] = held;
+            }
+
+            return held;
+        }
 
         internal Func<int, TimeSpan> Backoff { get; set; } = _ => TimeSpan.FromSeconds(1);
 
@@ -630,14 +972,21 @@ public class GeoSocketTests
 
         public TimeSpan GetBackoffDelay(int attempt) => Backoff(attempt);
 
-        public Task<SocketReplyFrame?> DispatchAsync(string geo, SocketActivityEnvelope envelope)
+        public async Task<SocketReplyFrame?> DispatchAsync(string geo, SocketActivityEnvelope envelope)
         {
+            TaskCompletionSource? held;
             lock (_sync)
             {
                 _dispatched.Add(envelope.EnvelopeId!);
+                _held.TryGetValue(envelope.EnvelopeId!, out held);
             }
 
-            return Task.FromResult<SocketReplyFrame?>(new SocketReplyFrame { Status = 200 });
+            if (held is not null)
+            {
+                await held.Task;
+            }
+
+            return new SocketReplyFrame { Status = 200 };
         }
 
         public void OnGeoReady(string geo, SocketReadyFrame frame)
@@ -689,7 +1038,10 @@ public class GeoSocketTests
             return connection;
         }
 
-        public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers)
+        public ISocketConnection Create(
+            Uri negotiateUri,
+            SocketConnectionHandlers handlers,
+            string? replacesConnectionId = null)
         {
             Interlocked.Increment(ref _createCount);
             FakeConnection connection;
@@ -699,6 +1051,7 @@ public class GeoSocketTests
             }
 
             connection.Handlers = handlers;
+            connection.ReplacesConnectionId = replacesConnectionId;
             return connection;
         }
     }
@@ -713,6 +1066,8 @@ public class GeoSocketTests
         public TimeSpan? TokenLifetime { get; } = tokenLifetime;
 
         internal SocketConnectionHandlers Handlers { get; set; } = null!;
+
+        internal string? ReplacesConnectionId { get; set; }
 
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -770,8 +1125,8 @@ public class GeoSocketTests
 
         internal void Close(Exception error) => RaiseClosed(error, planned: false);
 
-        internal Task<SocketReplyFrame?> Activity(string envelopeId)
-            => Handlers.OnActivity(new SocketActivityEnvelope { EnvelopeId = envelopeId });
+        internal Task<SocketReplyFrame?> Activity(string envelopeId, int? deadlineMs = null)
+            => Handlers.OnActivity(new SocketActivityEnvelope { EnvelopeId = envelopeId, DeadlineMs = deadlineMs });
 
         private void RaiseClosed(Exception? error, bool planned)
         {

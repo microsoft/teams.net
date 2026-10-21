@@ -40,6 +40,7 @@ public class SocketModeProtocolTests
           "envelopeId": "env-1",
           "type": "message",
           "ackRequired": true,
+          "deadlineMs": 25000,
           "payload": { "type": "message", "text": "hello" },
           "cv": "cv-value"
         }
@@ -50,6 +51,7 @@ public class SocketModeProtocolTests
           "EnvelopeId": "env-1",
           "Type": "message",
           "AckRequired": true,
+          "DeadlineMs": 25000,
           "Payload": { "type": "message", "text": "hello" },
           "Cv": "cv-value"
         }
@@ -63,6 +65,7 @@ public class SocketModeProtocolTests
         Assert.Equal("env-1", envelope.EnvelopeId);
         Assert.Equal("message", envelope.Type);
         Assert.True(envelope.AckRequired);
+        Assert.Equal(25_000, envelope.DeadlineMs);
         Assert.Equal("cv-value", envelope.CorrelationVector);
         Assert.Equal(JsonValueKind.Object, envelope.Payload?.ValueKind);
         Assert.Equal("message", envelope.Payload?.GetProperty("type").GetString());

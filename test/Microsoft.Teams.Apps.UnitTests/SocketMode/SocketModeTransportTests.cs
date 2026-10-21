@@ -481,7 +481,7 @@ public class SocketModeTransportTests
             return connections;
         }
 
-        public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers)
+        public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers, string? replacesConnectionId = null)
         {
             string[] segments = negotiateUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
             string geo = segments.Length > 3 ? segments[0] : string.Empty;
