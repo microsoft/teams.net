@@ -623,20 +623,19 @@ internal sealed class GeoSocket : IAsyncDisposable
                 Geo,
                 previous.ConnectionId);
 
+            int abandoned;
             while (true)
             {
                 Task changed;
                 TimeSpan wait;
                 lock (_sync)
                 {
-                    if (_stopping || previous.IsClosed)
+                    // Stop accepting envelopes in the same critical section that decides to close, so nothing can be
+                    // dispatched onto a connection that is about to be released.
+                    if (_stopping || previous.IsClosed || (wait = GetDrainWait(previous, readyAt)) <= TimeSpan.Zero)
                     {
-                        break;
-                    }
-
-                    wait = GetDrainWait(previous, readyAt);
-                    if (wait <= TimeSpan.Zero)
-                    {
+                        _retiring.Remove(previous.Id);
+                        abandoned = previous.InFlightCount;
                         break;
                     }
 
@@ -651,13 +650,6 @@ internal sealed class GeoSocket : IAsyncDisposable
                 catch (TimeoutException)
                 {
                 }
-            }
-
-            int abandoned;
-            lock (_sync)
-            {
-                _retiring.Remove(previous.Id);
-                abandoned = previous.InFlightCount;
             }
 
             if (abandoned > 0)
