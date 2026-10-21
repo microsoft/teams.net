@@ -406,13 +406,13 @@ public class GeoSocketTests
     [Fact]
     public async Task RefreshThrottled_KeepsServingOldSocketAndRetriesAfterRetryAfterWithHeader()
     {
-        Harness harness = new();
-        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        Harness harness = new() { TokenRefreshMargin = TimeSpan.FromSeconds(30) };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(60));
         FakeConnection throttled = harness.Factory.Enqueue(startError: new SocketModeNegotiateException(
             HttpStatusCode.TooManyRequests,
             TimeSpan.FromSeconds(15)));
         FakeConnection replacement = harness.Factory.Enqueue();
-        await harness.RotateAsync(initial, throttled, TimeSpan.FromSeconds(5));
+        await harness.RotateAsync(initial, throttled, TimeSpan.FromSeconds(30));
 
         await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(15));
         Assert.Equal("initial", throttled.ReplacesConnectionId);
@@ -429,6 +429,26 @@ public class GeoSocketTests
         Assert.Contains("while-throttled", harness.Owner.Dispatched);
         Assert.Empty(harness.Owner.Disconnections);
         Assert.Equal(0, harness.Owner.Reconnections);
+    }
+
+    [Fact]
+    public async Task RefreshThrottledPastOldTokenExpiry_OmitsHeaderWhileOldSocketIsStillOpen()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection throttled = harness.Factory.Enqueue(startError: new SocketModeNegotiateException(
+            HttpStatusCode.TooManyRequests,
+            TimeSpan.FromSeconds(15)));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, throttled, TimeSpan.FromSeconds(5));
+        Assert.Equal("initial", throttled.ReplacesConnectionId);
+
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(15));
+        harness.Time.Advance(TimeSpan.FromSeconds(15));
+        await replacement.Started.Task;
+
+        Assert.Equal(0, initial.StopCount);
+        Assert.Null(replacement.ReplacesConnectionId);
     }
 
     [Fact]

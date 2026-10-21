@@ -789,12 +789,22 @@ internal sealed class GeoSocket : IAsyncDisposable
             return null;
         }
 
+        string? connectionId;
         lock (_sync)
         {
-            return replacing.IsClosed || string.IsNullOrEmpty(replacing.ConnectionId)
-                ? null
-                : replacing.ConnectionId;
+            connectionId = replacing.IsClosed ? null : replacing.ConnectionId;
         }
+
+        // Once the old token has expired, connect as if after a drop. Expiry is measured from connect start, so this
+        // errs toward dropping the header slightly early.
+        if (string.IsNullOrEmpty(connectionId)
+            || (replacing.Connection.TokenLifetime is TimeSpan lifetime
+                && _timeProvider.GetElapsedTime(replacing.ConnectStartedAt) >= lifetime))
+        {
+            return null;
+        }
+
+        return connectionId;
     }
 
     // A missing or invalid deadlineMs gives no drain budget beyond the minimum drain, matching the other SDKs.
