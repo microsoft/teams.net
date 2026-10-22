@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 using Moq.Protected;
@@ -315,4 +318,235 @@ public class ConversationClientTests
         Assert.NotNull(result);
     }
 
+    [Fact]
+    public async Task SendReplyChainActivityAsync_PostsToReplyChainsRoute()
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        SendActivityResponse? result = await conversationClient.SendReplyChainActivityAsync(
+            "conv123",
+            "root456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"));
+
+        Assert.Equal("reply123", result?.Id);
+        Assert.Equal("https://test.service.url/v3/conversations/conv123/replyChains/root456", capture.Request?.RequestUri?.OriginalString);
+        Assert.Equal(HttpMethod.Post, capture.Request?.Method);
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_EscapesBothIds()
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await conversationClient.SendReplyChainActivityAsync(
+            "19:abc/def@thread.v2",
+            "root/456 789",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"));
+
+        Assert.Equal(
+            "https://test.service.url/v3/conversations/19%3Aabc%2Fdef%40thread.v2/replyChains/root%2F456%20789",
+            capture.Request?.RequestUri?.OriginalString);
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_DoesNotAppendAMessageIdSuffix()
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await conversationClient.SendReplyChainActivityAsync(
+            "19:abc@thread.v2",
+            "root456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"));
+
+        Assert.Equal("https://test.service.url/v3/conversations/19%3Aabc%40thread.v2/replyChains/root456", capture.Request?.RequestUri?.OriginalString);
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_DoesNotSetReplyToId()
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await conversationClient.SendReplyChainActivityAsync(
+            "conv123",
+            "root456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).WithProperty("text", "hello").Build(),
+            new Uri("https://test.service.url/"));
+
+        Assert.NotNull(capture.Body);
+        Assert.Contains("hello", capture.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("replyToId", capture.Body, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false, "https://test.service.url/v3/conversations/conv123/replyChains/root456")]
+    [InlineData(true, "https://test.service.url/v3/conversations/conv123/replyChains/root456?isTargetedActivity=true")]
+    public async Task SendReplyChainActivityAsync_AppendsTargetedQueryOnlyWhenTargeted(bool isTargeted, string expectedUrl)
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await conversationClient.SendReplyChainActivityAsync(
+            "conv123",
+            "root456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"),
+            isTargeted: isTargeted);
+
+        Assert.Equal(expectedUrl, capture.Request?.RequestUri?.OriginalString);
+    }
+
+    [Theory]
+    [InlineData(null, "root456")]
+    [InlineData("", "root456")]
+    [InlineData("   ", "root456")]
+    [InlineData("conv123", null)]
+    [InlineData("conv123", "")]
+    [InlineData("conv123", "   ")]
+    public async Task SendReplyChainActivityAsync_BlankIds_ThrowBeforeAnyRequest(string? conversationId, string? activityId)
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await Assert.ThrowsAnyAsync<ArgumentException>(() =>
+            conversationClient.SendReplyChainActivityAsync(
+                conversationId!,
+                activityId!,
+                CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+                new Uri("https://test.service.url/")));
+
+        Assert.Null(capture.Request);
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_PassesThroughCustomHeadersAndRequestContext()
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+        AgenticIdentity identity = new() { AgenticAppId = "app-123", AgenticUserId = "user-456" };
+
+        await conversationClient.SendReplyChainActivityAsync(
+            "conv123",
+            "root456",
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"),
+            requestContext: BotRequestContext.FromAgenticIdentity(identity),
+            customHeaders: new Dictionary<string, string> { ["X-Test-Header"] = "header-value" });
+
+        Assert.NotNull(capture.Request);
+        Assert.Equal("header-value", Assert.Single(capture.Request.Headers.GetValues("X-Test-Header")));
+        Assert.True(capture.Request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticIdentityKey), out object? stamped));
+        Assert.Same(identity, stamped);
+    }
+
+    [Theory]
+    [InlineData(".", "root456")]
+    [InlineData("..", "root456")]
+    [InlineData("conv123", ".")]
+    [InlineData("conv123", "..")]
+    public async Task SendReplyChainActivityAsync_DotSegmentIds_ThrowBeforeAnyRequest(string conversationId, string activityId)
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            conversationClient.SendReplyChainActivityAsync(
+                conversationId,
+                activityId,
+                CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+                new Uri("https://test.service.url/")));
+
+        Assert.Null(capture.Request);
+    }
+
+    [Theory]
+    [InlineData("...", "root456")]
+    [InlineData(".a", "root456")]
+    [InlineData("conv123", "..a")]
+    public async Task SendReplyChainActivityAsync_IdsThatOnlyContainDots_AreSent(string conversationId, string activityId)
+    {
+        RequestCapture capture = new();
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await conversationClient.SendReplyChainActivityAsync(
+            conversationId,
+            activityId,
+            CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+            new Uri("https://test.service.url/"));
+
+        Assert.Equal($"https://test.service.url/v3/conversations/{conversationId}/replyChains/{activityId}", capture.Request?.RequestUri?.OriginalString);
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_WithHttpError_ThrowsHttpRequestException()
+    {
+        RequestCapture capture = new() { StatusCode = HttpStatusCode.BadRequest };
+        ConversationClient conversationClient = new(new HttpClient(capture.CreateHandler()));
+
+        await Assert.ThrowsAsync<HttpRequestException>(() =>
+            conversationClient.SendReplyChainActivityAsync(
+                "conv123",
+                "root456",
+                CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+                new Uri("https://test.service.url/")));
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_WithNullActivity_ThrowsArgumentNullException()
+    {
+        ConversationClient conversationClient = new(new HttpClient());
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            conversationClient.SendReplyChainActivityAsync("conv123", "root456", null!, new Uri("https://test.service.url/")));
+    }
+
+    [Fact]
+    public async Task SendReplyChainActivityAsync_WithNullServiceUrl_ThrowsArgumentNullException()
+    {
+        ConversationClient conversationClient = new(new HttpClient());
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            conversationClient.SendReplyChainActivityAsync(
+                "conv123",
+                "root456",
+                CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(),
+                null!));
+    }
+
+    private sealed class RequestCapture
+    {
+        public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
+
+        public HttpRequestMessage? Request { get; private set; }
+
+        public string? Body { get; private set; }
+
+        public HttpMessageHandler CreateHandler()
+        {
+            Mock<HttpMessageHandler> handler = new();
+            handler
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, _) =>
+                {
+                    Request = request;
+                    Body = request.Content is null ? null : await request.Content.ReadAsStringAsync();
+                    return new HttpResponseMessage
+                    {
+                        StatusCode = StatusCode,
+                        Content = new StringContent("{\"id\":\"reply123\"}")
+                    };
+                });
+            return handler.Object;
+        }
+    }
 }

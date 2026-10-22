@@ -83,6 +83,66 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     }
 
     /// <summary>
+    /// Sends an activity as a reply in a reply chain (thread).
+    /// Posts to <c>/v3/conversations/{conversationId}/replyChains/{activityId}</c>.
+    /// </summary>
+    /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>, or the activity id when replying to a top-level message. Cannot be null or whitespace.</param>
+    /// <param name="activity">The activity to send. Cannot be null.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="isTargeted">When true, the activity is sent as a targeted message visible only to the specified recipient.</param>
+    /// <param name="requestContext">Optional per-request properties (see <see cref="Http.BotRequestContext"/>) to stamp onto the request's options.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> or <paramref name="activityId"/> is blank, or is the dot segment <c>.</c> or <c>..</c>.</exception>
+    /// <exception cref="HttpRequestException">Thrown if the activity could not be sent successfully.</exception>
+    public virtual async Task<SendActivityResponse?> SendReplyChainActivityAsync(string conversationId, string activityId, CoreActivityInput activity, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        // Percent-encoding leaves "." and ".." unchanged and the HTTP stack collapses them, so the request would leave the reply chain route.
+        if (conversationId is "." or "..")
+        {
+            throw new ArgumentException("The conversation id must not be a dot segment.", nameof(conversationId));
+        }
+
+        if (activityId is "." or "..")
+        {
+            throw new ArgumentException("The activity id must not be a dot segment.", nameof(activityId));
+        }
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/replyChains/{Uri.EscapeDataString(activityId)}";
+
+        if (isTargeted)
+        {
+            url += "?isTargetedActivity=true";
+        }
+
+        string body = activity.ToJson();
+
+        return await ExecuteConversationClientAsync(
+            serviceUrl,
+            Telemetry.ClientOperations.SendReplyChainActivity,
+            async span =>
+            {
+                span?.SetTag(Telemetry.Tags.ConversationId, conversationId);
+                span?.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+                SendActivityResponse? response = await _botHttpClient.SendAsync<SendActivityResponse>(
+                    HttpMethod.Post,
+                    url,
+                    body,
+                    CreateRequestOptions(requestContext, "replying to activity", customHeaders),
+                    cancellationToken).ConfigureAwait(false);
+                span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
+                return response;
+            }).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Updates an existing activity in a conversation.
     /// </summary>
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
