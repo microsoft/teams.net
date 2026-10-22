@@ -34,6 +34,11 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     public string TenantId { get; }
     public string BotAppId { get; }
     public string? UserId2 { get; }
+
+    /// <summary>
+    /// The id of the chat of a personal conversation with the bot (<c>channelData.chat.id</c>), or null when not configured.
+    /// </summary>
+    public string? PersonalConversationId { get; }
     public AgenticIdentity? AgenticIdentity { get; }
 
     /// <summary>
@@ -98,6 +103,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
         TenantId = Env("TEST_TENANTID");
         BotAppId = Env("AzureAd__ClientId");
         UserId2 = Environment.GetEnvironmentVariable("TEST_USER_ID_2");
+        PersonalConversationId = Environment.GetEnvironmentVariable("TEST_PERSONALCONVERSATIONID");
 
         string? agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
         string? agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
