@@ -47,7 +47,8 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
     /// <inheritdoc />
     public ISocketConnection Create(
         Uri negotiateUri,
-        SocketConnectionHandlers handlers)
+        SocketConnectionHandlers handlers,
+        Func<string?>? getReplacedConnectionId = null)
     {
         ArgumentNullException.ThrowIfNull(negotiateUri);
         ArgumentNullException.ThrowIfNull(handlers);
@@ -60,7 +61,8 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
             _readinessTimeout,
             _keepAliveInterval,
             _serverTimeout,
-            _logger);
+            _logger,
+            getReplacedConnectionId);
     }
 
     private static TimeSpan EnsurePositive(TimeSpan value, string parameterName)
@@ -84,6 +86,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     private readonly TimeSpan _keepAliveInterval;
     private readonly TimeSpan _serverTimeout;
     private readonly ILogger _logger;
+    private readonly Func<string?>? _getReplacedConnectionId;
     private readonly CancellationTokenSource _lifetimeSource = new();
     private readonly TaskCompletionSource _readySource =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -108,6 +111,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     /// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
     /// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
     /// <param name="logger">The logger for connection lifecycle failures.</param>
+    /// <param name="getReplacedConnectionId">Returns the server connection ID this connection replaces, read on negotiate.</param>
     internal SignalRSocketConnection(
         Uri negotiateUri,
         SocketConnectionHandlers handlers,
@@ -116,7 +120,8 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         TimeSpan readinessTimeout,
         TimeSpan keepAliveInterval,
         TimeSpan serverTimeout,
-        ILogger logger)
+        ILogger logger,
+        Func<string?>? getReplacedConnectionId = null)
     {
         _negotiateUri = negotiateUri ?? throw new ArgumentNullException(nameof(negotiateUri));
         _handlers = handlers ?? throw new ArgumentNullException(nameof(handlers));
@@ -128,6 +133,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         _keepAliveInterval = keepAliveInterval;
         _serverTimeout = serverTimeout;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _getReplacedConnectionId = getReplacedConnectionId;
     }
 
     /// <inheritdoc />
@@ -153,8 +159,9 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         {
             SocketModeNegotiateResponse negotiateResponse =
                 await _negotiator
-                    .NegotiateAsync(_negotiateUri, startSource.Token)
+                    .NegotiateAsync(_negotiateUri, _getReplacedConnectionId, startSource.Token)
                     .ConfigureAwait(false);
+            _handlers.OnNegotiated?.Invoke();
 
             TokenLifetime = negotiateResponse.ExpiresIn > 0
                 ? TimeSpan.FromSeconds(negotiateResponse.ExpiresIn)

@@ -29,6 +29,7 @@ public class SignalRSocketConnectionTests
 
         Assert.Equal(1, harness.Negotiator.CallCount);
         Assert.Equal(NegotiateUri, harness.Negotiator.NegotiateUri);
+        Assert.Null(harness.Negotiator.ReplacesConnectionId);
         Assert.Equal(SignalRUri, harness.SignalRFactory.Url);
         Assert.Equal("signalr-token", harness.SignalRFactory.AccessToken);
         Assert.Equal(TimeSpan.FromSeconds(15), harness.SignalRFactory.KeepAliveInterval);
@@ -333,6 +334,29 @@ public class SignalRSocketConnectionTests
         Assert.NotSame(first, second);
     }
 
+    [Fact]
+    public async Task Factory_PassesReplacedConnectionIdToNegotiate()
+    {
+        FakeNegotiator negotiator = new(SuccessfulNegotiation());
+        FakeSignalRClientConnection signalR = new();
+        FakeSignalRConnectionFactory signalRFactory = new(signalR);
+        SignalRSocketConnectionFactory factory = new(
+            negotiator,
+            TimeSpan.FromSeconds(30),
+            TimeSpan.FromSeconds(15),
+            TimeSpan.FromSeconds(30),
+            NullLogger.Instance,
+            signalRFactory.Create);
+
+        ISocketConnection connection = factory.Create(NegotiateUri, DefaultHandlers(), () => "old-connection-id");
+        Task start = connection.StartAsync(CancellationToken.None);
+        await signalR.Started.Task;
+        signalR.Ready(new SocketReadyFrame { ConnectionId = "new-connection-id" });
+        await start;
+
+        Assert.Equal("old-connection-id", negotiator.ReplacesConnectionId);
+    }
+
     private static TestHarness CreateHarness(
         int expiresIn = 3600,
         Func<SocketActivityEnvelope, Task<SocketReplyFrame?>>? onActivity = null,
@@ -404,14 +428,17 @@ public class SignalRSocketConnectionTests
     {
         internal int CallCount { get; private set; }
         internal Uri? NegotiateUri { get; private set; }
+        internal string? ReplacesConnectionId { get; private set; }
 
         public Task<SocketModeNegotiateResponse> NegotiateAsync(
             Uri negotiateUri,
+            Func<string?>? getReplacedConnectionId = null,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             CallCount++;
             NegotiateUri = negotiateUri;
+            ReplacesConnectionId = getReplacedConnectionId?.Invoke();
             return Task.FromResult(response);
         }
     }
@@ -426,6 +453,7 @@ public class SignalRSocketConnectionTests
 
         public Task<SocketModeNegotiateResponse> NegotiateAsync(
             Uri negotiateUri,
+            Func<string?>? getReplacedConnectionId = null,
             CancellationToken cancellationToken = default)
         {
             Started.TrySetResult();

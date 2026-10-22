@@ -78,6 +78,12 @@ internal sealed class SocketActivityEnvelope
     public bool? AckRequired { get; init; }
 
     /// <summary>
+    /// Gets how long, in milliseconds from arrival, the service waits for this envelope's reply before discarding it.
+    /// </summary>
+    [JsonPropertyName("deadlineMs")]
+    public int? DeadlineMs { get; init; }
+
+    /// <summary>
     /// Gets the activity payload.
     /// </summary>
     [JsonPropertyName("payload")]

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Microsoft.Teams.Apps.SocketMode;
@@ -90,6 +91,9 @@ internal sealed class SignalRClientConnection(HubConnection connection)
             {
                 options.AccessTokenProvider =
                     () => Task.FromResult<string?>(accessToken);
+
+                // Each negotiated token is valid for exactly one socket, so never fall back to another transport.
+                options.Transports = HttpTransportType.WebSockets;
             })
             .WithKeepAliveInterval(keepAliveInterval)
             .WithServerTimeout(serverTimeout)
