@@ -280,6 +280,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// (a recipient with <c>IsTargeted</c> set), the message is sent as a
     /// targeted message visible only to that recipient.
     /// </summary>
+    /// <remarks>
+    /// When the inbound message is inside a reply chain in a chat, sends into that reply chain.
+    /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
@@ -300,12 +303,48 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
 
+        if (TryGetChatReplyChain(out string chatId, out string replyChainId))
+        {
+            return isTargeted
+                ? Api.Conversations.CreateTargetedReplyChainActivityAsync(chatId, replyChainId, activity, cancellationToken: cancellationToken)
+                : Api.Conversations.CreateReplyChainActivityAsync(chatId, replyChainId, activity, cancellationToken: cancellationToken);
+        }
+
         if (!isTargeted)
         {
             return Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
         }
 
         return Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Finds where a response to the inbound message belongs when it was received as a reply in a thread.
+    /// An inbound message is a reply in a thread when <c>channelData.replyChain.id</c> (the root message id) differs from its own id.
+    /// When the two are equal, the inbound message is a top-level message, so the response is sent as a top-level message and does not start a thread.
+    /// The destination is the chat, <c>channelData.chat.id</c>, taken from the payload.
+    /// Returns false when either id is missing, so the send goes to the inbound conversation.
+    /// </summary>
+    private bool TryGetChatReplyChain(out string chatId, out string replyChainId)
+    {
+        chatId = string.Empty;
+        replyChainId = string.Empty;
+
+        if (Activity.Type != TeamsActivityTypes.Message || Activity.Conversation?.ConversationType == ConversationTypes.GroupChat)
+        {
+            return false;
+        }
+
+        string? chat = Activity.ChannelData?.Chat?.Id;
+        string? replyChain = Activity.ChannelData?.ReplyChain?.Id;
+        if (string.IsNullOrWhiteSpace(chat) || string.IsNullOrWhiteSpace(replyChain) || replyChain == Activity.Id)
+        {
+            return false;
+        }
+
+        chatId = chat;
+        replyChainId = replyChain;
+        return true;
     }
 
     // ==================== OAuth Sign-In ====================
