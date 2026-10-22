@@ -348,7 +348,7 @@ public class SignalRSocketConnectionTests
             NullLogger.Instance,
             signalRFactory.Create);
 
-        ISocketConnection connection = factory.Create(NegotiateUri, DefaultHandlers(), "old-connection-id");
+        ISocketConnection connection = factory.Create(NegotiateUri, DefaultHandlers(), () => "old-connection-id");
         Task start = connection.StartAsync(CancellationToken.None);
         await signalR.Started.Task;
         signalR.Ready(new SocketReadyFrame { ConnectionId = "new-connection-id" });
@@ -432,13 +432,13 @@ public class SignalRSocketConnectionTests
 
         public Task<SocketModeNegotiateResponse> NegotiateAsync(
             Uri negotiateUri,
-            string? replacesConnectionId = null,
+            Func<string?>? getReplacedConnectionId = null,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             CallCount++;
             NegotiateUri = negotiateUri;
-            ReplacesConnectionId = replacesConnectionId;
+            ReplacesConnectionId = getReplacedConnectionId?.Invoke();
             return Task.FromResult(response);
         }
     }
@@ -453,7 +453,7 @@ public class SignalRSocketConnectionTests
 
         public Task<SocketModeNegotiateResponse> NegotiateAsync(
             Uri negotiateUri,
-            string? replacesConnectionId = null,
+            Func<string?>? getReplacedConnectionId = null,
             CancellationToken cancellationToken = default)
         {
             Started.TrySetResult();

@@ -36,15 +36,16 @@ internal interface ISocketConnectionFactory
     /// </summary>
     /// <param name="negotiateUri">The endpoint used to negotiate the connection.</param>
     /// <param name="handlers">Callbacks for frames and connection closure.</param>
-    /// <param name="replacesConnectionId">
-    /// The server connection ID of the still-open socket this connection replaces during a planned token refresh, or
-    /// <see langword="null"/> on a first connect, after a drop, or once the replaced socket has closed.
+    /// <param name="getReplacedConnectionId">
+    /// Returns the server connection ID of the still-open socket this connection replaces during a planned token
+    /// refresh, or <see langword="null"/> on a first connect, after a drop, or once the replaced socket has closed.
+    /// Read immediately before the negotiate request is sent.
     /// </param>
     /// <returns>A new Socket Mode connection.</returns>
     ISocketConnection Create(
         Uri negotiateUri,
         SocketConnectionHandlers handlers,
-        string? replacesConnectionId = null);
+        Func<string?>? getReplacedConnectionId = null);
 }
 
 /// <summary>
@@ -58,14 +59,17 @@ internal sealed class SocketConnectionHandlers
     /// <param name="onActivity">Handles an incoming activity envelope.</param>
     /// <param name="onReady">Handles the ready frame.</param>
     /// <param name="onClosed">Handles connection closure and indicates whether it was planned.</param>
+    /// <param name="onNegotiated">Runs when negotiate succeeds, which is when the token lifetime starts.</param>
     internal SocketConnectionHandlers(
         Func<SocketActivityEnvelope, Task<SocketReplyFrame?>> onActivity,
         Action<SocketReadyFrame> onReady,
-        Action<Exception?, bool> onClosed)
+        Action<Exception?, bool> onClosed,
+        Action? onNegotiated = null)
     {
         OnActivity = onActivity ?? throw new ArgumentNullException(nameof(onActivity));
         OnReady = onReady ?? throw new ArgumentNullException(nameof(onReady));
         OnClosed = onClosed ?? throw new ArgumentNullException(nameof(onClosed));
+        OnNegotiated = onNegotiated;
     }
 
     /// <summary>
@@ -82,4 +86,9 @@ internal sealed class SocketConnectionHandlers
     /// Gets the connection-closed callback.
     /// </summary>
     internal Action<Exception?, bool> OnClosed { get; }
+
+    /// <summary>
+    /// Gets the callback that runs when negotiate succeeds.
+    /// </summary>
+    internal Action? OnNegotiated { get; }
 }

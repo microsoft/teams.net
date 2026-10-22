@@ -81,7 +81,7 @@ public class SocketModeNegotiatorTests
         RecordingHandler handler = SuccessHandler();
         SocketModeNegotiator negotiator = CreateNegotiator(handler);
 
-        await negotiator.NegotiateAsync(NegotiateUri, replacesConnectionId);
+        await negotiator.NegotiateAsync(NegotiateUri, () => replacesConnectionId);
 
         Assert.Null(handler.ReplacesConnectionId);
     }
@@ -94,9 +94,27 @@ public class SocketModeNegotiatorTests
         RecordingHandler handler = SuccessHandler();
         SocketModeNegotiator negotiator = CreateNegotiator(handler);
 
-        await negotiator.NegotiateAsync(NegotiateUri, replacesConnectionId);
+        await negotiator.NegotiateAsync(NegotiateUri, () => replacesConnectionId);
 
         Assert.Equal([replacesConnectionId], Assert.IsType<string[]>(handler.ReplacesConnectionId));
+    }
+
+    [Fact]
+    public async Task NegotiateAsync_ReadsReplacedConnectionIdAfterAcquiringBotToken()
+    {
+        RecordingHandler handler = SuccessHandler();
+        bool tokenAcquired = false;
+        SocketModeNegotiator negotiator = CreateNegotiator(
+            handler,
+            _ =>
+            {
+                tokenAcquired = true;
+                return Task.FromResult<string?>(BotToken);
+            });
+
+        await negotiator.NegotiateAsync(NegotiateUri, () => tokenAcquired ? null : "stale-connection-id");
+
+        Assert.Null(handler.ReplacesConnectionId);
     }
 
     [Theory]

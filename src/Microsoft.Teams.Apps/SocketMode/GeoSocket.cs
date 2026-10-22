@@ -221,7 +221,7 @@ internal sealed class GeoSocket : IAsyncDisposable
 
             try
             {
-                return await ConnectAsync(replacesConnectionId: null, attemptSource.Token).ConfigureAwait(false);
+                return await ConnectAsync(replacing: null, attemptSource.Token).ConfigureAwait(false);
             }
             catch (Exception exception) when (!startSource.IsCancellationRequested)
             {
@@ -314,9 +314,7 @@ internal sealed class GeoSocket : IAsyncDisposable
 
             try
             {
-                // Re-evaluated per attempt: once the replaced socket closes (for example at token expiry after
-                // repeated 429s), later attempts connect without naming it.
-                return await ConnectAsync(GetReplacedConnectionId(replacing), _stopToken).ConfigureAwait(false);
+                return await ConnectAsync(replacing, _stopToken).ConfigureAwait(false);
             }
             catch (Exception exception) when (!_stopToken.IsCancellationRequested)
             {
@@ -354,7 +352,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         _owner.OnGeoDisconnected(Geo, error);
     }
 
-    private async Task<Generation> ConnectAsync(string? replacesConnectionId, CancellationToken cancellationToken)
+    private async Task<Generation> ConnectAsync(Generation? replacing, CancellationToken cancellationToken)
     {
         Generation generation;
         lock (_sync)
@@ -363,21 +361,20 @@ internal sealed class GeoSocket : IAsyncDisposable
             generation = new Generation(++_generation);
         }
 
-        if (replacesConnectionId is not null)
-        {
-            _logger.LogDebug(
-                "Socket Mode geo {Geo} connecting a replacement for connection {ConnectionId}.",
-                Geo,
-                replacesConnectionId);
-        }
+        // The replaced ID is read right before the negotiate POST, after the bot token is acquired, so a socket that
+        // closes or expires in the meantime is not named.
+        Func<string?>? getReplacedConnectionId = replacing is null
+            ? null
+            : () => GetReplacedConnectionId(replacing);
 
         generation.Connection = _connectionFactory.Create(
             _negotiateUri,
             new SocketConnectionHandlers(
                 envelope => DispatchAsync(generation, envelope),
                 frame => HandleReady(generation, frame),
-                (error, planned) => HandleClosed(generation, error, planned)),
-            replacesConnectionId);
+                (error, planned) => HandleClosed(generation, error, planned),
+                () => generation.TokenIssuedAt = _timeProvider.GetTimestamp()),
+            getReplacedConnectionId);
 
         bool owned;
         lock (_sync)
@@ -393,8 +390,8 @@ internal sealed class GeoSocket : IAsyncDisposable
 
         try
         {
-            // The token lifetime counts from negotiate, which happens inside StartAsync.
-            generation.ConnectStartedAt = _timeProvider.GetTimestamp();
+            // Replaced when negotiate returns; this earlier stamp only errs toward refreshing early.
+            generation.TokenIssuedAt = _timeProvider.GetTimestamp();
             await generation.Connection.StartAsync(cancellationToken).ConfigureAwait(false);
 
             // StartAsync completes after SocketReady, but the ready callback may still be running.
@@ -545,7 +542,7 @@ internal sealed class GeoSocket : IAsyncDisposable
             return;
         }
 
-        TimeSpan delay = lifetime - _owner.TokenRefreshMargin - _timeProvider.GetElapsedTime(generation.ConnectStartedAt);
+        TimeSpan delay = lifetime - _owner.TokenRefreshMargin - _timeProvider.GetElapsedTime(generation.TokenIssuedAt);
         if (delay < MinimumRefreshDelay)
         {
             delay = MinimumRefreshDelay;
@@ -794,18 +791,21 @@ internal sealed class GeoSocket : IAsyncDisposable
         string? connectionId;
         lock (_sync)
         {
-            connectionId = replacing.IsClosed ? null : replacing.ConnectionId;
+            connectionId = _stopping || _active != replacing || replacing.IsClosed ? null : replacing.ConnectionId;
         }
 
-        // Once the old token has expired, connect as if after a drop. Expiry is measured from connect start, so this
-        // errs toward dropping the header slightly early.
+        // Once the old token has expired, connect as if after a drop.
         if (string.IsNullOrEmpty(connectionId)
             || (replacing.Connection.TokenLifetime is TimeSpan lifetime
-                && _timeProvider.GetElapsedTime(replacing.ConnectStartedAt) >= lifetime))
+                && _timeProvider.GetElapsedTime(replacing.TokenIssuedAt) >= lifetime))
         {
             return null;
         }
 
+        _logger.LogDebug(
+            "Socket Mode geo {Geo} connecting a replacement for connection {ConnectionId}.",
+            Geo,
+            connectionId);
         return connectionId;
     }
 
@@ -839,6 +839,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         private readonly Dictionary<long, (long ArrivedAt, TimeSpan Deadline)> _inFlight = [];
         private TaskCompletionSource _changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private long _nextEnvelope;
+        private long _tokenIssuedAt;
 
         // The latest pending reply flush, as an offset from that envelope's arrival.
         private (long ArrivedAt, TimeSpan Until)? _flush;
@@ -857,7 +858,14 @@ internal sealed class GeoSocket : IAsyncDisposable
         /// </summary>
         internal string? ConnectionId { get; set; }
 
-        internal long ConnectStartedAt { get; set; }
+        /// <summary>
+        /// Gets or sets when negotiate returned this generation's token, which starts its lifetime.
+        /// </summary>
+        internal long TokenIssuedAt
+        {
+            get => Volatile.Read(ref _tokenIssuedAt);
+            set => Volatile.Write(ref _tokenIssuedAt, value);
+        }
 
         internal long? ReadyAt { get; set; }
 

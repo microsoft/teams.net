@@ -391,6 +391,48 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task Refresh_CountsTokenLifetimeFromNegotiateReturn()
+    {
+        Harness harness = new() { TokenRefreshMargin = TimeSpan.FromSeconds(60) };
+        TaskCompletionSource negotiate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(3600));
+        initial.NegotiateGate = negotiate.Task;
+
+        Task start = harness.Socket.StartAsync();
+        await initial.Negotiating.Task;
+        harness.Time.Advance(TimeSpan.FromSeconds(10));
+        negotiate.SetResult();
+        await initial.Started.Task;
+        initial.Ready("initial");
+        await start;
+
+        Assert.True(harness.Time.HasTimerDueIn(TimeSpan.FromSeconds(3540)));
+    }
+
+    [Fact]
+    public async Task PlannedRefresh_OmitsHeaderWhenOldSocketClosesBeforeThePost()
+    {
+        Harness harness = new();
+        TaskCompletionSource negotiate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        replacement.NegotiateGate = negotiate.Task;
+        await harness.StartReadyAsync(initial);
+
+        harness.Time.Advance(TimeSpan.FromSeconds(5));
+        TimeSpan backoff = harness.Owner.Backoff(0);
+        await harness.Time.WaitForTimerAsync(backoff);
+        harness.Time.Advance(backoff);
+        await replacement.Negotiating.Task;
+
+        initial.Close(new IOException("dropped while fetching the bot token"));
+        negotiate.SetResult();
+        await replacement.Started.Task;
+
+        Assert.Null(replacement.ReplacesConnectionId);
+    }
+
+    [Fact]
     public async Task Refresh_ReadsExpiresInAgainOnEveryConnect()
     {
         Harness harness = new() { TokenRefreshMargin = TimeSpan.FromSeconds(60), RetirementMinimumDrain = TimeSpan.Zero };
@@ -1120,7 +1162,7 @@ public class GeoSocketTests
         public ISocketConnection Create(
             Uri negotiateUri,
             SocketConnectionHandlers handlers,
-            string? replacesConnectionId = null)
+            Func<string?>? getReplacedConnectionId = null)
         {
             Interlocked.Increment(ref _createCount);
             FakeConnection connection;
@@ -1130,7 +1172,7 @@ public class GeoSocketTests
             }
 
             connection.Handlers = handlers;
-            connection.ReplacesConnectionId = replacesConnectionId;
+            connection.GetReplacedConnectionId = getReplacedConnectionId;
             return connection;
         }
     }
@@ -1146,7 +1188,19 @@ public class GeoSocketTests
 
         internal SocketConnectionHandlers Handlers { get; set; } = null!;
 
-        internal string? ReplacesConnectionId { get; set; }
+        internal Func<string?>? GetReplacedConnectionId { get; set; }
+
+        /// <summary>
+        /// Gets the replaced connection ID as read when negotiate would send it.
+        /// </summary>
+        internal string? ReplacesConnectionId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a gate that holds negotiate open, standing in for a slow bot-token fetch or POST.
+        /// </summary>
+        internal Task? NegotiateGate { get; set; }
+
+        internal TaskCompletionSource Negotiating { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1162,6 +1216,18 @@ public class GeoSocketTests
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            Negotiating.TrySetResult();
+            if (NegotiateGate is not null)
+            {
+                await NegotiateGate.WaitAsync(cancellationToken);
+            }
+
+            ReplacesConnectionId = GetReplacedConnectionId?.Invoke();
+            if (startError is null)
+            {
+                Handlers.OnNegotiated?.Invoke();
+            }
+
             Started.TrySetResult();
             if (startError is not null)
             {
