@@ -28,7 +28,8 @@ internal interface IGeoSocketOwner
     TimeSpan RetirementMinimumDrain { get; }
 
     /// <summary>
-    /// Gets how long a retired connection stays open after its last reply so the reply can be sent before closing.
+    /// Gets how long a retired connection stays open after a reply so the reply can be sent before closing, capped at
+    /// that envelope's own deadline.
     /// </summary>
     TimeSpan ReplyFlushDelay { get; }
 
@@ -440,7 +441,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         {
             lock (_sync)
             {
-                generation.EndEnvelope(envelopeToken, _timeProvider.GetTimestamp());
+                generation.EndEnvelope(envelopeToken, _timeProvider, _owner.ReplyFlushDelay);
 
                 // Arrivals can only extend a drain, so only wake it when this reply lets it close sooner.
                 if (generation.DrainReadyAt is long readyAt
@@ -676,9 +677,10 @@ internal sealed class GeoSocket : IAsyncDisposable
         {
             wait = Max(wait, untilDeadline);
         }
-        else if (previous.LastReplyAt is long lastReplyAt)
+
+        if (previous.GetRemainingFlush(_timeProvider) is TimeSpan untilFlushed)
         {
-            wait = Max(wait, _owner.ReplyFlushDelay - _timeProvider.GetElapsedTime(lastReplyAt));
+            wait = Max(wait, untilFlushed);
         }
 
         return wait;
@@ -838,6 +840,9 @@ internal sealed class GeoSocket : IAsyncDisposable
         private TaskCompletionSource _changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private long _nextEnvelope;
 
+        // The latest pending reply flush, as an offset from that envelope's arrival.
+        private (long ArrivedAt, TimeSpan Until)? _flush;
+
         internal long Id { get; } = id;
 
         internal ISocketConnection Connection { get; set; } = null!;
@@ -855,8 +860,6 @@ internal sealed class GeoSocket : IAsyncDisposable
         internal long ConnectStartedAt { get; set; }
 
         internal long? ReadyAt { get; set; }
-
-        internal long? LastReplyAt { get; private set; }
 
         /// <summary>
         /// Gets or sets when this generation's replacement became ready, once it is draining.
@@ -882,12 +885,40 @@ internal sealed class GeoSocket : IAsyncDisposable
             return token;
         }
 
-        internal void EndEnvelope(long token, long repliedAt)
+        /// <summary>
+        /// Ends tracking for an envelope and holds the connection for <paramref name="flushDelay"/> so its reply can be
+        /// sent, but never past that envelope's own deadline: after it, the service has discarded the reply.
+        /// </summary>
+        internal void EndEnvelope(long token, TimeProvider timeProvider, TimeSpan flushDelay)
         {
-            if (_inFlight.Remove(token))
+            if (!_inFlight.Remove(token, out (long ArrivedAt, TimeSpan Deadline) envelope))
             {
-                LastReplyAt = repliedAt;
+                return;
             }
+
+            TimeSpan flushUntil = timeProvider.GetElapsedTime(envelope.ArrivedAt) + flushDelay;
+            if (flushUntil > envelope.Deadline)
+            {
+                flushUntil = envelope.Deadline;
+            }
+
+            TimeSpan remaining = flushUntil - timeProvider.GetElapsedTime(envelope.ArrivedAt);
+            if (remaining > TimeSpan.Zero && (GetRemainingFlush(timeProvider) is not TimeSpan current || remaining > current))
+            {
+                _flush = (envelope.ArrivedAt, flushUntil);
+            }
+        }
+
+        /// <returns>The time until the latest pending reply flush ends; <see langword="null"/> when none remain.</returns>
+        internal TimeSpan? GetRemainingFlush(TimeProvider timeProvider)
+        {
+            if (_flush is not (long arrivedAt, TimeSpan until))
+            {
+                return null;
+            }
+
+            TimeSpan remaining = until - timeProvider.GetElapsedTime(arrivedAt);
+            return remaining > TimeSpan.Zero ? remaining : null;
         }
 
         /// <returns>

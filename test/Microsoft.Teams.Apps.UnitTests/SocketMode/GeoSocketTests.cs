@@ -538,6 +538,65 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task Drain_ReplyFlushNeverExtendsPastThatEnvelopesDeadline()
+    {
+        Harness harness = new() { ReplyFlushDelay = TimeSpan.FromSeconds(1) };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource first = harness.Owner.Hold("first");
+        TaskCompletionSource second = harness.Owner.Hold("second");
+        Task<SocketReplyFrame?> firstReply = initial.Activity("first", deadlineMs: 25_000);
+        Task<SocketReplyFrame?> secondReply = initial.Activity("second", deadlineMs: 25_000);
+        replacement.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(25));
+
+        // The first reply lands 0.5s before both deadlines; its flush is cut off at its own 25s deadline.
+        harness.Time.Advance(TimeSpan.FromMilliseconds(24_500));
+        first.SetResult();
+        Assert.NotNull(await firstReply);
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromMilliseconds(500));
+        Assert.Equal(0, initial.StopCount);
+
+        harness.Time.Advance(TimeSpan.FromMilliseconds(500));
+        await initial.Disposed.Task;
+
+        second.SetResult();
+        await secondReply;
+    }
+
+    [Fact]
+    public async Task Drain_ReplyFlushWithinItsDeadlineOutlastsAnotherExpiredEnvelope()
+    {
+        Harness harness = new() { ReplyFlushDelay = TimeSpan.FromSeconds(1) };
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+        TaskCompletionSource first = harness.Owner.Hold("first");
+        TaskCompletionSource second = harness.Owner.Hold("second");
+        Task<SocketReplyFrame?> firstReply = initial.Activity("first", deadlineMs: 30_000);
+        Task<SocketReplyFrame?> secondReply = initial.Activity("second", deadlineMs: 25_000);
+        replacement.Ready("replacement");
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(30));
+
+        harness.Time.Advance(TimeSpan.FromMilliseconds(24_500));
+        first.SetResult();
+        Assert.NotNull(await firstReply);
+
+        // The second envelope expires at 25s, but the first reply's flush still has until 25.5s.
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(1));
+        harness.Time.Advance(TimeSpan.FromMilliseconds(500));
+        await harness.Time.WaitForTimerAsync(TimeSpan.FromMilliseconds(500));
+        Assert.Equal(0, initial.StopCount);
+
+        harness.Time.Advance(TimeSpan.FromMilliseconds(500));
+        await initial.Disposed.Task;
+
+        second.SetResult();
+        await secondReply;
+    }
+
+    [Fact]
     public async Task Drain_NeverWaitsPastLatestInFlightDeadline()
     {
         Harness harness = new();
