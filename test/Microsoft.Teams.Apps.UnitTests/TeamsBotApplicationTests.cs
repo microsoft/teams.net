@@ -8,8 +8,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Clients;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
@@ -17,31 +19,180 @@ namespace Microsoft.Teams.Apps.UnitTests;
 
 public class TeamsBotApplicationTests
 {
-    [Fact]
-    public async Task Reply_Proactive_ThrowsOnInvalidMessageId()
-    {
-        TeamsBotApplication app = CreateApp();
+    private static readonly Uri ServiceUrl = new("https://test.service.url/");
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            app.ReplyAsync("19:abc@thread.skype", "not-a-number", "hello"));
+    [Theory]
+    [InlineData("", "1680000000000")]
+    [InlineData("   ", "1680000000000")]
+    [InlineData("19:abc@thread.v2", "")]
+    [InlineData("19:abc@thread.v2", "   ")]
+    public async Task ReplyAsync_BlankIds_ThrowBeforeAnyRequest(string conversationId, string messageId)
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+
+        await Assert.ThrowsAsync<ArgumentException>(() => app.ReplyAsync(conversationId, messageId, "hello", ServiceUrl));
+        await Assert.ThrowsAsync<ArgumentException>(() => app.ReplyAsync(conversationId, messageId, new MessageActivityInput().WithText("hello"), ServiceUrl));
+
+        VerifyNoRequests(conversationClient);
+    }
+
+    [Theory]
+    [InlineData(null, "1680000000000")]
+    [InlineData("19:abc@thread.v2", null)]
+    public async Task ReplyAsync_NullIds_ThrowBeforeAnyRequest(string? conversationId, string? messageId)
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => app.ReplyAsync(conversationId!, messageId!, "hello", ServiceUrl));
+
+        VerifyNoRequests(conversationClient);
     }
 
     [Fact]
-    public async Task Reply_Proactive_ThrowsOnZeroMessageId()
+    public async Task ReplyAsync_PassesIdsToReplyChainsCallUnchanged()
     {
-        TeamsBotApplication app = CreateApp();
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            app.ReplyAsync("19:abc@thread.skype", "0", "hello"));
+        await app.ReplyAsync("19:abc@thread.v2", "encrypted-root-id", "hello", ServiceUrl);
+
+        Assert.Equal("19:abc@thread.v2", capture.ConversationId);
+        Assert.Equal("encrypted-root-id", capture.ActivityId);
+        Assert.Equal(ServiceUrl, capture.ServiceUrl);
+        Assert.False(capture.IsTargeted);
+        Assert.Null(capture.Activity?.ReplyToId);
+        VerifyNoSendRequests(conversationClient);
     }
 
     [Fact]
-    public async Task Reply_Proactive_ThrowsOnEmptyConversationId()
+    public async Task ReplyAsync_DoesNotParseOrStripConversationIdSuffix()
     {
-        TeamsBotApplication app = CreateApp();
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            app.ReplyAsync("", "1680000000000", "hello"));
+        await app.ReplyAsync("19:abc@thread.tacv2;messageid=111", "222", "hello", ServiceUrl);
+
+        Assert.Equal("19:abc@thread.tacv2;messageid=111", capture.ConversationId);
+        Assert.Equal("222", capture.ActivityId);
+    }
+
+    [Fact]
+    public async Task ReplyAsync_WithTargetedRecipient_UsesTargetedReply()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
+
+        await app.ReplyAsync(
+            "19:abc@thread.v2",
+            "1680000000000",
+            new MessageActivityInput()
+                .WithText("hello")
+                .WithRecipient(new TeamsChannelAccount { Id = "user-1" }, isTargeted: true),
+            ServiceUrl);
+
+        Assert.True(capture.IsTargeted);
+    }
+
+    [Fact]
+    public async Task ReplyAsync_PassesAgenticIdentityAndCancellationToken()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
+        AgenticIdentity identity = new() { AgenticAppId = "app-123", AgenticUserId = "user-456" };
+        using CancellationTokenSource cts = new();
+
+        await app.ReplyAsync("19:abc@thread.v2", "1680000000000", "hello", ServiceUrl, identity, cts.Token);
+
+        Assert.Same(identity, capture.RequestContext?.AgenticIdentity);
+        Assert.Equal(cts.Token, capture.CancellationToken);
+    }
+
+    [Fact]
+    public async Task ReplyAsync_WithoutServiceUrl_ThrowsWhenNoActivityHasBeenSeen()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => app.ReplyAsync("19:abc@thread.v2", "1680000000000", "hello"));
+
+        VerifyNoRequests(conversationClient);
+    }
+
+    [Fact]
+    public async Task ReplyAsync_PrefersExplicitServiceUrlOverLastSeen()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
+        await app.OnActivity!(CreateSeedActivity(new Uri("https://seen.service.url/")), CancellationToken.None);
+
+        await app.ReplyAsync("19:abc@thread.v2", "1680000000000", "hello", ServiceUrl);
+
+        Assert.Equal(ServiceUrl, capture.ServiceUrl);
+    }
+
+    [Fact]
+    public async Task ReplyAsync_UsesLastSeenServiceUrlWhenNoneIsGiven()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
+        Uri seen = new("https://seen.service.url/");
+        await app.OnActivity!(CreateSeedActivity(seen), CancellationToken.None);
+
+        await app.ReplyAsync("19:abc@thread.v2", "1680000000000", "hello");
+
+        Assert.Equal(seen, capture.ServiceUrl);
+    }
+
+    private static CoreActivity CreateSeedActivity(Uri serviceUrl) => new(ActivityType.Message) { ServiceUrl = serviceUrl };
+
+    [Fact]
+    public async Task Reply_Obsolete_UsesReplyChainsCall()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        ReplyCapture capture = SetupReply(conversationClient);
+        await app.OnActivity!(CreateSeedActivity(ServiceUrl), CancellationToken.None);
+
+#pragma warning disable CS0618 // exercising the obsolete inbound-activity overload
+        await app.Reply("19:abc@thread.v2", "1680000000000", new MessageActivity("hello"));
+#pragma warning restore CS0618
+
+        Assert.Equal("19:abc@thread.v2", capture.ConversationId);
+        Assert.Equal("1680000000000", capture.ActivityId);
+        Assert.False(capture.IsTargeted);
+        VerifyNoSendRequests(conversationClient);
+    }
+
+    [Fact]
+    public async Task SendAsync_SendsToTheExactConversationId()
+    {
+        (TeamsBotApplication app, Mock<ConversationClient> conversationClient) = CreateAppWithConversationClient();
+        string? capturedConversationId = null;
+        conversationClient
+            .Setup(c => c.SendActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (conversationId, _, _, _, _, _, _) => capturedConversationId = conversationId)
+            .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
+
+        await app.SendAsync("19:abc@thread.tacv2;messageid=1680000000000", new MessageActivityInput().WithText("hello"), ServiceUrl);
+
+        Assert.Equal("19:abc@thread.tacv2;messageid=1680000000000", capturedConversationId);
+        conversationClient.Verify(
+            c => c.SendReplyChainActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
@@ -199,7 +350,79 @@ public class TeamsBotApplicationTests
         return httpContext;
     }
 
+    private sealed class ReplyCapture
+    {
+        public string? ConversationId { get; set; }
+        public string? ActivityId { get; set; }
+        public CoreActivityInput? Activity { get; set; }
+        public Uri? ServiceUrl { get; set; }
+        public bool IsTargeted { get; set; }
+        public BotRequestContext? RequestContext { get; set; }
+        public CancellationToken CancellationToken { get; set; }
+    }
+
+    private static ReplyCapture SetupReply(Mock<ConversationClient> conversationClient)
+    {
+        ReplyCapture capture = new();
+        conversationClient
+            .Setup(c => c.SendReplyChainActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (conversationId, activityId, activity, serviceUrl, isTargeted, requestContext, _, cancellationToken) =>
+                {
+                    capture.ConversationId = conversationId;
+                    capture.ActivityId = activityId;
+                    capture.Activity = activity;
+                    capture.ServiceUrl = serviceUrl;
+                    capture.IsTargeted = isTargeted;
+                    capture.RequestContext = requestContext;
+                    capture.CancellationToken = cancellationToken;
+                })
+            .ReturnsAsync(new SendActivityResponse { Id = "reply-id" });
+        return capture;
+    }
+
+    private static void VerifyNoRequests(Mock<ConversationClient> conversationClient)
+    {
+        conversationClient.Verify(
+            c => c.SendReplyChainActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+        VerifyNoSendRequests(conversationClient);
+    }
+
+    private static void VerifyNoSendRequests(Mock<ConversationClient> conversationClient)
+    {
+        conversationClient.Verify(
+            c => c.SendActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     private static TeamsBotApplication CreateApp(IHttpContextAccessor? httpContextAccessor = null)
+        => CreateAppWithConversationClient(httpContextAccessor).App;
+
+    private static (TeamsBotApplication App, Mock<ConversationClient> ConversationClient) CreateAppWithConversationClient(IHttpContextAccessor? httpContextAccessor = null)
     {
         Mock<UserTokenClient> mockUserTokenClient = new(
             new HttpClient(),
@@ -215,11 +438,13 @@ public class TeamsBotApplicationTests
             mockConversationClient.Object,
             mockUserTokenClient.Object);
 
-        return new TeamsBotApplication(
+        TeamsBotApplication app = new(
             apiClient,
             httpContextAccessor ?? new HttpContextAccessor(),
             NullLogger<TeamsBotApplication>.Instance,
             new TeamsBotApplicationOptions { AppId = "test-app-id" });
+
+        return (app, mockConversationClient);
     }
 
     /// <summary>
