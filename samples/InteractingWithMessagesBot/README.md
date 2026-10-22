@@ -4,7 +4,7 @@ Demonstrates quoting, threading, and reactions in one bot while keeping each con
 in a separate handler class.
 
 - `QuotingHandlers.cs` - quoted-message metadata and quote composition
-- `ThreadingHandlers.cs` - reactive, proactive, and manually constructed threads
+- `ThreadingHandlers.cs` - reactive and proactive threaded replies, and top-level messages
 - `ReactionHandlers.cs` - reactions on inbound messages and a proactive reaction flow
 - `Program.cs` - app setup, handler registration, and help
 
@@ -25,10 +25,10 @@ in a separate handler class.
 
 | Command | Behavior |
 |---------|----------|
-| `thread reply` | `teamsApp.ReplyAsync()` sends a reactive threaded reply |
-| `thread send` | `context.SendAsync()` sends to the same thread without quoting |
-| `thread proactive` | `teamsApp.ReplyAsync()` sends a proactive threaded reply |
-| `thread manual` | `ToThreadedConversationId()` and `teamsApp.SendAsync()` provide manual control |
+| `thread reply` | `context.ReplyAsync()` sends a reactive, quoted reply, matching the threading level of your message |
+| `thread send` | `context.SendAsync()` sends reactively without quoting, matching the threading level of your message |
+| `thread proactive` | `teamsApp.ReplyAsync()` starts or continues a thread on your message, using ids from `ChannelData` |
+| `thread top-level` | `teamsApp.SendAsync()` to `ChannelData.Chat.Id` (or `ChannelData.Channel.Id`) sends a new top-level message |
 
 ### Reactions
 
