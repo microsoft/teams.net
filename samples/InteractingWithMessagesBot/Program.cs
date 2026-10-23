@@ -31,8 +31,8 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             - `quote manual` - combine a quote and text manually
 
             **Threading:**
-            - `thread reply` - send a reactive, quoted reply, matching the threading level of your message
-            - `thread send` - send reactively without quoting, matching the threading level of your message
+            - `thread reply` - send a reactive, quoted reply (in a channel, in the same thread; in a 1:1 chat, matches the level of your message)
+            - `thread send` - send reactively without quoting (in a channel, in the same thread; in a 1:1 chat, matches the level of your message)
             - `thread proactive` - send a proactive reply in a thread on your message
             - `thread top-level` - send a new top-level message, outside any reply chain (thread)
 

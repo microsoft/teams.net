@@ -25,9 +25,9 @@ in a separate handler class.
 
 | Command | Behavior |
 |---------|----------|
-| `thread reply` | `context.ReplyAsync()` sends a reactive, quoted reply, matching the threading level of your message |
-| `thread send` | `context.SendAsync()` sends reactively without quoting, matching the threading level of your message |
-| `thread proactive` | `teamsApp.ReplyAsync()` starts or continues a thread on your message, using ids from `ChannelData` |
+| `thread reply` | `context.ReplyAsync()` sends a reactive, quoted reply. In a channel it is sent in the same thread. In a 1:1 chat it matches the level of your message (in the thread if your message is in one, otherwise top-level) |
+| `thread send` | `context.SendAsync()` sends reactively without quoting. In a channel it is sent in the same thread. In a 1:1 chat it matches the level of your message (in the thread if your message is in one, otherwise top-level) |
+| `thread proactive` | `teamsApp.ReplyAsync()` replies in the reply chain (thread) of your message, using `ChannelData.Chat.Id` (or `ChannelData.Channel.Id`) and `ChannelData.ReplyChain.Id`. Without `ReplyChain.Id` the sample answers that there is not enough thread metadata |
 | `thread top-level` | `teamsApp.SendAsync()` to `ChannelData.Chat.Id` (or `ChannelData.Channel.Id`) sends a new top-level message |
 
 ### Reactions
