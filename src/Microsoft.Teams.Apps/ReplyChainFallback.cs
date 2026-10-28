@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Globalization;
 using System.Net;
 using Microsoft.Teams.Core;
 
@@ -30,8 +29,8 @@ internal static class ReplyChainFallback
     }
 
     /// <summary>
-    /// Whether the id is a plain non-zero number, the only kind of reply chain id that can be turned into a <c>;messageid=</c> suffix.
+    /// Whether the id is a plain non-zero number (ASCII digits only, not all zeros, with no limit on its length), the only kind of reply chain id that can be turned into a <c>;messageid=</c> suffix.
     /// </summary>
     internal static bool IsPlainNonZeroNumber(string id)
-        => ulong.TryParse(id, NumberStyles.None, CultureInfo.InvariantCulture, out ulong parsed) && parsed != 0;
+        => id.Length > 0 && id.All(char.IsAsciiDigit) && id.Any(c => c != '0');
 }

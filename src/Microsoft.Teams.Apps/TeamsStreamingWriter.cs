@@ -64,6 +64,9 @@ namespace Microsoft.Teams.Apps;
 /// The failed cycle is retired; further finalization does nothing until the next append or informative update.
 /// HTTP 409 with error code PlanConflict throws <see cref="PlanConflictException"/> without retry;
 /// a rejected Plan completion also retires the failed cycle.
+///
+/// When the writer is created from a context whose inbound message is placed in a reply chain (thread),
+/// the first chunk of each streamed message is posted into that reply chain, so the stream starts in the thread.
 /// All requests use the bot app ID and agentic identity derived from the inbound activity's recipient.
 /// </remarks>
 public sealed class TeamsStreamingWriter
@@ -77,6 +80,7 @@ public sealed class TeamsStreamingWriter
     private readonly Uri _serviceUrl;
     private readonly BotRequestContext? _requestContext;
     private readonly ILogger _logger;
+    private readonly ReplyChainPlacement? _replyChain;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
     private int _sequence;
@@ -101,7 +105,7 @@ public sealed class TeamsStreamingWriter
     /// </summary>
     public bool TimedOut => _timedOut;
 
-    internal TeamsStreamingWriter(ConversationClient client, TeamsActivity reference, ILogger? logger = null)
+    internal TeamsStreamingWriter(ConversationClient client, TeamsActivity reference, ILogger? logger = null, TeamsStreamingWriterOptions? options = null)
     {
         _client = client;
         _reference = reference;
@@ -109,15 +113,22 @@ public sealed class TeamsStreamingWriter
         _serviceUrl = reference.ServiceUrl ?? throw new ArgumentException("Activity must have a ServiceUrl.", nameof(reference));
         _requestContext = BotRequestContext.FromInboundActivity(reference);
         _logger = logger ?? NullLogger.Instance;
+        _replyChain = options?.ReplyChain;
     }
 
     /// <summary>
     /// Creates a <see cref="TeamsStreamingWriter"/> bound to the given context.
+    /// The first message of the stream goes to the reply chain (thread) where <see cref="Context{TActivity}.SendAsync(MessageActivityInput, CancellationToken)"/> would place a response.
+    /// In a 1:1 chat the stream starts in the thread when the inbound message is in a thread, and at top level otherwise.
+    /// In a channel the stream starts in the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404 to the reply chain call and the reply chain id is a plain non-zero number, the first message is sent to the inbound conversation instead.
+    /// In a group chat the stream is not placed in a reply chain.
     /// </summary>
     public static TeamsStreamingWriter CreateFromContext<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(context);
-        return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity);
+        ReplyChainPlacement? placement = context.GetInboundReplyChainPlacement();
+        return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity, context.TeamsBotApplication.Logger, placement is null ? null : new TeamsStreamingWriterOptions(placement));
     }
 
     /// <summary>
@@ -291,7 +302,14 @@ public sealed class TeamsStreamingWriter
 
         try
         {
-            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (_streamId is null)
+            {
+                await SendNewMessageAsync(activity, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (PlanConflictException) when (hasPlan)
         {
@@ -332,11 +350,17 @@ public sealed class TeamsStreamingWriter
     /// Sends a streaming chunk, swallowing soft-stop conditions (cancellation and the
     /// two-minute timeout) by flagging state and returning. Other streaming errors and
     /// non-streaming errors propagate.
+    /// The first chunk of a streamed message goes through the reply chain (thread) when the writer has a placement.
     /// </summary>
     private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
     {
         try
         {
+            if (_streamId is null)
+            {
+                return await SendNewMessageAsync(activity, cancellationToken).ConfigureAwait(false);
+            }
+
             return await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
@@ -448,8 +472,30 @@ public sealed class TeamsStreamingWriter
         else
         {
             // No streamed message exists yet; send the buffered content as a normal message.
-            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await SendNewMessageAsync(activity, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Sends a message that does not update an existing streamed message.
+    /// It goes through the reply chain (thread) when the writer has a placement, and to the conversation otherwise.
+    /// In a channel, when the service answers HTTP 404 and the reply chain id is a plain non-zero number, it is sent to the conversation instead, once.
+    /// Any other failure propagates.
+    /// </summary>
+    private Task<SendActivityResponse?> SendNewMessageAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
+    {
+        if (_replyChain is not { } placement)
+        {
+            return _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken);
+        }
+
+        Func<Task<SendActivityResponse?>>? fallback = placement.InChannel && ReplyChainFallback.IsPlainNonZeroNumber(placement.ReplyChainId)
+            ? () => _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken)
+            : null;
+
+        return ReplyChainFallback.SendAsync(
+            () => _client.SendReplyChainActivityAsync(placement.ChatOrChannelId, placement.ReplyChainId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken),
+            fallback);
     }
 
     /// <summary>
