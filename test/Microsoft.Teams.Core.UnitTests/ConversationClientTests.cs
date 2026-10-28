@@ -519,6 +519,17 @@ public class ConversationClientTests
                 null!));
     }
 
+    [Fact]
+    public void SendReplyChainActivityAsync_IsMarkedExperimental()
+    {
+        MethodInfo method = typeof(ConversationClient).GetMethod(nameof(ConversationClient.SendReplyChainActivityAsync))!;
+
+        ExperimentalAttribute? experimental = method.GetCustomAttribute<ExperimentalAttribute>();
+
+        Assert.NotNull(experimental);
+        Assert.Equal("ExperimentalTeamsThreading", experimental.DiagnosticId);
+    }
+
     private sealed class RequestCapture
     {
         public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;

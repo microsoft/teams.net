@@ -493,9 +493,11 @@ public sealed class TeamsStreamingWriter
             ? () => _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken)
             : null;
 
+#pragma warning disable ExperimentalTeamsThreading // a streamed message starts in the reply chain of the inbound message
         return ReplyChainFallback.SendAsync(
             () => _client.SendReplyChainActivityAsync(placement.ChatOrChannelId, placement.ReplyChainId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken),
             fallback);
+#pragma warning restore ExperimentalTeamsThreading
     }
 
     /// <summary>
