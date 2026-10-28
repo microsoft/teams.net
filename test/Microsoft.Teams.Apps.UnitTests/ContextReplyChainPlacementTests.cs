@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Schema;
@@ -429,6 +430,173 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(HttpStatusCode.Forbidden, ex.StatusCode);
     }
 
+    [Fact]
+    public async Task CreateFromContext_ChannelInboundInsideThread_StartsTheStreamInThatChain()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_ChannelRootPost_StartsTheStreamInThatChain()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: ChannelThreadConversationId,
+            id: "root-1",
+            channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "root-1" } },
+            conversationType: "channel"));
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_InboundInsideReplyChain_StartsTheStreamInThatChain()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(InboundInThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_InboundInsideReplyChain_StartsTheStreamAtTheInboundServiceUrl()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(InboundInThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(Harness.ServiceUrl, harness.Reply.ServiceUrl);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_InboundInsideReplyChain_OnlyTheFirstChunkUsesTheChain()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(InboundInThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Contains("\"streamType\": \"final\"", harness.Send.Activity!.ToJson(), StringComparison.Ordinal);
+        Assert.Contains("\"streamId\": \"reply-id\"", harness.Send.Activity!.ToJson(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_FirstChunkTimesOut_FinalizeStartsTheMessageInTheReplyChain()
+    {
+        Harness harness = CreateHarness(replyFailureByCall: call => call == 1
+            ? new HttpRequestException("Forbidden: exceeded streaming time", null, HttpStatusCode.Forbidden)
+            : null);
+        Context<MessageActivity> context = harness.ContextFor(InboundInThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+        Assert.True(writer.TimedOut);
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(2, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_WriterLogsThroughTheBotApplicationLogger()
+    {
+        Mock<ILogger<TeamsBotApplication>> logger = new();
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+        Harness harness = CreateHarness(logger: logger.Object);
+        Context<MessageActivity> context = harness.ContextFor(InboundInThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+        await writer.FinalizeResponseAsync();
+
+        logger.Verify(
+            l => l.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("Finalizing stream", StringComparison.Ordinal)),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_InboundTopLevelMessage_StartsTheStreamInTheConversation()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: OpaqueConversationId,
+            id: "root-1",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } }));
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_GroupChatInboundInsideReplyChain_StartsTheStreamInTheConversation()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: GroupChatId,
+            id: "reply-2",
+            channelData: new { chat = new { id = GroupChatId }, replyChain = new { id = "root-1" } },
+            conversationType: "groupChat"));
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_ReplyChainRouteNotFound_PropagatesWithoutStartingTheStreamInTheConversation()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(InboundInThread());
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hello"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
     private static MessageActivity InboundInChannelThread() => Inbound(
         conversationId: ChannelThreadConversationId,
         id: "reply-2",
@@ -466,6 +634,7 @@ public class ContextReplyChainPlacementTests
         public int Calls { get; set; }
         public string? ConversationId { get; set; }
         public string? ActivityId { get; set; }
+        public Uri? ServiceUrl { get; set; }
         public CoreActivityInput? Activity { get; set; }
         public bool IsTargeted { get; set; }
     }
@@ -481,7 +650,7 @@ public class ContextReplyChainPlacementTests
         public Context<MessageActivity> ContextFor(MessageActivity inbound) => new(App, inbound);
     }
 
-    private static Harness CreateHarness(HttpStatusCode? replyFailureStatus = null, Exception? replyFailure = null, Exception? sendFailure = null, Func<int, Exception?>? replyFailureByCall = null)
+    private static Harness CreateHarness(HttpStatusCode? replyFailureStatus = null, Exception? replyFailure = null, Exception? sendFailure = null, Func<int, Exception?>? replyFailureByCall = null, ILogger<TeamsBotApplication>? logger = null)
     {
         if (replyFailureStatus is { } status)
         {
@@ -528,11 +697,12 @@ public class ContextReplyChainPlacementTests
                 It.IsAny<Dictionary<string, string>?>(),
                 It.IsAny<CancellationToken>()))
             .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
-                (conversationId, activityId, activity, _, isTargeted, _, _, _) =>
+                (conversationId, activityId, activity, serviceUrl, isTargeted, _, _, _) =>
                 {
                     reply.Calls++;
                     reply.ConversationId = conversationId;
                     reply.ActivityId = activityId;
+                    reply.ServiceUrl = serviceUrl;
                     reply.Activity = activity;
                     reply.IsTargeted = isTargeted;
                 })
@@ -547,7 +717,7 @@ public class ContextReplyChainPlacementTests
         TeamsBotApplication app = new(
             new ApiClient(new HttpClient(), conversationClient.Object, userTokenClient.Object),
             new HttpContextAccessor(),
-            NullLogger<TeamsBotApplication>.Instance,
+            logger ?? NullLogger<TeamsBotApplication>.Instance,
             new TeamsBotApplicationOptions { AppId = "test-app-id" });
 
         return new Harness { App = app, Send = send, Reply = reply };
