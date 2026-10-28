@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,7 @@ public class ContextReplyChainPlacementTests
 {
     private const string ChatId = "19:user_bot@thread.v2";
     private const string ChannelId = "19:channel@thread.tacv2";
+    private const string ChannelThreadConversationId = ChannelId + ";messageid=root-1";
     private const string GroupChatId = "19:group@thread.v2";
     private const string OpaqueConversationId = "a:opaque-inbound-conversation";
 
@@ -85,7 +87,8 @@ public class ContextReplyChainPlacementTests
         Context<MessageActivity> context = harness.ContextFor(Inbound(
             conversationId: inboundConversationId,
             id: "reply-2",
-            channelData: new { channel = new { id = ChannelId } }));
+            channelData: new { channel = new { id = ChannelId } },
+            conversationType: "channel"));
 
         await context.SendAsync("hi");
 
@@ -94,30 +97,63 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
-    public async Task Send_ChannelRootPost_SendsToInboundConversationUnchanged()
+    public async Task Send_ChannelWithWhitespaceChannelId_SendsToInboundConversationUnchanged()
     {
         Harness harness = CreateHarness();
-        string inboundConversationId = $"{ChannelId};messageid=root-1";
         Context<MessageActivity> context = harness.ContextFor(Inbound(
-            conversationId: inboundConversationId,
-            id: "root-1",
-            channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "root-1" } }));
+            conversationId: ChannelThreadConversationId,
+            id: "reply-2",
+            channelData: new { channel = new { id = " " }, replyChain = new { id = "root-1" } },
+            conversationType: "channel"));
 
         await context.SendAsync("hi");
 
-        Assert.Equal(inboundConversationId, harness.Send.ConversationId);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
         Assert.Equal(0, harness.Reply.Calls);
     }
 
     [Fact]
-    public async Task Send_ChannelReplyWithReplyChainButNoChatId_SendsToInboundConversationUnchanged()
+    public async Task Send_ChannelRootPost_RepliesInTheReplyChainOfThePost()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: $"{ChannelId};messageid=root-1",
+            id: "root-1",
+            channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "root-1" } },
+            conversationType: "channel"));
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Send_ChannelThreadReply_RepliesInTheReplyChainOfTheThread()
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Send_ChannelThreadReplyWithReplyChainButNoChannelId_SendsToInboundConversationUnchanged()
     {
         Harness harness = CreateHarness();
         string inboundConversationId = $"{ChannelId};messageid=root-1";
         Context<MessageActivity> context = harness.ContextFor(Inbound(
             conversationId: inboundConversationId,
             id: "reply-2",
-            channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "root-1" } }));
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } },
+            conversationType: "channel"));
 
         await context.SendAsync("hi");
 
@@ -208,17 +244,15 @@ public class ContextReplyChainPlacementTests
         Assert.Null(harness.Reply.Activity?.ReplyToId);
     }
 
-    [Theory]
-    [InlineData("personal")]
-    [InlineData("channel")]
-    public async Task Send_InboundInsideReplyChain_RepliesInThatChainForEveryConversationTypeButGroupChat(string conversationType)
+    [Fact]
+    public async Task Send_PersonalInboundInsideReplyChain_RepliesInThatChain()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
             conversationId: OpaqueConversationId,
             id: "reply-2",
             channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } },
-            conversationType: conversationType));
+            conversationType: "personal"));
 
         await context.SendAsync("hi");
 
@@ -298,6 +332,114 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(0, harness.Reply.Calls);
     }
 
+    [Fact]
+    public async Task Send_ChannelReplyChainRouteNotFound_SendsToInboundConversationInstead()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        SendActivityResponse? response = await context.SendAsync("hi");
+
+        Assert.Equal("sent-id", response?.Id);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.False(harness.Send.IsTargeted);
+    }
+
+    [Fact]
+    public async Task Send_PersonalReplyChainRouteNotFound_PropagatesWithoutSendingToTheInboundConversation()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: OpaqueConversationId,
+            id: "reply-2",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } },
+            conversationType: "personal"));
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.SendAsync("hi"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Send_ChannelReplyChainRouteNotFound_KeepsATargetedMessageTargeted()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        await context.SendAsync(new MessageActivityInput()
+            .WithText("only you")
+            .WithRecipient(new TeamsChannelAccount { Id = "user-1" }, isTargeted: true));
+
+        Assert.True(harness.Reply.IsTargeted);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.True(harness.Send.IsTargeted);
+    }
+
+    [Fact]
+    public async Task Reply_ChannelReplyChainRouteNotFound_SendsTheQuotedMessageToTheInboundConversation()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.Contains("quotedReply", harness.Send.Activity!.ToJson(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    public async Task Send_ChannelReplyChainCallFailsWithAnotherError_PropagatesWithoutFallingBack(HttpStatusCode statusCode)
+    {
+        Harness harness = CreateHarness(statusCode);
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.SendAsync("hi"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Send_ChannelReplyChainCallFailsWithANonHttpError_PropagatesWithoutFallingBack()
+    {
+        Harness harness = CreateHarness(replyFailure: new InvalidOperationException("boom"));
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.SendAsync("hi"));
+
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Send_ChannelFallbackAfterNotFoundFails_PropagatesTheFallbackError()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound, sendFailure: new HttpRequestException("boom", null, HttpStatusCode.Forbidden));
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.SendAsync("hi"));
+
+        Assert.Equal(HttpStatusCode.Forbidden, ex.StatusCode);
+    }
+
+    private static MessageActivity InboundInChannelThread() => Inbound(
+        conversationId: ChannelThreadConversationId,
+        id: "reply-2",
+        channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "root-1" } },
+        conversationType: "channel");
+
+    private static MessageActivity InboundInThread() => Inbound(
+        conversationId: OpaqueConversationId,
+        id: "reply-2",
+        channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } });
+
     private static MessageActivity Inbound(string conversationId, string id, object channelData, string? conversationType = null)
     {
         object conversation = conversationType is null
@@ -339,8 +481,13 @@ public class ContextReplyChainPlacementTests
         public Context<MessageActivity> ContextFor(MessageActivity inbound) => new(App, inbound);
     }
 
-    private static Harness CreateHarness()
+    private static Harness CreateHarness(HttpStatusCode? replyFailureStatus = null, Exception? replyFailure = null, Exception? sendFailure = null, Func<int, Exception?>? replyFailureByCall = null)
     {
+        if (replyFailureStatus is { } status)
+        {
+            replyFailure = new HttpRequestException($"Error replying to activity {status}.", null, status);
+        }
+
         Mock<UserTokenClient> userTokenClient = new(
             new HttpClient(),
             new Mock<IConfiguration>().Object,
@@ -366,7 +513,9 @@ public class ContextReplyChainPlacementTests
                     send.Activity = activity;
                     send.IsTargeted = isTargeted;
                 })
-            .ReturnsAsync(new SendActivityResponse { Id = "sent-id" });
+            .Returns(() => sendFailure is null
+                ? Task.FromResult<SendActivityResponse?>(new SendActivityResponse { Id = "sent-id" })
+                : Task.FromException<SendActivityResponse?>(sendFailure));
 
         conversationClient
             .Setup(c => c.SendReplyChainActivityAsync(
@@ -387,7 +536,13 @@ public class ContextReplyChainPlacementTests
                     reply.Activity = activity;
                     reply.IsTargeted = isTargeted;
                 })
-            .ReturnsAsync(new SendActivityResponse { Id = "reply-id" });
+            .Returns(() =>
+            {
+                Exception? failure = replyFailureByCall?.Invoke(reply.Calls) ?? replyFailure;
+                return failure is null
+                    ? Task.FromResult<SendActivityResponse?>(new SendActivityResponse { Id = "reply-id" })
+                    : Task.FromException<SendActivityResponse?>(failure);
+            });
 
         TeamsBotApplication app = new(
             new ApiClient(new HttpClient(), conversationClient.Object, userTokenClient.Object),

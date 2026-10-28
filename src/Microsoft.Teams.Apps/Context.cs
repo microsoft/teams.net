@@ -125,7 +125,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
-    /// Sends a text message as a threaded reply to the current activity. When the inbound activity
+    /// Sends a text message as a reply to the current activity, placed like <see cref="SendAsync(string, CancellationToken)"/>. When the inbound activity
     /// has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams);
     /// otherwise sends without quoting.
     /// </summary>
@@ -140,6 +140,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// auto-quotes it (rendered as a quote bubble above the response in Teams). Otherwise sends
     /// without quoting. To send without quoting unconditionally, use <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// The response is placed as described for <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>: in the reply chain (thread) of an inbound message that is inside a reply chain (thread) in a chat, or of an inbound channel message.
+    /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
@@ -281,7 +284,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// targeted message visible only to that recipient.
     /// </summary>
     /// <remarks>
-    /// When the inbound message is inside a reply chain in a chat, sends into that reply chain.
+    /// When the inbound message is inside a reply chain (thread) in a chat, sends into that reply chain (thread).
+    /// When the inbound message is in a channel, sends into its reply chain (thread).
+    /// In a channel, when the service does not serve the reply chain route (HTTP 404), sends to the inbound conversation instead.
     /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -303,48 +308,58 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
 
-        if (TryGetChatReplyChain(out string chatId, out string replyChainId))
+        Task<SendActivityResponse?> SendToInboundConversation() => isTargeted
+            ? Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken)
+            : Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
+
+        if (GetInboundReplyChainPlacement() is { } placement)
         {
-            return isTargeted
-                ? Api.Conversations.CreateTargetedReplyChainActivityAsync(chatId, replyChainId, activity, cancellationToken: cancellationToken)
-                : Api.Conversations.CreateReplyChainActivityAsync(chatId, replyChainId, activity, cancellationToken: cancellationToken);
+            return ReplyChainFallback.SendAsync(
+                () => isTargeted
+                    ? Api.Conversations.CreateTargetedReplyChainActivityAsync(placement.ChatOrChannelId, placement.ReplyChainId, activity, cancellationToken: cancellationToken)
+                    : Api.Conversations.CreateReplyChainActivityAsync(placement.ChatOrChannelId, placement.ReplyChainId, activity, cancellationToken: cancellationToken),
+                placement.InChannel ? SendToInboundConversation : null);
         }
 
-        if (!isTargeted)
-        {
-            return Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
-        }
-
-        return Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
+        return SendToInboundConversation();
     }
 
     /// <summary>
-    /// Finds where a response to the inbound message belongs when it was received as a reply in a thread.
-    /// An inbound message is a reply in a thread when <c>channelData.replyChain.id</c> (the root message id) differs from its own id.
-    /// When the two are equal, the inbound message is a top-level message, so the response is sent as a top-level message and does not start a thread.
-    /// The destination is the chat, <c>channelData.chat.id</c>, taken from the payload.
-    /// Returns false when either id is missing, so the send goes to the inbound conversation.
+    /// Finds the chat or channel and reply chain a response to the inbound message is posted to.
+    /// In a channel the response always goes to the reply chain of the thread the inbound message is in.
+    /// <c>channelData.replyChain.id</c> is the root of that thread, and it equals the inbound message's own id for a top-level post.
+    /// The destination is the channel, <c>channelData.channel.id</c>.
+    /// In a chat an inbound message is a reply in a thread when <c>channelData.replyChain.id</c> differs from its own id.
+    /// When <c>channelData.replyChain.id</c> and <c>activity.id</c> are equal, the inbound message is a top-level message, so the response is sent as a top-level message.
+    /// The destination is the chat, <c>channelData.chat.id</c>.
+    /// Returns null when an id is missing, so no reply chain (thread) is chosen and the response goes to the inbound conversation.
     /// </summary>
-    private bool TryGetChatReplyChain(out string chatId, out string replyChainId)
+    internal ReplyChainPlacement? GetInboundReplyChainPlacement()
     {
-        chatId = string.Empty;
-        replyChainId = string.Empty;
-
         if (Activity.Type != TeamsActivityTypes.Message || Activity.Conversation?.ConversationType == ConversationTypes.GroupChat)
         {
-            return false;
+            return null;
+        }
+
+        string? replyChain = Activity.ChannelData?.ReplyChain?.Id;
+        if (string.IsNullOrWhiteSpace(replyChain))
+        {
+            return null;
+        }
+
+        if (Activity.Conversation?.ConversationType == ConversationTypes.Channel)
+        {
+            string? channel = Activity.ChannelData?.Channel?.Id;
+            return string.IsNullOrWhiteSpace(channel) ? null : new ReplyChainPlacement(channel, replyChain, InChannel: true);
+        }
+
+        if (replyChain == Activity.Id)
+        {
+            return null;
         }
 
         string? chat = Activity.ChannelData?.Chat?.Id;
-        string? replyChain = Activity.ChannelData?.ReplyChain?.Id;
-        if (string.IsNullOrWhiteSpace(chat) || string.IsNullOrWhiteSpace(replyChain) || replyChain == Activity.Id)
-        {
-            return false;
-        }
-
-        chatId = chat;
-        replyChainId = replyChain;
-        return true;
+        return string.IsNullOrWhiteSpace(chat) ? null : new ReplyChainPlacement(chat, replyChain, InChannel: false);
     }
 
     // ==================== OAuth Sign-In ====================
