@@ -33,6 +33,19 @@ public class ConversationApiClientTests
     }
 
     [Theory]
+    [InlineData(nameof(ConversationApiClient.CreateReplyChainActivityAsync))]
+    [InlineData(nameof(ConversationApiClient.CreateTargetedReplyChainActivityAsync))]
+    public void ReplyChainMethods_AreMarkedExperimental(string methodName)
+    {
+        MethodInfo method = typeof(ConversationApiClient).GetMethod(methodName)!;
+
+        ExperimentalAttribute? experimental = method.GetCustomAttribute<ExperimentalAttribute>();
+
+        Assert.NotNull(experimental);
+        Assert.Equal("ExperimentalTeamsThreading", experimental.DiagnosticId);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ReplyChainMethods_CallReplyChainsWithIdsAndTargetedFlag(bool isTargeted)

@@ -97,6 +97,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> or <paramref name="activityId"/> is blank, or is the dot segment <c>.</c> or <c>..</c>.</exception>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be sent successfully.</exception>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsThreading")]
     public virtual async Task<SendActivityResponse?> SendReplyChainActivityAsync(string conversationId, string activityId, CoreActivityInput activity, Uri serviceUrl, bool isTargeted = false, BotRequestContext? requestContext = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);

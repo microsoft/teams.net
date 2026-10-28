@@ -312,6 +312,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             ? Api.Conversations.CreateTargetedActivityAsync(conversationId, activity, cancellationToken: cancellationToken)
             : Api.Conversations.CreateActivityAsync(conversationId, activity, cancellationToken: cancellationToken);
 
+#pragma warning disable ExperimentalTeamsThreading // the stable send and reply methods place responses in the reply chain
         if (GetInboundReplyChainPlacement() is { } placement)
         {
             return ReplyChainFallback.SendAsync(
@@ -320,6 +321,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
                     : Api.Conversations.CreateReplyChainActivityAsync(placement.ChatOrChannelId, placement.ReplyChainId, activity, cancellationToken: cancellationToken),
                 placement.InChannel ? SendToInboundConversation : null);
         }
+#pragma warning restore ExperimentalTeamsThreading
 
         return SendToInboundConversation();
     }

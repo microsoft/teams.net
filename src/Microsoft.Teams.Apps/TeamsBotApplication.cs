@@ -505,6 +505,7 @@ public class TeamsBotApplication : BotApplication
                 cancellationToken: cancellationToken);
         }
 
+#pragma warning disable ExperimentalTeamsThreading // the stable reply method calls the reply chain route
         return ReplyChainFallback.SendAsync(
             () => ConversationClient.SendReplyChainActivityAsync(
                 conversationId,
@@ -516,6 +517,7 @@ public class TeamsBotApplication : BotApplication
                 cancellationToken: cancellationToken),
             suffixFallback,
             alsoOnBadRequest: true);
+#pragma warning restore ExperimentalTeamsThreading
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>

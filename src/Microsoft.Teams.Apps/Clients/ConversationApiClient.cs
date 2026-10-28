@@ -94,15 +94,9 @@ public class ConversationApiClient
     }
 
     /// <summary>
-    /// Create an activity inside a reply chain.
-    /// Posts to <c>/v3/conversations/{conversationId}/replyChains/{rootId}</c>.
+    /// Create an activity inside a reply chain (thread).
     /// </summary>
-    /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>.</param>
-    /// <param name="rootId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>, or the activity id when replying to a top-level message.</param>
-    /// <param name="activity">The activity to send.</param>
-    /// <param name="additionalHeaders">Optional custom headers to include in the request.</param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> or <paramref name="rootId"/> is blank, or is the dot segment <c>.</c> or <c>..</c>.</exception>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsThreading")]
     public Task<SendActivityResponse?> CreateReplyChainActivityAsync(string conversationId, string rootId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -110,15 +104,9 @@ public class ConversationApiClient
     }
 
     /// <summary>
-    /// Create an activity inside a reply chain, visible only to the specified recipient.
-    /// Takes the same arguments as <see cref="CreateReplyChainActivityAsync"/>.
+    /// Create an activity inside a reply chain (thread), visible only to the specified recipient.
     /// </summary>
-    /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>.</param>
-    /// <param name="rootId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>, or the activity id when replying to a top-level message.</param>
-    /// <param name="activity">The activity to send.</param>
-    /// <param name="additionalHeaders">Optional custom headers to include in the request.</param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> or <paramref name="rootId"/> is blank, or is the dot segment <c>.</c> or <c>..</c>.</exception>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsThreading")]
     public Task<SendActivityResponse?> CreateTargetedReplyChainActivityAsync(string conversationId, string rootId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
