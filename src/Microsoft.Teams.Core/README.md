@@ -164,3 +164,4 @@ When no MSAL configuration is provided, communication happens as anonymous REST 
 | `ITurnMiddleware` | Interface for middleware in the activity processing pipeline |
 | `AgenticIdentity` | Represents user-delegated token acquisition identity |
 | `BotHandlerException` | Exception wrapper preserving the activity that caused the error |
+| `PlanConflictException` | Experimental HTTP exception for a service-rejected Plan operation |

@@ -52,6 +52,9 @@ public class MessageActivityInput : TeamsActivityInput
     public override string ToJson()
         => JsonSerializer.Serialize(this, TeamsActivityInputJsonContext.Default.MessageActivityInput);
 
+    internal new MessageActivityInput Copy()
+        => JsonSerializer.Deserialize(ToJson(), TeamsActivityInputJsonContext.Default.MessageActivityInput)!;
+
     internal static new MessageActivityInputBuilder CreateBuilder() => new();
 
     private MessageActivityInput Apply(Action<MessageActivityInputBuilder> configure)

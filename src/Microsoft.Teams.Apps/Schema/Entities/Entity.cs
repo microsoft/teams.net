@@ -31,7 +31,12 @@ public class EntityList : List<Entity>
 
             foreach (KeyValuePair<string, object?> property in entity.Properties)
             {
-                jsonObject[property.Key] = property.Value as JsonNode ?? JsonValue.Create(property.Value);
+                jsonObject[property.Key] = property.Value switch
+                {
+                    JsonNode node => node.DeepClone(),
+                    JsonElement element => JsonNode.Parse(element.GetRawText()),
+                    _ => JsonValue.Create(property.Value)
+                };
             }
             jsonArray.Add(jsonObject);
         }
@@ -69,6 +74,7 @@ public class EntityList : List<Entity>
                     "message" or "https://schema.org/Message" => DeserializeMessageEntity(item, options),
                     "ProductInfo" => item.Deserialize<ProductInfoEntity>(options),
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
+                    "planInfo" => item.Deserialize<PlanInfoEntity>(options),
                     "quotedReply" => item.Deserialize<QuotedReplyEntity>(options),
                     "targetedMessageInfo" => item.Deserialize<TargetedMessageInfoEntity>(options),
                     _ => item.Deserialize<Entity>(options)
@@ -165,4 +171,3 @@ public class EntityListJsonConverter : JsonConverter<EntityList>
         JsonSerializer.Serialize(writer, jsonArray, options);
     }
 }
-
