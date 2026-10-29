@@ -8,9 +8,10 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 public class SocketModeOptionsTests
 {
     [Fact]
-    public void PublicProperties_ExposeOnlyNegotiateBaseUrlAndGeos()
+    public void Properties_ContainOnlyNegotiateBaseUrlAndGeos()
     {
-        var properties = typeof(SocketModeOptions).GetProperties();
+        var properties = typeof(SocketModeOptions).GetProperties(
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
 
         Assert.Equal(
             [nameof(SocketModeOptions.Geos), nameof(SocketModeOptions.NegotiateBaseUrl)],
@@ -29,50 +30,35 @@ public class SocketModeOptionsTests
 
         Assert.Equal(new Uri("https://botapi.skype.com"), options.NegotiateBaseUrl);
         Assert.Equal(["amer", "emea", "apac"], options.Geos);
-        Assert.Equal(TimeSpan.FromSeconds(30), options.StartupTimeout);
-        Assert.Null(options.ReconnectDelays);
-        Assert.Equal(TimeSpan.FromSeconds(30), options.ReadinessTimeout);
-        Assert.Equal(TimeSpan.FromSeconds(15), options.KeepAliveInterval);
-        Assert.Equal(TimeSpan.FromSeconds(30), options.ServerTimeout);
+        SocketModeTransportOptions transport = options.ToTransportOptions();
+        Assert.Equal(TimeSpan.FromSeconds(30), transport.StartupTimeout);
+        Assert.Null(transport.ReconnectDelays);
     }
 
     [Fact]
     public void ToTransportOptions_PassesInvalidValuesThroughForTheTransportToReject()
     {
-        SocketModeTransportOptions transport = new SocketModeOptions { Geos = null!, StartupTimeout = TimeSpan.FromSeconds(-1) }
+        SocketModeTransportOptions transport = new SocketModeOptions { Geos = null! }
             .ToTransportOptions();
 
         Assert.Null(transport.Geos);
-        Assert.Equal(TimeSpan.FromSeconds(-1), transport.StartupTimeout);
     }
 
     [Fact]
-    public void ToTransportOptions_CopiesTransportSettings()
+    public void ToTransportOptions_CopiesEndpointAndSnapshotsGeos()
     {
         List<string> geos = ["emea"];
-        List<TimeSpan> delays = [TimeSpan.FromSeconds(1)];
         SocketModeOptions options = new()
         {
             NegotiateBaseUrl = new Uri("https://example.test"),
             Geos = geos,
-            StartupTimeout = TimeSpan.FromSeconds(5),
-            ReconnectDelays = delays,
         };
 
         SocketModeTransportOptions transport = options.ToTransportOptions();
         geos.Add("apac");
-        delays.Add(TimeSpan.FromSeconds(2));
 
         Assert.Equal(new Uri("https://example.test"), transport.NegotiateBaseUri);
         Assert.Equal(["emea"], transport.Geos);
-        Assert.Equal(TimeSpan.FromSeconds(5), transport.StartupTimeout);
-        Assert.Equal([TimeSpan.FromSeconds(1)], transport.ReconnectDelays!);
-    }
-
-    [Fact]
-    public void ToTransportOptions_TreatsAnEmptyScheduleAsDefaultBackoff()
-    {
-        Assert.Null(new SocketModeOptions { ReconnectDelays = [] }.ToTransportOptions().ReconnectDelays);
     }
 
     [Fact]
