@@ -124,7 +124,7 @@ static async Task RunCannedResponseAsync(TeamsStreamingWriter writer, Cancellati
     [
         "Azure OpenAI isn't configured, so here's a canned streamed reply. ",
         "Set AzureOpenAI:Endpoint, :ApiKey, and :Deployment to stream live model output instead. ",
-        "You can also try `extended markdown`, `extended markdown before`, or `multi stream`.",
+        "You can also try `extended markdown` or `multi stream`.",
     ];
 
     await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);

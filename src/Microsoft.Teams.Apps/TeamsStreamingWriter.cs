@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 
 namespace Microsoft.Teams.Apps;
 
@@ -58,6 +59,7 @@ namespace Microsoft.Teams.Apps;
 /// Streaming errors are surfaced per the Teams streaming error codes: cancellation and the
 /// two-minute timeout are handled gracefully (a timed-out stream finalizes by updating the
 /// original message in place), while other streaming errors propagate to the caller.
+/// All requests use the bot app ID and agentic identity derived from the inbound activity's recipient.
 /// </remarks>
 public sealed class TeamsStreamingWriter
 {
@@ -68,6 +70,7 @@ public sealed class TeamsStreamingWriter
     private readonly TeamsActivity _reference;
     private readonly string _conversationId;
     private readonly Uri _serviceUrl;
+    private readonly BotRequestContext? _requestContext;
     private readonly ILogger _logger;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
@@ -99,6 +102,7 @@ public sealed class TeamsStreamingWriter
         _reference = reference;
         _conversationId = reference.Conversation?.Id ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(reference));
         _serviceUrl = reference.ServiceUrl ?? throw new ArgumentException("Activity must have a ServiceUrl.", nameof(reference));
+        _requestContext = BotRequestContext.FromInboundActivity(reference);
         _logger = logger ?? NullLogger.Instance;
     }
 
@@ -272,7 +276,7 @@ public sealed class TeamsStreamingWriter
 
         try
         {
-            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -310,7 +314,7 @@ public sealed class TeamsStreamingWriter
     {
         try
         {
-            return await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -404,12 +408,12 @@ public sealed class TeamsStreamingWriter
         if (_streamId != null)
         {
             _logger.LogDebug("Updating original streamed message in place after timeout (streamId '{StreamId}').", _streamId);
-            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.UpdateActivityAsync(_conversationId, _streamId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
             // No streamed message exists yet; send the buffered content as a normal message.
-            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, requestContext: _requestContext, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 
