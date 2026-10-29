@@ -158,7 +158,7 @@ host.Run();
 ```
 
 - **One connection per geo** &mdash; The bot connects to `amer`, `emea`, and `apac` by default. Startup waits until
-  every geo is ready and fails if any geo cannot connect within `StartupTimeout`. Dropped connections reconnect
+  every geo is ready and fails if any geo cannot connect within 30 seconds. Dropped connections reconnect
   automatically, and connection tokens are rotated before they expire.
 - **No web server** &mdash; `UseSocketMode` is the only switch; `UseTeamsBotApplication()` is the same call for both
   transports. With Socket Mode enabled it throws on a `WebApplication`, and a host that includes a web server fails
@@ -174,8 +174,9 @@ host.Run();
 - **Idempotent handlers** &mdash; The service can redeliver an activity, for example after a reconnect, so handlers
   should tolerate running more than once for the same activity.
 
-`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change the geos, negotiate URL, and connection
-timeouts. `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier
+`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
+Connection timeouts, keep-alive intervals, and reconnect backoff are managed internally by the SDK.
+`UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier
 configuration so the bot uses HTTP.
 
 ## Main Types

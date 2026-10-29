@@ -86,9 +86,8 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     }
 
     /// <summary>
-    /// Enables Socket Mode and configures its <see cref="SocketModeOptions"/>, such as the negotiate URL, geos, and
-    /// connection timeouts. Socket Mode receives activities over outbound WebSocket connections instead of an inbound
-    /// HTTP endpoint.
+    /// Enables Socket Mode and configures its <see cref="SocketModeOptions"/> for the negotiate URL and geos.
+    /// Socket Mode receives activities over outbound WebSocket connections instead of an inbound HTTP endpoint.
     /// </summary>
     /// <remarks>
     /// The host does not finish starting until every configured geo is connected, and a startup failure stops the host.

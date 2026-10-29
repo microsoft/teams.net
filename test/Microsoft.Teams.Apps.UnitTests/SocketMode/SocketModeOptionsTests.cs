@@ -8,6 +8,21 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 public class SocketModeOptionsTests
 {
     [Fact]
+    public void PublicProperties_ExposeOnlyNegotiateBaseUrlAndGeos()
+    {
+        var properties = typeof(SocketModeOptions).GetProperties();
+
+        Assert.Equal(
+            [nameof(SocketModeOptions.Geos), nameof(SocketModeOptions.NegotiateBaseUrl)],
+            properties.Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal));
+        Assert.All(properties, property =>
+        {
+            Assert.True(property.GetMethod?.IsPublic);
+            Assert.True(property.SetMethod?.IsPublic);
+        });
+    }
+
+    [Fact]
     public void Defaults_MatchTheOtherSdks()
     {
         SocketModeOptions options = new();

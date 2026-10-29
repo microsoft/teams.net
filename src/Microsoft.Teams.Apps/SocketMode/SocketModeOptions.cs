@@ -33,29 +33,29 @@ public sealed class SocketModeOptions
     /// <summary>
     /// Gets or sets how long each geo has to establish its initial connection. Defaults to 30 seconds.
     /// </summary>
-    public TimeSpan StartupTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    internal TimeSpan StartupTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Gets or sets an explicit reconnect delay schedule; the last delay repeats. When <c>null</c> or empty, capped
     /// exponential backoff with jitter is used.
     /// </summary>
-    public IReadOnlyList<TimeSpan>? ReconnectDelays { get; set; }
+    internal IReadOnlyList<TimeSpan>? ReconnectDelays { get; set; }
 
     /// <summary>
     /// Gets or sets how long a new connection waits for the service to report it ready. Defaults to 30 seconds.
     /// </summary>
-    public TimeSpan ReadinessTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    internal TimeSpan ReadinessTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Gets or sets the interval between keep-alive messages sent to the service. Defaults to 15 seconds.
     /// </summary>
-    public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(15);
+    internal TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(15);
 
     /// <summary>
     /// Gets or sets how long without a message from the service before the connection is considered lost.
     /// Defaults to 30 seconds.
     /// </summary>
-    public TimeSpan ServerTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    internal TimeSpan ServerTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Snapshots the transport-level settings, so later changes to these options do not affect a running transport.
