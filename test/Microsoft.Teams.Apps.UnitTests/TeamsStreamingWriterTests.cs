@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
@@ -55,6 +56,90 @@ public class TeamsStreamingWriterTests
         ConversationClient client = new(new HttpClient(handler), NullLogger<ConversationClient>.Instance);
         TeamsStreamingWriter writer = new(client, reference ?? CreateReferenceActivity());
         return (writer, handler);
+    }
+
+    private static TeamsActivity CreateIdentityReferenceActivity(bool agentic)
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Recipient!.BotId = "28:bot-app-id";
+        if (agentic)
+        {
+            reference.Recipient.AgenticAppId = "agent-app-id";
+            reference.Recipient.AgenticUserId = "agent-user-id";
+            reference.Recipient.AgenticAppBlueprintId = "agent-blueprint-id";
+            reference.Recipient.TenantId = "tenant-id";
+        }
+
+        reference.From!.BotId = "28:sender-app-id";
+        reference.From.AgenticAppId = "sender-agent-app-id";
+        reference.From.AgenticUserId = "sender-agent-user-id";
+        return reference;
+    }
+
+    private static void AssertRequestIdentity(HttpRequestMessage request, bool agentic)
+    {
+        Assert.True(request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.BotAppIdKey), out object? botAppId));
+        Assert.Equal("bot-app-id", botAppId);
+        bool hasIdentity = request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticIdentityKey), out object? identityValue);
+        Assert.Equal(agentic, hasIdentity);
+        if (agentic)
+        {
+            AgenticIdentity identity = Assert.IsType<AgenticIdentity>(identityValue);
+            Assert.Equal("agent-app-id", identity.AgenticAppId);
+            Assert.Equal("agent-user-id", identity.AgenticUserId);
+            Assert.Equal("agent-blueprint-id", identity.AgenticAppBlueprintId);
+            Assert.Equal("tenant-id", identity.TenantId);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AllSends_UseInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic));
+
+        await writer.SendInformativeUpdateAsync("Thinking");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+        await writer.AppendResponseAsync("Second message");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(5, handler.Requests.Count);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task FinalizeAsync_AfterTimeout_PreservesInboundRecipientIdentity(bool hasStreamId, bool timeoutDuringFinalize)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic: true));
+        if (hasStreamId)
+        {
+            handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+            await writer.SendInformativeUpdateAsync("Thinking");
+        }
+
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        if (timeoutDuringFinalize)
+        {
+            await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Final answer"));
+        }
+        else
+        {
+            await writer.AppendResponseAsync("Final answer");
+            await writer.FinalizeResponseAsync();
+        }
+
+        Assert.True(writer.TimedOut);
+        Assert.Equal(hasStreamId ? 3 : 2, handler.Requests.Count);
+        Assert.Equal(hasStreamId ? HttpMethod.Put : HttpMethod.Post, handler.Requests.Last().Method);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic: true));
     }
 
     // ── Guard conditions ──────────────────────────────────────────────────────
