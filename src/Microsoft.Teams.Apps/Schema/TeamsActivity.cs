@@ -60,14 +60,25 @@ public class TeamsActivity : CoreActivity
     internal TeamsActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        // Convert core extension properties to Teams-specific typed properties.
-        // CoreActivity stores these as untyped entries in its Properties dictionary
-        // (via [JsonExtensionData]), so we extract and promote them here.
+        // ReplyToId is a typed CoreActivity property that the CoreActivity copy constructor does not carry over, so it is copied explicitly.
+        // The remaining values are untyped entries in the CoreActivity Properties dictionary (via [JsonExtensionData]) and are promoted here.
+        ReplyToId = activity.ReplyToId;
         base.From = TeamsChannelAccount.FromChannelAccount(activity.From) ?? new TeamsChannelAccount();
         base.Recipient = TeamsChannelAccount.FromChannelAccount(activity.Recipient) ?? new TeamsChannelAccount();
         base.Conversation = TeamsConversation.FromConversation(activity.Conversation) ?? new TeamsConversation();
-        ChannelData = Properties.Extract<TeamsChannelData>("channelData");
-        Entities = Properties.Extract<EntityList>("entities");
+
+        if (activity is TeamsActivity promoted)
+        {
+            // Extract removed these entries from the promoted activity's Properties, so a copy of it only finds them on the typed properties.
+            // The typed values are shared with the promoted activity, as From, Recipient and Conversation already are.
+            ChannelData = promoted.ChannelData;
+            Entities = promoted.Entities;
+        }
+        else
+        {
+            ChannelData = Properties.Extract<TeamsChannelData>("channelData");
+            Entities = Properties.Extract<EntityList>("entities");
+        }
     }
 
     /// <summary>

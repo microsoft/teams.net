@@ -63,10 +63,16 @@ public class InvokeActivity : TeamsActivity
     internal InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        Name = Properties.Extract<InvokeName>("name");
-        Value = activity is InvokeActivity invoke
-            ? invoke.Value
-            : Properties.Extract<JsonNode>("value");
+        if (activity is InvokeActivity invoke)
+        {
+            Name = invoke.Name;
+            Value = invoke.Value;
+        }
+        else
+        {
+            Name = Properties.Extract<InvokeName>("name");
+            Value = Properties.Extract<JsonNode>("value");
+        }
     }
 }
 

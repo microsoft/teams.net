@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.OAuth;
@@ -125,10 +126,17 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
-    /// Sends a text message as a reply to the current activity, placed like <see cref="SendAsync(string, CancellationToken)"/>. When the inbound activity
-    /// has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams);
-    /// otherwise sends without quoting.
+    /// Sends a text message as a reply to the current activity.
+    /// When the inbound activity has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams).
+    /// Otherwise sends without quoting.
     /// </summary>
+    /// <remarks>
+    /// In a 1:1 chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// Group chats, meetings and other inbound activities are not placed, and the activity is sent to the inbound conversation.
+    /// </remarks>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
@@ -141,7 +149,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// without quoting. To send without quoting unconditionally, use <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
     /// </summary>
     /// <remarks>
-    /// The response is placed as described for <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>: in the reply chain (thread) of an inbound message that is inside a reply chain (thread) in a chat, or of an inbound channel message.
+    /// In a 1:1 chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// Group chats, meetings and other inbound activities are not placed, and the activity is sent to the inbound conversation.
     /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -206,7 +218,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
         => SendAsync(text, cancellationToken);
 
-    /// <inheritdoc cref="SendAsync(MessageActivityInput, CancellationToken)"/>
+    /// <summary>
+    /// Sends the activity to the inbound conversation.
+    /// The activity is sent as it is, and is not placed in a reply chain (thread).
+    /// </summary>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     [Obsolete("Use SendActivityAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Send(MessageActivity activity, CancellationToken cancellationToken = default)
     {
@@ -223,7 +241,14 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
         => ReplyAsync(text, cancellationToken);
 
-    /// <inheritdoc cref="ReplyAsync(MessageActivityInput, CancellationToken)"/>
+    /// <summary>
+    /// Sends the activity to the inbound conversation without quoting the inbound message.
+    /// When the inbound activity has an id, the activity's <c>replyToId</c> is set to it.
+    /// The activity is not placed in a reply chain (thread).
+    /// </summary>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     [Obsolete("Use ReplyAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Reply(MessageActivity activity, CancellationToken cancellationToken = default)
     {
@@ -255,7 +280,15 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
         => QuoteAsync(messageId, text, cancellationToken);
 
-    /// <inheritdoc cref="QuoteAsync(string, MessageActivityInput, CancellationToken)"/>
+    /// <summary>
+    /// Sends the activity to the inbound conversation without building a quote.
+    /// The activity's <c>replyToId</c> is set to <paramref name="messageId"/>.
+    /// The activity is not placed in a reply chain (thread).
+    /// </summary>
+    /// <param name="messageId">The id the activity's <c>replyToId</c> is set to.</param>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     [Obsolete("Use QuoteAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Quote(string messageId, MessageActivity activity, CancellationToken cancellationToken = default)
     {
@@ -270,8 +303,15 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Core Send Methods ====================
 
     /// <summary>
-    /// Sends a message activity as a reply.
+    /// Sends a text message to the conversation without quoting the inbound message.
     /// </summary>
+    /// <remarks>
+    /// In a 1:1 chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// Group chats, meetings and other inbound activities are not placed, and the activity is sent to the inbound conversation.
+    /// </remarks>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
@@ -284,9 +324,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// targeted message visible only to that recipient.
     /// </summary>
     /// <remarks>
-    /// When the inbound message is inside a reply chain (thread) in a chat, sends into that reply chain (thread).
-    /// When the inbound message is in a channel, sends into its reply chain (thread).
-    /// In a channel, when the service does not serve the reply chain route (HTTP 404), sends to the inbound conversation instead.
+    /// In a 1:1 chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// Group chats, meetings and other inbound activities are not placed, and the activity is sent to the inbound conversation.
     /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -327,18 +369,20 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     }
 
     /// <summary>
-    /// Finds the chat or channel and reply chain a response to the inbound message is posted to.
-    /// In a channel the response always goes to the reply chain of the thread the inbound message is in.
+    /// Finds the chat or channel and reply chain a response to the inbound activity is posted to.
+    /// In a channel a response to a message always goes to the reply chain of the inbound message.
     /// <c>channelData.replyChain.id</c> is the root of that thread, and it equals the inbound message's own id for a top-level post.
     /// The destination is the channel, <c>channelData.channel.id</c>.
-    /// In a chat an inbound message is a reply in a thread when <c>channelData.replyChain.id</c> differs from its own id.
-    /// When <c>channelData.replyChain.id</c> and <c>activity.id</c> are equal, the inbound message is a top-level message, so the response is sent as a top-level message.
+    /// Other inbound activities in a channel are not placed.
+    /// In a chat see <see cref="IsInsideThread"/> for which activities are inside a thread.
     /// The destination is the chat, <c>channelData.chat.id</c>.
+    /// When the inbound activity is on a top-level message the response is sent as a top-level message.
+    /// Group chats and meetings are not placed.
     /// Returns null when an id is missing, so no reply chain (thread) is chosen and the response goes to the inbound conversation.
     /// </summary>
     internal ReplyChainPlacement? GetInboundReplyChainPlacement()
     {
-        if (Activity.Type != TeamsActivityTypes.Message || Activity.Conversation?.ConversationType == ConversationTypes.GroupChat)
+        if (Activity.Conversation?.ConversationType == ConversationTypes.GroupChat)
         {
             return null;
         }
@@ -352,16 +396,51 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         if (Activity.Conversation?.ConversationType == ConversationTypes.Channel)
         {
             string? channel = Activity.ChannelData?.Channel?.Id;
-            return string.IsNullOrWhiteSpace(channel) ? null : new ReplyChainPlacement(channel, replyChain, InChannel: true);
-        }
-
-        if (replyChain == Activity.Id)
-        {
-            return null;
+            return Activity.Type == TeamsActivityTypes.Message && !string.IsNullOrWhiteSpace(channel)
+                ? new ReplyChainPlacement(channel, replyChain, InChannel: true)
+                : null;
         }
 
         string? chat = Activity.ChannelData?.Chat?.Id;
-        return string.IsNullOrWhiteSpace(chat) ? null : new ReplyChainPlacement(chat, replyChain, InChannel: false);
+        return !string.IsNullOrWhiteSpace(chat) && IsInsideThread(replyChain)
+            ? new ReplyChainPlacement(chat, replyChain, InChannel: false)
+            : null;
+    }
+
+    /// <summary>
+    /// Whether the inbound activity in a chat is inside a thread: <c>channelData.replyChain.id</c> differs from the id of the message the activity acts on.
+    /// The message it acts on is:
+    /// <c>activity.id</c> for a message, an edit, a delete and a reaction;
+    /// <c>replyToId</c> (the card's message) for a message sent by a card button (a message with <c>channelData.source</c>);
+    /// <c>value.messagePayload.id</c> for a message action, and <c>replyToId</c> (the message the user acted on, for example a card or a message with feedback buttons) for any other invoke.
+    /// An invoke that is not tied to a message (for example a compose-box extension or a <c>task/fetch</c> from a bot command) is inside a thread when <c>channelData.replyChain.id</c> is present.
+    /// A <c>replyToId</c> or <c>messagePayload.id</c> that is not a plain number is never inside a thread, and neither are other inbound activities.
+    /// A <c>source</c> without a non-empty string <c>name</c> and a <c>replyToId</c> that is null count as absent.
+    /// </summary>
+    private bool IsInsideThread(string replyChain)
+    {
+        bool IsOtherPlainId(string? id)
+            => !string.IsNullOrEmpty(id) && id != "0" && id != replyChain && id.All(char.IsAsciiDigit);
+
+        switch (Activity.Type)
+        {
+            case TeamsActivityTypes.Message:
+                return string.IsNullOrEmpty(Activity.ChannelData?.Source?.Name) ? Activity.Id != replyChain : IsOtherPlainId(Activity.ReplyToId);
+            case TeamsActivityTypes.MessageUpdate:
+            case TeamsActivityTypes.MessageDelete:
+            case TeamsActivityTypes.MessageReaction:
+                return Activity.Id != replyChain;
+            case TeamsActivityTypes.Invoke:
+                string? messageId = Activity is InvokeActivity { Value: JsonObject value }
+                    && value["messagePayload"] is JsonObject payload
+                    && payload["id"] is JsonValue payloadId
+                    && payloadId.TryGetValue(out string? payloadMessageId)
+                    ? payloadMessageId
+                    : Activity.ReplyToId;
+                return messageId is null || IsOtherPlainId(messageId);
+            default:
+                return false;
+        }
     }
 
     // ==================== OAuth Sign-In ====================
