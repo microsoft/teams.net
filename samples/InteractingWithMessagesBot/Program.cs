@@ -31,10 +31,10 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             - `quote manual` - combine a quote and text manually
 
             **Threading:**
-            - `thread reply` - send a reactive threaded reply
-            - `thread send` - send to the same thread without quoting
-            - `thread proactive` - send a proactive threaded reply
-            - `thread manual` - construct a threaded conversation ID manually
+            - `thread reply` - send a reactive, quoted reply (in a channel, in the same thread; in a 1:1 chat, matches the level of your message)
+            - `thread send` - send reactively without quoting (in a channel, in the same thread; in a 1:1 chat, matches the level of your message)
+            - `thread proactive` - send a proactive reply in a thread on your message
+            - `thread top-level` - send a new top-level message, outside any reply chain (thread)
 
             **Reactions:**
             - `reaction add <type>` - add a reaction to your message
@@ -57,7 +57,7 @@ teamsApp.OnMessage("(?s)^.*$", async (context, cancellationToken) =>
     string text = context.Activity.TextWithoutMentions ?? "";
     if (Regex.IsMatch(
         text,
-        @"(?i)^(help|quote (reply|message|add|batch|manual)|thread (send|reply|proactive|manual)|reaction (add \S+|remove \S+|proactive))$"))
+        @"(?i)^(help|quote (reply|message|add|batch|manual)|thread (send|reply|proactive|top-level)|reaction (add \S+|remove \S+|proactive))$"))
     {
         return;
     }

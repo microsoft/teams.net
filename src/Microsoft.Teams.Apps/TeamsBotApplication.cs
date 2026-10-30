@@ -13,6 +13,7 @@ using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
@@ -383,7 +384,9 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Sends a text message proactively to a conversation.
     /// </summary>
-    /// <param name="conversationId">The conversation ID to send to. For channel threads, include <c>;messageid=</c>.</param>
+    /// <param name="conversationId">The conversation ID to send to.
+    /// The activity is sent to exactly this id.
+    /// To reply in a reply chain (thread), use <see cref="ReplyAsync(string, string, TeamsActivityInput, Uri?, AgenticIdentity?, CancellationToken)"/>.</param>
     /// <param name="text">The text to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
@@ -401,7 +404,9 @@ public class TeamsBotApplication : BotApplication
     /// Sends an activity proactively to a conversation. When the activity carries a recipient marked as
     /// targeted (<see cref="ChannelAccount.IsTargeted"/>), it is sent as a targeted message visible only to that recipient.
     /// </summary>
-    /// <param name="conversationId">The conversation ID to send to. For channel threads, include <c>;messageid=</c>.</param>
+    /// <param name="conversationId">The conversation ID to send to.
+    /// The activity is sent to exactly this id.
+    /// To reply in a reply chain (thread), use <see cref="ReplyAsync(string, string, TeamsActivityInput, Uri?, AgenticIdentity?, CancellationToken)"/>.</param>
     /// <param name="activity">The activity to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
@@ -424,37 +429,73 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <summary>
-    /// Sends a text message proactively as a threaded reply.
-    /// Constructs a threaded conversation ID from the conversation ID and message ID.
+    /// Sends a text message proactively as a reply in a reply chain (thread).
+    /// Posts to the reply chain (thread) of the message <paramref name="messageId"/>, in the chat or channel <paramref name="conversationId"/>.
     /// </summary>
-    /// <param name="conversationId">The conversation ID.</param>
-    /// <param name="messageId">The thread root message ID.</param>
+    /// <remarks>
+    /// There is no fallback to another route, so every error from the service propagates, including HTTP 404 and 400.
+    /// The SDK does not state where a client shows the message in a group chat.
+    /// </remarks>
+    /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>.</param>
+    /// <param name="messageId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>.</param>
     /// <param name="text">The text to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> or <paramref name="messageId"/> is null, empty or whitespace.</exception>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-        return SendAsync(threadedConversationId, text, serviceUrl, agenticIdentity, cancellationToken);
+        MessageActivityInput activity = new MessageActivityInput()
+            .WithText(text);
+
+        return ReplyAsync(conversationId, messageId, activity, serviceUrl, agenticIdentity, cancellationToken);
     }
 
     /// <summary>
-    /// Sends an activity proactively as a threaded reply.
-    /// Constructs a threaded conversation ID from the conversation ID and message ID.
+    /// Sends an activity proactively as a reply in a reply chain (thread).
+    /// Posts to the reply chain (thread) of the message <paramref name="messageId"/>, in the chat or channel <paramref name="conversationId"/>.
+    /// When the activity carries a recipient marked as targeted (<see cref="ChannelAccount.IsTargeted"/>), it is sent as a targeted message visible only to that recipient.
     /// </summary>
-    /// <param name="conversationId">The conversation ID.</param>
-    /// <param name="messageId">The thread root message ID.</param>
+    /// <remarks>
+    /// There is no fallback to another route, so every error from the service propagates, including HTTP 404 and 400.
+    /// The SDK does not state where a client shows the message in a group chat.
+    /// </remarks>
+    /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>.</param>
+    /// <param name="messageId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>.</param>
     /// <param name="activity">The activity to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="conversationId"/> or <paramref name="messageId"/> is null, empty or whitespace.</exception>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, TeamsActivityInput activity, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-        return SendAsync(threadedConversationId, activity, serviceUrl, agenticIdentity, cancellationToken);
+        ArgumentNullException.ThrowIfNull(activity);
+
+        return ReplyCoreAsync(conversationId, messageId, activity, activity.Recipient?.IsTargeted ?? false, serviceUrl, agenticIdentity, cancellationToken);
+    }
+
+    private Task<SendActivityResponse?> ReplyCoreAsync(string conversationId, string messageId, CoreActivityInput activity, bool isTargeted, Uri? serviceUrl, AgenticIdentity? agenticIdentity, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        Uri resolvedUrl = serviceUrl ?? _lastServiceUrl
+            ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
+
+        BotRequestContext? requestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity);
+
+#pragma warning disable ExperimentalTeamsThreading // the stable reply method calls the reply chain route
+        return ConversationClient.SendReplyChainActivityAsync(
+            conversationId,
+            messageId,
+            activity,
+            resolvedUrl,
+            isTargeted: isTargeted,
+            requestContext: requestContext,
+            cancellationToken: cancellationToken);
+#pragma warning restore ExperimentalTeamsThreading
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>
@@ -482,10 +523,7 @@ public class TeamsBotApplication : BotApplication
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, TeamsActivity activity, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-        Uri resolvedUrl = _lastServiceUrl
-            ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
-        return SendActivityAsync(threadedConversationId, CoreActivityInput.FromActivity(activity), resolvedUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        return ReplyCoreAsync(conversationId, messageId, CoreActivityInput.FromActivity(activity), isTargeted: false, serviceUrl: null, agenticIdentity, cancellationToken);
     }
 
     /// <summary>

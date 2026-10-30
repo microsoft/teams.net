@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
@@ -50,12 +51,28 @@ public class TeamsStreamingWriterTests
         Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-123", Name = "Bot" })
     };
 
-    private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)
+    private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null, ReplyChainPlacement? replyChain = null, ILogger? logger = null)
     {
         FakeHttpMessageHandler handler = new();
         ConversationClient client = new(new HttpClient(handler), NullLogger<ConversationClient>.Instance);
-        TeamsStreamingWriter writer = new(client, reference ?? CreateReferenceActivity());
+        TeamsStreamingWriter writer = new(client, reference ?? CreateReferenceActivity(), logger, replyChain is null ? null : new TeamsStreamingWriterOptions(replyChain));
         return (writer, handler);
+    }
+
+    private static readonly ReplyChainPlacement Placement = new("19:chat@thread.v2", "root-1");
+    private const string ReplyChainUrlPart = "/v3/conversations/19%3Achat%40thread.v2/replyChains/root-1";
+    private const string ConversationUrlPart = "/v3/conversations/conv-123/activities";
+
+    private sealed class CapturingLogger : ILogger
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Entries.Add((logLevel, formatter(state, exception)));
     }
 
     private static TeamsActivity CreateIdentityReferenceActivity(bool agentic)
@@ -638,6 +655,24 @@ public class TeamsStreamingWriterTests
         Assert.Equal("bound-prompt", reference.Id);
     }
 
+    // ── Reply chain placement ──────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AllSends_WithPlacement_UseInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic), Placement);
+
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -854,5 +889,332 @@ public class TeamsStreamingWriterTests
         await writer.FinalizeResponseAsync(final);
         Assert.Equal(HttpMethod.Put, handler.Requests.Last().Method);
         Assert.Equal(before, final.ToJson());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFound_TheFallbackUsesInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic), ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        await writer.AppendResponseAsync("Hello");
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ChannelReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FinalizeWithoutAnyChunk_WithPlacement_UsesInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic), Placement);
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Only a final message"));
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        AssertRequestIdentity(request, agentic);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_IsPostedThroughTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.AppendResponseAsync("Hello");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamType\": \"streaming\"", handler.RequestBodies[0]);
+        Assert.Contains("\"streamId\": null", handler.RequestBodies[0]);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_ThreadsUnderTheInboundActivity()
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "inbound-activity-id";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference, Placement);
+
+        await writer.AppendResponseAsync("Hello");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_WhenInformative_ThreadsUnderTheInboundActivity()
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "inbound-activity-id";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference, Placement);
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_WhenInformative_IsPostedThroughTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamType\": \"informative\"", handler.RequestBodies[0]);
+    }
+
+    [Fact]
+    public async Task LaterChunksAndTheFinalMessage_WithPlacement_AreUnchanged()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[2].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamId\": \"stream-1\"", handler.RequestBodies[1]);
+        Assert.Contains("\"streamType\": \"final\"", handler.RequestBodies[2]);
+    }
+
+    [Fact]
+    public async Task AppendAfterFinalize_WithPlacement_StartsTheNextStreamedMessageInTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.AppendResponseAsync("First");
+        await writer.FinalizeResponseAsync();
+        await writer.AppendResponseAsync("Second");
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[2].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task WithoutPlacement_EveryChunkAndTheFinalMessageGoToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.All(handler.Requests, r => Assert.Contains(ConversationUrlPart, r.RequestUri!.OriginalString, StringComparison.Ordinal));
+        Assert.All(handler.Requests, r => Assert.DoesNotContain("replyChains", r.RequestUri!.OriginalString, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task FirstChunk_WhenTheReplyChainCallFails_PropagatesWithoutFallingBack(HttpStatusCode statusCode)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"nope\"}}", statusCode);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    private static readonly ReplyChainPlacement ChannelPlacement = new("19:chan@thread.tacv2", "1680000000000", InChannel: true);
+    private const string ChannelReplyChainUrlPart = "/v3/conversations/19%3Achan%40thread.tacv2/replyChains/1680000000000";
+
+    [Fact]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFound_IsSentToTheConversationOnce()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"not found\"}}", HttpStatusCode.NotFound);
+        await writer.AppendResponseAsync("Hello");
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ChannelReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamType\": \"streaming\"", handler.RequestBodies[1]);
+        Assert.Contains("\"streamId\": null", handler.RequestBodies[1]);
+    }
+
+    [Fact]
+    public async Task StreamAfterAFirstChunkFallback_KeepsTheStreamIdOfTheFallbackResponse()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(4, handler.Requests.Count);
+        Assert.Contains("replyChains", handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.All(handler.Requests.Skip(1), r => Assert.Contains(ConversationUrlPart, r.RequestUri!.OriginalString, StringComparison.Ordinal));
+        Assert.Contains("\"streamId\": \"stream-1\"", handler.RequestBodies[2]);
+        Assert.Contains("\"streamId\": \"stream-1\"", handler.RequestBodies[3]);
+        Assert.Contains("\"streamType\": \"final\"", handler.RequestBodies[3]);
+    }
+
+    [Fact]
+    public async Task FinalizeWithoutAnyChunk_InAChannel_WhenTheReplyChainRouteIsNotFound_SendsTheFinalMessageToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Done"));
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("root-1")]
+    [InlineData("0")]
+    [InlineData("00")]
+    [InlineData("-5")]
+    [InlineData("12 3")]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFoundForANonNumericOrZeroId_PropagatesWithoutFallingBack(string replyChainId)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: new ReplyChainPlacement("19:chan@thread.tacv2", replyChainId, InChannel: true));
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.Conflict)]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainCallFailsWithAnotherStatus_PropagatesWithoutFallingBack(HttpStatusCode statusCode)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"nope\"}}", statusCode);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task FirstChunk_InAChat_WhenTheReplyChainRouteIsNotFoundForANumericId_PropagatesWithoutFallingBack()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: new ReplyChainPlacement("19:chat@thread.v2", "1680000000000"));
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task FirstChunk_InAChannel_WhenTheFallbackAlsoFails_PropagatesTheFallbackErrorWithoutAThirdRequest()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        handler.EnqueueResponse("{}", HttpStatusCode.InternalServerError);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, ex.StatusCode);
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WhenTheReplyChainCallReportsACancelledStream_Stops()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream was cancelled by user.\"}}", HttpStatusCode.Forbidden);
+        await writer.AppendResponseAsync("Hello");
+
+        Assert.True(writer.Cancelled);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task FinalizeWithoutAnyChunk_WithPlacement_SendsTheFinalMessageInTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Done"));
+
+        Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FinalizeWithoutAnyChunk_WithoutPlacement_SendsTheFinalMessageToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Done"));
+
+        Assert.Single(handler.Requests);
+        Assert.Contains(ConversationUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ReplyChainFallback_WithoutAFallback_PropagatesANotFound()
+    {
+        HttpRequestException notFound = new("not found", null, HttpStatusCode.NotFound);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(
+            () => ReplyChainFallback.SendAsync(() => Task.FromException<SendActivityResponse?>(notFound), fallback: null));
+
+        Assert.Same(notFound, ex);
+    }
+
+    [Fact]
+    public async Task ReplyChainFallback_RunsTheFallbackOnlyForANotFound()
+    {
+        int fallbackCalls = 0;
+        Task<SendActivityResponse?> Fallback()
+        {
+            fallbackCalls++;
+            return Task.FromResult<SendActivityResponse?>(new SendActivityResponse { Id = "fallback" });
+        }
+
+        SendActivityResponse? recovered = await ReplyChainFallback.SendAsync(
+            () => Task.FromException<SendActivityResponse?>(new HttpRequestException("not found", null, HttpStatusCode.NotFound)),
+            Fallback);
+        await Assert.ThrowsAsync<HttpRequestException>(() => ReplyChainFallback.SendAsync(
+            () => Task.FromException<SendActivityResponse?>(new HttpRequestException("error", null, HttpStatusCode.InternalServerError)),
+            Fallback));
+        await Assert.ThrowsAsync<HttpRequestException>(() => ReplyChainFallback.SendAsync(
+            () => Task.FromException<SendActivityResponse?>(new HttpRequestException("no status")),
+            Fallback));
+
+        Assert.Equal("fallback", recovered?.Id);
+        Assert.Equal(1, fallbackCalls);
     }
 }

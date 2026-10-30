@@ -19,13 +19,15 @@ public static class ConversationExtensions
     }
 
     /// <summary>
-    /// Construct a threaded conversation ID by appending <c>;messageid={messageId}</c>
-    /// to the conversation ID. This is the format the Teams service uses to route messages
-    /// to a specific thread in a channel.
+    /// Construct a threaded conversation ID by appending <c>;messageid={messageId}</c> to the conversation ID.
     /// </summary>
     /// <param name="conversationId">the conversation to thread into (e.g. <c>19:abc@thread.skype</c>)</param>
     /// <param name="messageId">the thread root message ID (must be a non-zero numeric string)</param>
     /// <returns>the threaded conversation ID (e.g. <c>19:abc@thread.skype;messageid=123</c>)</returns>
+    /// <remarks>
+    /// In a channel, sending to the result posts a thread reply to the message <c>messageId</c>.
+    /// <c>TeamsBotApplication.ReplyAsync</c> posts a thread reply through the <c>replyChains</c> endpoint, and falls back to this form if the service does not accept that endpoint.
+    /// </remarks>
     public static string ToThreadedConversationId(string conversationId, string messageId)
     {
         if (string.IsNullOrEmpty(conversationId))
