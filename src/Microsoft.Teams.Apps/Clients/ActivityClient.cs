@@ -83,6 +83,8 @@ public class ActivityClient
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities?.Any(entity => entity.Type == "planInfo") == true)
+            activity = activity.Copy();
         activity.ReplyToId = id;
         return SendCoreAsync(conversationId, activity, isTargeted: false, additionalHeaders, cancellationToken);
     }

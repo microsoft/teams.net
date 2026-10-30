@@ -12,6 +12,7 @@ A high-level framework for building Microsoft Teams bots in .NET. Built on top o
 - **OAuth Flows** &mdash; Built-in SSO token exchange, sign-in cards, and token management via `OAuthFlow`
 - **Teams API Clients** &mdash; Typed clients for conversations, members, teams, channels, meetings, and batch operations
 - **Streaming Messages** &mdash; Progressive response updates via `TeamsStreamingWriter`
+- **Plans (experimental)** &mdash; Explicit, prompt-bound progress and completion via standalone `Plan`
 - **Conversation Helpers** &mdash; Send, reply, quote, and typing helpers for reactive and proactive messaging
 - **Turn State** &mdash; Conversation and user state backed by `IDistributedCache`
 - **Targeted Messages** &mdash; Send messages visible only to a selected participant in supported conversations
@@ -108,6 +109,60 @@ Other message extension handlers include `OnSubmitAction`, `OnSelectItem`,
 `OnAnonQueryLink`, `OnQuerySettingUrl`, `OnSetting`, and
 `OnCardButtonClicked`.
 
+## Plans (experimental)
+
+Opt in with `<NoWarn>$(NoWarn);ExperimentalTeamsPlan</NoWarn>` in your project.
+Create a standalone helper; `Context` does not own or automatically complete a plan.
+
+```csharp
+using Microsoft.Teams.Apps.Schema.Entities;
+
+var plan = Plan.CreateFromContext(context);
+await plan.StartAsync([
+    new PlanStep { Id = "lookup", Version = 1, Title = "Find sources", Status = PlanStepStatuses.Active }
+], ct);
+await plan.UpdateAsync([
+    new PlanStep { Id = "lookup", Version = 2, Title = "Find sources", Status = PlanStepStatuses.Completed }
+], ct);
+await plan.CompleteAsync("The answer is ready.", ct);
+```
+
+Applications own stable step IDs and increment versions for **every** change, including sources
+and descriptions. Updates affect only supplied steps; the helper does not merge or cache history.
+`StartAsync`, `UpdateAsync`, `StopAsync`, and `ErrorAsync` POST typing activities. `CompleteAsync`
+POSTs a message, preserves caller content without mutation, and returns its send response.
+`Sent` fires only after successful sends; typing acknowledgements have no message response.
+
+For delayed work, serialize a `PlanOptions` with `ConversationId` (including any thread suffix)
+and `ReplyToId`, then reconstruct with `new Plan(scopedApiClient, options)`.
+Both options and helper serialization include only those two IDs. The already service-scoped
+client is supplied separately at runtime; do not persist a `Context` or credentials.
+
+Streaming stays with `TeamsStreamingWriter`. `plan.Completion()` builds a fresh final message
+with completion metadata and the Plan's originating prompt; it does not send anything.
+Use a writer targeting the same conversation and attach any final cards or citations to that message:
+
+```csharp
+await writer.FinalizeResponseAsync(plan.Completion(), ct);
+```
+
+An explicit final `ReplyToId` is preserved; when absent, it defaults to the writer's originating prompt.
+Targeted Plan scenarios are not supported: Plan activities use ordinary create routing,
+and `Completion()` does not inherit targeting from the originating context.
+
+Plan completion cannot use the writer's ordinary PUT timeout fallback: it throws
+`TimeoutException` and discards the failed cycle. Recover with a separate `Plan.CompleteAsync`
+message containing the full response and metadata using the right binding. Further finalization
+calls do nothing; the next append or informative update starts a fresh stream and clears `TimedOut`.
+HTTP 409 with exact `error.code: PlanConflict` instead throws `Microsoft.Teams.Core.PlanConflictException`
+(an `HttpRequestException`). Core classifies it once; Plan lifecycle calls and streaming propagate
+it unchanged, as do direct Core client calls. It exposes `StatusCode`,
+`ErrorCode`, `ErrorMessage`, and the raw `ResponseBody`, with the original HTTP failure as
+`InnerException`. It is not retried or treated as a timeout; a rejected Plan-bearing final message
+retires the writer's cycle before rethrowing, so explicit repeated finalization sends nothing.
+Do not blindly complete again after a service rejection. Other HTTP failures retain their ordinary exception behavior.
+See [PlanBot](../../samples/PlanBot) for all lifecycle calls, sources, and delayed continuation.
+
 ## State and OAuth
 
 Enable distributed turn state and register OAuth flows when adding the application:
@@ -191,5 +246,6 @@ configuration so the bot uses HTTP.
 | `OAuthFlow` | OAuth sign-in, token exchange (SSO), and sign-out management |
 | `ApiClient` | Facade for Teams conversation, member, team, meeting, and bot APIs |
 | `TeamsStreamingWriter` | Progressive message streaming with rate limiting |
+| `Plan` | Experimental standalone prompt-bound progress and explicit completion |
 | `MessageActivityInput` | Fluent outbound message model for text, cards, mentions, citations, and actions |
 | `TurnStateContainer` | Per-turn access to conversation and user state |

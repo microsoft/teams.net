@@ -58,6 +58,9 @@ public class TeamsActivityInput : CoreActivityInput
     /// <returns>A JSON string representation of the activity.</returns>
     public override string ToJson()
         => JsonSerializer.Serialize(this, TeamsActivityInputJsonContext.Default.TeamsActivityInput);
+
+    internal TeamsActivityInput Copy()
+        => JsonSerializer.Deserialize(ToJson(), TeamsActivityInputJsonContext.Default.TeamsActivityInput)!;
 }
 
 /// <summary>

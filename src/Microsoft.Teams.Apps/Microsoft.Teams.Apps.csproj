@@ -7,6 +7,8 @@
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<!-- Internal parsing and generated serializers use the experimental Plan models. -->
+		<NoWarn>$(NoWarn);ExperimentalTeamsPlan</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup>
