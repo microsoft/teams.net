@@ -67,8 +67,6 @@ internal static class SocketModeServiceRegistration
         services.TryAddSingleton<ISocketConnectionFactory>(sp => new SignalRSocketConnectionFactory(
             sp.GetRequiredService<ISocketModeNegotiator>(),
             readinessTimeout: TimeSpan.FromSeconds(30),
-            keepAliveInterval: TimeSpan.FromSeconds(15),
-            serverTimeout: TimeSpan.FromSeconds(30),
             sp.GetRequiredService<ILoggerFactory>().CreateLogger<SignalRSocketConnectionFactory>()));
 
         services.TryAddSingleton(sp =>
