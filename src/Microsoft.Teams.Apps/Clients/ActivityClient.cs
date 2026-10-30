@@ -78,27 +78,28 @@ public class ActivityClient
     }
 
     /// <summary>
-    /// Reply to an existing activity in a conversation.
+    /// Reply to an activity in a conversation.
+    /// Posts to <c>/v3/conversations/{conversationId}/activities</c>.
+    /// To create an activity in a reply chain (thread), use <see cref="ConversationApiClient.CreateReplyChainActivityAsync"/>.
+    /// The activity id is not sent.
     /// </summary>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities?.Any(entity => entity.Type == "planInfo") == true)
-            activity = activity.Copy();
-        activity.ReplyToId = id;
         return SendCoreAsync(conversationId, activity, isTargeted: false, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
-    /// Reply to an existing activity in a conversation.
+    /// Reply to an activity in a conversation.
+    /// Posts to <c>/v3/conversations/{conversationId}/activities</c>.
+    /// To create an activity in a reply chain (thread), use <see cref="ConversationApiClient.CreateReplyChainActivityAsync"/>.
+    /// The activity id is not sent.
     /// </summary>
     [Obsolete(ObsoleteInboundMessage)]
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string id, TeamsActivity activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        CoreActivityInput input = CoreActivityInput.FromActivity(activity);
-        input.ReplyToId = id;
-        return SendCoreAsync(conversationId, input, isTargeted: false, additionalHeaders, cancellationToken);
+        return SendCoreAsync(conversationId, CoreActivityInput.FromActivity(activity), isTargeted: false, additionalHeaders, cancellationToken);
     }
 
     /// <summary>
