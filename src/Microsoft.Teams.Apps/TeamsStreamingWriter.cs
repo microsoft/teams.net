@@ -65,7 +65,7 @@ namespace Microsoft.Teams.Apps;
 /// HTTP 409 with error code PlanConflict throws <see cref="PlanConflictException"/> without retry;
 /// a rejected Plan completion also retires the failed cycle.
 ///
-/// When the writer is created from a context whose inbound message is placed in a reply chain (thread),
+/// When the writer is created from a context whose inbound activity is placed in a reply chain (thread),
 /// the first chunk of each streamed message is posted into that reply chain, so the stream starts in the thread.
 /// All requests use the bot app ID and agentic identity derived from the inbound activity's recipient.
 /// </remarks>
@@ -119,7 +119,7 @@ public sealed class TeamsStreamingWriter
     /// <summary>
     /// Creates a <see cref="TeamsStreamingWriter"/> bound to the given context.
     /// The first message of the stream goes to the reply chain (thread) where <see cref="Context{TActivity}.SendAsync(MessageActivityInput, CancellationToken)"/> would place a response.
-    /// In a 1:1 chat the stream starts in the thread when the inbound message is in a thread, and at top level otherwise.
+    /// In a 1:1 chat the stream starts in the thread when the inbound activity is in a thread, and at top level otherwise.
     /// In a channel the stream starts in the reply chain of the inbound message.
     /// In a channel, when the service answers HTTP 404 to the reply chain call and the reply chain id is a plain non-zero number, the first message is sent to the inbound conversation instead.
     /// In a group chat the stream is not placed in a reply chain.
