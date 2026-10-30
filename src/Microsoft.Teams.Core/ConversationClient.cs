@@ -87,7 +87,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// Posts to <c>/v3/conversations/{conversationId}/replyChains/{activityId}</c>.
     /// </summary>
     /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>. Cannot be null or whitespace.</param>
-    /// <param name="activityId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>, or the activity id when replying to a top-level message. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>. Cannot be null or whitespace.</param>
     /// <param name="activity">The activity to send. Cannot be null.</param>
     /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
     /// <param name="isTargeted">When true, the activity is sent as a targeted message visible only to the specified recipient.</param>

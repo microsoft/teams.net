@@ -119,10 +119,10 @@ public sealed class TeamsStreamingWriter
     /// <summary>
     /// Creates a <see cref="TeamsStreamingWriter"/> bound to the given context.
     /// The first message of the stream goes to the reply chain (thread) where <see cref="Context{TActivity}.SendAsync(MessageActivityInput, CancellationToken)"/> would place a response.
-    /// In a 1:1 chat the stream starts in the thread when the inbound activity is in a thread, and at top level otherwise.
+    /// In a chat the stream starts in the thread when the inbound activity is in a thread, and at top level otherwise.
     /// In a channel the stream starts in the reply chain of the inbound message.
     /// In a channel, when the service answers HTTP 404 to the reply chain call and the reply chain id is a plain non-zero number, the first message is sent to the inbound conversation instead.
-    /// In a group chat the stream is not placed in a reply chain.
+    /// An inbound activity without <c>channelData.replyChain.id</c> is not placed in a reply chain.
     /// </summary>
     public static TeamsStreamingWriter CreateFromContext<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
     {
