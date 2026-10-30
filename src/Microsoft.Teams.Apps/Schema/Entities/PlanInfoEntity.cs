@@ -124,8 +124,6 @@ public class PlanStep
 [Experimental("ExperimentalTeamsPlan")]
 public class StepSource
 {
-    private CitationIcon? _icon;
-
     /// <summary>Display title.</summary>
     [JsonPropertyName("title")]
     public required string Title { get; set; }
@@ -137,20 +135,7 @@ public class StepSource
     /// <summary>Optional icon shared with message citations.</summary>
     [JsonPropertyName("icon")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public CitationIcon? Icon
-    {
-        get => _icon;
-        set
-        {
-            if (value is not null && value.Value is not (
-                "Microsoft Word" or "Microsoft Excel" or "Microsoft PowerPoint" or "Microsoft OneNote"
-                or "Microsoft SharePoint" or "Microsoft Visio" or "Microsoft Loop" or "Microsoft Whiteboard"
-                or "Adobe Illustrator" or "Adobe Photoshop" or "Adobe InDesign" or "Adobe Flash"
-                or "Sketch" or "Source Code" or "Image" or "GIF" or "Video" or "Sound" or "ZIP" or "Text" or "PDF"))
-                throw new JsonException("Invalid Plan source citation icon.");
-            _icon = value;
-        }
-    }
+    public CitationIcon? Icon { get; set; }
 }
 
 /// <summary>Plan lifecycle values.</summary>

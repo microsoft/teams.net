@@ -604,6 +604,9 @@ public class TeamsStreamingWriterTests
         Assert.False(writer.Cancelled);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+
+        await writer.FinalizeResponseAsync(final);
+        Assert.Equal(3, handler.Requests.Count);
     }
 
     [Fact]
@@ -642,6 +645,93 @@ public class TeamsStreamingWriterTests
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
         Assert.Equal(before, final.ToJson());
+
+        await writer.FinalizeResponseAsync(final);
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.False(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+    }
+
+    [Theory]
+    [InlineData("text")]
+    [InlineData("formatted")]
+    [InlineData("informative")]
+    public async Task PlanConflictOnFinal_NextWriteStartsFreshStream(string nextWrite)
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "bound-prompt";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference);
+        handler.EnqueueResponse("""{"id":"old-stream"}""");
+        await writer.AppendResponseAsync(
+            new MessageActivityInput().WithText("Old answer", TextFormats.ExtendedMarkdown));
+        handler.EnqueueResponse("""{"error":{"code":"PlanConflict","message":"Stopped"}}""", HttpStatusCode.Conflict);
+        MessageActivityInput rejected = new MessageActivityInput()
+            .AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete })
+            .AddFeedback();
+        await Assert.ThrowsAsync<PlanConflictException>(() => writer.FinalizeResponseAsync(rejected));
+
+        handler.EnqueueResponse("""{"id":"new-stream"}""");
+        switch (nextWrite)
+        {
+            case "text":
+                await writer.AppendResponseAsync("Fresh answer");
+                break;
+            case "formatted":
+                await writer.AppendResponseAsync(
+                    new MessageActivityInput().WithText("Fresh answer", TextFormats.Markdown));
+                break;
+            case "informative":
+                await writer.SendInformativeUpdateAsync("Fresh thinking");
+                await writer.AppendResponseAsync("Fresh answer");
+                break;
+        }
+
+        Assert.Equal(nextWrite == "informative" ? 4 : 3, handler.Requests.Count);
+        JsonNode first = JsonNode.Parse(handler.RequestBodies[2])!;
+        JsonNode firstInfo = Assert.Single(first["entities"]!.AsArray(),
+            entity => entity!["type"]!.GetValue<string>() == "streaminfo")!;
+        Assert.Equal(1, firstInfo["streamSequence"]!.GetValue<int>());
+        Assert.Null(firstInfo["streamId"]);
+        Assert.Equal("bound-prompt", first["replyToId"]!.GetValue<string>());
+        Assert.Equal(nextWrite == "informative" ? "informative" : "streaming",
+            firstInfo["streamType"]!.GetValue<string>());
+
+        await writer.FinalizeResponseAsync();
+        JsonNode final = JsonNode.Parse(handler.RequestBodies.Last())!;
+        Assert.Equal("Fresh answer", final["text"]!.GetValue<string>());
+        Assert.Equal(nextWrite == "formatted" ? "markdown" : null, final["textFormat"]?.GetValue<string>());
+        JsonNode finalInfo = Assert.Single(final["entities"]!.AsArray())!;
+        Assert.Equal("streaminfo", finalInfo["type"]!.GetValue<string>());
+        Assert.Equal("final", finalInfo["streamType"]!.GetValue<string>());
+        Assert.Equal("new-stream", finalInfo["streamId"]!.GetValue<string>());
+        Assert.Equal("bound-prompt", final["replyToId"]!.GetValue<string>());
+        Assert.DoesNotContain("planInfo", final.ToJsonString());
+        Assert.DoesNotContain("feedbackLoopEnabled", final.ToJsonString());
+        Assert.False(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+
+        int sent = handler.Requests.Count;
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(sent, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task PlanConflictWithoutPlanMetadata_DoesNotRetireOrdinaryFinal()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("Answer");
+        handler.EnqueueResponse("""{"error":{"code":"PlanConflict","message":"Stopped"}}""", HttpStatusCode.Conflict);
+        await Assert.ThrowsAsync<PlanConflictException>(() => writer.FinalizeResponseAsync());
+        Assert.False(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(3, handler.Requests.Count);
+        JsonNode final = JsonNode.Parse(handler.RequestBodies.Last())!;
+        Assert.Equal("Answer", final["text"]!.GetValue<string>());
+        Assert.DoesNotContain("planInfo", final.ToJsonString());
     }
 
     [Fact]

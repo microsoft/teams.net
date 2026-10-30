@@ -12,7 +12,11 @@ using Microsoft.Teams.Core;
 namespace Microsoft.Teams.Apps;
 
 /// <summary>Explicit, prompt-bound plan updates. This helper does not own a workflow or a stream.</summary>
-/// <remarks>Persist the two IDs and supply a service-scoped API client when reconstructing for delayed work.</remarks>
+/// <remarks>
+/// Persist the two IDs and supply a service-scoped API client when reconstructing for delayed work.
+/// Targeted Plan scenarios are not supported. Plan activities use ordinary create routing, and
+/// <see cref="Completion"/> does not inherit targeting from the originating context.
+/// </remarks>
 [Experimental("ExperimentalTeamsPlan")]
 public sealed class Plan
 {

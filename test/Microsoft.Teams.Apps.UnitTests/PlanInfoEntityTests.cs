@@ -12,6 +12,32 @@ namespace Microsoft.Teams.Apps.UnitTests;
 public class PlanInfoEntityTests
 {
     [Theory]
+    [InlineData("document")]
+    [InlineData("text")]
+    [InlineData("Text ")]
+    [InlineData("")]
+    public void StepSource_CustomIconsMatchCitationBehavior(string value)
+    {
+        CitationIcon custom = new(value);
+        CitationAppearance appearance = new() { Name = "Reference", Abstract = "Reference", Icon = custom };
+        Assert.Same(custom, appearance.ToDocument().Image!.Name);
+        string citationJson = JsonSerializer.Serialize(appearance.ToDocument().Image,
+            TeamsActivityInputJsonContext.Default.CitationImageObject);
+        Assert.Equal(value, JsonNode.Parse(citationJson)!["name"]!.GetValue<string>());
+        Assert.Equal(custom, JsonSerializer.Deserialize(citationJson,
+            TeamsActivityInputJsonContext.Default.CitationImageObject)!.Name);
+
+        StepSource source = new() { Title = "Reference", Url = new Uri("https://example.com"), Icon = custom };
+        Assert.Same(custom, source.Icon);
+        string sourceJson = JsonSerializer.Serialize(source, TeamsActivityInputJsonContext.Default.StepSource);
+        Assert.Equal(value, JsonNode.Parse(sourceJson)!["icon"]!.GetValue<string>());
+        Assert.Equal(custom, JsonSerializer.Deserialize(sourceJson,
+            TeamsActivityInputJsonContext.Default.StepSource)!.Icon);
+        source.Icon = null;
+        Assert.DoesNotContain("icon", JsonSerializer.Serialize(source, TeamsActivityInputJsonContext.Default.StepSource));
+    }
+
+    [Theory]
     [InlineData("start")]
     [InlineData("continue")]
     [InlineData("complete")]
@@ -141,9 +167,8 @@ public class PlanInfoEntityTests
         Assert.Throws<JsonException>(() => TeamsActivity.FromActivity(CoreActivity.FromJsonString(json)));
     }
 
-    [Theory]
-    [InlineData("""{"id":"one","version":0,"title":"One","status":"unknown"}""")]
-    [InlineData("""{"id":"one","version":0,"title":"One","status":"active","sources":[{"title":"Source","url":"https://example.com","icon":"document"}]}""")]
-    public void Step_RejectsInvalidStatusOrSourceIcon(string json)
-        => Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PlanStep>(json));
+    [Fact]
+    public void Step_RejectsInvalidStatus()
+        => Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PlanStep>(
+            """{"id":"one","version":0,"title":"One","status":"unknown"}"""));
 }

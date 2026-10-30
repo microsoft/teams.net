@@ -151,6 +151,63 @@ public class PlanTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FinalConflictRecovery_ExplicitCleanupDoesNotRepeatCompletion(bool parameterlessFirst)
+    {
+        (ApiClient api, RecordingHandler handler) = CreateClient();
+        handler.Responses.Enqueue(Response(HttpStatusCode.Accepted, ""));
+        handler.Responses.Enqueue(Response(HttpStatusCode.Created, """{"id":"stream-id"}"""));
+        string conflictBody = """{"error":{"code":"PlanConflict","message":"Stopped"}}""";
+        handler.Responses.Enqueue(Response(HttpStatusCode.Conflict, conflictBody));
+        handler.Responses.Enqueue(Response(HttpStatusCode.Accepted, ""));
+        TeamsBotApplication app = new(api, new HttpContextAccessor(), NullLogger<TeamsBotApplication>.Instance,
+            new TeamsBotApplicationOptions { AppId = "app-id" });
+        List<PlanSentEventArgs> events = [];
+        bool recovered = false;
+        app.OnMessage(async (context, cancellationToken) =>
+        {
+            Plan plan = Plan.CreateFromContext(context);
+            plan.Sent += (_, args) => events.Add(args);
+            await plan.StartAsync([Step()], cancellationToken);
+            TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+            await writer.AppendResponseAsync("Answer", cancellationToken);
+            MessageActivityInput final = plan.Completion();
+            Task closing = writer.FinalizeResponseAsync(final, cancellationToken);
+            PlanConflictException error = await Assert.ThrowsAsync<PlanConflictException>(() => closing);
+            Assert.Same(error, closing.Exception!.InnerException);
+            Assert.Equal(HttpStatusCode.Conflict, error.StatusCode);
+            Assert.Equal(conflictBody, error.ResponseBody);
+            Assert.Single(events);
+
+            await plan.StopAsync(cancellationToken);
+            recovered = true;
+            await writer.FinalizeResponseAsync(parameterlessFirst ? null : final, cancellationToken);
+            await writer.FinalizeResponseAsync(parameterlessFirst ? final : null, cancellationToken);
+            Assert.False(writer.TimedOut);
+            Assert.False(writer.Cancelled);
+        });
+
+        await app.ProcessAsync(new CoreActivity(ActivityType.Message)
+        {
+            Id = PromptId,
+            ServiceUrl = ServiceUrl,
+            Conversation = new Conversation(ConversationId),
+            From = new ChannelAccount { Id = "user" },
+            Recipient = new ChannelAccount { Id = "bot" }
+        }, user: null, correlationVector: null);
+
+        Assert.True(recovered);
+        Assert.Equal(4, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+        Assert.All(handler.Bodies, body => Assert.Equal(PromptId, body["replyToId"]!.GetValue<string>()));
+        Assert.Single(handler.Bodies, body => body["type"]!.GetValue<string>() == "message");
+        Assert.Equal("stop", handler.Bodies.Last()["entities"]![0]!["planType"]!.GetValue<string>());
+        Assert.Equal(2, events.Count);
+        Assert.All(events, args => Assert.Null(args.Response));
+    }
+
+    [Theory]
     [InlineData("start")]
     [InlineData("continue")]
     [InlineData("stop")]

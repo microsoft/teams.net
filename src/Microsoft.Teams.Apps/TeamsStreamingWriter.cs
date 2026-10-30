@@ -61,7 +61,8 @@ namespace Microsoft.Teams.Apps;
 /// Plan completion metadata belongs only on the final message. A timed-out Plan completion
 /// throws <see cref="TimeoutException"/> instead of using the ordinary PUT fallback.
 /// The failed cycle is retired; further finalization does nothing until the next append or informative update.
-/// HTTP 409 with error code PlanConflict throws <see cref="PlanConflictException"/> without retry.
+/// HTTP 409 with error code PlanConflict throws <see cref="PlanConflictException"/> without retry;
+/// a rejected Plan completion also retires the failed cycle.
 /// </remarks>
 public sealed class TeamsStreamingWriter
 {
@@ -237,6 +238,7 @@ public sealed class TeamsStreamingWriter
     /// streamed message in place instead of sending a new streamed chunk. Plan completion
     /// requires a POST and throws <see cref="TimeoutException"/> in that case, retiring the failed
     /// cycle so later finalization calls do nothing until the next append or informative update.
+    /// A Plan completion rejected with <see cref="PlanConflictException"/> also retires the cycle before rethrowing.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown if the final activity has neither text nor attachments.
@@ -286,6 +288,12 @@ public sealed class TeamsStreamingWriter
         try
         {
             await _client.SendActivityAsync(_conversationId, activity, _serviceUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (PlanConflictException) when (hasPlan)
+        {
+            ResetForNextStream();
+            _finalized = true;
+            throw;
         }
         catch (HttpRequestException ex)
         {

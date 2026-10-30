@@ -147,6 +147,8 @@ await writer.FinalizeResponseAsync(plan.Completion(), ct);
 ```
 
 An explicit final `ReplyToId` is preserved; when absent, it defaults to the writer's originating prompt.
+Targeted Plan scenarios are not supported: Plan activities use ordinary create routing,
+and `Completion()` does not inherit targeting from the originating context.
 
 Plan completion cannot use the writer's ordinary PUT timeout fallback: it throws
 `TimeoutException` and discards the failed cycle. Recover with a separate `Plan.CompleteAsync`
@@ -156,8 +158,9 @@ HTTP 409 with exact `error.code: PlanConflict` instead throws `Microsoft.Teams.C
 (an `HttpRequestException`). Core classifies it once; Plan lifecycle calls and streaming propagate
 it unchanged, as do direct Core client calls. It exposes `StatusCode`,
 `ErrorCode`, `ErrorMessage`, and the raw `ResponseBody`, with the original HTTP failure as
-`InnerException`. It is not retried or treated as a timeout; do not blindly complete again
-after a service rejection. Other HTTP failures retain their ordinary exception behavior.
+`InnerException`. It is not retried or treated as a timeout; a rejected Plan-bearing final message
+retires the writer's cycle before rethrowing, so explicit repeated finalization sends nothing.
+Do not blindly complete again after a service rejection. Other HTTP failures retain their ordinary exception behavior.
 See [PlanBot](../../samples/PlanBot) for all lifecycle calls, sources, and delayed continuation.
 
 ## State and OAuth
