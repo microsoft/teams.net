@@ -1,6 +1,6 @@
 # PlanBot
 
-Demosntrates the `Plan` and `Step` features.
+Demonstrates the `Plan` and `Step` features.
 Plan APIs are experimental; the project opts in with `ExperimentalTeamsPlan`.
 
 Configure a registered Teams bot as described in the [repository quick start](../../README.md),
