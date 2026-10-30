@@ -173,16 +173,29 @@ public class ConversationApiClientTests
     }
 
     [Fact]
-    public async Task ReplyToActivityAsync_StampsReplyToId()
+    public async Task ReplyToActivityAsync_DoesNotSetReplyToId()
     {
         (ConversationApiClient client, WireCapture wire) = CreateWireClient();
         MessageActivityInput activity = new MessageActivityInput().WithText("hello");
 
         await client.ReplyToActivityAsync("conv-1", "msg-1", activity);
 
-        Assert.Equal("msg-1", activity.ReplyToId);
+        Assert.Null(activity.ReplyToId);
+        Assert.DoesNotContain("replyToId", wire.Body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ReplyToActivityAsync_KeepsAReplyToIdTheCallerSetOnTheActivity()
+    {
+        (ConversationApiClient client, WireCapture wire) = CreateWireClient();
+        MessageActivityInput activity = new MessageActivityInput().WithText("hello");
+        activity.ReplyToId = "caller-id";
+
+        await client.ReplyToActivityAsync("conv-1", "msg-1", activity);
+
+        Assert.Equal("caller-id", activity.ReplyToId);
         using JsonDocument json = JsonDocument.Parse(wire.Body);
-        Assert.Equal("msg-1", json.RootElement.GetProperty("replyToId").GetString());
+        Assert.Equal("caller-id", json.RootElement.GetProperty("replyToId").GetString());
     }
 
     [Fact]
@@ -227,7 +240,7 @@ public class ConversationApiClientTests
     }
 
     [Fact]
-    public async Task ObsoleteActivityClient_ReplyAsync_StampsReplyToIdAndSendsToTheConversation()
+    public async Task ObsoleteActivityClient_ReplyAsync_SendsToTheConversationWithoutReplyToId()
     {
         (Mock<ConversationClient> conversationClient, ReplyCapture reply, SendCapture send) = CreateConversationClient();
         AgenticIdentity identity = new() { AgenticAppId = "app-123", AgenticUserId = "user-456" };
@@ -239,9 +252,9 @@ public class ConversationApiClientTests
         await client.ReplyAsync("conv-1", "msg-1", activity, headers);
 #pragma warning restore CS0618
 
-        Assert.Equal("msg-1", activity.ReplyToId);
+        Assert.Null(activity.ReplyToId);
         Assert.Equal("conv-1", send.ConversationId);
-        Assert.Equal("msg-1", send.Activity?.ReplyToId);
+        Assert.Null(send.Activity?.ReplyToId);
         Assert.False(send.IsTargeted);
         Assert.Same(identity, send.RequestContext?.AgenticIdentity);
         Assert.Same(headers, send.Headers);
@@ -249,7 +262,7 @@ public class ConversationApiClientTests
     }
 
     [Fact]
-    public async Task ObsoleteActivityClient_ReplyAsync_InboundActivityOverload_StampsReplyToIdAndSendsToTheConversation()
+    public async Task ObsoleteActivityClient_ReplyAsync_InboundActivityOverload_SendsToTheConversationWithoutReplyToId()
     {
         (Mock<ConversationClient> conversationClient, ReplyCapture reply, SendCapture send) = CreateConversationClient();
 
@@ -259,7 +272,7 @@ public class ConversationApiClientTests
 #pragma warning restore CS0618
 
         Assert.Equal("conv-1", send.ConversationId);
-        Assert.Equal("msg-1", send.Activity?.ReplyToId);
+        Assert.Null(send.Activity?.ReplyToId);
         Assert.False(send.IsTargeted);
         Assert.Equal(0, reply.Calls);
     }
