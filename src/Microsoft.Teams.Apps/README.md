@@ -219,8 +219,8 @@ host.Run();
   transports. With Socket Mode enabled it throws on a `WebApplication`, and a host that includes a web server fails
   to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.
 - **Public cloud only** &mdash; Registration fails for bots configured for another cloud.
-- **Classic bot identity only** &mdash; The connection is negotiated with the bot's app ID and credentials. Agentic
-  identities are not supported.
+- **Bot or agent instance identity** &mdash; By default the connection is negotiated with the bot's app ID and
+  credentials. See [Agentic Socket Mode](#agentic-socket-mode) to negotiate as an agent instance instead.
 - **Canary and Pilot1 endpoints** &mdash; Socket Mode is currently available only on the Canary and Pilot1 rings. Set
   `NegotiateBaseUrl` to `https://canary.botapi.skype.com` or `https://pilot1.botapi.skype.com` until it is enabled on
   the default production endpoint.
@@ -232,6 +232,30 @@ host.Run();
 `UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change the geos, negotiate URL, and connection
 timeouts. `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier
 configuration so the bot uses HTTP.
+
+### Agentic Socket Mode
+
+To receive activities for an agent, set `AgenticAppId` to the agent instance ID and `AgenticTokenScope` to the
+negotiate token scope agreed with the service. The configured `ClientId` remains the agent blueprint ID, and
+negotiation (including reconnects and token refreshes) uses an app-only token for the agent instance:
+
+```csharp
+builder.Services.AddTeamsBotApplication(options => options.UseSocketMode(socket =>
+{
+    socket.AgenticAppId = "<agent-instance-id>";
+    socket.AgenticTokenScope = "<negotiate-token-scope>";
+    socket.AgenticTenantId = "<tenant-id>"; // Optional; defaults to the credential tenant.
+}));
+```
+
+- **Explicit scope** &mdash; No default audience is assumed. The host fails to start if `AgenticTokenScope` is missing,
+  or if `AgenticTokenScope` or `AgenticTenantId` is set without `AgenticAppId`.
+- **Recipient validation** &mdash; An inbound activity is rejected with HTTP 400 before it reaches a handler unless its
+  recipient carries non-empty `agenticAppBlueprintId`, `agenticAppId`, and `tenantId` values (plus `agenticUserId`
+  for an Agentic User), and the blueprint matches `ClientId`. An envelope whose `botKey` names another bot is
+  rejected the same way.
+- **Per-recipient replies** &mdash; Replies act as the agentic identity on each activity's recipient, as they do over
+  HTTP, rather than as the agent instance that opened the connection.
 
 ## Main Types
 

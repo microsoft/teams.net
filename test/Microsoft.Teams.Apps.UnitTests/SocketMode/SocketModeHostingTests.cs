@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Abstractions;
+using Microsoft.Identity.Web;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.SocketMode;
@@ -99,6 +100,14 @@ public class SocketModeHostingTests
         o => o.ReadinessTimeout = TimeSpan.Zero,
         o => o.KeepAliveInterval = TimeSpan.Zero,
         o => o.ServerTimeout = TimeSpan.Zero,
+        o => o.AgenticAppId = "agent-instance",
+        o => o.AgenticTokenScope = "api://socket/.default",
+        o => o.AgenticTenantId = "agent-tenant",
+        o =>
+        {
+            o.AgenticAppId = " ";
+            o.AgenticTokenScope = "api://socket/.default";
+        },
     };
 
     [Theory]
@@ -142,6 +151,50 @@ public class SocketModeHostingTests
         HttpRequestMessage request = Assert.Single(handler.Requests);
         Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
         Assert.Equal("bot-token", request.Headers.Authorization?.Parameter);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("agent-tenant")]
+    public async Task Negotiator_Agentic_UsesTheAgentInstanceTokenOnEveryNegotiate(string? tenantId)
+    {
+        List<(string Scope, AuthorizationHeaderProviderOptions Options)> calls = [];
+        Mock<IAuthorizationHeaderProvider> header = new();
+        header
+            .Setup(h => h.CreateAuthorizationHeaderForAppAsync(It.IsAny<string>(), It.IsAny<AuthorizationHeaderProviderOptions>(), It.IsAny<CancellationToken>()))
+            .Returns((string scope, AuthorizationHeaderProviderOptions options, CancellationToken __) =>
+            {
+                calls.Add((scope, options));
+                return Task.FromResult("Bearer agent-instance-token");
+            });
+        RecordingHandler handler = new();
+
+        ServiceCollection services = CreateServices();
+        services.AddTeamsBotApplication(options => options.UseSocketMode(socket =>
+        {
+            socket.AgenticAppId = "agent-instance";
+            socket.AgenticTokenScope = "api://socket/.default";
+            socket.AgenticTenantId = tenantId;
+        }));
+        services.AddKeyedSingleton("AzureAd", new BotTokenProvider(header.Object));
+        services.AddHttpClient(SocketModeServiceRegistration.NegotiatorHttpClientName).ConfigurePrimaryHttpMessageHandler(() => handler);
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        ISocketModeNegotiator negotiator = provider.GetRequiredService<ISocketModeNegotiator>();
+        Uri negotiateUri = new("https://botapi.skype.com/amer/v3/websockets/connect");
+
+        // A reconnect or token refresh negotiates again, so it must mint the agentic token again too.
+        await negotiator.NegotiateAsync(negotiateUri);
+        await negotiator.NegotiateAsync(negotiateUri);
+
+        Assert.Equal(2, calls.Count);
+        Assert.All(calls, call =>
+        {
+            Assert.Equal("api://socket/.default", call.Scope);
+            Assert.Equal(tenantId, call.Options.AcquireTokenOptions.Tenant);
+            Assert.Contains("agent-instance", call.Options.AcquireTokenOptions.ExtraParameters!.Values);
+        });
+        Assert.All(handler.Requests, request => Assert.Equal("agent-instance-token", request.Headers.Authorization?.Parameter));
     }
 
     [Fact]
@@ -470,6 +523,90 @@ public class SocketModeHostingTests
         Assert.StartsWith("https://smba.trafficmanager.net/amer/v3/conversations/conversation-1/activities", request.RequestUri!.AbsoluteUri, StringComparison.Ordinal);
         Assert.Equal("bot-token", request.Headers.Authorization?.Parameter);
         Assert.Equal("You said: hello", JsonDocument.Parse(body).RootElement.GetProperty("text").GetString());
+    }
+
+    [Fact]
+    public async Task GenericHost_AgenticMessageOverSocket_RepliesAsTheRecipientAgenticUser()
+    {
+        const string AgenticUserId = "31e29ddb-e4ce-427e-8bda-1a37eb12d43f";
+        FakeConnectionFactory factory = new();
+        OutboundHandler outbound = new();
+        List<AuthorizationHeaderProviderOptions> userTokenOptions = [];
+        Mock<IAuthorizationHeaderProvider> header = new();
+        header
+            .Setup(h => h.CreateAuthorizationHeaderForAppAsync(It.IsAny<string>(), It.IsAny<AuthorizationHeaderProviderOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("Bearer app-token");
+        header
+            .Setup(h => h.CreateAuthorizationHeaderAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<AuthorizationHeaderProviderOptions>(), It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<CancellationToken>()))
+            .Returns((IEnumerable<string> _, AuthorizationHeaderProviderOptions options, System.Security.Claims.ClaimsPrincipal __, CancellationToken ___) =>
+            {
+                userTokenOptions.Add(options);
+                return Task.FromResult("Bearer agentic-user-token");
+            });
+
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { Args = [] });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = ClientId,
+            ["AzureAd:TenantId"] = "socket-tenant-id",
+        });
+        builder.Services.AddSingleton<ISocketConnectionFactory>(factory);
+        builder.Services.AddTeamsBotApplication(options => options.UseSocketMode(socket =>
+        {
+            socket.Geos = ["amer"];
+            socket.AgenticAppId = "socket-agent-instance";
+            socket.AgenticTokenScope = "api://socket/.default";
+        }));
+        builder.Services.AddSingleton(header.Object);
+        builder.Services.AddHttpClient("BotConversationClient").ConfigurePrimaryHttpMessageHandler(() => outbound);
+        using IHost host = builder.Build();
+
+        TeamsBotApplication app = host.UseTeamsBotApplication();
+        app.OnMessage((context, cancellationToken) => context.SendAsync("hi", cancellationToken));
+        await host.StartAsync();
+
+        SocketConnectionHandlers handlers = Assert.Single(factory.Connections).Handlers;
+        SocketReplyFrame? rejected = await handlers.OnActivity(AgenticEnvelope(new { id = ClientId }));
+        SocketReplyFrame? ack = await handlers.OnActivity(AgenticEnvelope(new
+        {
+            id = "agent",
+            role = "agenticUser",
+            agenticAppBlueprintId = ClientId,
+            agenticAppId = "recipient-agent-instance",
+            agenticUserId = AgenticUserId,
+            tenantId = "recipient-tenant",
+        }));
+        await host.StopAsync();
+
+        Assert.Equal(400, rejected!.Status);
+        Assert.Equal(200, ack!.Status);
+        (HttpRequestMessage request, _) = Assert.Single(outbound.Requests);
+        Assert.Equal("agentic-user-token", request.Headers.Authorization?.Parameter);
+
+        // The reply acts as the activity's recipient, not as the agent instance that negotiated the socket.
+        AuthorizationHeaderProviderOptions expected = new() { AcquireTokenOptions = new() };
+        expected.WithAgentUserIdentity("recipient-agent-instance", Guid.Parse(AgenticUserId));
+        AuthorizationHeaderProviderOptions actual = Assert.Single(userTokenOptions);
+        Assert.All(
+            expected.AcquireTokenOptions.ExtraParameters!.Where(parameter => parameter.Value is string),
+            parameter => Assert.Equal(parameter.Value, actual.AcquireTokenOptions.ExtraParameters![parameter.Key]));
+
+        static SocketActivityEnvelope AgenticEnvelope(object recipient) => new()
+        {
+            EnvelopeId = "envelope-1",
+            Type = TeamsActivityTypes.Message,
+            Payload = JsonSerializer.SerializeToElement(new
+            {
+                type = TeamsActivityTypes.Message,
+                id = "incoming-1",
+                text = "hello",
+                channelId = "msteams",
+                serviceUrl = "https://smba.trafficmanager.net/amer/",
+                conversation = new { id = "conversation-1" },
+                from = new { id = "user-1" },
+                recipient,
+            }),
+        };
     }
 
     private sealed class OutboundHandler : HttpMessageHandler

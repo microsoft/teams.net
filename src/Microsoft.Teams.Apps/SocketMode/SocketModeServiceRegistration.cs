@@ -61,7 +61,7 @@ internal static class SocketModeServiceRegistration
             BotTokenProvider tokenProvider = sp.GetRequiredKeyedService<BotTokenProvider>(sectionName);
             return new SocketModeNegotiator(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient(NegotiatorHttpClientName),
-                cancellationToken => tokenProvider.GetAppTokenAsync(BotFrameworkScope, tenantId: null, cancellationToken));
+                CreateTokenSource(tokenProvider, options));
         });
 
         services.TryAddSingleton<ISocketConnectionFactory>(sp => new SignalRSocketConnectionFactory(
@@ -73,6 +73,7 @@ internal static class SocketModeServiceRegistration
 
         services.TryAddSingleton(sp =>
         {
+            options.ValidateAgenticSettings();
             TApp app = sp.GetRequiredService<TApp>();
             return new SocketModeTransport(
                 options.ToTransportOptions(),
@@ -98,6 +99,27 @@ internal static class SocketModeServiceRegistration
         return response is null
             ? new SocketDispatchResult(200)
             : new SocketDispatchResult(response.Status, response.Body);
+    }
+
+    /// <summary>
+    /// Selects the token that authenticates negotiation: the bot's Bot Framework app token for a classic connection,
+    /// or the agent instance's token for an agentic one. It is called on every negotiate, including reconnects and
+    /// token refreshes.
+    /// </summary>
+    /// <param name="tokenProvider">The bot's token provider.</param>
+    /// <param name="options">The validated Socket Mode options.</param>
+    /// <returns>The negotiate token source.</returns>
+#pragma warning disable ExperimentalTeamsSocketMode // Internal wiring for the experimental options passed to UseSocketMode.
+    internal static Func<CancellationToken, Task<string?>> CreateTokenSource(BotTokenProvider tokenProvider, SocketModeOptions options)
+#pragma warning restore ExperimentalTeamsSocketMode
+    {
+        string? agenticAppId = options.AgenticAppId;
+        string? scope = options.AgenticTokenScope;
+        string? tenantId = options.AgenticTenantId;
+
+        return agenticAppId is null
+            ? cancellationToken => tokenProvider.GetAppTokenAsync(BotFrameworkScope, tenantId: null, cancellationToken)
+            : cancellationToken => tokenProvider.GetAgenticAppTokenAsync(agenticAppId, scope!, tenantId, cancellationToken);
     }
 
     private static void EnsureSupportedCloud(BotConfig botConfig)
