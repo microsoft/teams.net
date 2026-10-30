@@ -580,7 +580,7 @@ public class TeamsStreamingWriterTests
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
         Assert.Equal(before, final.ToJson());
-        await Assert.ThrowsAsync<TimeoutException>(() => writer.FinalizeResponseAsync(final));
+        await writer.FinalizeResponseAsync(final);
         Assert.Equal(2, handler.Requests.Count);
     }
 

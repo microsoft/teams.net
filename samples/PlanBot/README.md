@@ -18,9 +18,11 @@ dotnet run --project samples/PlanBot/PlanBot.csproj
 | `error` | Start a lookup, update it to an error step, then explicitly report the plan error |
 | `proactive` | Return from the handler, reconstruct from saved IDs after 10 seconds, update steps, and complete later |
 
+`complete-stream` passes `plan.Completion()` to `writer.FinalizeResponseAsync(...)`.
+The helper only builds prompt-bound completion metadata; `plan.CompleteAsync(...)` instead sends a final message directly.
+
 The delayed example keeps an authenticated, service-scoped client in memory and serializes
 only `PlanOptions` containing the conversation and originating prompt IDs. 
 
 Application code owns every lifecycle call and increments each step's version
 whenever its title, status, description, or sources change.
-

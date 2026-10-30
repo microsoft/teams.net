@@ -68,9 +68,7 @@ internal sealed class PlanDemo(ILogger logger, CancellationToken stopping, TimeP
                     await writer.AppendResponseAsync(chunk, cancellationToken);
                     await DelayAsync(0.5, cancellationToken);
                 }
-                await writer.FinalizeResponseAsync(
-                    new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete }),
-                    cancellationToken);
+                await writer.FinalizeResponseAsync(plan.Completion(), cancellationToken);
                 break;
             default:
                 await PrepareAsync(plan, "The response is ready to send.", cancellationToken);

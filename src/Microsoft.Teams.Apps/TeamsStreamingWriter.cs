@@ -60,6 +60,7 @@ namespace Microsoft.Teams.Apps;
 /// original message in place), while other streaming errors propagate to the caller.
 /// Plan completion metadata belongs only on the final message. A timed-out Plan completion
 /// throws <see cref="TimeoutException"/> instead of using the ordinary PUT fallback.
+/// The failed cycle is retired; further finalization does nothing until the next append or informative update.
 /// HTTP 409 with error code PlanConflict throws <see cref="PlanConflictException"/> without retry.
 /// </remarks>
 public sealed class TeamsStreamingWriter
@@ -213,6 +214,8 @@ public sealed class TeamsStreamingWriter
     public Task AppendResponseAsync(MessageActivityInput chunk, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(chunk);
+        if (_finalized && !_cancelled)
+            ResetForNextStream();
         if (chunk.TextFormat is not null)
             _textFormat = chunk.TextFormat;
         return AppendResponseAsync(chunk.Text ?? string.Empty, cancellationToken);
@@ -232,7 +235,8 @@ public sealed class TeamsStreamingWriter
     /// Finalizing is idempotent until the next append or informative update reopens the stream.
     /// If streaming exceeded the two-minute limit, the final content updates the original
     /// streamed message in place instead of sending a new streamed chunk. Plan completion
-    /// requires a POST and throws <see cref="TimeoutException"/> in that case.
+    /// requires a POST and throws <see cref="TimeoutException"/> in that case, retiring the failed
+    /// cycle so later finalization calls do nothing until the next append or informative update.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown if the final activity has neither text nor attachments.
@@ -402,10 +406,16 @@ public sealed class TeamsStreamingWriter
     private async Task SendFinalInPlaceAsync(MessageActivityInput final, CancellationToken cancellationToken)
     {
         if (final.Entities?.Any(entity => entity.Type == "planInfo") == true)
+        {
+            ResetForNextStream();
+            // Retire the failed cycle while retaining its timeout status until reuse.
+            _timedOut = true;
+            _finalized = true;
             throw new TimeoutException(
                 "The stream timed out before the Plan could be completed. Plan completion requires a POST, "
                 + "so the existing streamed message cannot be finalized using the PUT update fallback. "
                 + "Send a separate Plan.CompleteAsync message using the original Plan binding.");
+        }
 
         // Drop streaming markers so Teams treats this as a normal message edit.
         final.Entities?.RemoveAll(e => e is StreamInfoEntity);

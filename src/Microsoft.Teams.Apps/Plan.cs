@@ -81,6 +81,12 @@ public sealed class Plan
     public Task ErrorAsync(CancellationToken cancellationToken = default)
         => SendUpdateAsync(PlanTypes.Error, null, cancellationToken);
 
+    /// <summary>Builds a fresh completion message for this Plan's prompt without sending it.</summary>
+    /// <remarks>Pass it to a writer targeting the same conversation when finalizing.</remarks>
+    public MessageActivityInput Completion()
+        => new MessageActivityInput { ReplyToId = ReplyToId }
+            .AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+
     /// <summary>Completes the plan by creating a final message.</summary>
     public Task<SendActivityResponse?> CompleteAsync(string message, CancellationToken cancellationToken = default)
     {

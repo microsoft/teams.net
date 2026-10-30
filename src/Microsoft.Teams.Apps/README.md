@@ -138,13 +138,20 @@ and `ReplyToId`, then reconstruct with `new Plan(scopedApiClient, options)`.
 Both options and helper serialization include only those two IDs. The already service-scoped
 client is supplied separately at runtime; do not persist a `Context` or credentials.
 
-Streaming stays with `TeamsStreamingWriter`. Add
-`new PlanInfoEntity { PlanType = PlanTypes.Complete }` to the message passed to
-`FinalizeResponseAsync`, not to text chunks. An explicit final `ReplyToId` is preserved;
-otherwise it defaults to the writer's originating prompt.
+Streaming stays with `TeamsStreamingWriter`. `plan.Completion()` builds a fresh final message
+with completion metadata and the Plan's originating prompt; it does not send anything.
+Use a writer targeting the same conversation and attach any final cards or citations to that message:
+
+```csharp
+await writer.FinalizeResponseAsync(plan.Completion(), ct);
+```
+
+An explicit final `ReplyToId` is preserved; when absent, it defaults to the writer's originating prompt.
 
 Plan completion cannot use the writer's ordinary PUT timeout fallback: it throws
-`TimeoutException`. Recover with a separate `Plan.CompleteAsync` message using the right binding.
+`TimeoutException` and discards the failed cycle. Recover with a separate `Plan.CompleteAsync`
+message containing the full response and metadata using the right binding. Further finalization
+calls do nothing; the next append or informative update starts a fresh stream and clears `TimedOut`.
 HTTP 409 with exact `error.code: PlanConflict` instead throws `Microsoft.Teams.Core.PlanConflictException`
 (an `HttpRequestException`). Core classifies it once; Plan lifecycle calls and streaming propagate
 it unchanged, as do direct Core client calls. It exposes `StatusCode`,
