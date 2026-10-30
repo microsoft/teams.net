@@ -171,14 +171,11 @@ host.Run();
   the default production endpoint.
 - **Rejected credentials are not retried** &mdash; If negotiation returns HTTP 401 or 403, startup fails immediately.
   After startup, the affected geo stops reconnecting until the app restarts.
-- **Throttling respects the service** &mdash; On HTTP 429, the service's `Retry-After` delay takes precedence over
-  reconnect backoff.
 - **Idempotent handlers** &mdash; The service can redeliver an activity, for example after a reconnect, so handlers
   should tolerate running more than once for the same activity.
 
 `UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
-Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
-Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.
+Connection timeouts, keep-alive intervals, and reconnect backoff are managed internally by the SDK.
 `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier
 configuration so the bot uses HTTP.
 

@@ -32,6 +32,8 @@ public class SignalRSocketConnectionTests
         Assert.Null(harness.Negotiator.ReplacesConnectionId);
         Assert.Equal(SignalRUri, harness.SignalRFactory.Url);
         Assert.Equal("signalr-token", harness.SignalRFactory.AccessToken);
+        Assert.Equal(TimeSpan.FromSeconds(15), harness.SignalRFactory.KeepAliveInterval);
+        Assert.Equal(TimeSpan.FromSeconds(30), harness.SignalRFactory.ServerTimeout);
         Assert.Equal(TimeSpan.FromHours(1), harness.Connection.TokenLifetime);
         Assert.Equal(1, harness.SignalR.StartCount);
         Assert.Single(harness.ReadyFrames);
@@ -320,6 +322,8 @@ public class SignalRSocketConnectionTests
         SignalRSocketConnectionFactory factory = new(
             negotiator,
             TimeSpan.FromSeconds(30),
+            TimeSpan.FromSeconds(15),
+            TimeSpan.FromSeconds(30),
             NullLogger.Instance,
             signalRFactory.Create);
         SocketConnectionHandlers handlers = DefaultHandlers();
@@ -338,6 +342,8 @@ public class SignalRSocketConnectionTests
         FakeSignalRConnectionFactory signalRFactory = new(signalR);
         SignalRSocketConnectionFactory factory = new(
             negotiator,
+            TimeSpan.FromSeconds(30),
+            TimeSpan.FromSeconds(15),
             TimeSpan.FromSeconds(30),
             NullLogger.Instance,
             signalRFactory.Create);
@@ -390,6 +396,8 @@ public class SignalRSocketConnectionTests
             negotiator,
             signalRFactory.Create,
             readinessTimeout ?? TimeSpan.FromSeconds(30),
+            TimeSpan.FromSeconds(15),
+            TimeSpan.FromSeconds(30),
             NullLogger.Instance);
 
     private static SocketModeNegotiateResponse SuccessfulNegotiation(
@@ -461,13 +469,19 @@ public class SignalRSocketConnectionTests
     {
         internal Uri? Url { get; private set; }
         internal string? AccessToken { get; private set; }
+        internal TimeSpan KeepAliveInterval { get; private set; }
+        internal TimeSpan ServerTimeout { get; private set; }
 
         internal ISignalRClientConnection Create(
             Uri url,
-            string accessToken)
+            string accessToken,
+            TimeSpan keepAliveInterval,
+            TimeSpan serverTimeout)
         {
             Url = url;
             AccessToken = accessToken;
+            KeepAliveInterval = keepAliveInterval;
+            ServerTimeout = serverTimeout;
             return connection;
         }
     }

@@ -11,10 +11,14 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// </summary>
 /// <param name="url">The negotiated SignalR endpoint.</param>
 /// <param name="accessToken">The negotiated access token.</param>
+/// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
+/// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
 /// <returns>A SignalR client connection.</returns>
 internal delegate ISignalRClientConnection CreateSignalRClientConnection(
     Uri url,
-    string accessToken);
+    string accessToken,
+    TimeSpan keepAliveInterval,
+    TimeSpan serverTimeout);
 
 /// <summary>
 /// Provides the SignalR operations required by a Socket Mode connection.
@@ -70,10 +74,14 @@ internal sealed class SignalRClientConnection(HubConnection connection)
     /// </summary>
     /// <param name="url">The negotiated SignalR endpoint.</param>
     /// <param name="accessToken">The negotiated access token.</param>
+    /// <param name="keepAliveInterval">The interval between keep-alive messages.</param>
+    /// <param name="serverTimeout">The interval before the server is considered unavailable.</param>
     /// <returns>A configured SignalR client connection.</returns>
     internal static ISignalRClientConnection Create(
         Uri url,
-        string accessToken)
+        string accessToken,
+        TimeSpan keepAliveInterval,
+        TimeSpan serverTimeout)
     {
         ArgumentNullException.ThrowIfNull(url);
         ArgumentException.ThrowIfNullOrWhiteSpace(accessToken);
@@ -87,6 +95,8 @@ internal sealed class SignalRClientConnection(HubConnection connection)
                 // Each negotiated token is valid for exactly one socket, so never fall back to another transport.
                 options.Transports = HttpTransportType.WebSockets;
             })
+            .WithKeepAliveInterval(keepAliveInterval)
+            .WithServerTimeout(serverTimeout)
             .Build();
 
         return new SignalRClientConnection(connection);

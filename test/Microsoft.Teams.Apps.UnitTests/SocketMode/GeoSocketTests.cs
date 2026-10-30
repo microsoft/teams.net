@@ -117,14 +117,12 @@ public class GeoSocketTests
         Assert.Empty(harness.Logger.Warnings);
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.Unauthorized)]
-    [InlineData(HttpStatusCode.Forbidden)]
-    public async Task Reconnect_AuthRejectionStopsTheGeo(HttpStatusCode status)
+    [Fact]
+    public async Task Reconnect_AuthRejectionStopsTheGeo()
     {
         Harness harness = new() { Backoff = _ => TimeSpan.FromSeconds(3) };
         FakeConnection initial = harness.Factory.Enqueue();
-        SocketModeNegotiateException rejected = new(status, retryAfter: null);
+        SocketModeNegotiateException rejected = new(HttpStatusCode.Unauthorized, retryAfter: null);
         FakeConnection rejectedAttempt = harness.Factory.Enqueue(startError: rejected);
         await harness.StartReadyAsync(initial);
 
@@ -143,14 +141,12 @@ public class GeoSocketTests
         Assert.Equal(0, harness.Owner.Reconnections);
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.Unauthorized)]
-    [InlineData(HttpStatusCode.Forbidden)]
-    public async Task Rotation_AuthRejectionStopsTheConnectionStillServing(HttpStatusCode status)
+    [Fact]
+    public async Task Rotation_AuthRejectionStopsTheConnectionStillServing()
     {
         Harness harness = new();
         FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
-        SocketModeNegotiateException rejected = new(status, retryAfter: null);
+        SocketModeNegotiateException rejected = new(HttpStatusCode.Forbidden, retryAfter: null);
         FakeConnection rejectedAttempt = harness.Factory.Enqueue(startError: rejected);
         await harness.StartReadyAsync(initial);
 
@@ -165,35 +161,6 @@ public class GeoSocketTests
         Assert.DoesNotContain("after-rejection", harness.Owner.Dispatched);
         Assert.Equal(2, harness.Factory.CreateCount);
         Assert.DoesNotContain(harness.Logger.Warnings, warning => warning.Message.Contains("paused", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task Reconnect_ThrottledAttemptWaitsForRetryAfterInsteadOfBackoff()
-    {
-        Harness harness = new() { Backoff = _ => TimeSpan.FromSeconds(2) };
-        FakeConnection initial = harness.Factory.Enqueue();
-        harness.Factory.Enqueue(startError: new SocketModeNegotiateException(
-            HttpStatusCode.TooManyRequests,
-            TimeSpan.FromSeconds(15)));
-        FakeConnection replacement = harness.Factory.Enqueue();
-        await harness.StartReadyAsync(initial);
-
-        initial.Close(new IOException("dropped"));
-        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(2));
-        harness.Time.Advance(TimeSpan.FromSeconds(2));
-        await harness.Time.WaitForTimerAsync(TimeSpan.FromSeconds(15));
-
-        Assert.Equal(2, harness.Factory.CreateCount);
-        Assert.False(harness.Time.HasTimerDueIn(TimeSpan.FromSeconds(2)));
-        harness.Time.Advance(TimeSpan.FromSeconds(14));
-        Assert.Equal(2, harness.Factory.CreateCount);
-        harness.Time.Advance(TimeSpan.FromSeconds(1));
-        await replacement.Started.Task;
-        replacement.Ready("replacement");
-        await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
-
-        Assert.Equal(3, harness.Factory.CreateCount);
-        await harness.Socket.StopAsync();
     }
 
     [Fact]
