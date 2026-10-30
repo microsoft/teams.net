@@ -243,6 +243,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <summary>
     /// Sends the activity to the inbound conversation without quoting the inbound message.
+    /// When the inbound activity has an id, the activity's <c>replyToId</c> is set to it.
     /// The activity is not placed in a reply chain (thread).
     /// </summary>
     /// <param name="activity">The activity to send.</param>
@@ -281,9 +282,10 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <summary>
     /// Sends the activity to the inbound conversation without building a quote.
+    /// The activity's <c>replyToId</c> is set to <paramref name="messageId"/>.
     /// The activity is not placed in a reply chain (thread).
     /// </summary>
-    /// <param name="messageId">The id of the message, which is not sent.</param>
+    /// <param name="messageId">The id the activity's <c>replyToId</c> is set to.</param>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
