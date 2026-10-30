@@ -19,30 +19,41 @@ namespace Microsoft.Teams.Apps.UnitTests;
 public class ContextObsoleteReplyTests
 {
     [Fact]
-    public async Task Reply_InboundActivityOverload_SendsToTheInboundConversationWithoutReplyToId()
+    public async Task Reply_InboundActivityOverload_StampsTheInboundIdAsReplyToId()
     {
         (Context<MessageActivity> context, _, SendCapture capture) = CreateContext();
         MessageActivity outgoing = new("hello");
 
         await context.Reply(outgoing);
 
+        Assert.Equal("inbound-1", ReplyToId(capture.Activity));
+        Assert.Equal("conv-1", capture.ConversationId);
+    }
+
+    [Fact]
+    public async Task Reply_InboundActivityOverload_WithoutAnInboundId_DoesNotStampReplyToId()
+    {
+        (Context<MessageActivity> context, _, SendCapture capture) = CreateContext(inboundId: null);
+
+        await context.Reply(new MessageActivity("hello"));
+
         Assert.Null(ReplyToId(capture.Activity));
         Assert.Equal("conv-1", capture.ConversationId);
     }
 
     [Fact]
-    public async Task Quote_InboundActivityOverload_SendsToTheInboundConversationWithoutReplyToId()
+    public async Task Quote_InboundActivityOverload_StampsTheQuotedIdAsReplyToId()
     {
         (Context<MessageActivity> context, _, SendCapture capture) = CreateContext();
 
         await context.Quote("quoted-1", new MessageActivity("hello"));
 
-        Assert.Null(ReplyToId(capture.Activity));
+        Assert.Equal("quoted-1", ReplyToId(capture.Activity));
         Assert.Equal("conv-1", capture.ConversationId);
     }
 
     [Fact]
-    public async Task Send_InboundActivityOverload_SendsWithoutReplyToId()
+    public async Task Send_InboundActivityOverload_DoesNotStampReplyToId()
     {
         (Context<MessageActivity> context, _, SendCapture capture) = CreateContext();
 
