@@ -218,6 +218,18 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
+    public async Task Send_ReactionWithoutAReplyToId_IsNotPlacedAndDoesNotUseItsOwnId()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, Shape("reaction", messageId: "105", replyChainId: "100", replyToId: ""));
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
     public async Task Send_MessageActionInsideAThread_ComparesTheMessagePayloadIdNotTheReplyId()
     {
         Harness harness = CreateHarness();
@@ -446,10 +458,23 @@ public class ContextReplyChainPlacementTests
     [InlineData("card-message")]
     [InlineData("card-invoke")]
     [InlineData("reaction")]
-    public async Task Send_ShapeInAGroupChat_SendsToInboundConversation(string shape)
+    public async Task Send_ShapeInAGroupChat_IsPlacedByShape(string shape)
     {
         Harness harness = CreateHarness();
         Context<TeamsActivity> context = new(harness.App, Shape(shape, messageId: "105", replyChainId: "100", conversationType: "groupChat"));
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Send_GroupChatWithoutAReplyChain_SendsToInboundConversation()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, Shape("card-message", messageId: "105", replyChainId: null, conversationType: "groupChat"));
 
         await context.SendAsync("hi");
 
@@ -603,7 +628,7 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
-    public async Task Send_GroupChatInboundInsideReplyChain_SendsToInboundConversationEvenWhenThePayloadCarriesBothIds()
+    public async Task Send_GroupChatPayloadWithChatIdAndReplyChainId_RepliesInThatChain()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
@@ -614,13 +639,14 @@ public class ContextReplyChainPlacementTests
 
         await context.SendAsync("hi");
 
-        Assert.Equal(GroupChatId, harness.Send.ConversationId);
-        Assert.Equal(1, harness.Send.Calls);
-        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Fact]
-    public async Task Send_MeetingChatInboundInsideReplyChain_SendsToInboundConversation()
+    public async Task Send_MeetingChatPayloadWithChatIdAndReplyChainId_RepliesInThatChain()
     {
         const string MeetingChatId = "19:meeting_abc@thread.v2";
         Harness harness = CreateHarness();
@@ -632,13 +658,13 @@ public class ContextReplyChainPlacementTests
 
         await context.SendAsync("hi");
 
-        Assert.Equal(MeetingChatId, harness.Send.ConversationId);
-        Assert.Equal(1, harness.Send.Calls);
-        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(MeetingChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Fact]
-    public async Task Send_GroupChatInboundInsideReplyChain_TargetedMessageGoesToTheInboundConversation()
+    public async Task Send_GroupChatPayloadWithChatIdAndReplyChainId_TargetedMessageRepliesInThatChainAsTargeted()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
@@ -651,13 +677,13 @@ public class ContextReplyChainPlacementTests
             .WithText("only you")
             .WithRecipient(new TeamsChannelAccount { Id = "user-1" }, isTargeted: true));
 
-        Assert.Equal(GroupChatId, harness.Send.ConversationId);
-        Assert.True(harness.Send.IsTargeted);
-        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.True(harness.Reply.IsTargeted);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Fact]
-    public async Task Reply_GroupChatInboundInsideReplyChain_QuotesAndSendsToTheInboundConversation()
+    public async Task Reply_GroupChatPayloadWithChatIdAndReplyChainId_QuotesAndRepliesInThatChain()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
@@ -668,9 +694,10 @@ public class ContextReplyChainPlacementTests
 
         await context.ReplyAsync("hi");
 
-        Assert.Equal(GroupChatId, harness.Send.ConversationId);
-        Assert.Contains("quotedReply", harness.Send.Activity!.ToJson(), StringComparison.Ordinal);
-        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Contains("quotedReply", harness.Reply.Activity!.ToJson(), StringComparison.Ordinal);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Fact]
@@ -689,10 +716,12 @@ public class ContextReplyChainPlacementTests
         Assert.False(harness.Send.IsTargeted);
     }
 
-    [Fact]
-    public async Task Send_PersonalReplyChainRouteNotFound_PropagatesWithoutSendingToTheInboundConversation()
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Send_PersonalReplyChainRouteRejected_PropagatesWithoutSendingToTheInboundConversation(HttpStatusCode statusCode)
     {
-        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Harness harness = CreateHarness(statusCode);
         Context<MessageActivity> context = harness.ContextFor(Inbound(
             conversationId: OpaqueConversationId,
             id: "reply-2",
@@ -701,8 +730,26 @@ public class ContextReplyChainPlacementTests
 
         HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.SendAsync("hi"));
 
-        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Equal(statusCode, ex.StatusCode);
         Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Send_GroupChatReplyChainRouteRejected_PropagatesWithoutSendingToTheInboundConversation(HttpStatusCode statusCode)
+    {
+        Harness harness = CreateHarness(statusCode);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: GroupChatId,
+            id: "reply-2",
+            channelData: new { chat = new { id = GroupChatId }, replyChain = new { id = "root-1" } },
+            conversationType: "groupChat"));
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.SendAsync("hi"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
         Assert.Equal(0, harness.Send.Calls);
     }
 
@@ -907,7 +954,7 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
-    public async Task CreateFromContext_GroupChatInboundInsideReplyChain_StartsTheStreamInTheConversation()
+    public async Task CreateFromContext_GroupChatPayloadWithChatIdAndReplyChainId_StartsTheStreamInThatChain()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
@@ -919,8 +966,9 @@ public class ContextReplyChainPlacementTests
 
         await writer.AppendResponseAsync("hello");
 
-        Assert.Equal(0, harness.Reply.Calls);
-        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Theory]
@@ -977,6 +1025,42 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(1, harness.Reply.Calls);
         Assert.Equal(1, harness.Send.Calls);
         Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+    }
+
+    [Fact]
+    public async Task CreateFromContext_ChannelReplyChainRouteBadRequest_PropagatesWithoutStartingTheStreamInTheConversation()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.BadRequest);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: ChannelThreadConversationId,
+            id: "reply-2",
+            channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "1680000000000" } },
+            conversationType: "channel"));
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hello"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task CreateFromContext_GroupChatReplyChainRouteRejected_PropagatesWithoutStartingTheStreamInTheConversation(HttpStatusCode statusCode)
+    {
+        Harness harness = CreateHarness(statusCode);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: GroupChatId,
+            id: "reply-2",
+            channelData: new { chat = new { id = GroupChatId }, replyChain = new { id = "1680000000000" } },
+            conversationType: "groupChat"));
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hello"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Fact]
@@ -1091,7 +1175,8 @@ public class ContextReplyChainPlacementTests
                 break;
             case "reaction":
                 activityType = "messageReaction";
-                id = messageId!;
+                id = "f:9f78d1f3";
+                replyToId ??= messageId;
                 break;
             case "edit":
                 activityType = "messageUpdate";

@@ -433,14 +433,11 @@ public class TeamsBotApplication : BotApplication
     /// Posts to the reply chain (thread) of the message <paramref name="messageId"/>, in the chat or channel <paramref name="conversationId"/>.
     /// </summary>
     /// <remarks>
-    /// When the service answers HTTP 404 or 400 and <paramref name="messageId"/> is a plain non-zero number, sends the activity again to the conversation id <c>{conversationId};messageid={messageId}</c>.
-    /// In that retry, a suffix <c>;messageid=</c> that <paramref name="conversationId"/> already carries is replaced, not repeated.
-    /// Only the status code is tested.
-    /// Any other error propagates.
+    /// There is no fallback to another route, so every error from the service propagates, including HTTP 404 and 400.
     /// The SDK does not state where a client shows the message in a group chat.
     /// </remarks>
     /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>.</param>
-    /// <param name="messageId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>, or the activity id when replying to a top-level message.</param>
+    /// <param name="messageId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>.</param>
     /// <param name="text">The text to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
@@ -461,14 +458,11 @@ public class TeamsBotApplication : BotApplication
     /// When the activity carries a recipient marked as targeted (<see cref="ChannelAccount.IsTargeted"/>), it is sent as a targeted message visible only to that recipient.
     /// </summary>
     /// <remarks>
-    /// When the service answers HTTP 404 or 400 and <paramref name="messageId"/> is a plain non-zero number, sends the activity again to the conversation id <c>{conversationId};messageid={messageId}</c>.
-    /// In that retry, a suffix <c>;messageid=</c> that <paramref name="conversationId"/> already carries is replaced, not repeated.
-    /// Only the status code is tested.
-    /// Any other error propagates.
+    /// There is no fallback to another route, so every error from the service propagates, including HTTP 404 and 400.
     /// The SDK does not state where a client shows the message in a group chat.
     /// </remarks>
     /// <param name="conversationId">The id of the chat or channel: <c>channelData.chat.id</c> or <c>channelData.channel.id</c>, not <c>conversation.id</c>.</param>
-    /// <param name="messageId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>, or the activity id when replying to a top-level message.</param>
+    /// <param name="messageId">The id of the message at the root of the reply chain: <c>channelData.replyChain.id</c>.</param>
     /// <param name="activity">The activity to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
     /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <see cref="CoreActivity.Recipient"/> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
@@ -492,31 +486,15 @@ public class TeamsBotApplication : BotApplication
 
         BotRequestContext? requestContext = BotRequestContext.FromAgenticIdentity(agenticIdentity);
 
-        Func<Task<SendActivityResponse?>>? suffixFallback = null;
-        if (ReplyChainFallback.IsPlainNonZeroNumber(messageId))
-        {
-            string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
-            suffixFallback = () => ConversationClient.SendActivityAsync(
-                threadedConversationId,
-                activity,
-                resolvedUrl,
-                isTargeted: isTargeted,
-                requestContext: requestContext,
-                cancellationToken: cancellationToken);
-        }
-
 #pragma warning disable ExperimentalTeamsThreading // the stable reply method calls the reply chain route
-        return ReplyChainFallback.SendAsync(
-            () => ConversationClient.SendReplyChainActivityAsync(
-                conversationId,
-                messageId,
-                activity,
-                resolvedUrl,
-                isTargeted: isTargeted,
-                requestContext: requestContext,
-                cancellationToken: cancellationToken),
-            suffixFallback,
-            alsoOnBadRequest: true);
+        return ConversationClient.SendReplyChainActivityAsync(
+            conversationId,
+            messageId,
+            activity,
+            resolvedUrl,
+            isTargeted: isTargeted,
+            requestContext: requestContext,
+            cancellationToken: cancellationToken);
 #pragma warning restore ExperimentalTeamsThreading
     }
 
