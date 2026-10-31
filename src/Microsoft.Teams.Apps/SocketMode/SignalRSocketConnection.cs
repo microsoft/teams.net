@@ -14,8 +14,6 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
     private readonly ISocketModeNegotiator _negotiator;
     private readonly CreateSignalRClientConnection _createSignalRClientConnection;
     private readonly TimeSpan _readinessTimeout;
-    private readonly TimeSpan _keepAliveInterval;
-    private readonly TimeSpan _serverTimeout;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -23,15 +21,11 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
     /// </summary>
     /// <param name="negotiator">Negotiates SignalR connection details.</param>
     /// <param name="readinessTimeout">The time allowed for the SocketReady frame.</param>
-    /// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
-    /// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
     /// <param name="logger">The logger for connection lifecycle failures.</param>
     /// <param name="createSignalRClientConnection">An optional SignalR client factory.</param>
     internal SignalRSocketConnectionFactory(
         ISocketModeNegotiator negotiator,
         TimeSpan readinessTimeout,
-        TimeSpan keepAliveInterval,
-        TimeSpan serverTimeout,
         ILogger logger,
         CreateSignalRClientConnection? createSignalRClientConnection = null)
     {
@@ -39,8 +33,6 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
         _createSignalRClientConnection =
             createSignalRClientConnection ?? SignalRClientConnection.Create;
         _readinessTimeout = EnsurePositive(readinessTimeout, nameof(readinessTimeout));
-        _keepAliveInterval = EnsurePositive(keepAliveInterval, nameof(keepAliveInterval));
-        _serverTimeout = EnsurePositive(serverTimeout, nameof(serverTimeout));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -59,8 +51,6 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
             _negotiator,
             _createSignalRClientConnection,
             _readinessTimeout,
-            _keepAliveInterval,
-            _serverTimeout,
             _logger,
             getReplacedConnectionId);
     }
@@ -70,7 +60,7 @@ internal sealed class SignalRSocketConnectionFactory : ISocketConnectionFactory
             ? value
             : throw new ArgumentOutOfRangeException(
                 parameterName,
-                "Socket Mode connection timeouts and intervals must be greater than zero.");
+                "The Socket Mode readiness timeout must be greater than zero.");
 }
 
 /// <summary>
@@ -83,8 +73,6 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     private readonly ISocketModeNegotiator _negotiator;
     private readonly CreateSignalRClientConnection _createSignalRClientConnection;
     private readonly TimeSpan _readinessTimeout;
-    private readonly TimeSpan _keepAliveInterval;
-    private readonly TimeSpan _serverTimeout;
     private readonly ILogger _logger;
     private readonly Func<string?>? _getReplacedConnectionId;
     private readonly CancellationTokenSource _lifetimeSource = new();
@@ -108,8 +96,6 @@ internal sealed class SignalRSocketConnection : ISocketConnection
     /// <param name="negotiator">Negotiates SignalR connection details.</param>
     /// <param name="createSignalRClientConnection">Creates the SignalR client connection.</param>
     /// <param name="readinessTimeout">The time allowed for the SocketReady frame.</param>
-    /// <param name="keepAliveInterval">The interval between SignalR keep-alive messages.</param>
-    /// <param name="serverTimeout">The interval before the SignalR server is considered unavailable.</param>
     /// <param name="logger">The logger for connection lifecycle failures.</param>
     /// <param name="getReplacedConnectionId">Returns the server connection ID this connection replaces, read on negotiate.</param>
     internal SignalRSocketConnection(
@@ -118,8 +104,6 @@ internal sealed class SignalRSocketConnection : ISocketConnection
         ISocketModeNegotiator negotiator,
         CreateSignalRClientConnection createSignalRClientConnection,
         TimeSpan readinessTimeout,
-        TimeSpan keepAliveInterval,
-        TimeSpan serverTimeout,
         ILogger logger,
         Func<string?>? getReplacedConnectionId = null)
     {
@@ -130,8 +114,6 @@ internal sealed class SignalRSocketConnection : ISocketConnection
             createSignalRClientConnection
             ?? throw new ArgumentNullException(nameof(createSignalRClientConnection));
         _readinessTimeout = readinessTimeout;
-        _keepAliveInterval = keepAliveInterval;
-        _serverTimeout = serverTimeout;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _getReplacedConnectionId = getReplacedConnectionId;
     }
@@ -169,9 +151,7 @@ internal sealed class SignalRSocketConnection : ISocketConnection
 
             ISignalRClientConnection connection = _createSignalRClientConnection(
                 new Uri(negotiateResponse.Url!, UriKind.Absolute),
-                negotiateResponse.AccessToken!,
-                _keepAliveInterval,
-                _serverTimeout);
+                negotiateResponse.AccessToken!);
             if (!TryPublishConnection(connection))
             {
                 await connection.DisposeAsync().ConfigureAwait(false);
