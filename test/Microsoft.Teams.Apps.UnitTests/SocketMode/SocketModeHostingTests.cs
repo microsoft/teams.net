@@ -95,10 +95,6 @@ public class SocketModeHostingTests
         o => o.Geos = [],
         o => o.Geos = ["amer", null!],
         o => o.Geos = ["amer", " AMER/"],
-        o => o.StartupTimeout = TimeSpan.FromSeconds(-1),
-        o => o.ReadinessTimeout = TimeSpan.Zero,
-        o => o.KeepAliveInterval = TimeSpan.Zero,
-        o => o.ServerTimeout = TimeSpan.Zero,
     };
 
     [Theory]
@@ -189,7 +185,13 @@ public class SocketModeHostingTests
         FakeConnectionFactory factory = new() { StartError = failure };
         ServiceCollection services = CreateServices();
         services.AddSingleton<ISocketConnectionFactory>(factory);
-        services.AddTeamsBotApplication(options => options.UseSocketMode(socket => socket.StartupTimeout = TimeSpan.Zero));
+        services.AddTeamsBotApplication(options => options.UseSocketMode());
+        services.AddSingleton(sp => new SocketModeTransport(
+            new SocketModeTransportOptions { StartupTimeout = TimeSpan.Zero },
+            sp.GetRequiredService<ISocketConnectionFactory>(),
+            activity => SocketModeServiceRegistration.DispatchAsync(sp.GetRequiredService<TeamsBotApplication>(), activity),
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger<SocketModeTransport>(),
+            botKey: ClientId));
 
         await using ServiceProvider provider = services.BuildServiceProvider();
         IHostedService hosted = Assert.Single(provider.GetServices<IHostedService>().OfType<SocketModeHostedService>());
