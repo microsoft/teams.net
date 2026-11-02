@@ -110,8 +110,6 @@ public class SocketModeEndToEndTests
             SignalRSocketConnectionFactory factory = new(
                 negotiator,
                 TimeSpan.FromSeconds(30),
-                TimeSpan.FromSeconds(15),
-                TimeSpan.FromSeconds(30),
                 NullLogger.Instance,
                 SignalR.Create);
             Transport = new SocketModeTransport(
@@ -188,9 +186,7 @@ public class SocketModeEndToEndTests
 
         internal ISignalRClientConnection Create(
             Uri url,
-            string accessToken,
-            TimeSpan keepAliveInterval,
-            TimeSpan serverTimeout)
+            string accessToken)
         {
             FakeSignalRClient client = new(url, Changed);
             lock (_gate)
