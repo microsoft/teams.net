@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -56,6 +57,13 @@ public class TeamsBotApplication : BotApplication
     /// Gets the registry of OAuthFlow instances. Set by AddOAuthFlow.
     /// </summary>
     internal OAuthFlowRegistry? OAuthRegistry { get; set; }
+
+    /// <summary>
+    /// Gets Socket Mode lifecycle events and diagnostics, or <see langword="null"/> when Socket Mode is not enabled.
+    /// Subscribe before starting the host to observe initial readiness.
+    /// </summary>
+    [Experimental("ExperimentalTeamsSocketMode")]
+    public SocketMode.SocketModeObserver? SocketMode { get; internal set; }
 
     /// <summary>
     /// Gets a registered <see cref="OAuthFlow"/> by connection name.

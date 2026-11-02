@@ -13,7 +13,8 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// <summary>
 /// Describes the lifecycle state of a Socket Mode transport or one of its geos.
 /// </summary>
-internal enum SocketModeStatus
+[Experimental("ExperimentalTeamsSocketMode")]
+public enum SocketModeStatus
 {
     /// <summary>
     /// The transport has not started.
@@ -88,7 +89,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     private static readonly TimeSpan ReconnectMaxDelay = TimeSpan.FromSeconds(15);
 
     private readonly SocketModeTransportOptions _options;
-    private readonly IReadOnlyList<(string Geo, Uri NegotiateUri)> _geos;
+    private readonly List<(string Geo, Uri NegotiateUri)> _geos;
     private readonly ISocketConnectionFactory _connectionFactory;
     private readonly Func<CoreActivity, Task<SocketDispatchResult>> _dispatch;
     private readonly Func<Exception, Task>? _onError;
@@ -96,6 +97,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     private readonly ILogger _logger;
     private readonly TimeProvider _timeProvider;
     private readonly Random _random;
+    private readonly SocketModeEvents? _events;
     private readonly object _sync = new();
     private readonly Dictionary<string, SocketModeStatus> _geoStatuses = [];
 
@@ -114,6 +116,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     /// <param name="onError">Observes activity processing failures before the failure reply is returned.</param>
     /// <param name="timeProvider">The time provider for supervision timing and reply timestamps.</param>
     /// <param name="random">The random source for reconnect jitter.</param>
+    /// <param name="events">The optional public lifecycle observers.</param>
     /// <exception cref="ArgumentException">Thrown when the geos are empty, null, or duplicated.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the startup timeout is negative.</exception>
     internal SocketModeTransport(
@@ -124,7 +127,8 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         string? botKey = null,
         Func<Exception, Task>? onError = null,
         TimeProvider? timeProvider = null,
-        Random? random = null)
+        Random? random = null,
+        SocketModeEvents? events = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
@@ -134,6 +138,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         _onError = onError;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _random = random ?? Random.Shared;
+        _events = events;
 
         ArgumentNullException.ThrowIfNull(options.NegotiateBaseUri, nameof(options));
         ArgumentOutOfRangeException.ThrowIfLessThan(options.StartupTimeout, TimeSpan.Zero, nameof(options));
@@ -181,6 +186,12 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         }
     }
 
+    /// <summary>Gets a snapshot of the resolved geo identifiers.</summary>
+    internal IReadOnlyList<string> GeoList => Array.AsReadOnly(_geos.Select(geo => geo.Geo).ToArray());
+
+    /// <summary>Gets the resolved negotiation endpoint for the first geo.</summary>
+    internal Uri NegotiateUrl => _geos[0].NegotiateUri;
+
     /// <inheritdoc />
     TimeSpan IGeoSocketOwner.StartupTimeout => _options.StartupTimeout;
 
@@ -222,6 +233,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             }
 
             _geoSockets = geoSockets;
+            LogStatus();
         }
 
         _logger.LogInformation(
@@ -299,6 +311,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             {
                 _geoStatuses[geo] = SocketModeStatus.Stopped;
             }
+            LogStatus();
             _stopTask = Task.WhenAll(_geoSockets.Select(geoSocket => geoSocket.DisposeAsync().AsTask()));
             return _stopTask;
         }
@@ -337,16 +350,35 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     void IGeoSocketOwner.OnGeoReady(string geo, SocketReadyFrame frame)
     {
         SetGeoStatus(geo, SocketModeStatus.Ready);
-        _logger.LogDebug("Socket Mode geo {Geo} ready with connection {ConnectionId}.", geo, frame.ConnectionId);
+        _logger.LogInformation("Socket Mode geo {Geo} ready with connection {ConnectionId}.", geo, frame.ConnectionId);
+        _events?.OnReady(geo, frame);
     }
 
     /// <inheritdoc />
-    void IGeoSocketOwner.OnGeoDisconnected(string geo, Exception? error)
-        => SetGeoStatus(geo, SocketModeStatus.Disconnected);
+    void IGeoSocketOwner.OnGeoDisconnected(string geo, Exception? error, bool terminal)
+    {
+        SetGeoStatus(geo, SocketModeStatus.Disconnected);
+        if (terminal)
+        {
+            _logger.LogError(
+                "Socket Mode geo {Geo} reconnect was rejected: {Error}; inbound delivery for this geo has stopped until the app is restarted.",
+                geo, error?.Message);
+        }
+        else
+        {
+            _logger.LogWarning("Socket Mode geo {Geo} disconnected: {Error}; inbound delivery paused.", geo, error?.Message);
+        }
+
+        _events?.OnDisconnected(geo, error, terminal);
+    }
 
     /// <inheritdoc />
     void IGeoSocketOwner.OnGeoReconnected(string geo)
-        => SetGeoStatus(geo, SocketModeStatus.Ready);
+    {
+        SetGeoStatus(geo, SocketModeStatus.Ready);
+        _logger.LogInformation("Socket Mode geo {Geo} reconnected; inbound delivery resumed.", geo);
+        _events?.OnReconnected(geo);
+    }
 
     [SuppressMessage(
         "Design",
@@ -440,12 +472,17 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     {
         lock (_sync)
         {
-            if (_lifecycle != SocketModeStatus.Stopped)
+            if (_lifecycle != SocketModeStatus.Stopped && _geoStatuses.GetValueOrDefault(geo) != status)
             {
                 _geoStatuses[geo] = status;
+                LogStatus();
             }
         }
     }
+
+    // Called under _sync so concurrent geo transitions log a consistent, ordered aggregate.
+    private void LogStatus()
+        => _logger.LogInformation("Socket Mode aggregate status: {Status}.", Status);
 
     private long NowUnixMilliseconds() => _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 

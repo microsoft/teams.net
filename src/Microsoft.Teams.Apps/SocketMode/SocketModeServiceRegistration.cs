@@ -47,6 +47,11 @@ internal static class SocketModeServiceRegistration
         // generic host fails service validation (on by default in Development) even though nothing resolves them.
         services.AddRouting();
 
+        services.TryAddSingleton(sp => new SocketModeEvents(sp.GetRequiredService<ILogger<SocketModeEvents>>()));
+        services.TryAddSingleton(sp => new SocketModeObserver(
+            () => sp.GetRequiredService<SocketModeTransport>(),
+            sp.GetRequiredService<SocketModeEvents>()));
+
         string sectionName = botConfig.SectionName;
         string clientId = botConfig.ClientId;
 
@@ -77,7 +82,8 @@ internal static class SocketModeServiceRegistration
                 sp.GetRequiredService<ISocketConnectionFactory>(),
                 activity => DispatchAsync(app, activity),
                 sp.GetRequiredService<ILoggerFactory>().CreateLogger<SocketModeTransport>(),
-                botKey: clientId);
+                botKey: clientId,
+                events: sp.GetRequiredService<SocketModeEvents>());
         });
 
         services.AddHostedService<SocketModeHostedService>();

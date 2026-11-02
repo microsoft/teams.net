@@ -64,7 +64,8 @@ internal interface IGeoSocketOwner
     /// </summary>
     /// <param name="geo">The geo that disconnected.</param>
     /// <param name="error">The failure that closed the connection, when available.</param>
-    void OnGeoDisconnected(string geo, Exception? error);
+    /// <param name="terminal">Whether recovery has stopped after a non-retryable negotiation failure.</param>
+    void OnGeoDisconnected(string geo, Exception? error, bool terminal = false);
 
     /// <summary>
     /// Reports that inbound delivery for a geo resumed after an unexpected interruption.
@@ -341,15 +342,10 @@ internal sealed class GeoSocket : IAsyncDisposable
     /// <param name="error">The non-retryable failure.</param>
     private void StopAfterNonRetryable(Exception error)
     {
-        _logger.LogError(
-            error,
-            "Socket Mode geo {Geo} reconnect was rejected; inbound delivery for this geo has stopped until the app is restarted.",
-            Geo);
-
         // Not awaited: stopping waits for this supervisor to finish. Marking the geo as stopping happens
         // synchronously, so closing connections cannot report a second disconnect.
         _ = StopAsync();
-        _owner.OnGeoDisconnected(Geo, error);
+        _owner.OnGeoDisconnected(Geo, error, terminal: true);
     }
 
     private async Task<Generation> ConnectAsync(Generation? replacing, CancellationToken cancellationToken)
@@ -509,7 +505,6 @@ internal sealed class GeoSocket : IAsyncDisposable
         {
             if (disconnected)
             {
-                _logger.LogWarning(error, "Socket Mode geo {Geo} disconnected; inbound delivery paused.", Geo);
                 _owner.OnGeoDisconnected(Geo, error);
             }
         }
@@ -531,7 +526,6 @@ internal sealed class GeoSocket : IAsyncDisposable
             _disconnected = false;
         }
 
-        _logger.LogInformation("Socket Mode geo {Geo} reconnected; inbound delivery resumed.", Geo);
         _owner.OnGeoReconnected(Geo);
     }
 
@@ -958,4 +952,3 @@ internal sealed class GeoSocket : IAsyncDisposable
 
     private sealed record CloseReason(Exception? Error, bool Planned);
 }
-

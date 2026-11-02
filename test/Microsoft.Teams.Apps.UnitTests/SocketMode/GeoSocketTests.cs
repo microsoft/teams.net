@@ -136,7 +136,7 @@ public class GeoSocketTests
         await harness.Socket.StopAsync();
 
         Assert.Equal([dropped, rejected], harness.Owner.Disconnections);
-        Assert.Same(rejected, Assert.Single(harness.Logger.Errors));
+        Assert.Empty(harness.Logger.Errors);
         Assert.Equal(2, harness.Factory.CreateCount);
         Assert.Equal(0, harness.Time.ScheduledTimerCount);
         Assert.Equal(1, rejectedAttempt.DisposeCount);
@@ -1153,7 +1153,7 @@ public class GeoSocketTests
 
         internal Action? Disconnecting { get; set; }
 
-        public void OnGeoDisconnected(string geo, Exception? error)
+        public void OnGeoDisconnected(string geo, Exception? error, bool terminal = false)
         {
             Disconnecting?.Invoke();
             lock (_sync)
