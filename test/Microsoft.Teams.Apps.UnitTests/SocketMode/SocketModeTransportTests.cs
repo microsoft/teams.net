@@ -309,6 +309,65 @@ public class SocketModeTransportTests
         Assert.Empty(harness.Dispatched);
     }
 
+    private const string AgenticRecipient =
+        """{"agenticAppBlueprintId":"bot-id","agenticAppId":"instance","agenticUserId":"user","tenantId":"tenant","role":"agenticUser"}""";
+
+    [Theory]
+    [InlineData("invoke")]
+    [InlineData("message")]
+    public async Task Dispatch_Agentic_DispatchesCompleteRecipientUnchanged(string type)
+    {
+        Harness harness = new(new SocketModeTransportOptions { RequireAgenticRecipient = true });
+        FakeConnection connection = (await harness.StartReadyAsync())[0];
+
+        SocketReplyFrame? reply = await connection.ActivityAsync(
+            Envelope(type, $$"""{"type":"{{type}}","recipient":{{AgenticRecipient}}}""", botKey: "bot-id"));
+
+        Assert.Equal(200, reply?.Status);
+        AgenticIdentity identity = Assert.IsType<AgenticIdentity>(Assert.Single(harness.Dispatched).Recipient?.GetAgenticIdentity());
+        Assert.Equal("bot-id", identity.AgenticAppBlueprintId);
+        Assert.Equal("instance", identity.AgenticAppId);
+        Assert.Equal("user", identity.AgenticUserId);
+        Assert.Equal("tenant", identity.TenantId);
+    }
+
+    public static TheoryData<string, string, string?, string> InvalidAgenticEnvelopes => new()
+    {
+        { "message", """{"type":"message"}""", null, "agentic activity requires a recipient identity" },
+        { "invoke", """{"type":"invoke","recipient":{"agenticAppBlueprintId":"bot-id","agenticAppId":"instance","tenantId":"tenant","role":"agenticUser"}}""", null, "agentic recipient requires non-empty, unpadded agenticAppBlueprintId, agenticAppId, tenantId, and agenticUserId" },
+        { "message", """{"type":"message","recipient":{"agenticAppBlueprintId":"other-bot","agenticAppId":"instance","tenantId":"tenant"}}""", null, "agentic recipient blueprint does not match the bot client ID" },
+        { "message", $$"""{"type":"message","recipient":{{AgenticRecipient}}}""", "other-bot", "envelope botKey does not match the bot client ID" },
+    };
+
+    [Theory]
+    [MemberData(nameof(InvalidAgenticEnvelopes))]
+    public async Task Dispatch_Agentic_RejectsInvalidEnvelopeWith400WithoutDispatching(string type, string payload, string? botKey, string error)
+    {
+        Harness harness = new(new SocketModeTransportOptions { RequireAgenticRecipient = true });
+        FakeConnection connection = (await harness.StartReadyAsync())[0];
+
+        SocketReplyFrame? reply = await connection.ActivityAsync(Envelope(type, payload, botKey: botKey));
+
+        Assert.NotNull(reply);
+        Assert.Equal(400, reply.Status);
+        Assert.Equal("bot-id", reply.BotKey);
+        Assert.Equal(error, JsonSerializer.SerializeToElement(reply.Body).GetProperty("error").GetString());
+        Assert.Empty(harness.Dispatched);
+    }
+
+    [Fact]
+    public async Task Dispatch_Classic_DoesNotValidateRecipientOrBotKey()
+    {
+        Harness harness = new();
+        FakeConnection connection = (await harness.StartReadyAsync())[0];
+
+        SocketReplyFrame? reply = await connection.ActivityAsync(
+            Envelope("message", """{"type":"message","recipient":{"id":"bot"}}""", botKey: "other-bot"));
+
+        Assert.Equal(200, reply?.Status);
+        Assert.Single(harness.Dispatched);
+    }
+
     [Fact]
     public void RetryPolicy_UsesScheduleThenRepeatsLastDelay()
     {
@@ -344,12 +403,13 @@ public class SocketModeTransportTests
         Assert.Null(owner.GetRetryAfter(null));
     }
 
-    private static SocketActivityEnvelope Envelope(string? type, string payload, int protocolVersion = 1)
+    private static SocketActivityEnvelope Envelope(string? type, string payload, int protocolVersion = 1, string? botKey = null)
         => new()
         {
             ProtocolVersion = protocolVersion,
             EnvelopeId = "env-1",
             Type = type,
+            BotKey = botKey,
             Payload = JsonDocument.Parse(payload).RootElement.Clone(),
         };
 

@@ -66,6 +66,12 @@ internal sealed class SocketModeTransportOptions
     /// backoff with full jitter is used.
     /// </summary>
     internal IReadOnlyList<TimeSpan>? ReconnectDelays { get; init; }
+
+    /// <summary>
+    /// Gets whether the connection is agentic, so an inbound envelope is rejected unless any bot key it carries is
+    /// the transport's, and its activity's recipient is a complete agentic identity whose blueprint is that bot key.
+    /// </summary>
+    internal bool RequireAgenticRecipient { get; init; }
 }
 
 /// <summary>
@@ -377,6 +383,21 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         }
 
         bool invoke = IsInvoke(envelope, activity);
+
+        if (_options.RequireAgenticRecipient
+            && !SocketModeEnvelope.TryValidateAgenticEnvelope(envelope, activity, _botKey, out string? rejection))
+        {
+            _logger.LogWarning(
+                "Socket Mode rejecting agentic envelope {EnvelopeId}: {Reason}.",
+                envelope.EnvelopeId,
+                rejection);
+            return SocketModeEnvelope.CreateInvokeReply(
+                envelope,
+                _botKey,
+                new SocketDispatchResult(400, new { error = rejection }),
+                receivedAt,
+                NowUnixMilliseconds());
+        }
 
         try
         {

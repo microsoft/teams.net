@@ -45,6 +45,34 @@ public sealed class BotTokenProvider(
     }
 
     /// <summary>
+    /// Acquire an app-only token for an agent instance, through the federated identity exchange.
+    /// <para>Authenticates as the agent instance rather than as the blueprint app the credentials belong to, and without acting as any Agentic User.</para>
+    /// </summary>
+    /// <param name="agenticAppId">The agent instance (agentic app) ID to act as.</param>
+    /// <param name="scope">The resource scope to request. No default is assumed, because the audience depends on the service being called.</param>
+    /// <param name="tenantId">Tenant to acquire against, overriding the one the named MSAL options configure. <c>null</c> leaves the configured authority alone.</param>
+    /// <param name="cancellationToken">A token to cancel the acquisition.</param>
+    /// <returns>The bearer token without its scheme prefix.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="agenticAppId"/> or <paramref name="scope"/> is null, empty, or whitespace.</exception>
+    public async Task<string?> GetAgenticAppTokenAsync(string agenticAppId, string scope, string? tenantId = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(agenticAppId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope);
+
+        AuthorizationHeaderProviderOptions options = CreateOptions(OptionsName, managedIdentityOptions, out _);
+        if (!string.IsNullOrEmpty(tenantId))
+        {
+            options.AcquireTokenOptions.Tenant = tenantId;
+        }
+
+        options.WithAgentIdentity(agenticAppId);
+
+        return StripScheme(await _authorizationHeaderProvider
+            .CreateAuthorizationHeaderForAppAsync(scope, options, cancellationToken)
+            .ConfigureAwait(false));
+    }
+
+    /// <summary>
     /// Acquire a user-delegated token for an Agentic User, through the federated identity exchange.
     /// <para>Reads as the agent rather than as the app, so it sees what was shared with the agent rather than everything the app may read.</para>
     /// </summary>
