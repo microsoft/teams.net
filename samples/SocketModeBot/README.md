@@ -27,4 +27,11 @@ dotnet run --project samples/SocketModeBot/SocketModeBot.csproj
 
 `dotnet run` and IDEs apply the launch profile, which sets `DOTNET_ENVIRONMENT=Development` and the credentials.
 
+Logging is configured locally in `appsettings.json`, matching the other samples' default of Warning with
+`Microsoft.Teams` at Information. `SocketModeBot` is also enabled at Information for sample diagnostics.
+Verbose MSAL and HTTP Information logs are hidden; warnings and errors remain visible.
+The settings are copied to the build and publish output, and the host loads configuration from that directory
+instead of the working directory, so running from the repository root uses this sample's settings.
+Optional `appsettings.{Environment}.json`, environment variables, and command-line arguments can override the defaults.
+
 The bot is ready when the log shows `Socket Mode ready across 3 geo(s).` (amer, emea, apac). Startup fails if any geo cannot connect within the startup timeout.
