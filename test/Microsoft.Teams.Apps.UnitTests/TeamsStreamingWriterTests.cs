@@ -20,6 +20,7 @@ public class TeamsStreamingWriterTests
         private readonly Queue<HttpResponseMessage> _responses = new();
         public List<string> RequestBodies { get; } = [];
         public List<HttpRequestMessage> Requests { get; } = [];
+        public HttpRequestException? NextException { get; set; }
 
         public void EnqueueResponse(string jsonBody, HttpStatusCode statusCode = HttpStatusCode.OK)
             => _responses.Enqueue(new HttpResponseMessage(statusCode)
@@ -29,10 +30,17 @@ public class TeamsStreamingWriterTests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Requests.Add(request);
             RequestBodies.Add(request.Content is not null
                 ? await request.Content.ReadAsStringAsync(cancellationToken)
                 : string.Empty);
+
+            if (NextException is { } exception)
+            {
+                NextException = null;
+                throw exception;
+            }
 
             return _responses.Count > 0
                 ? _responses.Dequeue()
@@ -143,6 +151,49 @@ public class TeamsStreamingWriterTests
     }
 
     // ── Guard conditions ──────────────────────────────────────────────────────
+
+    [Fact]
+    public void Cancelled_PreservesPublicReadOnlyBoolSignatureWithNonErrorDeprecation()
+    {
+#pragma warning disable CS0618 // Verify compatibility with existing callers.
+        System.Reflection.PropertyInfo? property = typeof(TeamsStreamingWriter).GetProperty(nameof(TeamsStreamingWriter.Cancelled));
+#pragma warning restore CS0618
+        Assert.NotNull(property);
+        Assert.Equal(typeof(bool), property.PropertyType);
+        Assert.True(property.GetMethod!.IsPublic);
+        Assert.Null(property.SetMethod);
+        ObsoleteAttribute obsolete = Assert.Single(property.GetCustomAttributes(typeof(ObsoleteAttribute), false).Cast<ObsoleteAttribute>());
+        Assert.False(obsolete.IsError);
+        Assert.Contains("Teams no longer supports stopping a stream", obsolete.Message);
+        Assert.Contains("always returns false", obsolete.Message);
+    }
+
+    [Fact]
+    public async Task Cancelled_RemainsFalseAcrossCallerCancellationTimeoutAndReuse()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+#pragma warning disable CS0618 // Exercise the retained property as existing source code would.
+        bool cancelled = writer.Cancelled;
+        Assert.False(cancelled);
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writer.AppendResponseAsync("Answer", cancellation.Token));
+        Assert.False(writer.Cancelled);
+
+        await writer.SendInformativeUpdateAsync("Thinking");
+        handler.EnqueueResponse("""{"error":{"message":"Content stream finished due to exceeded streaming time."}}""", HttpStatusCode.Forbidden);
+        await writer.AppendResponseAsync("More");
+        Assert.True(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+        await writer.FinalizeResponseAsync();
+        Assert.False(writer.Cancelled);
+
+        await writer.AppendResponseAsync("Next answer");
+        await writer.FinalizeResponseAsync();
+        Assert.False(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+    }
 
     [Fact]
     public async Task AppendAsync_AfterFinalizeAsync_ReopensStreamForNextMessage()
@@ -496,7 +547,7 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("{\"id\":\"stream-1\"}");
         await writer.SendInformativeUpdateAsync("Thinking…");
 
-        // The next chunk trips the two-minute limit, forcing the in-place update path.
+        // The next chunk trips the ten-minute limit, forcing the in-place update path.
         handler.EnqueueResponse(
             "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
             HttpStatusCode.Forbidden);
@@ -512,41 +563,157 @@ public class TeamsStreamingWriterTests
         Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies.Last());
     }
 
-    // ── Error handling (HTTP 403) ─────────────────────────────────────────────
+    // ── Error handling ───────────────────────────────────────────────────────
 
-    [Fact]
-    public async Task AppendAsync_403NotAllowed_ThrowsHttpRequestException()
+    [Theory]
+    [InlineData("informative", HttpStatusCode.Forbidden, "Content stream is not allowed")]
+    [InlineData("append", HttpStatusCode.Forbidden, "Content stream is not allowed")]
+    [InlineData("final", HttpStatusCode.Forbidden, "Content stream is not allowed")]
+    [InlineData("informative", HttpStatusCode.Forbidden, "Message size too large")]
+    [InlineData("append", HttpStatusCode.Forbidden, "Message size too large")]
+    [InlineData("final", HttpStatusCode.Forbidden, "Message size too large")]
+    [InlineData("informative", HttpStatusCode.Gone, "Gone")]
+    [InlineData("append", HttpStatusCode.Gone, "Gone")]
+    [InlineData("final", HttpStatusCode.Gone, "Gone")]
+    [InlineData("informative", HttpStatusCode.BadRequest, "Invalid request")]
+    [InlineData("append", HttpStatusCode.BadRequest, "Invalid request")]
+    [InlineData("final", HttpStatusCode.BadRequest, "Invalid request")]
+    public async Task ServiceFailure_PropagatesWithoutRetryOrDisablingWriter(string operation, HttpStatusCode status, string message)
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream is not allowed\"}}", HttpStatusCode.Forbidden);
+        string body = new JsonObject { ["error"] = new JsonObject { ["message"] = message } }.ToJsonString();
+        handler.EnqueueResponse(body, status);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => operation switch
+        {
+            "informative" => writer.SendInformativeUpdateAsync("Thinking"),
+            "append" => writer.AppendResponseAsync("Answer"),
+            _ => writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"))
+        });
+        Assert.Equal(status, error.StatusCode);
+        Assert.Contains(body, error.Message);
+        Assert.False(writer.TimedOut);
+        Assert.Single(handler.Requests);
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"));
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
     }
 
     [Fact]
-    public async Task AppendAsync_403UnknownMessage_ThrowsHttpRequestException()
+    public async Task NoContentResponses_DoNotPreventFinalizationOrReuse()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        handler.EnqueueResponse("{\"error\":{\"message\":\"Message size too large\"}}", HttpStatusCode.Forbidden);
+        handler.EnqueueResponse("", HttpStatusCode.NoContent);
+        handler.EnqueueResponse("", HttpStatusCode.NoContent);
+        handler.EnqueueResponse("", HttpStatusCode.NoContent);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
-    }
-
-    [Fact]
-    public async Task AppendAsync_403Cancelled_IsSwallowedAndFlagsCancelled()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream was canceled by user\"}}", HttpStatusCode.Forbidden);
-
-        // Cancellation is swallowed, not thrown.
-        await writer.AppendResponseAsync("hi");
-
-        Assert.True(writer.Cancelled);
-
-        // Finalize sends nothing once the stream is cancelled.
-        int countBeforeFinalize = handler.Requests.Count;
+        await writer.SendInformativeUpdateAsync("Thinking");
+        await writer.AppendResponseAsync("Answer");
         await writer.FinalizeResponseAsync();
-        Assert.Equal(countBeforeFinalize, handler.Requests.Count);
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.False(writer.TimedOut);
+
+        await writer.AppendResponseAsync("Next answer");
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(5, handler.Requests.Count);
+        Assert.Contains("Next answer", handler.RequestBodies.Last());
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Gone, "informative")]
+    [InlineData(HttpStatusCode.NoContent, "informative")]
+    [InlineData(HttpStatusCode.Gone, "append")]
+    [InlineData(HttpStatusCode.NoContent, "append")]
+    [InlineData(HttpStatusCode.Gone, "formatted")]
+    [InlineData(HttpStatusCode.NoContent, "formatted")]
+    [InlineData(HttpStatusCode.Gone, "final")]
+    [InlineData(HttpStatusCode.NoContent, "final")]
+    public async Task TransportStatusException_PropagatesWithoutDisablingWriter(HttpStatusCode status, string operation)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        HttpRequestException expected = new("Request failed.", null, status);
+        handler.NextException = expected;
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => operation switch
+        {
+            "informative" => writer.SendInformativeUpdateAsync("Thinking"),
+            "append" => writer.AppendResponseAsync("Answer"),
+            "formatted" => writer.AppendResponseAsync(new MessageActivityInput().WithText("Answer")),
+            _ => writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"))
+        });
+
+        Assert.Same(expected, error);
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+        Assert.False(writer.TimedOut);
+        Assert.Single(handler.Requests);
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"));
+        Assert.Equal(2, handler.Requests.Count);
+        await writer.SendInformativeUpdateAsync("Thinking again");
+        await writer.AppendResponseAsync(new MessageActivityInput().WithText("Next answer", TextFormats.Markdown));
+        await writer.FinalizeResponseAsync();
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(5, handler.Requests.Count);
+        Assert.Contains("Next answer", handler.RequestBodies.Last());
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Gone)]
+    [InlineData(HttpStatusCode.NoContent)]
+    public async Task PlanCompletion_TransportStatusExceptionPreservesErrorAndAllowsExplicitRetry(HttpStatusCode status)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("Answer");
+        HttpRequestException expected = new("Request failed.", null, status);
+        handler.NextException = expected;
+        MessageActivityInput final = new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+        string before = final.ToJson();
+
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => writer.FinalizeResponseAsync(final));
+        Assert.Same(expected, error);
+        Assert.Equal(before, final.ToJson());
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+        Assert.False(writer.TimedOut);
+        await writer.FinalizeResponseAsync(final);
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+    }
+
+    [Theory]
+    [InlineData("informative")]
+    [InlineData("append")]
+    [InlineData("formatted")]
+    [InlineData("final")]
+    [InlineData("plan")]
+    public async Task CallerCancellation_PropagatesWithoutDisablingWriter(string operation)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        MessageActivityInput final = new MessageActivityInput().WithText("Answer");
+        if (operation == "plan")
+            final.AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation switch
+        {
+            "informative" => writer.SendInformativeUpdateAsync("Thinking", cancellation.Token),
+            "append" => writer.AppendResponseAsync("Answer", cancellation.Token),
+            "formatted" => writer.AppendResponseAsync(final, cancellation.Token),
+            _ => writer.FinalizeResponseAsync(final, cancellation.Token)
+        });
+        Assert.Empty(handler.Requests);
+        Assert.False(writer.TimedOut);
+
+        await writer.FinalizeResponseAsync(final);
+        Assert.Single(handler.Requests);
     }
 
     [Fact]
@@ -558,7 +725,7 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("{\"id\":\"stream-1\"}");
         await writer.SendInformativeUpdateAsync("Thinking…");
 
-        // The next chunk trips the two-minute limit.
+        // The next chunk trips the ten-minute limit.
         handler.EnqueueResponse(
             "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
             HttpStatusCode.Forbidden);
@@ -589,7 +756,7 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("{\"id\":\"stream-1\"}");
         await writer.AppendResponseAsync("Buffered answer");
 
-        // The final streamed send itself trips the two-minute limit.
+        // The final streamed send itself trips the ten-minute limit.
         handler.EnqueueResponse(
             "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
             HttpStatusCode.Forbidden);
@@ -661,7 +828,6 @@ public class TeamsStreamingWriterTests
         TimeoutException error = await Assert.ThrowsAsync<TimeoutException>(() => writer.FinalizeResponseAsync(final));
         Assert.Contains("requires a POST", error.Message);
         Assert.True(writer.TimedOut);
-        Assert.False(writer.Cancelled);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
         Assert.Equal(before, final.ToJson());
@@ -674,6 +840,9 @@ public class TeamsStreamingWriterTests
     [InlineData(HttpStatusCode.Conflict, """{"error":null}""")]
     [InlineData(HttpStatusCode.Conflict, "not json")]
     [InlineData(HttpStatusCode.ServiceUnavailable, """{"error":{"code":"PlanConflict"}}""")]
+    [InlineData(HttpStatusCode.Forbidden, """{"error":{"message":"Content stream is not allowed"}}""")]
+    [InlineData(HttpStatusCode.Forbidden, """{"error":{"message":"Message size too large"}}""")]
+    [InlineData(HttpStatusCode.Gone, """{"error":{"message":"Gone"}}""")]
     public async Task PlanCompletion_ServiceFailurePreservesHttpErrorWithoutRetryOrTimeout(HttpStatusCode status, string errorBody)
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
@@ -686,7 +855,6 @@ public class TeamsStreamingWriterTests
         Assert.Equal(status, error.StatusCode);
         Assert.Contains(errorBody, error.Message);
         Assert.False(writer.TimedOut);
-        Assert.False(writer.Cancelled);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
 
@@ -726,7 +894,6 @@ public class TeamsStreamingWriterTests
         Assert.Equal(body, error.ResponseBody);
         Assert.Equal(error.Message, Assert.IsType<HttpRequestException>(error.InnerException).Message);
         Assert.False(writer.TimedOut);
-        Assert.False(writer.Cancelled);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
         Assert.Equal(before, final.ToJson());
@@ -735,7 +902,6 @@ public class TeamsStreamingWriterTests
         await writer.FinalizeResponseAsync();
         Assert.Equal(2, handler.Requests.Count);
         Assert.False(writer.TimedOut);
-        Assert.False(writer.Cancelled);
     }
 
     [Theory]
@@ -794,7 +960,6 @@ public class TeamsStreamingWriterTests
         Assert.DoesNotContain("planInfo", final.ToJsonString());
         Assert.DoesNotContain("feedbackLoopEnabled", final.ToJsonString());
         Assert.False(writer.TimedOut);
-        Assert.False(writer.Cancelled);
         Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
 
         int sent = handler.Requests.Count;
@@ -810,26 +975,12 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("""{"error":{"code":"PlanConflict","message":"Stopped"}}""", HttpStatusCode.Conflict);
         await Assert.ThrowsAsync<PlanConflictException>(() => writer.FinalizeResponseAsync());
         Assert.False(writer.TimedOut);
-        Assert.False(writer.Cancelled);
 
         await writer.FinalizeResponseAsync();
         Assert.Equal(3, handler.Requests.Count);
         JsonNode final = JsonNode.Parse(handler.RequestBodies.Last())!;
         Assert.Equal("Answer", final["text"]!.GetValue<string>());
         Assert.DoesNotContain("planInfo", final.ToJsonString());
-    }
-
-    [Fact]
-    public async Task PlanCompletion_CancellationIsNotSilentlySuccessful()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        await writer.AppendResponseAsync("Answer");
-        handler.EnqueueResponse("""{"error":{"message":"Content stream was canceled by user"}}""", HttpStatusCode.Forbidden);
-        MessageActivityInput final = new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
-        await Assert.ThrowsAsync<HttpRequestException>(() => writer.FinalizeResponseAsync(final));
-        Assert.True(writer.Cancelled);
-        await Assert.ThrowsAsync<OperationCanceledException>(() => writer.FinalizeResponseAsync(final));
-        Assert.Equal(2, handler.Requests.Count);
     }
 
     [Fact]
