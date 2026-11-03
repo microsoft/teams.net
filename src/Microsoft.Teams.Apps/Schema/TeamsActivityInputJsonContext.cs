@@ -25,6 +25,7 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonSerializable(typeof(OMessageEntity))]
 [JsonSerializable(typeof(SensitiveUsageEntity))]
 [JsonSerializable(typeof(DefinedTerm))]
+[JsonSerializable(typeof(SensitivityUsageInfo))]
 [JsonSerializable(typeof(ProductInfoEntity))]
 [JsonSerializable(typeof(StreamInfoEntity))]
 [JsonSerializable(typeof(PlanInfoEntity))]
