@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.HtmlWidget;
@@ -97,23 +98,35 @@ public class McpUiCallToolResult
 {
     /// <summary>
     /// An array of content items to return to the widget.
+    /// Always serialized, defaulting to an empty array, so the widget never receives null.
     /// </summary>
     [JsonPropertyName("content")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<McpUiCallToolResultContent>? Content { get; set; }
+    public IList<McpUiCallToolResultContent> Content
+    {
+        get => _content;
+        set => _content = value ?? [];
+    }
+
+    private IList<McpUiCallToolResultContent> _content = [];
 
     /// <summary>
     /// Structured data that the widget can render from.
+    /// Always serialized, defaulting to an empty object, so the widget never receives null.
     /// </summary>
     [JsonPropertyName("structuredContent")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? StructuredContent { get; set; }
+    public object StructuredContent
+    {
+        get => _structuredContent;
+        set => _structuredContent = value is null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } ? new Dictionary<string, object>() : value;
+    }
+
+    private object _structuredContent = new Dictionary<string, object>();
 
     /// <summary>
     /// Whether the tool call resulted in an error.
+    /// Always serialized, including when false.
     /// </summary>
     [JsonPropertyName("isError")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool IsError { get; set; }
 }
 

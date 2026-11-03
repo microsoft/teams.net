@@ -298,7 +298,6 @@ public class HtmlWidgetHelpersTests
     {
         var response = HtmlWidgetCallToolResponse.FromText("hello");
         Assert.Equal("htmlwidget/calltoolresult", response.ResponseType);
-        Assert.NotNull(response.CallToolResult.Content);
         Assert.Single(response.CallToolResult.Content);
         Assert.Equal("text", response.CallToolResult.Content[0].Type);
         Assert.Equal("hello", response.CallToolResult.Content[0].Text);
@@ -311,7 +310,7 @@ public class HtmlWidgetHelpersTests
         var response = HtmlWidgetCallToolResponse.FromError("something failed");
         Assert.Equal("htmlwidget/calltoolresult", response.ResponseType);
         Assert.True(response.CallToolResult.IsError);
-        Assert.Equal("something failed", response.CallToolResult.Content![0].Text);
+        Assert.Equal("something failed", response.CallToolResult.Content[0].Text);
     }
 
     [Fact]
@@ -432,6 +431,42 @@ public class HtmlWidgetHelpersTests
         var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
         Assert.Contains("\"mcpUrl\":\"https://mcp.example.com\"", result);
         Assert.Contains("\"correlationId\":\"abc.1\"", result);
+    }
+
+    [Fact]
+    public void CallToolResult_AlwaysSerializesDefaults()
+    {
+        var json = JsonSerializer.Serialize(new McpUiCallToolResult());
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", json);
+    }
+
+    [Fact]
+    public void CallToolResponse_FromText_SerializesStructuredContentAndIsError()
+    {
+        var json = JsonSerializer.Serialize(HtmlWidgetCallToolResponse.FromText("hi"));
+        Assert.Contains("\"structuredContent\":{}", json);
+        Assert.Contains("\"isError\":false", json);
+    }
+
+    [Fact]
+    public void CallToolResult_ExplicitNullAssignment_KeepsNonNullWireShape()
+    {
+        var result = new McpUiCallToolResult { Content = null!, StructuredContent = null! };
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
+    public void CallToolResult_BoxedJsonNullStructuredContent_KeepsNonNullWireShape()
+    {
+        var result = new McpUiCallToolResult { StructuredContent = JsonDocument.Parse("null").RootElement };
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
+    public void CallToolResult_DeserializingNulls_KeepsNonNullWireShape()
+    {
+        var result = JsonSerializer.Deserialize<McpUiCallToolResult>("{\"content\":null,\"structuredContent\":null}")!;
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
     }
 
     [Fact]
@@ -668,7 +703,7 @@ public class HtmlWidgetHelpersTests
         Assert.Equal("ui/update-model-context", result!.Method);
         Assert.NotNull(result.Params.Content);
         Assert.Single(result.Params.Content!);
-        Assert.Equal("hello", result.Params.Content![0].Text);
+        Assert.Equal("hello", result.Params.Content[0].Text);
     }
 
     [Fact]
@@ -702,7 +737,7 @@ public class HtmlWidgetHelpersTests
         var result = HtmlWidgetHelpers.TryGetWidgetModelContext(activity);
 
         Assert.NotNull(result);
-        Assert.Equal("wrapped", result!.Params.Content![0].Text);
+        Assert.Equal("wrapped", result!.Params.Content[0].Text);
     }
 
     [Fact]
