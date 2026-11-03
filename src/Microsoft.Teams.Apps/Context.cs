@@ -125,9 +125,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
-    /// Sends a text message as a threaded reply to the current activity. When the inbound activity
-    /// has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams);
-    /// otherwise sends without quoting.
+    /// Sends a text message as a threaded reply to the current activity.
+    /// The response is automatically quoted (rendered as a quote bubble above the response in Teams) only when the inbound activity id is a plain numeric message id (all digits, not all zeros).
+    /// Otherwise it is sent without a quote, exactly like <see cref="SendAsync(string, CancellationToken)"/>.
     /// </summary>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -136,9 +136,10 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => ReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
-    /// Sends an activity to the conversation. When the inbound activity has an id, the response
-    /// auto-quotes it (rendered as a quote bubble above the response in Teams). Otherwise sends
-    /// without quoting. To send without quoting unconditionally, use <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
+    /// Sends an activity to the conversation.
+    /// The response is automatically quoted (rendered as a quote bubble above the response in Teams) only when the inbound activity id is a plain numeric message id (all digits, not all zeros).
+    /// Otherwise it is sent without a quote, exactly like <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
+    /// Explicit quotes through <see cref="QuoteAsync(string, MessageActivityInput, CancellationToken)"/> are unchanged.
     /// </summary>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -146,13 +147,21 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> ReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        if (!string.IsNullOrWhiteSpace(Activity.Id))
+        if (IsQuotableActivity(Activity))
         {
-            return QuoteAsync(Activity.Id, activity, cancellationToken);
+            return QuoteAsync(Activity.Id!, activity, cancellationToken);
         }
 
         return SendAsync(activity, cancellationToken);
     }
+
+    /// <summary>
+    /// Returns true when the activity id is a plain numeric message id (all digits, not all zeros), the only shape the reply methods quote automatically.
+    /// </summary>
+    internal static bool IsQuotableActivity(TeamsActivity activity)
+        => activity.Id is { Length: > 0 } id
+            && id.All(char.IsAsciiDigit)
+            && id.Any(c => c != '0');
 
     /// <summary>
     /// Sends a typing indicator to the conversation.
@@ -220,7 +229,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
         => ReplyAsync(text, cancellationToken);
 
-    /// <inheritdoc cref="ReplyAsync(MessageActivityInput, CancellationToken)"/>
+    /// <summary>
+    /// Sends a message to the conversation as a reply to the current activity, setting its reply id when the inbound activity has an id.
+    /// </summary>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     [Obsolete("Use ReplyAsync with a TeamsActivityInput built via new MessageActivityInput() instead.")]
     public Task<SendActivityResponse?> Reply(MessageActivity activity, CancellationToken cancellationToken = default)
     {
