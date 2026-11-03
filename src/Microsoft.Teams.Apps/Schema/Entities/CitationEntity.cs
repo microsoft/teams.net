@@ -31,6 +31,10 @@ public class CitationEntity : OMessageEntity
         OContext = entity.OContext;
         Type = entity.Type;
         Properties = new Core.Schema.ExtendedPropertiesDictionary(entity.Properties);
+        if (entity.UsageInfo is not null)
+        {
+            UsageInfo = entity.UsageInfo.Copy();
+        }
         AdditionalType = entity.AdditionalType != null
             ? new List<string>(entity.AdditionalType)
             : null;

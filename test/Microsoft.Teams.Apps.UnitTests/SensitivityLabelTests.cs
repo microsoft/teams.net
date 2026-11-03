@@ -280,6 +280,17 @@ public class SensitivityLabelTests
     }
 
     [Fact]
+    public void CitationEntity_CopyConstructor_CopiesMessageLabel()
+    {
+        OMessageEntity original = new() { UsageInfo = new SensitivityUsageInfo { Id = LabelId, Name = "Confidential" } };
+        CitationEntity copy = new(original);
+
+        copy.UsageInfo!.Name = "Changed";
+
+        Assert.Equal("Confidential", original.UsageInfo?.Name);
+    }
+
+    [Fact]
     public void AddSensitivityLabel_Null_Throws()
     {
         Assert.Throws<ArgumentNullException>(() => new MessageActivityInput().AddSensitivityLabel((SensitivityUsageInfo)null!));
