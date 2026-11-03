@@ -2,48 +2,12 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using Microsoft.Teams.Apps.Schema;
 
 namespace Microsoft.Teams.Apps.HtmlWidget;
-
-/// <summary>
-/// Options for injecting the MCP Apps protocol into widget HTML.
-/// </summary>
-[Experimental("ExperimentalTeamsHtmlWidget")]
-public class InjectWidgetProtocolOptions
-{
-    /// <summary>
-    /// The widget app name sent during ui/initialize.
-    /// </summary>
-    public string Name { get; set; } = "widget";
-
-    /// <summary>
-    /// The widget app version sent during ui/initialize.
-    /// </summary>
-    public string Version { get; set; } = "1.0.0";
-
-    /// <summary>
-    /// Display modes this widget supports.
-    /// </summary>
-    public IList<string>? AvailableDisplayModes { get; set; }
-
-    /// <summary>
-    /// Host notifications to listen for.
-    /// Known values: "tool-result", "tool-input", "tool-input-partial",
-    /// "tool-cancelled", "host-context-changed", "resource-teardown".
-    /// </summary>
-    public IList<string>? Notifications { get; set; }
-
-    /// <summary>
-    /// When true, injects a CSP violation listener for debugging.
-    /// </summary>
-    public bool DebugCspViolations { get; set; }
-}
 
 /// <summary>
 /// Options for building an HTML widget markdown string.
@@ -60,12 +24,6 @@ public class HtmlWidgetMarkdownOptions
     /// Text to include after the widget code block.
     /// </summary>
     public string? After { get; set; }
-
-    /// <summary>
-    /// Options forwarded to <see cref="HtmlWidgetHelpers.InjectWidgetProtocol"/> when the protocol
-    /// is auto-injected. The Name field is always set from the payload's Name.
-    /// </summary>
-    public InjectWidgetProtocolOptions? ProtocolOptions { get; set; }
 }
 
 /// <summary>
@@ -103,18 +61,6 @@ public class SecurityPolicyWarning
 [Experimental("ExperimentalTeamsHtmlWidget")]
 public static class HtmlWidgetHelpers
 {
-    private const string McpProtocolVersion = "2026-01-26";
-
-    private static readonly Dictionary<string, string> NotificationCallbacks = new()
-    {
-        ["tool-result"] = "onToolResult",
-        ["tool-input"] = "onToolInput",
-        ["tool-input-partial"] = "onToolInputPartial",
-        ["tool-cancelled"] = "onToolCancelled",
-        ["host-context-changed"] = "onHostContextChanged",
-        ["resource-teardown"] = "onResourceTeardown",
-    };
-
     private static readonly HtmlWidgetSecurityPolicy DefaultSecurityPolicy = new()
     {
         ConnectDomains = [],
@@ -124,75 +70,11 @@ public static class HtmlWidgetHelpers
     };
 
     /// <summary>
-    /// Injects the MCP Apps protocol script into widget HTML.
-    /// If the HTML already contains the protocol (detected by "ui/initialize"), it is returned unchanged.
-    /// </summary>
-    /// <param name="html">The raw HTML content for the widget.</param>
-    /// <param name="options">Optional configuration for the protocol setup.</param>
-    /// <returns>The HTML with the protocol script injected.</returns>
-    public static string InjectWidgetProtocol(string html, InjectWidgetProtocolOptions? options = null)
-    {
-        ArgumentNullException.ThrowIfNull(html);
-
-        // Skip injection only if the HTML already performs the ui/initialize
-        // handshake (a `method: 'ui/initialize'` postMessage), not if it merely
-        // mentions the string somewhere (e.g. in a comment or visible text).
-        if (Regex.IsMatch(html, "[\"']?method[\"']?\\s*:\\s*[\"']ui/initialize[\"']"))
-        {
-            return html;
-        }
-
-        var name = EscapeForInlineScript(options?.Name ?? "widget");
-        var version = EscapeForInlineScript(options?.Version ?? "1.0.0");
-
-        var capsJson = options?.AvailableDisplayModes is { Count: > 0 } modes
-            ? $"{{availableDisplayModes:{JsonSerializer.Serialize(modes)}}}"
-            : "{}";
-
-        var hookLines = new StringBuilder();
-        if (options?.Notifications is { Count: > 0 } notifications)
-        {
-            foreach (var n in notifications)
-            {
-                if (NotificationCallbacks.TryGetValue(n, out var cb))
-                {
-                    hookLines.Append(CultureInfo.InvariantCulture, $"if(d.method==='ui/notifications/{n}'&&window.{cb}){{window.{cb}(d.params);}}");
-                }
-            }
-        }
-
-        var cspDebug = options?.DebugCspViolations == true
-            ? "document.addEventListener('securitypolicyviolation',function(e){"
-              + "console.warn('[widget CSP violation]',{"
-              + "blockedURI:e.blockedURI,"
-              + "violatedDirective:e.violatedDirective,"
-              + "originalPolicy:e.originalPolicy"
-              + "});});"
-            : "";
-
-        var script = "<script>(function(){"
-            + cspDebug
-            + "var id='init-'+Math.random().toString(36).slice(2);"
-            + "function notifySize(){window.parent.postMessage({jsonrpc:'2.0',method:'ui/notifications/size-changed',params:{height:Math.ceil(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight))}},'*');}"
-            + "window.addEventListener('message',function(e){var d=e.data;if(!d||d.jsonrpc!=='2.0')return;"
-            + "if(d.id===id&&d.result){window.parent.postMessage({jsonrpc:'2.0',method:'ui/notifications/initialized'},'*');setTimeout(notifySize,100);}"
-            + hookLines
-            + "});"
-            + $"window.parent.postMessage({{jsonrpc:'2.0',id:id,method:'ui/initialize',params:{{protocolVersion:'{McpProtocolVersion}',appInfo:{{name:'{name}',version:'{version}'}},appCapabilities:{capsJson}}}}},'*');"
-            + "document.addEventListener('DOMContentLoaded',notifySize);"
-            + "})()</script>";
-
-        if (html.Contains("</body>", StringComparison.Ordinal))
-        {
-            return html.Replace("</body>", script + "</body>", StringComparison.Ordinal);
-        }
-
-        return html + script;
-    }
-
-    /// <summary>
     /// Wraps an HTML widget payload in the ```html-widget markdown code fence
     /// format required by Teams to render the widget in a message.
+    /// The widget HTML is sent as authored.
+    /// The widget owns the <c>ui/initialize</c> handshake and the <c>ui/notifications/size-changed</c> reporting.
+    /// Without a size reporter, Teams renders the widget at about 150px tall.
     /// </summary>
     /// <param name="payload">The widget payload to serialize.</param>
     /// <param name="options">Optional text to include before/after the widget block.</param>
@@ -202,29 +84,22 @@ public static class HtmlWidgetHelpers
         ArgumentNullException.ThrowIfNull(payload);
         ValidatePayload(payload);
 
-        var protocolOpts = new InjectWidgetProtocolOptions
-        {
-            Name = payload.Name,
-            Version = options?.ProtocolOptions?.Version ?? "1.0.0",
-            AvailableDisplayModes = options?.ProtocolOptions?.AvailableDisplayModes,
-            Notifications = options?.ProtocolOptions?.Notifications,
-            DebugCspViolations = options?.ProtocolOptions?.DebugCspViolations ?? false,
-        };
-
-        var injectedPayload = new HtmlWidgetPayload
+        var normalizedPayload = new HtmlWidgetPayload
         {
             Type = payload.Type,
             Name = payload.Name,
             Description = payload.Description,
-            Html = InjectWidgetProtocol(payload.Html, protocolOpts),
+            Html = payload.Html,
             Domain = payload.Domain,
             SecurityPolicy = payload.SecurityPolicy ?? DefaultSecurityPolicy,
             ToolInput = payload.ToolInput,
             ToolOutput = payload.ToolOutput,
             Permissions = payload.Permissions,
+            McpUrl = payload.McpUrl,
+            CorrelationId = payload.CorrelationId,
         };
 
-        var json = JsonSerializer.Serialize(injectedPayload);
+        var json = JsonSerializer.Serialize(normalizedPayload);
         var parts = new List<string>();
 
         if (!string.IsNullOrEmpty(options?.Before))
@@ -248,6 +123,7 @@ public static class HtmlWidgetHelpers
 
     /// <summary>
     /// Builds a message activity containing an HTML widget, ready to be sent.
+    /// The widget HTML is sent as authored, so the widget owns the <c>ui/initialize</c> handshake and the <c>ui/notifications/size-changed</c> reporting.
     /// </summary>
     /// <param name="payload">The widget payload to include in the message.</param>
     /// <param name="options">Optional text to include before/after the widget block.</param>
@@ -382,16 +258,6 @@ public static class HtmlWidgetHelpers
         {
             throw new ArgumentException("HTML widget payload requires \"domain\" to be a valid URL starting with \"https://\".");
         }
-    }
-
-    private static string EscapeForInlineScript(string value)
-    {
-        return value
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("'", "\\'", StringComparison.Ordinal)
-            .Replace("</", "<\\/", StringComparison.Ordinal)
-            .Replace("\n", "\\n", StringComparison.Ordinal)
-            .Replace("\r", "\\r", StringComparison.Ordinal);
     }
 
     private static string? ExtractOrigin(string url)
