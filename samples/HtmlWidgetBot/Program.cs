@@ -211,12 +211,20 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
 
         case "/validate":
             {
-                var htmlWithExternalRefs = """
+                var htmlWithExternalRefs = $$"""
+                <!DOCTYPE html>
+                <html><head><meta charset="utf-8"><title>validated-widget</title>
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto">
-                <div style="font-family: Roboto, sans-serif; padding: 16px;">
+                <style>html,body{margin:0}#root{display:flow-root;padding:16px;font-family:Roboto,sans-serif}</style>
+                </head><body>
+                <div id="root">
                   <h2>Validation Demo</h2>
                   <p>This widget was validated before sending.</p>
                 </div>
+                <script>
+                {{Widgets.HostScript}}
+                </script>
+                </body></html>
                 """;
 
                 var strictPolicy = new HtmlWidgetSecurityPolicy
@@ -292,6 +300,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
 
 teamsApp.OnWidgetCallTool(async (context, cancellationToken) =>
 {
+    // The client adds arguments.__msteams__ (mcpUrl, correlationId) to every request.
+    // This sample ignores it, treats arguments as untrusted input, returns a tool error instead of throwing on malformed arguments, and does not authorize from activity.from.
     var request = context.Activity.Value;
     var toolName = request?.Name ?? "unknown";
     var args = request?.Arguments;
@@ -327,7 +337,7 @@ teamsApp.OnWidgetCallTool(async (context, cancellationToken) =>
             CallToolResult = new McpUiCallToolResult
             {
                 Content = [new McpUiCallToolResultContent { Text = JsonSerializer.Serialize(args) }],
-                StructuredContent = args,
+                StructuredContent = args ?? new { },
             }
         },
         _ => HtmlWidgetCallToolResponse.FromError($"Unknown tool: {toolName}"),
@@ -343,7 +353,7 @@ webApp.Run();
 
 static int GetCounter(object? args)
 {
-    if (args is JsonElement je && je.TryGetProperty("counter", out var c) && c.TryGetInt32(out var val))
+    if (args is JsonElement { ValueKind: JsonValueKind.Object } je && je.TryGetProperty("counter", out var c) && c.TryGetInt32(out var val))
         return val;
     return 0;
 }
@@ -351,7 +361,7 @@ static int GetCounter(object? args)
 static HtmlWidgetCallToolResponse CreateRollResponse(object? args)
 {
     int sides = 6;
-    if (args is JsonElement je && je.TryGetProperty("sides", out var s) && s.TryGetInt32(out var val))
+    if (args is JsonElement { ValueKind: JsonValueKind.Object } je && je.TryGetProperty("sides", out var s) && s.TryGetInt32(out var val))
         sides = val;
 
     int result = Random.Shared.Next(1, sides + 1);

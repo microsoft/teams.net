@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Compile Include="../../samples/PlanBot/PlanDemo.cs" Link="Samples/PlanDemo.cs" />
+    <Compile Include="../../samples/HtmlWidgetBot/Widgets.cs" Link="Samples/HtmlWidgetWidgets.cs" />
     <Using Include="Xunit" />
   </ItemGroup>
 
