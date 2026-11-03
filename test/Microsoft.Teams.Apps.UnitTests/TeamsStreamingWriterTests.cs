@@ -395,6 +395,21 @@ public class TeamsStreamingWriterTests
     }
 
     [Fact]
+    public async Task FinalizeAsync_WithSensitivityLabel_SendsLabelOnFinalMessage()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("streamed text");
+        await writer.FinalizeResponseAsync(new MessageActivityInput()
+            .AddSensitivityLabel(new SensitivityUsageInfo { Id = "label-id" }));
+
+        JsonArray entities = JsonNode.Parse(handler.RequestBodies.Last())!["entities"]!.AsArray();
+        JsonNode root = Assert.Single(entities, e => e?["type"]?.GetValue<string>() == "https://schema.org/Message")!;
+        Assert.Equal("label-id", root["usageInfo"]?["@id"]?.GetValue<string>());
+        Assert.Contains(entities, e => e?["streamType"]?.GetValue<string>() == "final");
+    }
+
+    [Fact]
     public async Task FinalizeAsync_WithMessageActivityWithoutText_FallsBackToAccumulated()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
