@@ -28,4 +28,14 @@ public class OMessageEntity : Entity
         get => base.Properties.Get<IList<string>>("additionalType");
         set => base.Properties["additionalType"] = value;
     }
+
+    /// <summary>
+    /// Gets or sets the Microsoft Purview sensitivity label of the message.
+    /// </summary>
+    [JsonPropertyName("usageInfo")]
+    public SensitivityUsageInfo? UsageInfo
+    {
+        get => base.Properties.Get<SensitivityUsageInfo>("usageInfo");
+        set => base.Properties["usageInfo"] = value;
+    }
 }

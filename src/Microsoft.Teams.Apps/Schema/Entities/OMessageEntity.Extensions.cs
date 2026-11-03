@@ -60,4 +60,18 @@ public static class OMessageEntityExtensions
 
         return messageEntity;
     }
+
+    /// <summary>
+    /// Internal helper to set the sensitivity label on the root message entity, replacing any existing label.
+    /// </summary>
+    internal static OMessageEntity AddSensitivityLabel(TeamsActivityInput activity, SensitivityUsageInfo label)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(label);
+
+        OMessageEntity messageEntity = GetOrCreateRootMessageEntity(activity);
+        messageEntity.UsageInfo = label.Copy();
+
+        return messageEntity;
+    }
 }
