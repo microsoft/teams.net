@@ -127,6 +127,7 @@ public class McpUiCallToolResult
     /// Always serialized, including when false.
     /// </summary>
     [JsonPropertyName("isError")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
     public bool IsError { get; set; }
 }
 

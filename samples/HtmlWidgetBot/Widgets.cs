@@ -469,6 +469,8 @@ window.widgetReady.then((result) => {
   const caps = result && result.hostCapabilities;
   document.getElementById('hostContext').textContent = ctx ? JSON.stringify(ctx, null, 2) : '(none provided)';
   document.getElementById('hostCaps').textContent = caps ? JSON.stringify(caps, null, 2) : '(none provided)';
+}).catch((e) => {
+  document.getElementById('initResult').textContent = 'Initialize failed: ' + (e && e.message ? e.message : JSON.stringify(e));
 });
 
 window.addEventListener('message', (event) => {

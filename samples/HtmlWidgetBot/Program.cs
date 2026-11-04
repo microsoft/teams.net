@@ -353,7 +353,7 @@ webApp.Run();
 
 static int GetCounter(object? args)
 {
-    if (args is JsonElement { ValueKind: JsonValueKind.Object } je && je.TryGetProperty("counter", out var c) && c.TryGetInt32(out var val))
+    if (args is JsonElement { ValueKind: JsonValueKind.Object } je && je.TryGetProperty("counter", out var c) && c.ValueKind == JsonValueKind.Number && c.TryGetInt32(out var val))
         return val;
     return 0;
 }
@@ -361,8 +361,11 @@ static int GetCounter(object? args)
 static HtmlWidgetCallToolResponse CreateRollResponse(object? args)
 {
     int sides = 6;
-    if (args is JsonElement { ValueKind: JsonValueKind.Object } je && je.TryGetProperty("sides", out var s) && s.TryGetInt32(out var val))
+    if (args is JsonElement { ValueKind: JsonValueKind.Object } je && je.TryGetProperty("sides", out var s) && s.ValueKind == JsonValueKind.Number && s.TryGetInt32(out var val))
         sides = val;
+
+    if (sides < 1)
+        return HtmlWidgetCallToolResponse.FromError("sides must be a positive integer");
 
     int result = Random.Shared.Next(1, sides + 1);
     return new HtmlWidgetCallToolResponse
