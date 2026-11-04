@@ -32,6 +32,7 @@ public static class Widgets
   }
 
   function onMessage(e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (!d || d.jsonrpc !== '2.0' || d.id !== initId) return;
     window.removeEventListener('message', onMessage);
@@ -134,6 +135,7 @@ button:hover{background:#4b4fb7}
 
   // Listen for JSON-RPC responses from the host
   window.addEventListener('message', function(e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (d && d.jsonrpc === '2.0' && d.id && typeof d.id === 'string' && d.id.startsWith('call-')) {
       if (d.result) document.getElementById('result').textContent = JSON.stringify(d.result);
@@ -218,6 +220,7 @@ button:hover{background:#0e6b0e}
 
   // Listen for display mode change responses
   window.addEventListener('message', function(e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (d && d.jsonrpc === '2.0' && typeof d.id === 'string' && d.id.startsWith('fs-')) {
       if (d.result && d.result.mode) document.getElementById('modeLabel').textContent = d.result.mode;
@@ -274,6 +277,7 @@ p{margin:0 0 12px 0;color:#666}
 
   // Listen for JSON-RPC responses and display results
   window.addEventListener('message', function(e) {
+    if (e.source !== window.parent) return;
     var d = e.data;
     if (d && d.jsonrpc === '2.0' && d.id && typeof d.id === 'string' && d.id.startsWith('call-')) {
       if (d.result) log.textContent += '\nResult: ' + JSON.stringify(d.result);
@@ -309,6 +313,7 @@ let nextId = 100;
 const pending = {};
 
 window.addEventListener('message', (event) => {
+  if (event.source !== window.parent) return;
   const data = event.data;
   if (data?.id && pending[data.id]) {
     const cb = pending[data.id];
@@ -369,6 +374,7 @@ let nextId = 100;
 const pending = {};
 
 window.addEventListener('message', (event) => {
+  if (event.source !== window.parent) return;
   const data = event.data;
   if (data?.id && pending[data.id]) {
     const cb = pending[data.id];
@@ -474,6 +480,7 @@ window.widgetReady.then((result) => {
 });
 
 window.addEventListener('message', (event) => {
+  if (event.source !== window.parent) return;
   const data = event.data;
   if (!data || typeof data !== 'object') return;
 
