@@ -123,6 +123,30 @@ public class TelemetryTests
     }
 
     [Fact]
+    public async Task ConversationClient_SendReplyChainActivityAsync_EmitsSendReplyChainActivitySpan()
+    {
+        using SpanCapture spanCapture = new();
+
+        Mock<HttpMessageHandler> handler = new();
+        handler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"id\":\"reply-1\"}"),
+            });
+
+        ConversationClient client = new(new HttpClient(handler.Object));
+
+        await client.SendReplyChainActivityAsync("conv-1", "root-1", CoreActivityInput.CreateBuilder().WithType(ActivityType.Message).Build(), new Uri("https://smba.example/"));
+
+        Activity span = Assert.Single(spanCapture.Stopped, a => a.OperationName == "client");
+        Assert.Equal("conversation", span.GetTagItem("client.name"));
+        Assert.Equal("sendReplyChainActivity", span.GetTagItem("client.operation"));
+        Assert.Equal("conv-1", span.GetTagItem("conversation.id"));
+        Assert.Equal("reply-1", span.GetTagItem("activity.id"));
+    }
+
+    [Fact]
     public async Task ConversationClient_SendActivityAsync_RecordsErrorOnFailure()
     {
         using SpanCapture spanCapture = new();

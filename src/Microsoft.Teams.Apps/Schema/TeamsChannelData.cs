@@ -30,6 +30,17 @@ public class TeamsChannelDataTenant
 }
 
 /// <summary>
+/// Meeting information for Teams channel data, present on activities in a meeting chat.
+/// </summary>
+public class TeamsChannelDataMeeting
+{
+    /// <summary>
+    /// Unique identifier of the meeting.
+    /// </summary>
+    [JsonPropertyName("id")] public string? Id { get; set; }
+}
+
+/// <summary>
 /// Teams channel data settings.
 /// </summary>
 public class TeamsChannelDataSettings
@@ -62,6 +73,93 @@ public class AppInfo
     /// Version of the app.
     /// </summary>
     [JsonPropertyName("version")] public string? Version { get; set; }
+}
+
+/// <summary>
+/// The encrypted form of the id of a chat scope.
+/// </summary>
+/// <remarks>
+/// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
+/// </remarks>
+public sealed class EncryptedChatInfo
+{
+    /// <summary>
+    /// Creates encrypted chat information for deserialization.
+    /// </summary>
+    /// <param name="id">The encrypted id of the chat scope.</param>
+    [JsonConstructor]
+    public EncryptedChatInfo(string? id)
+    {
+        Id = id;
+    }
+
+    /// <summary>
+    /// Gets the encrypted id of the chat scope.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; }
+}
+
+/// <summary>
+/// Identifies the chat scope that contains an inbound activity.
+/// </summary>
+/// <remarks>
+/// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
+/// </remarks>
+public sealed class ChatInfo
+{
+    /// <summary>
+    /// Creates chat information for deserialization.
+    /// </summary>
+    /// <param name="id">The id of the chat scope.</param>
+    /// <param name="encrypted">The encrypted form of the chat scope's id.</param>
+    [JsonConstructor]
+    public ChatInfo(string? id, EncryptedChatInfo? encrypted)
+    {
+        Id = id;
+        Encrypted = encrypted;
+    }
+
+    /// <summary>
+    /// Gets the id of the chat scope, without any reply chain (thread).
+    /// This is the unencrypted id, and it can differ from the conversation id.
+    /// It is not sent for channels, where <c>channelData.channel.id</c> plays this role.
+    /// Use it as the conversation id to send a top-level message to the chat scope, or to reply in a reply chain.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; }
+
+    /// <summary>
+    /// Gets the encrypted form of the chat scope's id.
+    /// </summary>
+    [JsonPropertyName("encrypted")]
+    public EncryptedChatInfo? Encrypted { get; }
+}
+
+/// <summary>
+/// Identifies the reply chain (thread) that an inbound activity belongs to, by the message at the root of the chain.
+/// </summary>
+/// <remarks>
+/// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
+/// </remarks>
+public sealed class ReplyChainInfo
+{
+    /// <summary>
+    /// Creates reply chain information for deserialization.
+    /// </summary>
+    /// <param name="id">The id of the message at the root of the reply chain (thread).</param>
+    [JsonConstructor]
+    public ReplyChainInfo(string? id)
+    {
+        Id = id;
+    }
+
+    /// <summary>
+    /// Gets the id of the message at the root of the reply chain (thread).
+    /// Use it as the reply chain (thread) id when replying in that reply chain (thread).
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; }
 }
 
 /// <summary>
@@ -102,9 +200,34 @@ public class TeamsChannelData : ChannelData
     [JsonPropertyName("app")] public AppInfo? App { get; set; }
 
     /// <summary>
+    /// Gets information about the chat scope that contains the activity.
+    /// </summary>
+    /// <remarks>
+    /// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
+    /// </remarks>
+    [JsonPropertyName("chat")]
+    [JsonInclude]
+    public ChatInfo? Chat { get; internal set; }
+
+    /// <summary>
+    /// Gets the reply chain (thread) the activity belongs to, identified by its root message.
+    /// </summary>
+    /// <remarks>
+    /// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
+    /// </remarks>
+    [JsonPropertyName("replyChain")]
+    [JsonInclude]
+    public ReplyChainInfo? ReplyChain { get; internal set; }
+
+    /// <summary>
     /// Team information.
     /// </summary>
     [JsonPropertyName("team")] public Team? Team { get; set; }
+
+    /// <summary>
+    /// Information about the meeting whose chat contains the activity.
+    /// </summary>
+    [JsonPropertyName("meeting")] public TeamsChannelDataMeeting? Meeting { get; set; }
 
     /// <summary>
     /// Tenant information.

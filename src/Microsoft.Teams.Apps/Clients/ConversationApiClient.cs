@@ -94,6 +94,26 @@ public class ConversationApiClient
     }
 
     /// <summary>
+    /// Create an activity inside a reply chain (thread).
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsThreading")]
+    public Task<SendActivityResponse?> CreateReplyChainActivityAsync(string conversationId, string rootId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return _client.SendReplyChainActivityAsync(conversationId, rootId, activity, _serviceUrl, isTargeted: false, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Create an activity inside a reply chain (thread), visible only to the specified recipient.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsThreading")]
+    public Task<SendActivityResponse?> CreateTargetedReplyChainActivityAsync(string conversationId, string rootId, TeamsActivityInput activity, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return _client.SendReplyChainActivityAsync(conversationId, rootId, activity, _serviceUrl, isTargeted: true, requestContext: AgenticContext, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
     /// Delete an activity from a conversation.
     /// </summary>
     public Task DeleteActivityAsync(string conversationId, string id, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
