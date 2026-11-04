@@ -361,12 +361,13 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         if (terminal)
         {
             _logger.LogError(
-                "Socket Mode geo {Geo} reconnect was rejected: {Error}; inbound delivery for this geo has stopped until the app is restarted.",
-                geo, error?.Message);
+                error,
+                "Socket Mode geo {Geo} reconnect was rejected; inbound delivery for this geo has stopped until the app is restarted.",
+                geo);
         }
         else
         {
-            _logger.LogWarning("Socket Mode geo {Geo} disconnected: {Error}; inbound delivery paused.", geo, error?.Message);
+            _logger.LogWarning(error, "Socket Mode geo {Geo} disconnected; inbound delivery paused.", geo);
         }
 
         _events?.OnDisconnected(geo, error, terminal);

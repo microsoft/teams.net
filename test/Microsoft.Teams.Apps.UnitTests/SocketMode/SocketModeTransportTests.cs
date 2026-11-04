@@ -322,9 +322,8 @@ public class SocketModeTransportTests
         Assert.Equal(SocketModeStatus.Disconnected, harness.Transport.Status);
         Assert.Equal(0, reconnections);
         var error = Assert.Single(logger.Records, record => record.Level == LogLevel.Error);
-        Assert.Contains($"HTTP {(int)status}", error.Message, StringComparison.Ordinal);
         Assert.Contains("stopped until the app is restarted", error.Message, StringComparison.Ordinal);
-        Assert.Null(error.Exception);
+        Assert.Same(rejected, error.Exception);
         await harness.Transport.StopAsync();
     }
 
@@ -352,7 +351,8 @@ public class SocketModeTransportTests
         connections[1].Ready();
         await start;
 
-        connections[0].Close(new IOException("dropped"));
+        IOException dropped = new("dropped");
+        connections[0].Close(dropped);
         FakeConnection replacement = (await harness.Factory.WaitForAsync(3))[2];
         replacement.Ready();
         await WaitUntilAsync(() => logger.Information.Any(message => message.Contains("inbound delivery resumed", StringComparison.Ordinal)));
@@ -373,8 +373,8 @@ public class SocketModeTransportTests
             $"Socket Mode geo {connections[0].Geo} ready with connection {connections[0].NegotiateUri.AbsolutePath}.",
             logger.Information);
         var warning = Assert.Single(logger.Records, record => record.Level == LogLevel.Warning);
-        Assert.Contains("dropped", warning.Message, StringComparison.Ordinal);
-        Assert.Null(warning.Exception);
+        Assert.Contains("inbound delivery paused", warning.Message, StringComparison.Ordinal);
+        Assert.Same(dropped, warning.Exception);
     }
 
     [Fact]
