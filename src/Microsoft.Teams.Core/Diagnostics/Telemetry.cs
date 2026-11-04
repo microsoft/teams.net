@@ -77,6 +77,7 @@ internal static class Telemetry
     public static class ClientOperations
     {
         public const string SendActivity = "sendActivity";
+        public const string SendReplyChainActivity = "sendReplyChainActivity";
         public const string UpdateActivity = "updateActivity";
         public const string DeleteActivity = "deleteActivity";
         public const string GetConversationMembers = "getConversationMembers";

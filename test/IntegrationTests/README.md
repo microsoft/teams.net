@@ -67,6 +67,9 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
        Multi-member tests read the live conversation roster instead. -->
   <TEST_USER_ID_2>29:...</TEST_USER_ID_2>
   <TEST_CONNECTION_NAME>aadv2</TEST_CONNECTION_NAME>
+  <!-- Chat id (channelData.chat.id) of a personal conversation with the bot.
+       Read only by the Threading tests, which skip when it is unset. -->
+  <TEST_PERSONALCONVERSATIONID>19:...</TEST_PERSONALCONVERSATIONID>
 </EnvironmentVariables>
 ```
 
@@ -115,8 +118,10 @@ The tenant enforces a call quota that a single full run already approaches. Runn
 | `Client` | 1 | ForServiceUrl scoped client |
 | `Diagnostic` | 13 | Conversation creation matrix |
 | `ErrorHandling` | 3 | Error cases (compat layer) |
+| `Files` | 9 | Pasted inline images and file download (`context.Files`), offline and against Graph |
+| `Threading` | 6 | Reply inside a reply chain (thread), personal and channel. Needs a ring that serves `replyChains` (canary). The personal cases skip when `TEST_PERSONALCONVERSATIONID` is unset |
 
-> These account for 68 of the suite's 72 tests; the remaining 4 carry no `Category` trait. A filter naming a category that does not exist prints `No test matches the given testcase filter` and **exits 0**, so a typo looks exactly like a clean pass.
+> These account for 83 of the suite's 87 tests; the remaining 4 (the HtmlWidget tests) carry no `Category` trait. A filter naming a category that does not exist prints `No test matches the given testcase filter` and **exits 0**, so a typo looks exactly like a clean pass.
 
 ## Troubleshooting
 
@@ -140,7 +145,7 @@ The tenant enforces a call quota that a single full run already approaches. Runn
 
 ## Known Limitations
 
-- **Expected skips**: 5 tests are skipped by design via `Skip.If` guards (paged members and reactions on canary). Skips are not failures. A correctly provisioned tenant should report 72 total with 5 skipped and 0 failed.
+- **Expected skips**: tests are skipped by design via `Skip.If` guards (paged members and reactions on canary, widgets off canary, personal-chat threading without `TEST_PERSONALCONVERSATIONID`, Files without Graph access). Skips are not failures. The suite lists 87 tests, and the number skipped depends on the tenant and ring, so a correctly provisioned tenant should report 0 failed.
 - **Agentic identity**: Targeted activities, paged members, and reactions return 500/404 with agentic identity. These are service-side limitations pending investigation.
 - **Group chat creation**: Bot-only identity cannot create group chats with `IsGroup=true` + multiple members via the conversations API.
 - **User token tests**: `SignIn` and `Users` token tests are skipped when agentic identity is configured (not supported).
