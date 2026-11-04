@@ -56,9 +56,10 @@ namespace Microsoft.Teams.Apps;
 /// <see cref="FinalizeResponseAsync"/> reopens the stream on the same instance and starts a new
 /// streamed message. Finalizing is idempotent until the next append/informative update.
 ///
-/// Streaming errors are surfaced per the Teams streaming error codes: cancellation and the
-/// two-minute timeout are handled gracefully (a timed-out stream finalizes by updating the
-/// original message in place), while other streaming errors propagate to the caller.
+/// Streaming errors are surfaced per the Teams streaming error codes: the service-enforced
+/// ten-minute timeout from the first informative or content chunk is handled gracefully
+/// (a timed-out stream finalizes by updating the original message in place), while other
+/// streaming errors propagate to the caller.
 /// Plan completion metadata belongs only on the final message. A timed-out Plan completion
 /// throws <see cref="TimeoutException"/> instead of using the ordinary PUT fallback.
 /// The failed cycle is retired; further finalization does nothing until the next append or informative update.
@@ -85,7 +86,6 @@ public sealed class TeamsStreamingWriter
     private string? _streamId;
     private int _sequence;
     private bool _finalized;
-    private bool _cancelled;
     private bool _timedOut;
     private readonly System.Text.StringBuilder _accumulated = new();
     private DateTime _lastChunkSent = DateTime.MinValue;
@@ -94,13 +94,12 @@ public sealed class TeamsStreamingWriter
     // used as the final message's default format unless the caller sets one explicitly.
     private TextFormat? _textFormat;
 
-    /// <summary>
-    /// Whether the stream has been cancelled, for example when the user pressed the Stop button.
-    /// </summary>
-    public bool Cancelled => _cancelled;
+    /// <summary>Always false. Retained for compatibility.</summary>
+    [Obsolete("Teams no longer supports stopping a stream. This property always returns false.")]
+    public bool Cancelled => false;
 
     /// <summary>
-    /// Whether streaming exceeded the two-minute limit. When true, the final message is
+    /// Whether streaming exceeded the ten-minute limit. When true, the final message is
     /// sent by updating the original streamed message in place, unless it carries Plan metadata.
     /// </summary>
     public bool TimedOut => _timedOut;
@@ -151,9 +150,6 @@ public sealed class TeamsStreamingWriter
 
     private async Task SendInformativeUpdateCoreAsync(string text, TextFormat? textFormat, CancellationToken cancellationToken)
     {
-        if (_cancelled)
-            return;
-
         // Sending after finalize reopens the stream on the same instance, starting a new streamed message.
         if (_finalized)
         {
@@ -181,9 +177,6 @@ public sealed class TeamsStreamingWriter
     /// </remarks>
     public async Task AppendResponseAsync(string chunk, CancellationToken cancellationToken = default)
     {
-        if (_cancelled)
-            return;
-
         // Appending after finalize reopens the stream on the same instance, starting a new streamed message.
         if (_finalized)
         {
@@ -209,7 +202,7 @@ public sealed class TeamsStreamingWriter
         SendActivityResponse? response = await TrySendChunkAsync(BuildActivity(_accumulated.ToString(), StreamTypes.Streaming), cancellationToken).ConfigureAwait(false);
         _streamId ??= response?.Id;
 
-        if (_cancelled || _timedOut)
+        if (_timedOut)
             return;
 
         _lastChunkSent = DateTime.UtcNow;
@@ -230,7 +223,7 @@ public sealed class TeamsStreamingWriter
     public Task AppendResponseAsync(MessageActivityInput chunk, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(chunk);
-        if (_finalized && !_cancelled)
+        if (_finalized)
             ResetForNextStream();
         if (chunk.TextFormat is not null)
             _textFormat = chunk.TextFormat;
@@ -249,7 +242,7 @@ public sealed class TeamsStreamingWriter
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <remarks>
     /// Finalizing is idempotent until the next append or informative update reopens the stream.
-    /// If streaming exceeded the two-minute limit, the final content updates the original
+    /// If streaming exceeded the ten-minute limit, the final content updates the original
     /// streamed message in place instead of sending a new streamed chunk. Plan completion
     /// requires a POST and throws <see cref="TimeoutException"/> in that case, retiring the failed
     /// cycle so later finalization calls do nothing until the next append or informative update.
@@ -265,13 +258,6 @@ public sealed class TeamsStreamingWriter
             return;
 
         bool hasPlan = final?.Entities?.Any(entity => entity.Type == "planInfo") == true;
-        if (_cancelled)
-        {
-            if (hasPlan)
-                throw new OperationCanceledException("The stream was cancelled before the Plan could be completed.");
-            return;
-        }
-
         final = final?.Copy() ?? new MessageActivityInput();
         final.Text ??= _accumulated.ToString();
         // Same format that was applied to the intermediate typing chunks, unless the caller
@@ -283,7 +269,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException(
                 "Cannot finalize with no content. Stream text via AppendResponseAsync, or provide attachments on the final MessageActivity.");
 
-        // Streaming already tripped the two-minute limit; update the original message in place.
+        // Streaming already tripped the ten-minute limit; update the original message in place.
         if (_timedOut)
         {
             await SendFinalInPlaceAsync(final, cancellationToken).ConfigureAwait(false);
@@ -319,22 +305,10 @@ public sealed class TeamsStreamingWriter
         }
         catch (HttpRequestException ex)
         {
-            if (TryHandleSoftStopStreamError(ex, out bool timedOut))
+            if (TryHandleStreamTimeout(ex))
             {
-                if (timedOut)
-                {
-                    // The final streamed send tripped the two-minute limit. Update the original
-                    // message in place with the buffered content: reuse the id and drop the
-                    // stream markers so this routes to an update, not a new streamed chunk.
-                    await SendFinalInPlaceAsync(final, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    if (hasPlan)
-                        throw;
-                    // Cancelled during the final send; nothing more to send.
-                    _logger.LogDebug("Stream cancelled during finalize; no final message sent (streamId '{StreamId}').", _streamId);
-                }
+                // Update the original message with the buffered content, without stream markers.
+                await SendFinalInPlaceAsync(final, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -347,9 +321,8 @@ public sealed class TeamsStreamingWriter
     }
 
     /// <summary>
-    /// Sends a streaming chunk, swallowing soft-stop conditions (cancellation and the
-    /// two-minute timeout) by flagging state and returning. Other streaming errors and
-    /// non-streaming errors propagate.
+    /// Sends a streaming chunk, recording a service timeout for finalization.
+    /// Other errors propagate.
     /// The first chunk of a streamed message goes through the reply chain (thread) when the writer has a placement.
     /// </summary>
     private async Task<SendActivityResponse?> TrySendChunkAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
@@ -365,34 +338,23 @@ public sealed class TeamsStreamingWriter
         }
         catch (HttpRequestException ex)
         {
-            if (TryHandleSoftStopStreamError(ex, out bool timedOut))
+            if (TryHandleStreamTimeout(ex))
             {
-                if (timedOut)
-                {
-                    _logger.LogDebug("Chunk send stopped: stream timed out (streamId '{StreamId}').", _streamId);
-                    return null; // soft stop: FinalizeResponseAsync updates the message in place.
-                }
-                else
-                {
-                    _logger.LogDebug("Chunk send stopped: stream cancelled (streamId '{StreamId}').", _streamId);
-                    return null; // soft stop: FinalizeResponseAsync returns without sending.
-                }
+                _logger.LogDebug("Chunk send stopped: stream timed out (streamId '{StreamId}').", _streamId);
+                return null; // FinalizeResponseAsync updates the message in place.
             }
 
-            // Non-streaming error: rethrow the original exception.
             throw;
         }
     }
 
     /// <summary>
-    /// Tries to map a failed streaming send to a soft-stop condition. Cancellation and the
-    /// two-minute timeout also flag internal state so callers can stop the send loop.
+    /// Records a service-reported streaming timeout so callers can stop the send loop.
     /// Other failures return false so callers can rethrow the original exception.
-    /// See https://learn.microsoft.com/en-us/microsoftteams/platform/bots/streaming-ux?tabs=csharp#error-codes.
+    /// See https://learn.microsoft.com/en-us/microsoftteams/platform/bots/streaming-ux?pivots=teams-sdk-csharp#response-codes.
     /// </summary>
-    private bool TryHandleSoftStopStreamError(HttpRequestException ex, out bool timedOut)
+    private bool TryHandleStreamTimeout(HttpRequestException ex)
     {
-        timedOut = false;
         string message = ex.Message ?? string.Empty;
 
         if (ex.StatusCode == HttpStatusCode.Forbidden)
@@ -400,15 +362,7 @@ public sealed class TeamsStreamingWriter
             if (message.Contains("exceeded streaming time", StringComparison.OrdinalIgnoreCase))
             {
                 _timedOut = true;
-                timedOut = true;
-                _logger.LogWarning("The bot failed to complete streaming within the two-minute limit (streamId '{StreamId}').", _streamId);
-                return true;
-            }
-
-            if (message.Contains("cancel", StringComparison.OrdinalIgnoreCase))
-            {
-                _cancelled = true;
-                _logger.LogWarning("The streaming was stopped by the user (streamId '{StreamId}').", _streamId);
+                _logger.LogWarning("The bot failed to complete streaming within the ten-minute limit (streamId '{StreamId}').", _streamId);
                 return true;
             }
 
@@ -420,14 +374,6 @@ public sealed class TeamsStreamingWriter
 
             _logger.LogWarning("Teams returned a streaming error (streamId '{StreamId}'): {Message}", _streamId, message);
             return false;
-        }
-
-        // Preserve the historical treatment of Gone/NoContent as a user cancellation.
-        if (ex.StatusCode is HttpStatusCode.Gone or HttpStatusCode.NoContent)
-        {
-            _cancelled = true;
-            _logger.LogWarning("The streaming was stopped by the user (streamId '{StreamId}').", _streamId);
-            return true;
         }
 
         return false;
@@ -501,8 +447,7 @@ public sealed class TeamsStreamingWriter
     }
 
     /// <summary>
-    /// Prepares the writer to start a new stream cycle after finalize. The cancelled flag is
-    /// sticky: once a stream is cancelled it stays cancelled across reuse.
+    /// Prepares the writer to start a new stream cycle after finalize.
     /// </summary>
     private void ResetForNextStream()
     {
