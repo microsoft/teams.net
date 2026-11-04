@@ -77,7 +77,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                         {
                             ConnectDomains = ["https://teams.microsoft.com", "https://teams.cloud.microsoft.com"],
                         },
-                        ToolInput = new { demo = true }, // Passed to the widget as initial context (available via toolInput in ui/initialize)
+                        ToolInput = new { demo = true }, // Delivered to the widget after the handshake in a ui/notifications/tool-input notification
                         ToolOutput = new
                         {
                             content = new[] { new { type = "text", text = "Initial data loaded." } },
@@ -142,7 +142,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
                         {
                             ConnectDomains = ["https://teams.microsoft.com"],
                         },
-                        ToolInput = new { }, // Passed to the widget as initial context (available via toolInput in ui/initialize)
+                        ToolInput = new { }, // Delivered to the widget after the handshake in a ui/notifications/tool-input notification
                         ToolOutput = new
                         {
                             content = new[] { new { type = "text", text = "Ready." } },
