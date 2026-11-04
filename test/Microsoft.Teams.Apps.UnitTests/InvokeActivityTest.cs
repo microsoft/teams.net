@@ -117,4 +117,14 @@ public class InvokeActivityTest
         Assert.False(typed.Properties.ContainsKey("name"));
         Assert.False(typed.Properties.ContainsKey("value"));
     }
+
+    [Fact]
+    public void FromCoreActivity_HtmlWidgetCallToolNameMatchesStaticName()
+    {
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            { "type": "invoke", "name": "htmlwidget/calltool", "value": { "name": "refresh" } }
+            """);
+        InvokeActivity ia = (InvokeActivity)TeamsActivity.FromActivity(coreActivity);
+        Assert.True(ia.Name == InvokeNames.HtmlWidgetCallTool, $"{ia.Name?.GetType()} vs {InvokeNames.HtmlWidgetCallTool.GetType()}");
+    }
 }
