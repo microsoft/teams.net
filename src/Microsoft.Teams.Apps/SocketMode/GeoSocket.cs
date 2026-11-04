@@ -64,7 +64,8 @@ internal interface IGeoSocketOwner
     /// </summary>
     /// <param name="geo">The geo that disconnected.</param>
     /// <param name="error">The failure that closed the connection, when available.</param>
-    void OnGeoDisconnected(string geo, Exception? error);
+    /// <param name="terminal">Whether recovery has stopped after a non-retryable negotiation failure.</param>
+    void OnGeoDisconnected(string geo, Exception? error, bool terminal = false);
 
     /// <summary>
     /// Reports that inbound delivery for a geo resumed after an unexpected interruption.
@@ -288,7 +289,9 @@ internal sealed class GeoSocket : IAsyncDisposable
 
                 current = replacement;
 
-                ReportReconnected();
+                // A closed replacement must not wait on a Ready observer before recovery can continue.
+                await current.ReadyOrClosed.Task.WaitAsync(_stopToken).ConfigureAwait(false);
+                ReportReconnected(current);
             }
         }
         catch (OperationCanceledException) when (_stopToken.IsCancellationRequested)
@@ -341,15 +344,10 @@ internal sealed class GeoSocket : IAsyncDisposable
     /// <param name="error">The non-retryable failure.</param>
     private void StopAfterNonRetryable(Exception error)
     {
-        _logger.LogError(
-            error,
-            "Socket Mode geo {Geo} reconnect was rejected; inbound delivery for this geo has stopped until the app is restarted.",
-            Geo);
-
         // Not awaited: stopping waits for this supervisor to finish. Marking the geo as stopping happens
         // synchronously, so closing connections cannot report a second disconnect.
         _ = StopAsync();
-        _owner.OnGeoDisconnected(Geo, error);
+        _owner.OnGeoDisconnected(Geo, error, terminal: true);
     }
 
     private async Task<Generation> ConnectAsync(Generation? replacing, CancellationToken cancellationToken)
@@ -458,9 +456,16 @@ internal sealed class GeoSocket : IAsyncDisposable
             generation.ConnectionId ??= frame.ConnectionId;
         }
 
-        if (TryPromote(generation))
+        try
         {
-            _owner.OnGeoReady(Geo, frame);
+            if (TryPromote(generation))
+            {
+                _owner.OnGeoReady(Geo, frame);
+            }
+        }
+        finally
+        {
+            generation.ReadyOrClosed.TrySetResult();
         }
     }
 
@@ -502,37 +507,67 @@ internal sealed class GeoSocket : IAsyncDisposable
                 disconnected = !planned && !_stopping;
                 _disconnected |= disconnected;
             }
+
+            if (disconnected && generation.ReportingRecovery)
+            {
+                // Recovery already won the race. Publish this close after it, without blocking the close thread.
+                generation.PendingDisconnect = new CloseReason(error, planned);
+                return;
+            }
         }
 
+        ReportClosed(generation, error, planned, disconnected);
+    }
+
+    private void ReportClosed(Generation generation, Exception? error, bool planned, bool disconnected)
+    {
         // Report the disconnect before waking the supervisor so a fast reconnect cannot be reported first.
         try
         {
             if (disconnected)
             {
-                _logger.LogWarning(error, "Socket Mode geo {Geo} disconnected; inbound delivery paused.", Geo);
                 _owner.OnGeoDisconnected(Geo, error);
             }
         }
         finally
         {
             generation.Closed.TrySetResult(new CloseReason(error, planned));
+            generation.ReadyOrClosed.TrySetResult();
         }
     }
 
-    private void ReportReconnected()
+    private void ReportReconnected(Generation generation)
     {
         lock (_sync)
         {
-            if (!_disconnected || _stopping)
+            if (!_disconnected || _stopping || _active != generation || generation.IsClosed)
             {
                 return;
             }
 
             _disconnected = false;
+            generation.ReportingRecovery = true;
         }
 
-        _logger.LogInformation("Socket Mode geo {Geo} reconnected; inbound delivery resumed.", Geo);
-        _owner.OnGeoReconnected(Geo);
+        try
+        {
+            _owner.OnGeoReconnected(Geo);
+        }
+        finally
+        {
+            CloseReason? pending;
+            lock (_sync)
+            {
+                generation.ReportingRecovery = false;
+                pending = generation.PendingDisconnect;
+                generation.PendingDisconnect = null;
+            }
+
+            if (pending is not null)
+            {
+                ReportClosed(generation, pending.Error, pending.Planned, disconnected: true);
+            }
+        }
     }
 
     private void ScheduleRefresh(Generation generation)
@@ -851,6 +886,13 @@ internal sealed class GeoSocket : IAsyncDisposable
         internal TaskCompletionSource<CloseReason> Closed { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        internal TaskCompletionSource ReadyOrClosed { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal bool ReportingRecovery { get; set; }
+
+        internal CloseReason? PendingDisconnect { get; set; }
+
         internal bool IsClosed { get; set; }
 
         /// <summary>
@@ -958,4 +1000,3 @@ internal sealed class GeoSocket : IAsyncDisposable
 
     private sealed record CloseReason(Exception? Error, bool Planned);
 }
-
