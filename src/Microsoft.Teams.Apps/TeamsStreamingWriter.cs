@@ -90,7 +90,7 @@ public sealed class TeamsStreamingWriter
     // used as the final message's default format unless the caller sets one explicitly.
     private TextFormat? _textFormat;
 
-    /// <summary>Always false. Retained for compatibility;.</summary>
+    /// <summary>Always false. Retained for compatibility.</summary>
     [Obsolete("Teams no longer supports stopping a stream. This property always returns false.")]
     public bool Cancelled => false;
 
