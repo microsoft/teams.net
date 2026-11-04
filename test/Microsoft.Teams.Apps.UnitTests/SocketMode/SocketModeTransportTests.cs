@@ -291,6 +291,210 @@ public class SocketModeTransportTests
     }
 
     [Theory]
+    [InlineData("before-ready", false)]
+    [InlineData("during-ready", false)]
+    [InlineData("inside-ready", false)]
+    [InlineData("during-ready", true)]
+    public async Task LifecycleEvents_ClosedReplacementCannotReportRecovery(string closeTiming, bool terminalNextAttempt)
+    {
+        Harness harness = new(new SocketModeTransportOptions
+        {
+            Geos = ["amer"],
+            ReconnectDelays = [TimeSpan.Zero],
+        });
+        FakeConnection initial = Assert.Single(await harness.StartReadyAsync());
+        initial.Close(new IOException("initial drop"));
+        FakeConnection replacement = (await harness.Factory.WaitForAsync(2))[1];
+        using ManualResetEventSlim releaseReady = new();
+        TaskCompletionSource observing = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        ConcurrentQueue<SocketModeDisconnectedEventArgs> disconnected = new();
+        int readyCount = 0;
+        int reconnections = 0;
+        harness.Events.Disconnected += (_, e) => disconnected.Enqueue(e);
+        harness.Events.Reconnected += (_, _) => Interlocked.Increment(ref reconnections);
+        IOException dropped = new("replacement dropped during readiness");
+        harness.Events.Ready += (_, _) =>
+        {
+            if (Interlocked.Increment(ref readyCount) != 1)
+            {
+                return;
+            }
+
+            observing.TrySetResult();
+            if (closeTiming == "during-ready")
+            {
+                if (!releaseReady.Wait(TimeSpan.FromSeconds(5)))
+                {
+                    throw new TimeoutException("Test did not release the Ready observer.");
+                }
+
+                throw new InvalidOperationException("Observer failure must not prevent recovery.");
+            }
+            if (closeTiming == "inside-ready")
+            {
+                replacement.Close(dropped);
+            }
+        };
+        if (terminalNextAttempt)
+        {
+            harness.Factory.FailStart("amer", new SocketModeNegotiateException(HttpStatusCode.Forbidden, retryAfter: null));
+        }
+
+        replacement.CompleteReadiness();
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        while (await replacement.ActivityAsync(Envelope("activity", """{"type":"message","id":"before-close"}""")) is null)
+        {
+            await Task.Delay(1, timeout.Token);
+        }
+
+        Task notify = Task.CompletedTask;
+        try
+        {
+            if (closeTiming != "before-ready")
+            {
+                notify = Task.Run(replacement.NotifyReady);
+                await observing.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            if (closeTiming != "inside-ready")
+            {
+                replacement.Close(dropped);
+            }
+
+            FakeConnection next = (await harness.Factory.WaitForAsync(3))[2];
+            Assert.Equal(0, Volatile.Read(ref reconnections));
+            Assert.Equal(SocketModeStatus.Disconnected, harness.Transport.Status);
+            Assert.Same(dropped, disconnected.First().Error);
+            Assert.Null(await replacement.ActivityAsync(Envelope("activity", """{"type":"message","id":"after-close"}""")));
+
+            releaseReady.Set();
+            await notify.WaitAsync(TimeSpan.FromSeconds(5));
+            if (closeTiming == "before-ready")
+            {
+                replacement.NotifyReady();
+            }
+            Assert.Equal(SocketModeStatus.Disconnected, harness.Transport.Status);
+            Assert.Equal(0, Volatile.Read(ref reconnections));
+
+            if (terminalNextAttempt)
+            {
+                await WaitUntilAsync(() => disconnected.Any(e => e.Terminal));
+                Assert.Equal(SocketModeStatus.Disconnected, harness.Transport.Status);
+            }
+            else
+            {
+                next.Ready();
+                await WaitUntilAsync(() => Volatile.Read(ref reconnections) == 1);
+                Assert.Equal(SocketModeStatus.Ready, harness.Transport.Status);
+            }
+        }
+        finally
+        {
+            releaseReady.Set();
+            await notify.WaitAsync(TimeSpan.FromSeconds(5));
+            await harness.Transport.StopAsync();
+        }
+
+        Assert.Equal(terminalNextAttempt ? 0 : 1, reconnections);
+    }
+
+    [Theory]
+    [InlineData("before-observer", false)]
+    [InlineData("during-observer", false)]
+    [InlineData("inside-observer", false)]
+    [InlineData("during-observer", true)]
+    public async Task LifecycleEvents_CloseDuringRecoveryNotificationIsReportedAfterRecovery(string closeTiming, bool stopAfterClose)
+    {
+        ErrorLogger logger = new();
+        Harness harness = new(new SocketModeTransportOptions
+        {
+            Geos = ["amer"],
+            ReconnectDelays = [TimeSpan.Zero],
+        }) { Logger = logger };
+        FakeConnection initial = Assert.Single(await harness.StartReadyAsync());
+        initial.Close(new IOException("initial drop"));
+        FakeConnection replacement = (await harness.Factory.WaitForAsync(2))[1];
+        TaskCompletionSource observing = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        using ManualResetEventSlim releaseRecovery = new();
+        ConcurrentQueue<string> notifications = new();
+        int reconnections = 0;
+        int recoveryLogs = 0;
+        void WaitForRelease()
+        {
+            observing.TrySetResult();
+            if (!releaseRecovery.Wait(TimeSpan.FromSeconds(5)))
+            {
+                throw new TimeoutException("Test did not release recovery reporting.");
+            }
+        }
+
+        logger.InformationLogged = message =>
+        {
+            if (closeTiming == "before-observer"
+                && message.Contains("inbound delivery resumed", StringComparison.Ordinal)
+                && Interlocked.Increment(ref recoveryLogs) == 1)
+            {
+                WaitForRelease();
+            }
+        };
+        harness.Events.Disconnected += (_, _) => notifications.Enqueue("disconnected");
+        harness.Events.Reconnected += (_, _) =>
+        {
+            if (Interlocked.Increment(ref reconnections) == 1)
+            {
+                if (closeTiming == "inside-observer")
+                {
+                    observing.TrySetResult();
+                    replacement.Close(new IOException("closed by observer"));
+                }
+                else if (closeTiming == "during-observer")
+                {
+                    WaitForRelease();
+                }
+            }
+            notifications.Enqueue("reconnected");
+        };
+
+        replacement.Ready();
+        try
+        {
+            await observing.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            if (closeTiming != "inside-observer")
+            {
+                Assert.NotNull(await replacement.ActivityAsync(Envelope("activity", """{"type":"message","id":"during-reconnected"}""")));
+                await Task.Run(() => replacement.Close(new IOException("concurrent drop"))).WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.Null(await replacement.ActivityAsync(Envelope("activity", """{"type":"message","id":"after-close"}""")));
+                Assert.Empty(notifications);
+            }
+
+            if (stopAfterClose)
+            {
+                Task stop = harness.Transport.StopAsync();
+                Assert.Equal(SocketModeStatus.Stopped, harness.Transport.Status);
+                releaseRecovery.Set();
+                await stop.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.Equal(["reconnected", "disconnected"], notifications.ToArray());
+                Assert.Equal(SocketModeStatus.Stopped, harness.Transport.Status);
+                Assert.Equal(1, reconnections);
+                return;
+            }
+
+            releaseRecovery.Set();
+            FakeConnection next = (await harness.Factory.WaitForAsync(3))[2];
+            Assert.Equal(["reconnected", "disconnected"], notifications.ToArray());
+            Assert.Equal(SocketModeStatus.Disconnected, harness.Transport.Status);
+            next.Ready();
+            await WaitUntilAsync(() => notifications.Count == 3);
+            Assert.Equal(["reconnected", "disconnected", "reconnected"], notifications.ToArray());
+            Assert.Equal(SocketModeStatus.Ready, harness.Transport.Status);
+        }
+        finally
+        {
+            releaseRecovery.Set();
+            await harness.Transport.StopAsync();
+        }
+    }
+
+    [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
     [InlineData(HttpStatusCode.Forbidden)]
     public async Task LifecycleEvents_ReportTerminalRejectionAfterNetworkDrop(HttpStatusCode status)
@@ -574,6 +778,8 @@ public class SocketModeTransportTests
     {
         private readonly ConcurrentQueue<(LogLevel Level, string Message, Exception? Exception)> _records = new();
 
+        internal Action<string>? InformationLogged { get; set; }
+
         internal (LogLevel Level, string Message, Exception? Exception)[] Records => _records.ToArray();
 
         internal string[] Information => [.. _records.Where(record => record.Level == LogLevel.Information).Select(record => record.Message)];
@@ -587,7 +793,12 @@ public class SocketModeTransportTests
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            _records.Enqueue((logLevel, formatter(state, exception), exception));
+            string message = formatter(state, exception);
+            _records.Enqueue((logLevel, message, exception));
+            if (logLevel == LogLevel.Information)
+            {
+                InformationLogged?.Invoke(message);
+            }
         }
     }
 

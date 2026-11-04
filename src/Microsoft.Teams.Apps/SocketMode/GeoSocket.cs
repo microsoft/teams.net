@@ -289,9 +289,9 @@ internal sealed class GeoSocket : IAsyncDisposable
 
                 current = replacement;
 
-                // Connection readiness can complete before its observational Ready handlers finish.
-                await current.ReadyNotification.Task.WaitAsync(_stopToken).ConfigureAwait(false);
-                ReportReconnected();
+                // A closed replacement must not wait on a Ready observer before recovery can continue.
+                await current.ReadyOrClosed.Task.WaitAsync(_stopToken).ConfigureAwait(false);
+                ReportReconnected(current);
             }
         }
         catch (OperationCanceledException) when (_stopToken.IsCancellationRequested)
@@ -465,7 +465,7 @@ internal sealed class GeoSocket : IAsyncDisposable
         }
         finally
         {
-            generation.ReadyNotification.TrySetResult();
+            generation.ReadyOrClosed.TrySetResult();
         }
     }
 
@@ -507,8 +507,20 @@ internal sealed class GeoSocket : IAsyncDisposable
                 disconnected = !planned && !_stopping;
                 _disconnected |= disconnected;
             }
+
+            if (disconnected && generation.ReportingRecovery)
+            {
+                // Recovery already won the race. Publish this close after it, without blocking the close thread.
+                generation.PendingDisconnect = new CloseReason(error, planned);
+                return;
+            }
         }
 
+        ReportClosed(generation, error, planned, disconnected);
+    }
+
+    private void ReportClosed(Generation generation, Exception? error, bool planned, bool disconnected)
+    {
         // Report the disconnect before waking the supervisor so a fast reconnect cannot be reported first.
         try
         {
@@ -520,22 +532,42 @@ internal sealed class GeoSocket : IAsyncDisposable
         finally
         {
             generation.Closed.TrySetResult(new CloseReason(error, planned));
+            generation.ReadyOrClosed.TrySetResult();
         }
     }
 
-    private void ReportReconnected()
+    private void ReportReconnected(Generation generation)
     {
         lock (_sync)
         {
-            if (!_disconnected || _stopping)
+            if (!_disconnected || _stopping || _active != generation || generation.IsClosed)
             {
                 return;
             }
 
             _disconnected = false;
+            generation.ReportingRecovery = true;
         }
 
-        _owner.OnGeoReconnected(Geo);
+        try
+        {
+            _owner.OnGeoReconnected(Geo);
+        }
+        finally
+        {
+            CloseReason? pending;
+            lock (_sync)
+            {
+                generation.ReportingRecovery = false;
+                pending = generation.PendingDisconnect;
+                generation.PendingDisconnect = null;
+            }
+
+            if (pending is not null)
+            {
+                ReportClosed(generation, pending.Error, pending.Planned, disconnected: true);
+            }
+        }
     }
 
     private void ScheduleRefresh(Generation generation)
@@ -854,8 +886,12 @@ internal sealed class GeoSocket : IAsyncDisposable
         internal TaskCompletionSource<CloseReason> Closed { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        internal TaskCompletionSource ReadyNotification { get; } =
+        internal TaskCompletionSource ReadyOrClosed { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal bool ReportingRecovery { get; set; }
+
+        internal CloseReason? PendingDisconnect { get; set; }
 
         internal bool IsClosed { get; set; }
 

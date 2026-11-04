@@ -283,6 +283,57 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task Rotation_ClosedReplacementRecoversWhileItsReadyObserverIsPending()
+    {
+        Harness harness = new();
+        FakeConnection initial = harness.Factory.Enqueue(TimeSpan.FromSeconds(10));
+        FakeConnection replacement = harness.Factory.Enqueue();
+        FakeConnection recovered = harness.Factory.Enqueue();
+        await harness.RotateAsync(initial, replacement, TimeSpan.FromSeconds(5));
+
+        TaskCompletionSource observing = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        using ManualResetEventSlim releaseReady = new();
+        harness.Owner.ReadyObserver = frame =>
+        {
+            if (frame.ConnectionId == "replacement")
+            {
+                observing.TrySetResult();
+                if (!releaseReady.Wait(TimeSpan.FromSeconds(5)))
+                {
+                    throw new TimeoutException("Test did not release the Ready observer.");
+                }
+            }
+        };
+        replacement.CompleteReadiness();
+        await harness.Time.WaitForTimerAsync(harness.Owner.RetirementMinimumDrain);
+        Task notify = Task.Run(() => replacement.NotifyReady("replacement"));
+        try
+        {
+            await observing.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            initial.Close(new IOException("retired predecessor closed"));
+            Assert.Empty(harness.Owner.Disconnections);
+            IOException dropped = new("replacement closed during Ready");
+            replacement.Close(dropped);
+
+            await harness.AdvanceThroughBackoffAsync(recovered);
+            Assert.Equal(0, harness.Owner.Reconnections);
+            Assert.Same(dropped, Assert.Single(harness.Owner.Disconnections));
+            recovered.Ready("recovered");
+            await WaitUntilAsync(() => harness.Owner.Reconnections == 1);
+            Assert.NotNull(await recovered.Activity("resumed"));
+        }
+        finally
+        {
+            releaseReady.Set();
+            await notify.WaitAsync(TimeSpan.FromSeconds(5));
+            await harness.Socket.StopAsync();
+        }
+
+        Assert.Equal(1, harness.Owner.Reconnections);
+        Assert.Equal(["initial", "replacement", "recovered"], harness.Owner.ReadyIds);
+    }
+
+    [Fact]
     public async Task Rotation_UsesOneSecondMinimumDelay()
     {
         Harness harness = new() { TokenRefreshMargin = TimeSpan.FromSeconds(30) };
@@ -1143,12 +1194,16 @@ public class GeoSocketTests
             return new SocketReplyFrame { Status = 200 };
         }
 
+        internal Action<SocketReadyFrame>? ReadyObserver { get; set; }
+
         public void OnGeoReady(string geo, SocketReadyFrame frame)
         {
             lock (_sync)
             {
                 _readyIds.Add(frame.ConnectionId!);
             }
+
+            ReadyObserver?.Invoke(frame);
         }
 
         internal Action? Disconnecting { get; set; }
@@ -1297,9 +1352,13 @@ public class GeoSocketTests
 
         internal void Ready(string connectionId)
         {
-            Handlers.OnReady(new SocketReadyFrame { ConnectionId = connectionId });
-            _ready.TrySetResult();
+            CompleteReadiness();
+            NotifyReady(connectionId);
         }
+
+        internal void CompleteReadiness() => _ready.TrySetResult();
+
+        internal void NotifyReady(string connectionId) => Handlers.OnReady(new SocketReadyFrame { ConnectionId = connectionId });
 
         internal void Close(Exception error) => RaiseClosed(error, planned: false);
 
