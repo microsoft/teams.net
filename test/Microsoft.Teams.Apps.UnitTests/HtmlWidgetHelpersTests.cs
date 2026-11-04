@@ -463,6 +463,13 @@ public class HtmlWidgetHelpersTests
     }
 
     [Fact]
+    public void CallToolResult_JsonDocumentWithNullRoot_KeepsNonNullWireShape()
+    {
+        var result = new McpUiCallToolResult { StructuredContent = JsonDocument.Parse("null") };
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
     public void CallToolResult_DeserializingNulls_KeepsNonNullWireShape()
     {
         var result = JsonSerializer.Deserialize<McpUiCallToolResult>("{\"content\":null,\"structuredContent\":null}")!;

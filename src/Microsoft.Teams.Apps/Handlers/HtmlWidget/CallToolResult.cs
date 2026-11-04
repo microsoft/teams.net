@@ -117,7 +117,11 @@ public class McpUiCallToolResult
     public object StructuredContent
     {
         get => _structuredContent;
-        set => _structuredContent = value is null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } ? new Dictionary<string, object>() : value;
+        set => _structuredContent = value is null
+            or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined }
+            or JsonDocument { RootElement.ValueKind: JsonValueKind.Null or JsonValueKind.Undefined }
+            ? new Dictionary<string, object>()
+            : value;
     }
 
     private object _structuredContent = new Dictionary<string, object>();
