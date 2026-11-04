@@ -289,6 +289,8 @@ internal sealed class GeoSocket : IAsyncDisposable
 
                 current = replacement;
 
+                // Connection readiness can complete before its observational Ready handlers finish.
+                await current.ReadyNotification.Task.WaitAsync(_stopToken).ConfigureAwait(false);
                 ReportReconnected();
             }
         }
@@ -454,9 +456,16 @@ internal sealed class GeoSocket : IAsyncDisposable
             generation.ConnectionId ??= frame.ConnectionId;
         }
 
-        if (TryPromote(generation))
+        try
         {
-            _owner.OnGeoReady(Geo, frame);
+            if (TryPromote(generation))
+            {
+                _owner.OnGeoReady(Geo, frame);
+            }
+        }
+        finally
+        {
+            generation.ReadyNotification.TrySetResult();
         }
     }
 
@@ -843,6 +852,9 @@ internal sealed class GeoSocket : IAsyncDisposable
         internal ISocketConnection Connection { get; set; } = null!;
 
         internal TaskCompletionSource<CloseReason> Closed { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal TaskCompletionSource ReadyNotification { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         internal bool IsClosed { get; set; }
