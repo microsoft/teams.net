@@ -7,12 +7,7 @@ using Microsoft.Teams.Apps;
 // Socket Mode receives activities over an outbound WebSocket, so the bot runs on a
 // generic host with no web server and no public messaging endpoint.
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddTeamsBotApplication(options => options.UseSocketMode(socket =>
-{
-    // Socket Mode is only available on the Canary and Pilot1 rings for now.
-    // Pilot1 (https://pilot1.botapi.skype.com) is supported as well.
-    socket.NegotiateBaseUrl = new Uri("https://canary.botapi.skype.com");
-}));
+builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
 IHost host = builder.Build();
 
 TeamsBotApplication teamsApp = host.UseTeamsBotApplication();
