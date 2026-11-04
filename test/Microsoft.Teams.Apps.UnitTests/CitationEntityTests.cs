@@ -155,7 +155,7 @@ public class CitationEntityTests
               EncodingFormat = EncodingFormats.AdaptiveCard,
               Icon = CitationIcons.MicrosoftWord,
               Keywords = ["keyword1", "keyword2"],
-              UsageInfo = new SensitiveUsageEntity { Name = "Confidential" }
+              SensitivityUsageInfo = new SensitivityUsageInfo { Id = "label-id", Name = "Confidential" }
           })
           ;
 
@@ -173,8 +173,8 @@ public class CitationEntityTests
         Assert.Equal(CitationIcons.MicrosoftWord, appearance.Image.Name);
         Assert.NotNull(appearance.Keywords);
         Assert.Equal(2, appearance.Keywords.Count);
-        Assert.NotNull(appearance.UsageInfo);
-        Assert.Equal("Confidential", appearance.UsageInfo.Name);
+        Assert.NotNull(appearance.SensitivityUsageInfo);
+        Assert.Equal("Confidential", appearance.SensitivityUsageInfo.Name);
     }
 
     [Fact]

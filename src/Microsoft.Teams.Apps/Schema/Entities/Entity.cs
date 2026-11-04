@@ -29,6 +29,16 @@ public class EntityList : List<Entity>
                 ["type"] = entity.Type
             };
 
+            if (entity.OType is not null)
+            {
+                jsonObject["@type"] = entity.OType;
+            }
+
+            if (entity.OContext is not null)
+            {
+                jsonObject["@context"] = entity.OContext;
+            }
+
             foreach (KeyValuePair<string, object?> property in entity.Properties)
             {
                 jsonObject[property.Key] = property.Value switch
