@@ -57,19 +57,31 @@ await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token);
 
 The HTTP request's `cancellationToken` is no longer forwarded to the handler pipeline.
 
-#### 3. Graceful timeout handling
+#### 3. Timeout handling
 
-A new catch clause handles the timeout without crashing:
+A dedicated catch clause records the timeout and then surfaces it as a turn failure:
 
 ```csharp
 catch (OperationCanceledException) when (cts.IsCancellationRequested)
 {
-    _logger.LogWarning("Activity processing timed out after {Timeout}: Id={Id}",
-        _processActivityTimeout, activity.Id);
+    _logger.ActivityTimedOut(_processActivityTimeout, activity.Id); // LogLevel.Error
+    Telemetry.HandlerErrors.Add(1, activityTypeTag);
+    TimeoutException timeoutException = new($"Activity processing exceeded the configured ProcessActivityTimeout of {_processActivityTimeout}.");
+    span.RecordException(timeoutException);
+    span?.SetStatus(ActivityStatusCode.Error, "timeout");
+    throw new BotHandlerException("Activity processing timed out", timeoutException, activity);
 }
 ```
 
-This prevents `BotHandlerException` from being thrown when the timeout fires, which is a recoverable situation (the handler simply took too long).
+Each transport then reports the turn as failed, the same way it handles any other `BotHandlerException`:
+
+- **HTTP**: the exception propagates to the endpoint, producing a 500 if the response has not started.
+- **Socket Mode**: `SocketModeTransport` replies with a 500 (or a 500 ack for non-invoke activities) and invokes the error hook.
+- **BotBuilder compat**: `TeamsBotFrameworkHttpAdapter` invokes `OnTurnError`.
+
+The timeout is cooperative. It only takes effect when the handler (or the I/O it performs) observes the cancellation token. A handler that ignores the token or does blocking I/O keeps running past the timeout and is not surfaced this way. The timeout is also disabled when a debugger is attached.
+
+> **History:** this catch originally logged a warning and returned normally, treating a timeout as recoverable. That caused timed-out turns to be acknowledged as successful (HTTP 200, Socket Mode 200), hiding the failure from the sender, so timeouts are now surfaced as `BotHandlerException`.
 
 ## Design Decisions
 
@@ -92,7 +104,7 @@ Unbounded processing is a resource leak risk. A timeout provides a safety net:
 
 ### Impact on non-streaming bots
 
-Non-streaming handlers that complete within the HTTP request lifetime are unaffected. The 5-minute default is well above typical synchronous handler durations. Apps that want tighter timeouts can set `ProcessActivityTimeout` to a lower value.
+Non-streaming handlers that complete within the HTTP request lifetime are unaffected. The 5-minute default is well above typical synchronous handler durations. Apps that want tighter timeouts can set `ProcessActivityTimeout` to a lower value. A turn that exceeds the timeout (including a long-running streaming turn) fails with a `BotHandlerException` and the transport reports an error; apps that legitimately need longer turns can raise `ProcessActivityTimeout` or set it to `Timeout.InfiniteTimeSpan`.
 
 ## Alternatives Considered
 

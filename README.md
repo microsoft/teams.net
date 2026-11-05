@@ -100,6 +100,7 @@ dotnet samples/scenarios/middleware.cs -- --urls "http://localhost:3978"
 |--------|-------------|
 | [CoreBot](samples/CoreBot/) | Lowest-level sample using `Microsoft.Teams.Core` directly |
 | [CustomHosting](samples/CustomHosting/) | Custom `TeamsBotApplication` subclass and hosting |
+| [SocketModeBot](samples/SocketModeBot/) | Echo bot that receives activities over Socket Mode, with no web server |
 
 ### Messaging and lifecycle
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Apps.Utils;
 
@@ -30,6 +31,10 @@ public class CitationEntity : OMessageEntity
         OContext = entity.OContext;
         Type = entity.Type;
         Properties = new Core.Schema.ExtendedPropertiesDictionary(entity.Properties);
+        if (entity.UsageInfo is not null)
+        {
+            UsageInfo = entity.UsageInfo.Copy();
+        }
         AdditionalType = entity.AdditionalType != null
             ? new List<string>(entity.AdditionalType)
             : null;
@@ -110,7 +115,8 @@ public class CitationAppearanceDocument
         EncodingFormat = other.EncodingFormat;
         Image = other.Image is null ? null : new CitationImageObject { Type = other.Image.Type, Name = other.Image.Name };
         Keywords = other.Keywords != null ? new List<string>(other.Keywords) : null;
-        UsageInfo = other.UsageInfo;
+        SensitivityUsageInfo = other.SensitivityUsageInfo?.Copy();
+        LegacyUsageInfo = other.LegacyUsageInfo;
     }
 
     /// <summary>
@@ -164,8 +170,39 @@ public class CitationAppearanceDocument
     /// <summary>
     /// Gets or sets the sensitivity usage information for the citation.
     /// </summary>
+    [Obsolete("Use SensitivityUsageInfo instead.")]
+    [JsonIgnore]
+    public SensitiveUsageEntity? UsageInfo { get => LegacyUsageInfo; set => LegacyUsageInfo = value; }
+
+    internal SensitiveUsageEntity? LegacyUsageInfo { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sensitivity label for the citation.
+    /// </summary>
+    [JsonIgnore]
+    public SensitivityUsageInfo? SensitivityUsageInfo { get; set; }
+
+    // Writes SensitivityUsageInfo, or the obsolete UsageInfo when it is not set, as "usageInfo".
+    // Reads "usageInfo" back into the obsolete UsageInfo when it carries the "@context" that only SensitiveUsageEntity writes, so a JSON copy keeps the legacy shape.
     [JsonPropertyName("usageInfo")]
-    public SensitiveUsageEntity? UsageInfo { get; set; }
+    [JsonInclude]
+    internal object? UsageInfoJson
+    {
+        get => (object?)SensitivityUsageInfo ?? LegacyUsageInfo;
+        set
+        {
+            if (value is not JsonElement element)
+            {
+                SensitivityUsageInfo = value as SensitivityUsageInfo;
+                return;
+            }
+
+            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("@context", out _))
+                LegacyUsageInfo = element.Deserialize(TeamsActivityInputJsonContext.Default.SensitiveUsageEntity);
+            else
+                SensitivityUsageInfo = element.Deserialize(TeamsActivityInputJsonContext.Default.SensitivityUsageInfo);
+        }
+    }
 }
 
 /// <summary>
@@ -352,7 +389,15 @@ public class CitationAppearance
     /// <summary>
     /// Gets or sets the sensitivity usage information.
     /// </summary>
-    public SensitiveUsageEntity? UsageInfo { get; set; }
+    [Obsolete("Use SensitivityUsageInfo instead.")]
+    public SensitiveUsageEntity? UsageInfo { get => _usageInfo; set => _usageInfo = value; }
+
+    private SensitiveUsageEntity? _usageInfo;
+
+    /// <summary>
+    /// Gets or sets the sensitivity label for the citation.
+    /// </summary>
+    public SensitivityUsageInfo? SensitivityUsageInfo { get; set; }
 
     /// <summary>
     /// Converts this appearance to a <see cref="CitationAppearanceDocument"/>.
@@ -369,7 +414,8 @@ public class CitationAppearance
             EncodingFormat = EncodingFormat,
             Image = Icon is null ? null : new CitationImageObject() { Name = Icon },
             Keywords = Keywords,
-            UsageInfo = UsageInfo
+            SensitivityUsageInfo = SensitivityUsageInfo?.Copy(),
+            LegacyUsageInfo = _usageInfo
         };
     }
 }

@@ -10,6 +10,7 @@
 appsettings.Local.json
 appsettings.Development.json
 launchsettings.json
+launchSettings.json
 
 # User-specific files
 *.rsuser

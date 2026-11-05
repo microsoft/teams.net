@@ -41,4 +41,29 @@ internal static class FilesCredential
         // and Microsoft.Identity.Web resolves the authority from the named MSAL options when none is supplied.
         return As(FileActor.App, getAppGraphToken);
     }
+
+    /// <summary>
+    /// Build the credential that reads inline images for the current activity, using the turn's Bot API token.
+    /// <para>The token is resolved lazily, so a turn that never downloads an inline image never acquires one.</para>
+    /// </summary>
+    /// <param name="agenticIdentity">The agentic identity on the inbound activity's recipient, or <c>null</c> for an ordinary bot.</param>
+    /// <param name="serviceUrl">The activity's <c>serviceUrl</c>; the token is only sent to URLs under it.</param>
+    /// <param name="getBotApiToken">Acquires the turn's Bot API token, or <c>null</c> when the app has no credentials.</param>
+    internal static BotApiCredential SelectInlineImage(
+        AgenticIdentity? agenticIdentity,
+        Uri? serviceUrl,
+        Func<AgenticIdentity?, CancellationToken, Task<string?>> getBotApiToken)
+    {
+        // Labelled by the identity whose token is actually sent, so an access failure names the right one.
+        FileActor actor = TeamsBotApplication.ReadsBotApiAsAgenticUser(agenticIdentity) ? FileActor.AgenticUser : FileActor.App;
+
+        return new BotApiCredential(
+            actor,
+            async ct =>
+            {
+                string? value = (await getBotApiToken(agenticIdentity, ct).ConfigureAwait(false))?.Trim();
+                return string.IsNullOrEmpty(value) ? null : value;
+            },
+            serviceUrl);
+    }
 }

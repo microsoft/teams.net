@@ -12,11 +12,13 @@ A high-level framework for building Microsoft Teams bots in .NET. Built on top o
 - **OAuth Flows** &mdash; Built-in SSO token exchange, sign-in cards, and token management via `OAuthFlow`
 - **Teams API Clients** &mdash; Typed clients for conversations, members, teams, channels, meetings, and batch operations
 - **Streaming Messages** &mdash; Progressive response updates via `TeamsStreamingWriter`
+- **Plans (experimental)** &mdash; Explicit, prompt-bound progress and completion via standalone `Plan`
 - **Conversation Helpers** &mdash; Send, reply, quote, and typing helpers for reactive and proactive messaging
 - **Turn State** &mdash; Conversation and user state backed by `IDistributedCache`
 - **Targeted Messages** &mdash; Send messages visible only to a selected participant in supported conversations
 - **Observability** &mdash; OpenTelemetry spans, metrics, and Agent 365 baggage propagation
 - **Fluent Configuration** &mdash; Chainable handler registration and options-based service configuration
+- **Socket Mode** &mdash; Receive activities over an outbound WebSocket during development, with no public endpoint or tunnel
 
 ## Installation
 
@@ -107,6 +109,60 @@ Other message extension handlers include `OnSubmitAction`, `OnSelectItem`,
 `OnAnonQueryLink`, `OnQuerySettingUrl`, `OnSetting`, and
 `OnCardButtonClicked`.
 
+## Plans (experimental)
+
+Opt in with `<NoWarn>$(NoWarn);ExperimentalTeamsPlan</NoWarn>` in your project.
+Create a standalone helper; `Context` does not own or automatically complete a plan.
+
+```csharp
+using Microsoft.Teams.Apps.Schema.Entities;
+
+var plan = Plan.CreateFromContext(context);
+await plan.StartAsync([
+    new PlanStep { Id = "lookup", Version = 1, Title = "Find sources", Status = PlanStepStatuses.Active }
+], ct);
+await plan.UpdateAsync([
+    new PlanStep { Id = "lookup", Version = 2, Title = "Find sources", Status = PlanStepStatuses.Completed }
+], ct);
+await plan.CompleteAsync("The answer is ready.", ct);
+```
+
+Applications own stable step IDs and increment versions for **every** change, including sources
+and descriptions. Updates affect only supplied steps; the helper does not merge or cache history.
+`StartAsync`, `UpdateAsync`, `StopAsync`, and `ErrorAsync` POST typing activities. `CompleteAsync`
+POSTs a message, preserves caller content without mutation, and returns its send response.
+`Sent` fires only after successful sends; typing acknowledgements have no message response.
+
+For delayed work, serialize a `PlanOptions` with `ConversationId` (including any thread suffix)
+and `ReplyToId`, then reconstruct with `new Plan(scopedApiClient, options)`.
+Both options and helper serialization include only those two IDs. The already service-scoped
+client is supplied separately at runtime; do not persist a `Context` or credentials.
+
+Streaming stays with `TeamsStreamingWriter`. `plan.Completion()` builds a fresh final message
+with completion metadata and the Plan's originating prompt; it does not send anything.
+Use a writer targeting the same conversation and attach any final cards or citations to that message:
+
+```csharp
+await writer.FinalizeResponseAsync(plan.Completion(), ct);
+```
+
+An explicit final `ReplyToId` is preserved; when absent, it defaults to the writer's originating prompt.
+Targeted Plan scenarios are not supported: Plan activities use ordinary create routing,
+and `Completion()` does not inherit targeting from the originating context.
+
+Plan completion cannot use the writer's ordinary PUT timeout fallback: it throws
+`TimeoutException` and discards the failed cycle. Recover with a separate `Plan.CompleteAsync`
+message containing the full response and metadata using the right binding. Further finalization
+calls do nothing; the next append or informative update starts a fresh stream and clears `TimedOut`.
+HTTP 409 with exact `error.code: PlanConflict` instead throws `Microsoft.Teams.Core.PlanConflictException`
+(an `HttpRequestException`). Core classifies it once; Plan lifecycle calls and streaming propagate
+it unchanged, as do direct Core client calls. It exposes `StatusCode`,
+`ErrorCode`, `ErrorMessage`, and the raw `ResponseBody`, with the original HTTP failure as
+`InnerException`. It is not retried or treated as a timeout; a rejected Plan-bearing final message
+retires the writer's cycle before rethrowing, so explicit repeated finalization sends nothing.
+Do not blindly complete again after a service rejection. Other HTTP failures retain their ordinary exception behavior.
+See [PlanBot](../../samples/PlanBot) for all lifecycle calls, sources, and delayed continuation.
+
 ## State and OAuth
 
 Enable distributed turn state and register OAuth flows when adding the application:
@@ -123,6 +179,78 @@ builder.Services.AddTeamsBotApplication(options =>
 `IDistributedCache` implementation, such as Redis, for state that must survive
 process restarts or be shared across instances.
 
+## Socket Mode
+
+Socket Mode receives activities over outbound WebSocket connections that the bot opens to the Teams service,
+instead of an HTTP messaging endpoint, so there is no public URL or dev tunnel to expose. Only inbound delivery
+changes: handlers and outbound sends work the same way.
+
+WebSocket is only recommended for use when developing agents. Socket Mode bots should not be submitted to
+Marketplace for publishing.
+
+Socket Mode is experimental, and its API may change. `UseSocketMode` and `SocketModeOptions` report the
+`ExperimentalTeamsSocketMode` diagnostic, which fails the build until you suppress it, for example with
+`<NoWarn>$(NoWarn);ExperimentalTeamsSocketMode</NoWarn>` in the project file.
+
+Socket Mode runs on a generic host with no web server:
+
+```csharp
+using Microsoft.Extensions.Hosting;
+using Microsoft.Teams.Apps;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddTeamsBotApplication(options => options.UseSocketMode());
+
+var host = builder.Build();
+var teams = host.UseTeamsBotApplication();
+
+teams.OnMessage(async (context, ct) =>
+{
+    await context.ReplyAsync($"You said: {context.Activity.Text}", ct);
+});
+
+host.Run();
+```
+
+- **One connection per geo** &mdash; The bot connects to `amer`, `emea`, and `apac` by default. Startup waits until
+  every geo is ready and fails if any geo cannot connect within 30 seconds. Dropped connections reconnect
+  automatically, and connection tokens are rotated before they expire.
+- **No web server** &mdash; `UseSocketMode` is the only switch; `UseTeamsBotApplication()` is the same call for both
+  transports. With Socket Mode enabled it throws on a `WebApplication`, and a host that includes a web server fails
+  to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.
+- **Public cloud only** &mdash; Registration fails for bots configured for another cloud.
+- **Classic bot identity only** &mdash; The connection is negotiated with the bot's app ID and credentials. Agentic
+  identities are not supported.
+- **Rejected credentials are not retried** &mdash; If negotiation returns HTTP 401 or 403, startup fails immediately.
+  After startup, the affected geo stops reconnecting until the app restarts.
+- **Throttling respects the service** &mdash; On HTTP 429, the service's `Retry-After` delay takes precedence over
+  reconnect backoff.
+- **Idempotent handlers** &mdash; The service can redeliver an activity, for example after a reconnect, so handlers
+  should tolerate running more than once for the same activity.
+
+Subscribe to `teams.SocketMode.Events.Ready`, `.Disconnected`, and `.Reconnected` before starting the host
+to observe each geo's socket lifecycle. `Ready` carries the geo and ready frame and fires for each ready
+connection, including token rotation. `Disconnected` carries the geo, error, and `Terminal` flag: automatic
+recovery continues unless negotiation rejects the bot with HTTP 401/403. A terminal event means credentials
+or access must be fixed and the app restarted. `Reconnected` fires after readiness when delivery resumes
+following an unexpected interruption, not an uninterrupted rotation. Initial startup failures are thrown
+from host startup; normal shutdown does not raise a disconnect event.
+
+These events are experimental and observational. Handlers run synchronously, may run concurrently across
+geos, and should be short and thread-safe. Observer failures are logged without interrupting delivery or
+other observers. `SocketMode` is null when Socket Mode is disabled. Read-only diagnostics are available through
+`SocketMode.Status` (aggregate), `SocketMode.GeoStatuses` (a per-geo snapshot), `SocketMode.GeoList`, and
+`SocketMode.NegotiateUrl` (the resolved endpoint for the first geo).
+Negotiation failures expose `SocketModeNegotiateException.StatusCode`, `.RetryAfter` (a nullable `TimeSpan`),
+and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are not classified as terminal
+service-negotiation rejections.
+
+`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
+Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
+Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.
+`UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier
+configuration so the bot uses HTTP.
+
 ## Main Types
 
 | Type | Description |
@@ -136,5 +264,6 @@ process restarts or be shared across instances.
 | `OAuthFlow` | OAuth sign-in, token exchange (SSO), and sign-out management |
 | `ApiClient` | Facade for Teams conversation, member, team, meeting, and bot APIs |
 | `TeamsStreamingWriter` | Progressive message streaming with rate limiting |
+| `Plan` | Experimental standalone prompt-bound progress and explicit completion |
 | `MessageActivityInput` | Fluent outbound message model for text, cards, mentions, citations, and actions |
 | `TurnStateContainer` | Per-turn access to conversation and user state |

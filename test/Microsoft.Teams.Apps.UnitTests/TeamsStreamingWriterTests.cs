@@ -3,9 +3,12 @@
 
 using System.Net;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
@@ -18,6 +21,7 @@ public class TeamsStreamingWriterTests
         private readonly Queue<HttpResponseMessage> _responses = new();
         public List<string> RequestBodies { get; } = [];
         public List<HttpRequestMessage> Requests { get; } = [];
+        public HttpRequestException? NextException { get; set; }
 
         public void EnqueueResponse(string jsonBody, HttpStatusCode statusCode = HttpStatusCode.OK)
             => _responses.Enqueue(new HttpResponseMessage(statusCode)
@@ -27,10 +31,17 @@ public class TeamsStreamingWriterTests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Requests.Add(request);
             RequestBodies.Add(request.Content is not null
                 ? await request.Content.ReadAsStringAsync(cancellationToken)
                 : string.Empty);
+
+            if (NextException is { } exception)
+            {
+                NextException = null;
+                throw exception;
+            }
 
             return _responses.Count > 0
                 ? _responses.Dequeue()
@@ -48,15 +59,158 @@ public class TeamsStreamingWriterTests
         Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-123", Name = "Bot" })
     };
 
-    private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)
+    private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null, ReplyChainPlacement? replyChain = null, ILogger? logger = null)
     {
         FakeHttpMessageHandler handler = new();
         ConversationClient client = new(new HttpClient(handler), NullLogger<ConversationClient>.Instance);
-        TeamsStreamingWriter writer = new(client, reference ?? CreateReferenceActivity());
+        TeamsStreamingWriter writer = new(client, reference ?? CreateReferenceActivity(), logger, replyChain is null ? null : new TeamsStreamingWriterOptions(replyChain));
         return (writer, handler);
     }
 
+    private static readonly ReplyChainPlacement Placement = new("19:chat@thread.v2", "root-1");
+    private const string ReplyChainUrlPart = "/v3/conversations/19%3Achat%40thread.v2/replyChains/root-1";
+    private const string ConversationUrlPart = "/v3/conversations/conv-123/activities";
+
+    private sealed class CapturingLogger : ILogger
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Entries.Add((logLevel, formatter(state, exception)));
+    }
+
+    private static TeamsActivity CreateIdentityReferenceActivity(bool agentic)
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Recipient!.BotId = "28:bot-app-id";
+        if (agentic)
+        {
+            reference.Recipient.AgenticAppId = "agent-app-id";
+            reference.Recipient.AgenticUserId = "agent-user-id";
+            reference.Recipient.AgenticAppBlueprintId = "agent-blueprint-id";
+            reference.Recipient.TenantId = "tenant-id";
+        }
+
+        reference.From!.BotId = "28:sender-app-id";
+        reference.From.AgenticAppId = "sender-agent-app-id";
+        reference.From.AgenticUserId = "sender-agent-user-id";
+        return reference;
+    }
+
+    private static void AssertRequestIdentity(HttpRequestMessage request, bool agentic)
+    {
+        Assert.True(request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.BotAppIdKey), out object? botAppId));
+        Assert.Equal("bot-app-id", botAppId);
+        bool hasIdentity = request.Options.TryGetValue(new HttpRequestOptionsKey<object?>(BotRequestContext.AgenticIdentityKey), out object? identityValue);
+        Assert.Equal(agentic, hasIdentity);
+        if (agentic)
+        {
+            AgenticIdentity identity = Assert.IsType<AgenticIdentity>(identityValue);
+            Assert.Equal("agent-app-id", identity.AgenticAppId);
+            Assert.Equal("agent-user-id", identity.AgenticUserId);
+            Assert.Equal("agent-blueprint-id", identity.AgenticAppBlueprintId);
+            Assert.Equal("tenant-id", identity.TenantId);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AllSends_UseInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic));
+
+        await writer.SendInformativeUpdateAsync("Thinking");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+        await writer.AppendResponseAsync("Second message");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(5, handler.Requests.Count);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task FinalizeAsync_AfterTimeout_PreservesInboundRecipientIdentity(bool hasStreamId, bool timeoutDuringFinalize)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic: true));
+        if (hasStreamId)
+        {
+            handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+            await writer.SendInformativeUpdateAsync("Thinking");
+        }
+
+        handler.EnqueueResponse(
+            "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
+            HttpStatusCode.Forbidden);
+        if (timeoutDuringFinalize)
+        {
+            await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Final answer"));
+        }
+        else
+        {
+            await writer.AppendResponseAsync("Final answer");
+            await writer.FinalizeResponseAsync();
+        }
+
+        Assert.True(writer.TimedOut);
+        Assert.Equal(hasStreamId ? 3 : 2, handler.Requests.Count);
+        Assert.Equal(hasStreamId ? HttpMethod.Put : HttpMethod.Post, handler.Requests.Last().Method);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic: true));
+    }
+
     // ── Guard conditions ──────────────────────────────────────────────────────
+
+    [Fact]
+    public void Cancelled_PreservesPublicReadOnlyBoolSignatureWithNonErrorDeprecation()
+    {
+#pragma warning disable CS0618 // Verify compatibility with existing callers.
+        System.Reflection.PropertyInfo? property = typeof(TeamsStreamingWriter).GetProperty(nameof(TeamsStreamingWriter.Cancelled));
+#pragma warning restore CS0618
+        Assert.NotNull(property);
+        Assert.Equal(typeof(bool), property.PropertyType);
+        Assert.True(property.GetMethod!.IsPublic);
+        Assert.Null(property.SetMethod);
+        ObsoleteAttribute obsolete = Assert.Single(property.GetCustomAttributes(typeof(ObsoleteAttribute), false).Cast<ObsoleteAttribute>());
+        Assert.False(obsolete.IsError);
+        Assert.Contains("Teams no longer supports stopping a stream", obsolete.Message);
+        Assert.Contains("always returns false", obsolete.Message);
+    }
+
+    [Fact]
+    public async Task Cancelled_RemainsFalseAcrossCallerCancellationTimeoutAndReuse()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+#pragma warning disable CS0618 // Exercise the retained property as existing source code would.
+        bool cancelled = writer.Cancelled;
+        Assert.False(cancelled);
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writer.AppendResponseAsync("Answer", cancellation.Token));
+        Assert.False(writer.Cancelled);
+
+        await writer.SendInformativeUpdateAsync("Thinking");
+        handler.EnqueueResponse("""{"error":{"message":"Content stream finished due to exceeded streaming time."}}""", HttpStatusCode.Forbidden);
+        await writer.AppendResponseAsync("More");
+        Assert.True(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+        await writer.FinalizeResponseAsync();
+        Assert.False(writer.Cancelled);
+
+        await writer.AppendResponseAsync("Next answer");
+        await writer.FinalizeResponseAsync();
+        Assert.False(writer.TimedOut);
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+    }
 
     [Fact]
     public async Task AppendAsync_AfterFinalizeAsync_ReopensStreamForNextMessage()
@@ -292,6 +446,21 @@ public class TeamsStreamingWriterTests
     }
 
     [Fact]
+    public async Task FinalizeAsync_WithSensitivityLabel_SendsLabelOnFinalMessage()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("streamed text");
+        await writer.FinalizeResponseAsync(new MessageActivityInput()
+            .AddSensitivityLabel(new SensitivityUsageInfo { Id = "label-id" }));
+
+        JsonArray entities = JsonNode.Parse(handler.RequestBodies.Last())!["entities"]!.AsArray();
+        JsonNode root = Assert.Single(entities, e => e?["type"]?.GetValue<string>() == "https://schema.org/Message")!;
+        Assert.Equal("label-id", root["usageInfo"]?["@id"]?.GetValue<string>());
+        Assert.Contains(entities, e => e?["streamType"]?.GetValue<string>() == "final");
+    }
+
+    [Fact]
     public async Task FinalizeAsync_WithMessageActivityWithoutText_FallsBackToAccumulated()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
@@ -410,7 +579,7 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("{\"id\":\"stream-1\"}");
         await writer.SendInformativeUpdateAsync("Thinking…");
 
-        // The next chunk trips the two-minute limit, forcing the in-place update path.
+        // The next chunk trips the ten-minute limit, forcing the in-place update path.
         handler.EnqueueResponse(
             "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
             HttpStatusCode.Forbidden);
@@ -426,41 +595,160 @@ public class TeamsStreamingWriterTests
         Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies.Last());
     }
 
-    // ── Error handling (HTTP 403) ─────────────────────────────────────────────
+    // ── Error handling ───────────────────────────────────────────────────────
 
-    [Fact]
-    public async Task AppendAsync_403NotAllowed_ThrowsHttpRequestException()
+    [Theory]
+    [InlineData("informative", HttpStatusCode.Forbidden, "Content stream is not allowed")]
+    [InlineData("append", HttpStatusCode.Forbidden, "Content stream is not allowed")]
+    [InlineData("final", HttpStatusCode.Forbidden, "Content stream is not allowed")]
+    [InlineData("informative", HttpStatusCode.Forbidden, "Content stream was canceled by user")]
+    [InlineData("append", HttpStatusCode.Forbidden, "Content stream was canceled by user")]
+    [InlineData("final", HttpStatusCode.Forbidden, "Content stream was canceled by user")]
+    [InlineData("informative", HttpStatusCode.Forbidden, "Message size too large")]
+    [InlineData("append", HttpStatusCode.Forbidden, "Message size too large")]
+    [InlineData("final", HttpStatusCode.Forbidden, "Message size too large")]
+    [InlineData("informative", HttpStatusCode.Gone, "Gone")]
+    [InlineData("append", HttpStatusCode.Gone, "Gone")]
+    [InlineData("final", HttpStatusCode.Gone, "Gone")]
+    [InlineData("informative", HttpStatusCode.BadRequest, "Invalid request")]
+    [InlineData("append", HttpStatusCode.BadRequest, "Invalid request")]
+    [InlineData("final", HttpStatusCode.BadRequest, "Invalid request")]
+    public async Task ServiceFailure_PropagatesWithoutRetryOrDisablingWriter(string operation, HttpStatusCode status, string message)
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream is not allowed\"}}", HttpStatusCode.Forbidden);
+        string body = new JsonObject { ["error"] = new JsonObject { ["message"] = message } }.ToJsonString();
+        handler.EnqueueResponse(body, status);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => operation switch
+        {
+            "informative" => writer.SendInformativeUpdateAsync("Thinking"),
+            "append" => writer.AppendResponseAsync("Answer"),
+            _ => writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"))
+        });
+        Assert.Equal(status, error.StatusCode);
+        Assert.Contains(body, error.Message);
+        Assert.False(writer.TimedOut);
+        Assert.Single(handler.Requests);
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"));
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
     }
 
     [Fact]
-    public async Task AppendAsync_403UnknownMessage_ThrowsHttpRequestException()
+    public async Task NoContentResponses_DoNotPreventFinalizationOrReuse()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        handler.EnqueueResponse("{\"error\":{\"message\":\"Message size too large\"}}", HttpStatusCode.Forbidden);
+        handler.EnqueueResponse("", HttpStatusCode.NoContent);
+        handler.EnqueueResponse("", HttpStatusCode.NoContent);
+        handler.EnqueueResponse("", HttpStatusCode.NoContent);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("hi"));
-    }
-
-    [Fact]
-    public async Task AppendAsync_403Cancelled_IsSwallowedAndFlagsCancelled()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream was canceled by user\"}}", HttpStatusCode.Forbidden);
-
-        // Cancellation is swallowed, not thrown.
-        await writer.AppendResponseAsync("hi");
-
-        Assert.True(writer.Cancelled);
-
-        // Finalize sends nothing once the stream is cancelled.
-        int countBeforeFinalize = handler.Requests.Count;
+        await writer.SendInformativeUpdateAsync("Thinking");
+        await writer.AppendResponseAsync("Answer");
         await writer.FinalizeResponseAsync();
-        Assert.Equal(countBeforeFinalize, handler.Requests.Count);
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.False(writer.TimedOut);
+
+        await writer.AppendResponseAsync("Next answer");
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(5, handler.Requests.Count);
+        Assert.Contains("Next answer", handler.RequestBodies.Last());
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Gone, "informative")]
+    [InlineData(HttpStatusCode.NoContent, "informative")]
+    [InlineData(HttpStatusCode.Gone, "append")]
+    [InlineData(HttpStatusCode.NoContent, "append")]
+    [InlineData(HttpStatusCode.Gone, "formatted")]
+    [InlineData(HttpStatusCode.NoContent, "formatted")]
+    [InlineData(HttpStatusCode.Gone, "final")]
+    [InlineData(HttpStatusCode.NoContent, "final")]
+    public async Task TransportStatusException_PropagatesWithoutDisablingWriter(HttpStatusCode status, string operation)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        HttpRequestException expected = new("Request failed.", null, status);
+        handler.NextException = expected;
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => operation switch
+        {
+            "informative" => writer.SendInformativeUpdateAsync("Thinking"),
+            "append" => writer.AppendResponseAsync("Answer"),
+            "formatted" => writer.AppendResponseAsync(new MessageActivityInput().WithText("Answer")),
+            _ => writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"))
+        });
+
+        Assert.Same(expected, error);
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+        Assert.False(writer.TimedOut);
+        Assert.Single(handler.Requests);
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Answer"));
+        Assert.Equal(2, handler.Requests.Count);
+        await writer.SendInformativeUpdateAsync("Thinking again");
+        await writer.AppendResponseAsync(new MessageActivityInput().WithText("Next answer", TextFormats.Markdown));
+        await writer.FinalizeResponseAsync();
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(5, handler.Requests.Count);
+        Assert.Contains("Next answer", handler.RequestBodies.Last());
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Gone)]
+    [InlineData(HttpStatusCode.NoContent)]
+    public async Task PlanCompletion_TransportStatusExceptionPreservesErrorAndAllowsExplicitRetry(HttpStatusCode status)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("Answer");
+        HttpRequestException expected = new("Request failed.", null, status);
+        handler.NextException = expected;
+        MessageActivityInput final = new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+        string before = final.ToJson();
+
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => writer.FinalizeResponseAsync(final));
+        Assert.Same(expected, error);
+        Assert.Equal(before, final.ToJson());
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+        Assert.False(writer.TimedOut);
+        await writer.FinalizeResponseAsync(final);
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+    }
+
+    [Theory]
+    [InlineData("informative")]
+    [InlineData("append")]
+    [InlineData("formatted")]
+    [InlineData("final")]
+    [InlineData("plan")]
+    public async Task CallerCancellation_PropagatesWithoutDisablingWriter(string operation)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        MessageActivityInput final = new MessageActivityInput().WithText("Answer");
+        if (operation == "plan")
+            final.AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation switch
+        {
+            "informative" => writer.SendInformativeUpdateAsync("Thinking", cancellation.Token),
+            "append" => writer.AppendResponseAsync("Answer", cancellation.Token),
+            "formatted" => writer.AppendResponseAsync(final, cancellation.Token),
+            _ => writer.FinalizeResponseAsync(final, cancellation.Token)
+        });
+        Assert.Empty(handler.Requests);
+        Assert.False(writer.TimedOut);
+
+        await writer.FinalizeResponseAsync(final);
+        Assert.Single(handler.Requests);
     }
 
     [Fact]
@@ -472,7 +760,7 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("{\"id\":\"stream-1\"}");
         await writer.SendInformativeUpdateAsync("Thinking…");
 
-        // The next chunk trips the two-minute limit.
+        // The next chunk trips the ten-minute limit.
         handler.EnqueueResponse(
             "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
             HttpStatusCode.Forbidden);
@@ -503,7 +791,7 @@ public class TeamsStreamingWriterTests
         handler.EnqueueResponse("{\"id\":\"stream-1\"}");
         await writer.AppendResponseAsync("Buffered answer");
 
-        // The final streamed send itself trips the two-minute limit.
+        // The final streamed send itself trips the ten-minute limit.
         handler.EnqueueResponse(
             "{\"error\":{\"message\":\"Content stream finished due to exceeded streaming time.\"}}",
             HttpStatusCode.Forbidden);
@@ -516,5 +804,605 @@ public class TeamsStreamingWriterTests
         Assert.Equal(HttpMethod.Put, lastRequest.Method);
         Assert.EndsWith("/activities/stream-1", lastRequest.RequestUri!.AbsolutePath);
         Assert.Contains("Buffered answer", handler.RequestBodies.Last());
+    }
+
+    [Theory]
+    [InlineData(null, "bound-prompt")]
+    [InlineData("selected-prompt", "selected-prompt")]
+    public async Task PlanCompletion_IsFinalOnlyPostAndPreservesCallerAndReplyTarget(string? replyToId, string expectedPrompt)
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "bound-prompt";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference);
+        MessageActivityInput chunk = new MessageActivityInput { Text = "Answer", TextFormat = TextFormats.Markdown }
+            .AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+        handler.EnqueueResponse("""{"id":"stream-id"}""");
+        await writer.AppendResponseAsync(chunk);
+        Assert.DoesNotContain("planInfo", handler.RequestBodies[0]);
+
+        MessageActivityInput final = new MessageActivityInput { Id = "stream-id", ReplyToId = replyToId }
+            .AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete })
+            .AddFeedback();
+        string before = final.ToJson();
+        await writer.FinalizeResponseAsync(final);
+        await writer.FinalizeResponseAsync(final);
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+        JsonNode body = JsonNode.Parse(handler.RequestBodies[1])!;
+        Assert.Equal("message", body["type"]!.GetValue<string>());
+        Assert.Equal("Answer", body["text"]!.GetValue<string>());
+        Assert.Equal("markdown", body["textFormat"]!.GetValue<string>());
+        Assert.Equal(expectedPrompt, body["replyToId"]!.GetValue<string>());
+        Assert.Equal("complete", body["entities"]!.AsArray().Single(e => e!["type"]!.GetValue<string>() == "planInfo")!["planType"]!.GetValue<string>());
+        Assert.Equal("final", body["entities"]!.AsArray().Single(e => e!["type"]!.GetValue<string>() == "streaminfo")!["streamType"]!.GetValue<string>());
+        Assert.Equal(before, final.ToJson());
+        Assert.Equal("bound-prompt", reference.Id);
+    }
+
+    // ── Reply chain placement ──────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AllSends_WithPlacement_UseInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic), Placement);
+
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PlanCompletion_TimeoutNeverUsesPutOrStripsCallerMetadata(bool timeoutOnFinal)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("""{"id":"stream-id"}""");
+        if (timeoutOnFinal)
+            await writer.AppendResponseAsync("Answer");
+        else
+            await writer.SendInformativeUpdateAsync("Thinking");
+
+        handler.EnqueueResponse("""{"error":{"message":"Content stream finished due to exceeded streaming time."}}""", HttpStatusCode.Forbidden);
+        if (!timeoutOnFinal)
+            await writer.AppendResponseAsync("Answer");
+
+        MessageActivityInput final = new MessageActivityInput()
+            .AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete })
+            .AddFeedback();
+        string before = final.ToJson();
+        TimeoutException error = await Assert.ThrowsAsync<TimeoutException>(() => writer.FinalizeResponseAsync(final));
+        Assert.Contains("requires a POST", error.Message);
+        Assert.True(writer.TimedOut);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+        Assert.Equal(before, final.ToJson());
+        await writer.FinalizeResponseAsync(final);
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Conflict, """{"error":{"code":"Other","message":"Conflict"}}""")]
+    [InlineData(HttpStatusCode.Conflict, """{"error":null}""")]
+    [InlineData(HttpStatusCode.Conflict, "not json")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, """{"error":{"code":"PlanConflict"}}""")]
+    [InlineData(HttpStatusCode.Forbidden, """{"error":{"message":"Content stream is not allowed"}}""")]
+    [InlineData(HttpStatusCode.Forbidden, """{"error":{"message":"Message size too large"}}""")]
+    [InlineData(HttpStatusCode.Gone, """{"error":{"message":"Gone"}}""")]
+    public async Task PlanCompletion_ServiceFailurePreservesHttpErrorWithoutRetryOrTimeout(HttpStatusCode status, string errorBody)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("""{"id":"stream-id"}""");
+        await writer.AppendResponseAsync("Answer");
+        handler.EnqueueResponse(errorBody, status);
+        MessageActivityInput final = new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => writer.FinalizeResponseAsync(final));
+        Assert.Equal(status, error.StatusCode);
+        Assert.Contains(errorBody, error.Message);
+        Assert.False(writer.TimedOut);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+
+        await writer.FinalizeResponseAsync(final);
+        Assert.Equal(3, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task PlanConflictDuringChunk_PropagatesImmediately()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        handler.EnqueueResponse("""{"error":{"code":"PlanConflict","message":"Stopped"}}""", HttpStatusCode.Conflict);
+        PlanConflictException error = await Assert.ThrowsAsync<PlanConflictException>(() => writer.AppendResponseAsync("Answer"));
+        Assert.Equal(HttpStatusCode.Conflict, error.StatusCode);
+        Assert.Equal("PlanConflict", error.ErrorCode);
+        Assert.Equal("Stopped", error.ErrorMessage);
+        Assert.Single(handler.Requests);
+        Assert.False(writer.TimedOut);
+    }
+
+    [Theory]
+    [InlineData("Stopped")]
+    [InlineData("exceeded streaming time")]
+    public async Task PlanConflictOnFinal_IsNotATimeoutAndNeverFallsBack(string message)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("Answer");
+        string body = System.Text.Json.JsonSerializer.Serialize(new { error = new { code = "PlanConflict", message } });
+        handler.EnqueueResponse(body, HttpStatusCode.Conflict);
+        MessageActivityInput final = new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
+        string before = final.ToJson();
+
+        PlanConflictException error = await Assert.ThrowsAsync<PlanConflictException>(() => writer.FinalizeResponseAsync(final));
+        Assert.Equal(HttpStatusCode.Conflict, error.StatusCode);
+        Assert.Equal("PlanConflict", error.ErrorCode);
+        Assert.Equal(message, error.ErrorMessage);
+        Assert.Equal(body, error.ResponseBody);
+        Assert.Equal(error.Message, Assert.IsType<HttpRequestException>(error.InnerException).Message);
+        Assert.False(writer.TimedOut);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+        Assert.Equal(before, final.ToJson());
+
+        await writer.FinalizeResponseAsync(final);
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.False(writer.TimedOut);
+    }
+
+    [Theory]
+    [InlineData("text")]
+    [InlineData("formatted")]
+    [InlineData("informative")]
+    public async Task PlanConflictOnFinal_NextWriteStartsFreshStream(string nextWrite)
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "bound-prompt";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference);
+        handler.EnqueueResponse("""{"id":"old-stream"}""");
+        await writer.AppendResponseAsync(
+            new MessageActivityInput().WithText("Old answer", TextFormats.ExtendedMarkdown));
+        handler.EnqueueResponse("""{"error":{"code":"PlanConflict","message":"Stopped"}}""", HttpStatusCode.Conflict);
+        MessageActivityInput rejected = new MessageActivityInput()
+            .AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete })
+            .AddFeedback();
+        await Assert.ThrowsAsync<PlanConflictException>(() => writer.FinalizeResponseAsync(rejected));
+
+        handler.EnqueueResponse("""{"id":"new-stream"}""");
+        switch (nextWrite)
+        {
+            case "text":
+                await writer.AppendResponseAsync("Fresh answer");
+                break;
+            case "formatted":
+                await writer.AppendResponseAsync(
+                    new MessageActivityInput().WithText("Fresh answer", TextFormats.Markdown));
+                break;
+            case "informative":
+                await writer.SendInformativeUpdateAsync("Fresh thinking");
+                await writer.AppendResponseAsync("Fresh answer");
+                break;
+        }
+
+        Assert.Equal(nextWrite == "informative" ? 4 : 3, handler.Requests.Count);
+        JsonNode first = JsonNode.Parse(handler.RequestBodies[2])!;
+        JsonNode firstInfo = Assert.Single(first["entities"]!.AsArray(),
+            entity => entity!["type"]!.GetValue<string>() == "streaminfo")!;
+        Assert.Equal(1, firstInfo["streamSequence"]!.GetValue<int>());
+        Assert.Null(firstInfo["streamId"]);
+        Assert.Equal("bound-prompt", first["replyToId"]!.GetValue<string>());
+        Assert.Equal(nextWrite == "informative" ? "informative" : "streaming",
+            firstInfo["streamType"]!.GetValue<string>());
+
+        await writer.FinalizeResponseAsync();
+        JsonNode final = JsonNode.Parse(handler.RequestBodies.Last())!;
+        Assert.Equal("Fresh answer", final["text"]!.GetValue<string>());
+        Assert.Equal(nextWrite == "formatted" ? "markdown" : null, final["textFormat"]?.GetValue<string>());
+        JsonNode finalInfo = Assert.Single(final["entities"]!.AsArray())!;
+        Assert.Equal("streaminfo", finalInfo["type"]!.GetValue<string>());
+        Assert.Equal("final", finalInfo["streamType"]!.GetValue<string>());
+        Assert.Equal("new-stream", finalInfo["streamId"]!.GetValue<string>());
+        Assert.Equal("bound-prompt", final["replyToId"]!.GetValue<string>());
+        Assert.DoesNotContain("planInfo", final.ToJsonString());
+        Assert.DoesNotContain("feedbackLoopEnabled", final.ToJsonString());
+        Assert.False(writer.TimedOut);
+        Assert.All(handler.Requests, request => Assert.Equal(HttpMethod.Post, request.Method));
+
+        int sent = handler.Requests.Count;
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(sent, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task PlanConflictWithoutPlanMetadata_DoesNotRetireOrdinaryFinal()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("Answer");
+        handler.EnqueueResponse("""{"error":{"code":"PlanConflict","message":"Stopped"}}""", HttpStatusCode.Conflict);
+        await Assert.ThrowsAsync<PlanConflictException>(() => writer.FinalizeResponseAsync());
+        Assert.False(writer.TimedOut);
+
+        await writer.FinalizeResponseAsync();
+        Assert.Equal(3, handler.Requests.Count);
+        JsonNode final = JsonNode.Parse(handler.RequestBodies.Last())!;
+        Assert.Equal("Answer", final["text"]!.GetValue<string>());
+        Assert.DoesNotContain("planInfo", final.ToJsonString());
+    }
+
+    [Fact]
+    public async Task ReopeningAfterPlanCompletion_DoesNotCarryPlanMetadata()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("First");
+        await writer.FinalizeResponseAsync(new MessageActivityInput().AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete }));
+        await writer.AppendResponseAsync("Second");
+        await writer.FinalizeResponseAsync();
+        Assert.DoesNotContain("planInfo", handler.RequestBodies.Last());
+    }
+
+    [Fact]
+    public async Task OrdinaryTimeoutFallback_DoesNotMutateCallerFinal()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        await writer.AppendResponseAsync("Answer");
+        handler.EnqueueResponse("""{"error":{"message":"exceeded streaming time"}}""", HttpStatusCode.Forbidden);
+        MessageActivityInput final = new MessageActivityInput().AddFeedback().AddStreamFinal();
+        string before = final.ToJson();
+        await writer.FinalizeResponseAsync(final);
+        Assert.Equal(HttpMethod.Put, handler.Requests.Last().Method);
+        Assert.Equal(before, final.ToJson());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFound_TheFallbackUsesInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic), ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        await writer.AppendResponseAsync("Hello");
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ChannelReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.All(handler.Requests, request => AssertRequestIdentity(request, agentic));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FinalizeWithoutAnyChunk_WithPlacement_UsesInboundRecipientIdentity(bool agentic)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(CreateIdentityReferenceActivity(agentic), Placement);
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Only a final message"));
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        AssertRequestIdentity(request, agentic);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_IsPostedThroughTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.AppendResponseAsync("Hello");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamType\": \"streaming\"", handler.RequestBodies[0]);
+        Assert.Contains("\"streamId\": null", handler.RequestBodies[0]);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_ThreadsUnderTheInboundActivity()
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "inbound-activity-id";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference, Placement);
+
+        await writer.AppendResponseAsync("Hello");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_WhenInformative_ThreadsUnderTheInboundActivity()
+    {
+        TeamsActivity reference = CreateReferenceActivity();
+        reference.Id = "inbound-activity-id";
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(reference, Placement);
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"replyToId\": \"inbound-activity-id\"", handler.RequestBodies[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WithPlacement_WhenInformative_IsPostedThroughTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, request.RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamType\": \"informative\"", handler.RequestBodies[0]);
+    }
+
+    [Fact]
+    public async Task LaterChunksAndTheFinalMessage_WithPlacement_AreUnchanged()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[2].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamId\": \"stream-1\"", handler.RequestBodies[1]);
+        Assert.Contains("\"streamType\": \"final\"", handler.RequestBodies[2]);
+    }
+
+    [Fact]
+    public async Task AppendAfterFinalize_WithPlacement_StartsTheNextStreamedMessageInTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.AppendResponseAsync("First");
+        await writer.FinalizeResponseAsync();
+        await writer.AppendResponseAsync("Second");
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[2].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task WithoutPlacement_EveryChunkAndTheFinalMessageGoToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.All(handler.Requests, r => Assert.Contains(ConversationUrlPart, r.RequestUri!.OriginalString, StringComparison.Ordinal));
+        Assert.All(handler.Requests, r => Assert.DoesNotContain("replyChains", r.RequestUri!.OriginalString, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task FirstChunk_WhenTheReplyChainCallFails_PropagatesWithoutFallingBack(HttpStatusCode statusCode)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"nope\"}}", statusCode);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    private static readonly ReplyChainPlacement ChannelPlacement = new("19:chan@thread.tacv2", "1680000000000", InChannel: true);
+    private const string ChannelReplyChainUrlPart = "/v3/conversations/19%3Achan%40thread.tacv2/replyChains/1680000000000";
+
+    [Fact]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFound_IsSentToTheConversationOnce()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"not found\"}}", HttpStatusCode.NotFound);
+        await writer.AppendResponseAsync("Hello");
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ChannelReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains("\"streamType\": \"streaming\"", handler.RequestBodies[1]);
+        Assert.Contains("\"streamId\": null", handler.RequestBodies[1]);
+    }
+
+    [Fact]
+    public async Task StreamAfterAFirstChunkFallback_KeepsTheStreamIdOfTheFallbackResponse()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.SendInformativeUpdateAsync("Thinking…");
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
+
+        Assert.Equal(4, handler.Requests.Count);
+        Assert.Contains("replyChains", handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.All(handler.Requests.Skip(1), r => Assert.Contains(ConversationUrlPart, r.RequestUri!.OriginalString, StringComparison.Ordinal));
+        Assert.Contains("\"streamId\": \"stream-1\"", handler.RequestBodies[2]);
+        Assert.Contains("\"streamId\": \"stream-1\"", handler.RequestBodies[3]);
+        Assert.Contains("\"streamType\": \"final\"", handler.RequestBodies[3]);
+    }
+
+    [Fact]
+    public async Task FinalizeWithoutAnyChunk_InAChannel_WhenTheReplyChainRouteIsNotFound_SendsTheFinalMessageToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Done"));
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFoundForAVeryLongNumericId_FallsBackToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: new ReplyChainPlacement("19:chan@thread.tacv2", "1680000000000168000000000", InChannel: true));
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        handler.EnqueueResponse("{\"id\":\"stream-1\"}");
+        await writer.AppendResponseAsync("Hello");
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("replyChains", handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+        Assert.Contains(ConversationUrlPart, handler.Requests[1].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("root-1")]
+    [InlineData("0")]
+    [InlineData("00")]
+    [InlineData("000")]
+    [InlineData("-5")]
+    [InlineData("12 3")]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainRouteIsNotFoundForANonNumericOrZeroId_PropagatesWithoutFallingBack(string replyChainId)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: new ReplyChainPlacement("19:chan@thread.tacv2", replyChainId, InChannel: true));
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.Conflict)]
+    public async Task FirstChunk_InAChannel_WhenTheReplyChainCallFailsWithAnotherStatus_PropagatesWithoutFallingBack(HttpStatusCode statusCode)
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"nope\"}}", statusCode);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task FirstChunk_InAChat_WhenTheReplyChainRouteIsNotFoundForANumericId_PropagatesWithoutFallingBack()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: new ReplyChainPlacement("19:chat@thread.v2", "1680000000000"));
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task FirstChunk_InAChannel_WhenTheFallbackAlsoFails_PropagatesTheFallbackErrorWithoutAThirdRequest()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: ChannelPlacement);
+
+        handler.EnqueueResponse("{}", HttpStatusCode.NotFound);
+        handler.EnqueueResponse("{}", HttpStatusCode.InternalServerError);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, ex.StatusCode);
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task FirstChunk_WhenTheReplyChainCallReportsACancelledStream_PropagatesWithoutFallingBack()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        handler.EnqueueResponse("{\"error\":{\"message\":\"Content stream was cancelled by user.\"}}", HttpStatusCode.Forbidden);
+        HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() => writer.AppendResponseAsync("Hello"));
+
+        Assert.Equal(HttpStatusCode.Forbidden, error.StatusCode);
+#pragma warning disable CS0618
+        Assert.False(writer.Cancelled);
+#pragma warning restore CS0618
+        Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FinalizeWithoutAnyChunk_WithPlacement_SendsTheFinalMessageInTheReplyChain()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter(replyChain: Placement);
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Done"));
+
+        Assert.Single(handler.Requests);
+        Assert.Contains(ReplyChainUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FinalizeWithoutAnyChunk_WithoutPlacement_SendsTheFinalMessageToTheConversation()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.FinalizeResponseAsync(new MessageActivityInput().WithText("Done"));
+
+        Assert.Single(handler.Requests);
+        Assert.Contains(ConversationUrlPart, handler.Requests[0].RequestUri!.OriginalString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ReplyChainFallback_WithoutAFallback_PropagatesANotFound()
+    {
+        HttpRequestException notFound = new("not found", null, HttpStatusCode.NotFound);
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(
+            () => ReplyChainFallback.SendAsync(() => Task.FromException<SendActivityResponse?>(notFound), fallback: null));
+
+        Assert.Same(notFound, ex);
+    }
+
+    [Fact]
+    public async Task ReplyChainFallback_RunsTheFallbackOnlyForANotFound()
+    {
+        int fallbackCalls = 0;
+        Task<SendActivityResponse?> Fallback()
+        {
+            fallbackCalls++;
+            return Task.FromResult<SendActivityResponse?>(new SendActivityResponse { Id = "fallback" });
+        }
+
+        SendActivityResponse? recovered = await ReplyChainFallback.SendAsync(
+            () => Task.FromException<SendActivityResponse?>(new HttpRequestException("not found", null, HttpStatusCode.NotFound)),
+            Fallback);
+        await Assert.ThrowsAsync<HttpRequestException>(() => ReplyChainFallback.SendAsync(
+            () => Task.FromException<SendActivityResponse?>(new HttpRequestException("error", null, HttpStatusCode.InternalServerError)),
+            Fallback));
+        await Assert.ThrowsAsync<HttpRequestException>(() => ReplyChainFallback.SendAsync(
+            () => Task.FromException<SendActivityResponse?>(new HttpRequestException("no status")),
+            Fallback));
+
+        Assert.Equal("fallback", recovered?.Id);
+        Assert.Equal(1, fallbackCalls);
     }
 }

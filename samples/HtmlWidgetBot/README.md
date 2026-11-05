@@ -93,6 +93,35 @@ Bot returns (invoke response body):
 
 The `HtmlWidgetHelpers.BuildHtmlWidgetMessage` helper builds the `extendedmarkdown`
 message with the widget JSON wrapped in the required `html-widget` fenced code block.
+It does not modify the widget HTML.
+
+`HtmlWidgetPayload` also accepts an optional `McpUrl` (wire `mcpUrl`) and `CorrelationId` (wire `correlationId`), which are serialized only when set.
+Teams combines `mcpUrl` with the owner id (`<ownerId>-<mcpUrl>`) as the input for deriving the widget hosting origin, so a widget produced by an MCP server must set `McpUrl` to that server's URL to get its own hosting scope, and returns the correlation vector to the bot.
+
+## Handshake and sizing
+
+The widget owns the MCP Apps handshake and its own sizing.
+The SDK does not add any script to widget HTML.
+Each widget in this sample includes the shared snippet in `Widgets.HostScript`, which:
+
+1. Sends `ui/initialize` with `protocolVersion` `2026-01-26`, `appInfo`, and `appCapabilities`.
+2. Waits for the response, then sends `ui/notifications/initialized`.
+3. Reports height with `ui/notifications/size-changed` from one `ResizeObserver` on a single `#root` element, using the unrounded `getBoundingClientRect().height`, after the handshake and on every change.
+
+Without a height reporter a widget stays at about 150px.
+To keep the reported height accurate:
+
+- Put all content inside the one root element and give it `display: flow-root`.
+- Set `margin: 0` on `html` and `body`.
+- Do not measure with `scrollHeight`, and do not size with `100vh` or `height: 100%`.
+
+## Tool results and callTool arguments
+
+`McpUiCallToolResult`, `HtmlWidgetCallToolResponse.FromText`, and `FromError` always serialize `content`, `structuredContent`, and `isError`, with defaults of `[]`, `{}`, and `false`, so the widget never receives `null` for them.
+
+The Teams client adds `arguments.__msteams__ = { mcpUrl, correlationId }` to every `htmlwidget/calltool` request, replacing any value the widget supplied.
+The SDK passes arguments through unmodified.
+Handlers should ignore `__msteams__`, validate arguments as untrusted input, never throw, and not authorize from `activity.from`.
 
 ## Running
 

@@ -19,7 +19,10 @@ public class MeetingStartValue
     [JsonPropertyName("MeetingType")]
     public string? MeetingType { get; set; } = string.Empty;
 
-    /// <summary>The URL used to join the meeting.</summary>
+    /// <summary>
+    /// The URL used to join the meeting.
+    /// Meetings held inside a channel have no join URL, and the platform sends the field as null on the wire, so callers must null-check before using it.
+    /// </summary>
     [JsonPropertyName("JoinUrl")]
     public Uri? JoinUrl { get; set; }
 
@@ -45,7 +48,10 @@ public class MeetingEndValue
     [JsonPropertyName("MeetingType")]
     public string? MeetingType { get; set; }
 
-    /// <summary>The URL used to join the meeting.</summary>
+    /// <summary>
+    /// The URL used to join the meeting.
+    /// Meetings held inside a channel have no join URL, and the platform sends the field as null on the wire, so callers must null-check before using it.
+    /// </summary>
     [JsonPropertyName("JoinUrl")]
     public Uri? JoinUrl { get; set; }
 

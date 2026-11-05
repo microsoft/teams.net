@@ -31,7 +31,7 @@ internal static partial class Log
     [LoggerMessage(EventId = 4, Level = LogLevel.Trace, Message = "Received activity: \n {Activity}")]
     public static partial void ReceivedActivityJson(this ILogger logger, string activity);
 
-    [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Activity processing timed out after {Timeout}: Id={Id}")]
+    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Activity processing timed out after {Timeout}: Id={Id}")]
     public static partial void ActivityTimedOut(this ILogger logger, TimeSpan timeout, string? id);
 
     [LoggerMessage(EventId = 6, Level = LogLevel.Error, Message = "Error processing activity: Id={Id}")]

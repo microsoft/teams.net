@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Apps.Schema;
@@ -145,10 +144,6 @@ public class TextFormat(string value) : StringEnum(value)
     /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
     /// and other rich content beyond standard markdown.
     /// </summary>
-    /// <remarks>
-    /// This format is currently in public preview and may be subject to change.
-    /// </remarks>
-    [Experimental("ExperimentalTeamsExtendedMarkdown")]
     public static readonly TextFormat ExtendedMarkdown = new("extendedmarkdown");
 }
 
@@ -176,10 +171,6 @@ public static class TextFormats
     /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
     /// and other rich content beyond standard markdown.
     /// </summary>
-    /// <remarks>
-    /// This format is currently in public preview and may be subject to change.
-    /// </remarks>
-    [Experimental("ExperimentalTeamsExtendedMarkdown")]
     public static TextFormat ExtendedMarkdown => TextFormat.ExtendedMarkdown;
 }
 

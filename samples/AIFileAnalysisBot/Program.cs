@@ -61,8 +61,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     {
         await context.SendAsync(
             runner is not null
-                ? "Attach one or more files. I analyze text files and images, and describe anything else I cannot read."
-                : "Attach one or more files. No model is configured, so I will report what I received without analyzing it.",
+                ? "Attach or paste one or more files. I analyze text files and images, and describe anything else I cannot read."
+                : "Attach or paste one or more files. No model is configured, so I will report what I received without analyzing it.",
             cancellationToken);
         return;
     }
@@ -81,7 +81,11 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogWarning(ex, "Could not download {FileName}", file.Name);
-            await context.SendAsync($"I could not download {file.Name}.", cancellationToken);
+            await context.SendAsync(
+                ex is InlineImageTransformationException
+                    ? "I could not download that pasted image because its format cannot be converted. Try sending it as a file attachment instead."
+                    : $"I could not download {file.Name}.",
+                cancellationToken);
             continue;
         }
 

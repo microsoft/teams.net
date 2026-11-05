@@ -52,6 +52,9 @@ public class MessageActivityInput : TeamsActivityInput
     public override string ToJson()
         => JsonSerializer.Serialize(this, TeamsActivityInputJsonContext.Default.MessageActivityInput);
 
+    internal new MessageActivityInput Copy()
+        => JsonSerializer.Deserialize(ToJson(), TeamsActivityInputJsonContext.Default.MessageActivityInput)!;
+
     internal static new MessageActivityInputBuilder CreateBuilder() => new();
 
     private MessageActivityInput Apply(Action<MessageActivityInputBuilder> configure)
@@ -202,15 +205,28 @@ public class MessageActivityInput : TeamsActivityInput
 
     /// <summary>
     /// Adds a citation claim to the activity.
+    /// Copies <see cref="CitationAppearance.SensitivityUsageInfo"/> onto the citation.
     /// </summary>
+    /// <param name="position">The citation's position, matching its <c>[n]</c> marker in the message text.</param>
+    /// <param name="appearance">How the citation is displayed.</param>
+    /// <returns>The activity instance for chaining.</returns>
     public MessageActivityInput AddCitation(int position, CitationAppearance appearance)
         => Apply(builder => builder.AddCitation(position, appearance));
 
     /// <summary>
     /// Adds a content sensitivity label to the activity.
     /// </summary>
+    [Obsolete("Use AddSensitivityLabel(SensitivityUsageInfo) instead. This overload adds a separate entity that Teams does not render as a sensitivity label.")]
     public MessageActivityInput AddSensitivityLabel(string name, string? description = null, DefinedTerm? pattern = null)
         => Apply(builder => builder.AddSensitivityLabel(name, description, pattern));
+
+    /// <summary>
+    /// Adds a Microsoft Purview sensitivity label to the root message entity.
+    /// Replaces any label previously added.
+    /// </summary>
+    /// <param name="label">The sensitivity label, identified by its Purview label ID.</param>
+    public MessageActivityInput AddSensitivityLabel(SensitivityUsageInfo label)
+        => Apply(builder => builder.AddSensitivityLabel(label));
 
     /// <summary>
     /// Sets the recipient account for the activity and marks whether the recipient is targeted
@@ -442,7 +458,11 @@ internal class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageAc
 
     /// <summary>
     /// Adds a citation claim to the activity.
+    /// Copies <see cref="CitationAppearance.SensitivityUsageInfo"/> onto the citation.
     /// </summary>
+    /// <param name="position">The citation's position, matching its <c>[n]</c> marker in the message text.</param>
+    /// <param name="appearance">How the citation is displayed.</param>
+    /// <returns>The builder instance for chaining.</returns>
     public MessageActivityInputBuilder AddCitation(int position, CitationAppearance appearance)
     {
         ArgumentNullException.ThrowIfNull(appearance);
@@ -454,9 +474,21 @@ internal class MessageActivityInputBuilder : TeamsActivityInputBuilder<MessageAc
     /// <summary>
     /// Adds a content sensitivity label to the activity.
     /// </summary>
+    [Obsolete("Use AddSensitivityLabel(SensitivityUsageInfo) instead. This overload adds a separate entity that Teams does not render as a sensitivity label.")]
     public MessageActivityInputBuilder AddSensitivityLabel(string name, string? description = null, DefinedTerm? pattern = null)
     {
         SensitiveUsageEntityExtensions.AddToActivity(_activity, name, description, pattern);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a Microsoft Purview sensitivity label to the root message entity.
+    /// Replaces any label previously added.
+    /// </summary>
+    /// <param name="label">The sensitivity label, identified by its Purview label ID.</param>
+    public MessageActivityInputBuilder AddSensitivityLabel(SensitivityUsageInfo label)
+    {
+        OMessageEntityExtensions.AddSensitivityLabel(_activity, label);
         return this;
     }
 

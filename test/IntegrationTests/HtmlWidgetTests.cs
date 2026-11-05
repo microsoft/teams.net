@@ -103,6 +103,31 @@ public class HtmlWidgetTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    public async Task SendWidgetWithMcpUrlAndCorrelationId()
+    {
+        Skip.IfNot(IsCanary, "Widgets require canary service");
+
+        var markdown = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(
+            new HtmlWidgetPayload
+            {
+                Name = "McpUrl Widget",
+                Description = "Widget with McpUrl and CorrelationId.",
+                Html = "<body><p>Widget with McpUrl and CorrelationId</p></body>",
+                Domain = "https://teams.microsoft.com",
+                McpUrl = "https://example.com/mcp",
+                CorrelationId = Guid.NewGuid().ToString(),
+            },
+            new HtmlWidgetMarkdownOptions { Before = "[.NET Integration] HTML widget McpUrl and CorrelationId test" });
+
+        MessageActivityInput activity = CreateWidgetActivity(markdown);
+        SendActivityResponse? res = await _f.ScopedApiClient.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
+
+        Assert.NotNull(res);
+        Assert.NotNull(res.Id);
+        _output.WriteLine($"Sent widget with McpUrl and CorrelationId: {res.Id}");
+    }
+
+    [SkippableFact(Timeout = 5000)]
     public async Task UpdateWidgetMessage()
     {
         Skip.IfNot(IsCanary, "Widgets require canary service");

@@ -21,6 +21,9 @@ public class CallToolRequest
 
     /// <summary>
     /// The arguments to pass to the tool.
+    /// The Teams client adds <c>__msteams__</c> with <c>mcpUrl</c> and <c>correlationId</c> to every request and overwrites any value the widget supplied.
+    /// Handlers should ignore <c>__msteams__</c>, validate every argument as untrusted input, never throw, and not authorize from <c>activity.from</c>.
+    /// The value is passed through unmodified.
     /// </summary>
     [JsonPropertyName("arguments")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

@@ -146,4 +146,22 @@ public class HtmlWidgetPayload
     [JsonPropertyName("permissions")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public HtmlWidgetPermissions? Permissions { get; set; }
+
+    /// <summary>
+    /// Optional MCP server URL.
+    /// When set, the Teams client combines it with the owner id ("ownerId-mcpUrl") as the input for deriving the widget hosting origin.
+    /// A widget produced by an MCP server must set it to that server's URL to get its own hosting scope.
+    /// </summary>
+    [JsonPropertyName("mcpUrl")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Sent on the wire as a string and may not be an absolute URI")]
+    public string? McpUrl { get; set; }
+
+    /// <summary>
+    /// Optional correlation vector for the widget.
+    /// The Teams client also returns it to the bot on widget requests.
+    /// </summary>
+    [JsonPropertyName("correlationId")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CorrelationId { get; set; }
 }

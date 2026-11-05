@@ -293,6 +293,172 @@ public class BotApplicationTests
     }
 
     [Fact]
+    public async Task ProcessAsync_CoreActivity_RunsMiddlewareAndOnActivity()
+    {
+        BotApplication botApp = CreateBotApplication();
+        List<string> calls = [];
+        Mock<ITurnMiddleware> middleware = new();
+        middleware
+            .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
+            .Returns<BotApplication, CoreActivity, NextTurn, CancellationToken>((_, _, next, ct) =>
+            {
+                calls.Add("middleware");
+                return next(ct);
+            });
+        botApp.UseMiddleware(middleware.Object);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        CoreActivity? received = null;
+        botApp.OnActivity = (act, _) =>
+        {
+            calls.Add("onActivity");
+            received = act;
+            return Task.CompletedTask;
+        };
+
+        await botApp.ProcessAsync(activity, user: null, correlationVector: null);
+
+        Assert.Equal(["middleware", "onActivity"], calls);
+        Assert.Same(activity, received);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_ServiceUrlClaimMismatch_ThrowsInvalidDataException()
+    {
+        BotApplication botApp = CreateBotApplication();
+        bool onActivityCalled = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+        CoreActivity activity = new(ActivityType.Message) { ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/") };
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("serviceurl", "https://evil.example.com/")]));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => botApp.ProcessAsync(activity, user, correlationVector: null));
+
+        Assert.False(onActivityCalled);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_ServiceUrlClaimMatches_ProcessesSuccessfully()
+    {
+        BotApplication botApp = CreateBotApplication();
+        bool onActivityCalled = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+        CoreActivity activity = new(ActivityType.Message) { ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/") };
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("serviceurl", "https://smba.trafficmanager.net/teams/")]));
+
+        await botApp.ProcessAsync(activity, user, correlationVector: null);
+
+        Assert.True(onActivityCalled);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_HandlerThrows_ThrowsBotHandlerException()
+    {
+        BotApplication botApp = CreateBotApplication();
+        botApp.OnActivity = (_, _) => throw new InvalidOperationException("Test exception");
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(new CoreActivity(ActivityType.Message), user: null, correlationVector: null));
+
+        Assert.IsType<InvalidOperationException>(exception.InnerException);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_NullActivity_ThrowsArgumentNullException()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            botApp.ProcessAsync((CoreActivity)null!, user: null, correlationVector: null));
+    }
+
+    [Fact]
+    public async Task ProcessAsync_HttpContext_DelegatesToCoreActivityOverload()
+    {
+        RecordingBot botApp = new();
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.Request.Headers["MS-CV"] = "cv-123";
+        ClaimsPrincipal user = new(new ClaimsIdentity([new Claim("aud", "test-app-id")]));
+        httpContext.User = user;
+
+        await botApp.ProcessAsync(httpContext);
+
+        Assert.Equal("act123", botApp.Activity?.Id);
+        Assert.Same(user, botApp.User);
+        Assert.Equal("cv-123", botApp.CorrelationVector);
+    }
+
+    private sealed class RecordingBot()
+        : BotApplication(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance)
+    {
+        public CoreActivity? Activity { get; private set; }
+        public ClaimsPrincipal? User { get; private set; }
+        public string? CorrelationVector { get; private set; }
+
+        public override Task ProcessAsync(CoreActivity activity, ClaimsPrincipal? user, string? correlationVector, CancellationToken cancellationToken = default)
+        {
+            Activity = activity;
+            User = user;
+            CorrelationVector = correlationVector;
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task ProcessAsync_CoreActivity_Timeout_ThrowsBotHandlerExceptionWithTimeoutInner()
+    {
+        BotApplication botApp = CreateBotApplication(TimeSpan.FromMilliseconds(50));
+        // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
+        botApp.OnActivity = (_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(activity, user: null, correlationVector: null));
+
+        Assert.IsType<TimeoutException>(exception.InnerException);
+        Assert.Same(activity, exception.Activity);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_HttpContext_Timeout_ThrowsBotHandlerException()
+    {
+        BotApplication botApp = CreateBotApplication(TimeSpan.FromMilliseconds(50));
+        // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
+        botApp.OnActivity = (_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct);
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(httpContext));
+
+        Assert.IsType<TimeoutException>(exception.InnerException);
+        Assert.Equal("act123", exception.Activity?.Id);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_HandlerThrowsTimeoutException_ThrowsBotHandlerException()
+    {
+        BotApplication botApp = CreateBotApplication();
+        TimeoutException handlerException = new("handler timeout");
+        botApp.OnActivity = (_, _) => throw handlerException;
+        CoreActivity activity = new(ActivityType.Message) { Id = "act123" };
+
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+            botApp.ProcessAsync(activity, user: null, correlationVector: null));
+
+        Assert.Same(handlerException, exception.InnerException);
+        Assert.Equal("Error processing activity", exception.Message);
+        Assert.Same(activity, exception.Activity);
+    }
+
+    [Fact]
     public async Task ProcessAsync_EntraCallerAppNotAllowed_Returns401WithoutProcessing()
     {
         BotApplication botApp = CreateBotApplication();
@@ -332,8 +498,9 @@ public class BotApplicationTests
     private static BotApplicationOptions CreateOptions(string appId) =>
         new() { AppId = appId };
 
-    private static BotApplication CreateBotApplication() =>
-        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
+    private static BotApplication CreateBotApplication(TimeSpan? processActivityTimeout = null) =>
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance,
+            processActivityTimeout is null ? null : new BotApplicationOptions { ProcessActivityTimeout = processActivityTimeout.Value });
 
     private static ConversationClient CreateMockConversationClient()
     {

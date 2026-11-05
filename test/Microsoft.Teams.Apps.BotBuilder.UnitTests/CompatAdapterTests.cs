@@ -8,6 +8,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Moq;
@@ -168,7 +169,47 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.Equal("customTurnStateValue", capturedCustomTurnState);
         }
 
-        private static TeamsBotFrameworkHttpAdapter CreateCompatAdapter(UserTokenClient? userTokenClient = null)
+        [Fact]
+        public async Task ProcessAsync_Timeout_InvokesOnTurnErrorWithTimeout()
+        {
+            // Arrange
+            TeamsBotFrameworkHttpAdapter adapter = CreateCompatAdapter(processActivityTimeout: TimeSpan.FromMilliseconds(50));
+
+            Exception? capturedException = null;
+            adapter.OnTurnError = (_, exception) =>
+            {
+                capturedException = exception;
+                return Task.CompletedTask;
+            };
+
+            Mock<IBot> mockBot = new();
+            // Bounded rather than infinite: with a debugger attached the processing timeout is disabled, so this fails instead of hanging.
+            mockBot
+                .Setup(b => b.OnTurnAsync(It.IsAny<ITurnContext>(), It.IsAny<CancellationToken>()))
+                .Returns<ITurnContext, CancellationToken>((_, ct) => Task.Delay(TimeSpan.FromSeconds(10), ct));
+
+            CoreActivity activity = new()
+            {
+                Type = ActivityType.Message,
+                Id = "act123",
+                ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
+                Conversation = new Conversation("conv123"),
+                From = new Teams.Core.Schema.ChannelAccount { Id = "user123" }
+            };
+
+            DefaultHttpContext httpContext = new();
+            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(activity.ToJson()));
+            httpContext.Request.ContentType = "application/json";
+
+            // Act
+            await adapter.ProcessAsync(httpContext.Request, httpContext.Response, mockBot.Object, CancellationToken.None);
+
+            // Assert
+            BotHandlerException botHandlerException = Assert.IsType<BotHandlerException>(capturedException);
+            Assert.IsType<TimeoutException>(botHandlerException.InnerException);
+        }
+
+        private static TeamsBotFrameworkHttpAdapter CreateCompatAdapter(UserTokenClient? userTokenClient = null, TimeSpan? processActivityTimeout = null)
         {
             HttpClient httpClient = new();
             ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
@@ -176,7 +217,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             BotApplication botApplication = new(
                 conversationClient,
                 userTokenClient ?? CreateMockUserTokenClient().Object,
-                NullLogger<BotApplication>.Instance);
+                NullLogger<BotApplication>.Instance,
+                processActivityTimeout is null ? null : new BotApplicationOptions { ProcessActivityTimeout = processActivityTimeout.Value });
 
             TeamsBotFrameworkHttpAdapter compatAdapter = new(
                 botApplication,

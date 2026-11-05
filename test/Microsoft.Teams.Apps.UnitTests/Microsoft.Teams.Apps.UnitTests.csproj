@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);ExperimentalTeamsHtmlWidget;ExperimentalTeamsExtendedMarkdown</NoWarn>
+    <NoWarn>$(NoWarn);ExperimentalTeamsHtmlWidget;ExperimentalTeamsSocketMode;ExperimentalTeamsPlan;ExperimentalTeamsThreading</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../../samples/PlanBot/PlanDemo.cs" Link="Samples/PlanDemo.cs" />
+    <Compile Include="../../samples/HtmlWidgetBot/Widgets.cs" Link="Samples/HtmlWidgetWidgets.cs" />
     <Using Include="Xunit" />
   </ItemGroup>
 

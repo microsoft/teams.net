@@ -61,7 +61,6 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 // Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
 teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
 {
-#pragma warning disable ExperimentalTeamsExtendedMarkdown
     MessageActivityInput extendedMarkdownMessage = new MessageActivityInput()
         .WithText("""
 # Extended Markdown Demo
@@ -76,7 +75,6 @@ teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) 
 $$E = mc^2$$
 """, TextFormats.ExtendedMarkdown)
         ;
-#pragma warning restore ExperimentalTeamsExtendedMarkdown
 
     await context.SendAsync(extendedMarkdownMessage, cancellationToken);
 });

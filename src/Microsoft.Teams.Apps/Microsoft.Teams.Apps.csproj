@@ -7,6 +7,8 @@
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<!-- Internal parsing and wiring use the experimental Plan and Socket Mode APIs. -->
+		<NoWarn>$(NoWarn);ExperimentalTeamsPlan;ExperimentalTeamsSocketMode</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -21,6 +23,14 @@
 
 	<ItemGroup>
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.32" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
 	</ItemGroup>
 
 	<ItemGroup>

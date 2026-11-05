@@ -20,6 +20,8 @@ public class FileErrorsTests
         Assert.IsAssignableFrom<FileException>(new FileScopeNotSupportedException(ConversationType.GroupChat));
         Assert.IsAssignableFrom<FileException>(new FileCredentialException(FileActor.App));
         Assert.IsAssignableFrom<FileException>(new FileAccessException(403, FileActor.AgenticUser));
+        Assert.IsAssignableFrom<FileException>(new InlineImageTransformationException(415));
+        Assert.IsAssignableFrom<FileException>(new InlineImageAccessException(401, FileActor.App));
     }
 
     [Fact]

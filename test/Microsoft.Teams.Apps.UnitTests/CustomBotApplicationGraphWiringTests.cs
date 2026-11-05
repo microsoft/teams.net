@@ -135,6 +135,19 @@ public class CustomBotApplicationGraphWiringTests
     [Fact]
     public async Task TheBuiltInApplicationAcquiresAGraphToken()
         => Assert.Equal("agent-token", await TokenThroughFilesAsync<TeamsBotApplication>());
+
+    /// <summary>
+    /// A subclass that does not forward <c>fileDownloader</c> gets the DI typed client, whose redirect handling keeps <c>Authorization</c> on a same-host hop, rather than the process-wide fallback.
+    /// </summary>
+    [Fact]
+    public void ACustomSubclassGetsTheRegisteredFileDownloader()
+    {
+        using ServiceProvider container = BuildContainer<CustomBot>(new RecordingTokenProvider());
+
+        CustomBot app = container.GetRequiredService<CustomBot>();
+
+        Assert.False(app.FileDownloader.UsesSharedClient);
+    }
     /// <summary>
     /// The hosting extensions register the provider keyed by section name and resolve it by the same key. A mismatch
     /// would leave <c>TokenProvider</c> null, and an agentic file would then report no credential rather than fail,

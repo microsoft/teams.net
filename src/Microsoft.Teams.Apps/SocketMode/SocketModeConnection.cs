@@ -1,0 +1,94 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Microsoft.Teams.Apps.SocketMode;
+
+/// <summary>
+/// Represents a live Socket Mode transport connection.
+/// </summary>
+internal interface ISocketConnection : IAsyncDisposable
+{
+    /// <summary>
+    /// Gets the remaining lifetime of the connection token, when available.
+    /// </summary>
+    TimeSpan? TokenLifetime { get; }
+
+    /// <summary>
+    /// Starts the connection.
+    /// </summary>
+    /// <param name="cancellationToken">A token for cancelling the operation.</param>
+    Task StartAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Stops the connection.
+    /// </summary>
+    /// <param name="cancellationToken">A token for cancelling the operation.</param>
+    Task StopAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Creates Socket Mode transport connections.
+/// </summary>
+internal interface ISocketConnectionFactory
+{
+    /// <summary>
+    /// Creates a connection for the specified negotiate endpoint and handlers.
+    /// </summary>
+    /// <param name="negotiateUri">The endpoint used to negotiate the connection.</param>
+    /// <param name="handlers">Callbacks for frames and connection closure.</param>
+    /// <param name="getReplacedConnectionId">
+    /// Returns the server connection ID of the still-open socket this connection replaces during a planned token
+    /// refresh, or <see langword="null"/> on a first connect, after a drop, or once the replaced socket has closed.
+    /// Read immediately before the negotiate request is sent.
+    /// </param>
+    /// <returns>A new Socket Mode connection.</returns>
+    ISocketConnection Create(
+        Uri negotiateUri,
+        SocketConnectionHandlers handlers,
+        Func<string?>? getReplacedConnectionId = null);
+}
+
+/// <summary>
+/// Defines callbacks used by a Socket Mode connection.
+/// </summary>
+internal sealed class SocketConnectionHandlers
+{
+    /// <summary>
+    /// Initializes the connection callbacks.
+    /// </summary>
+    /// <param name="onActivity">Handles an incoming activity envelope.</param>
+    /// <param name="onReady">Handles the ready frame.</param>
+    /// <param name="onClosed">Handles connection closure and indicates whether it was planned.</param>
+    /// <param name="onNegotiated">Runs when negotiate succeeds, which is when the token lifetime starts.</param>
+    internal SocketConnectionHandlers(
+        Func<SocketActivityEnvelope, Task<SocketReplyFrame?>> onActivity,
+        Action<SocketReadyFrame> onReady,
+        Action<Exception?, bool> onClosed,
+        Action? onNegotiated = null)
+    {
+        OnActivity = onActivity ?? throw new ArgumentNullException(nameof(onActivity));
+        OnReady = onReady ?? throw new ArgumentNullException(nameof(onReady));
+        OnClosed = onClosed ?? throw new ArgumentNullException(nameof(onClosed));
+        OnNegotiated = onNegotiated;
+    }
+
+    /// <summary>
+    /// Gets the incoming activity callback.
+    /// </summary>
+    internal Func<SocketActivityEnvelope, Task<SocketReplyFrame?>> OnActivity { get; }
+
+    /// <summary>
+    /// Gets the ready-frame callback.
+    /// </summary>
+    internal Action<SocketReadyFrame> OnReady { get; }
+
+    /// <summary>
+    /// Gets the connection-closed callback.
+    /// </summary>
+    internal Action<Exception?, bool> OnClosed { get; }
+
+    /// <summary>
+    /// Gets the callback that runs when negotiate succeeds.
+    /// </summary>
+    internal Action? OnNegotiated { get; }
+}

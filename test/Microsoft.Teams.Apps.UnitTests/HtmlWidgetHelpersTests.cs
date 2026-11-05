@@ -14,171 +14,6 @@ namespace Microsoft.Teams.Apps.UnitTests;
 
 public class HtmlWidgetHelpersTests
 {
-    // --- InjectWidgetProtocol ---
-
-    [Fact]
-    public void InjectWidgetProtocol_SkipsIfAlreadyPresent()
-    {
-        var html = "<body><script>window.parent.postMessage({method:'ui/initialize'},'*')</script></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        Assert.Equal(html, result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_StillInjectsWhenUiInitializeOnlyMentioned()
-    {
-        var html = "<body><!-- ui/initialize --><p>ui/initialize</p></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        Assert.NotEqual(html, result);
-        Assert.Contains("method:'ui/initialize'", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_InjectsBeforeBodyClose()
-    {
-        var html = "<body><p>Hello</p></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        Assert.Contains("ui/initialize", result);
-        Assert.Contains("ui/notifications/size-changed", result);
-        Assert.EndsWith("</body>", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_ReportsRobustContentHeight()
-    {
-        // The size reporter must measure the taller of documentElement/body and
-        // round up, so trailing margins and sub-pixel content are never clipped.
-        var html = "<body><p>Hello</p></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        Assert.Contains("height:Math.ceil(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight))", result);
-        // Guard against regressing to the old body-only measurement.
-        Assert.DoesNotContain("height:document.body.scrollHeight}", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_AppendsIfNoBody()
-    {
-        var html = "<div>Hello</div>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        Assert.Contains("ui/initialize", result);
-        Assert.StartsWith("<div>Hello</div>", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_UsesCustomNameAndVersion()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Name = "myWidget",
-            Version = "2.0.0"
-        });
-        Assert.Contains("name:'myWidget'", result);
-        Assert.Contains("version:'2.0.0'", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_InjectsNotificationHooks()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Notifications = ["tool-result", "tool-input"]
-        });
-        Assert.Contains("ui/notifications/tool-result", result);
-        Assert.Contains("window.onToolResult", result);
-        Assert.Contains("ui/notifications/tool-input", result);
-        Assert.Contains("window.onToolInput", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_IgnoresUnknownNotifications()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Notifications = ["unknown-notification"]
-        });
-        Assert.DoesNotContain("unknown-notification", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_InjectsCspDebugListener()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            DebugCspViolations = true
-        });
-        Assert.Contains("securitypolicyviolation", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_IncludesDisplayModes()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            AvailableDisplayModes = ["inline", "fullscreen"]
-        });
-        Assert.Contains("availableDisplayModes", result);
-        Assert.Contains("inline", result);
-        Assert.Contains("fullscreen", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_EscapesSpecialChars()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Name = "it's a \"test\\"
-        });
-        Assert.Contains("it\\'s a \"test\\\\", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_EscapesScriptCloseTagInName()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Name = "</script><img src=x onerror=alert(1)>"
-        });
-        // Only one </script> should exist (the injected protocol's closing tag)
-        var scriptTagCount = System.Text.RegularExpressions.Regex.Matches(result, "</script>", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Count;
-        Assert.Equal(1, scriptTagCount);
-        Assert.Contains("<\\/script>", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_EscapesScriptCloseTagInVersion()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Version = "</script><svg onload=fetch(\"/steal\")>"
-        });
-        var scriptTagCount = System.Text.RegularExpressions.Regex.Matches(result, "</script>", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Count;
-        Assert.Equal(1, scriptTagCount);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_EscapesNewlinesInName()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html, new InjectWidgetProtocolOptions
-        {
-            Name = "line1\nline2\rline3"
-        });
-        var scriptMatch = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>", System.Text.RegularExpressions.RegexOptions.Singleline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        Assert.True(scriptMatch.Success);
-        var scriptContent = scriptMatch.Groups[1].Value;
-        Assert.DoesNotContain("\n", scriptContent);
-        Assert.Contains("\\n", scriptContent);
-        Assert.Contains("\\r", scriptContent);
-    }
-
     // --- BuildHtmlWidgetMarkdown ---
 
     [Fact]
@@ -193,19 +28,6 @@ public class HtmlWidgetHelpersTests
         var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
         Assert.StartsWith("```html-widget\n", result);
         Assert.EndsWith("\n```", result);
-    }
-
-    [Fact]
-    public void BuildHtmlWidgetMarkdown_InjectsProtocol()
-    {
-        var payload = new HtmlWidgetPayload
-        {
-            Name = "test",
-            Html = "<body><p>Hi</p></body>",
-            Domain = "https://example.com"
-        };
-        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
-        Assert.Contains("ui/initialize", result);
     }
 
     [Fact]
@@ -476,7 +298,6 @@ public class HtmlWidgetHelpersTests
     {
         var response = HtmlWidgetCallToolResponse.FromText("hello");
         Assert.Equal("htmlwidget/calltoolresult", response.ResponseType);
-        Assert.NotNull(response.CallToolResult.Content);
         Assert.Single(response.CallToolResult.Content);
         Assert.Equal("text", response.CallToolResult.Content[0].Type);
         Assert.Equal("hello", response.CallToolResult.Content[0].Text);
@@ -489,7 +310,7 @@ public class HtmlWidgetHelpersTests
         var response = HtmlWidgetCallToolResponse.FromError("something failed");
         Assert.Equal("htmlwidget/calltoolresult", response.ResponseType);
         Assert.True(response.CallToolResult.IsError);
-        Assert.Equal("something failed", response.CallToolResult.Content![0].Text);
+        Assert.Equal("something failed", response.CallToolResult.Content[0].Text);
     }
 
     [Fact]
@@ -577,26 +398,82 @@ public class HtmlWidgetHelpersTests
     }
 
     [Fact]
-    public void BuildHtmlWidgetMarkdown_DoesNotMutateProtocolOptions()
+    public void BuildHtmlWidgetMarkdown_DoesNotModifyHtml()
     {
-        var protoOpts = new InjectWidgetProtocolOptions { Version = "2.0.0", Notifications = ["tool-result"] };
-        var options = new HtmlWidgetMarkdownOptions { ProtocolOptions = protoOpts };
-        var payload = new HtmlWidgetPayload
-        {
-            Name = "MutationTest",
-            Html = "<body>hi</body>",
-            Domain = "https://example.com",
-        };
-        HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload, options);
-        // The original protocolOptions.Name should remain "widget" (default), not mutated to "MutationTest"
-        Assert.Equal("widget", protoOpts.Name);
+        var html = "<body><p>Hi</p></body>";
+        var payload = new HtmlWidgetPayload { Name = "test", Html = html, Domain = "https://example.com" };
+        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
+        Assert.DoesNotContain("ui/initialize", result);
+        Assert.DoesNotContain("size-changed", result);
+        Assert.Contains(JsonSerializer.Serialize(html), result);
     }
 
     [Fact]
-    public void InjectWidgetProtocol_EmbedsCorrectProtocolVersion()
+    public void BuildHtmlWidgetMarkdown_OmitsMcpUrlAndCorrelationIdWhenUnset()
     {
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol("<body></body>");
-        Assert.Contains("protocolVersion:'2026-01-26'", result);
+        var payload = new HtmlWidgetPayload { Name = "test", Html = "<body>hi</body>", Domain = "https://example.com" };
+        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
+        Assert.DoesNotContain("mcpUrl", result);
+        Assert.DoesNotContain("correlationId", result);
+    }
+
+    [Fact]
+    public void BuildHtmlWidgetMarkdown_IncludesMcpUrlAndCorrelationIdWhenSet()
+    {
+        var payload = new HtmlWidgetPayload
+        {
+            Name = "test",
+            Html = "<body>hi</body>",
+            Domain = "https://example.com",
+            McpUrl = "https://mcp.example.com",
+            CorrelationId = "abc.1",
+        };
+        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload);
+        Assert.Contains("\"mcpUrl\":\"https://mcp.example.com\"", result);
+        Assert.Contains("\"correlationId\":\"abc.1\"", result);
+    }
+
+    [Fact]
+    public void CallToolResult_AlwaysSerializesDefaults()
+    {
+        var json = JsonSerializer.Serialize(new McpUiCallToolResult());
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", json);
+    }
+
+    [Fact]
+    public void CallToolResponse_FromText_SerializesStructuredContentAndIsError()
+    {
+        var json = JsonSerializer.Serialize(HtmlWidgetCallToolResponse.FromText("hi"));
+        Assert.Contains("\"structuredContent\":{}", json);
+        Assert.Contains("\"isError\":false", json);
+    }
+
+    [Fact]
+    public void CallToolResult_ExplicitNullAssignment_KeepsNonNullWireShape()
+    {
+        var result = new McpUiCallToolResult { Content = null!, StructuredContent = null! };
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
+    public void CallToolResult_BoxedJsonNullStructuredContent_KeepsNonNullWireShape()
+    {
+        var result = new McpUiCallToolResult { StructuredContent = JsonDocument.Parse("null").RootElement };
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
+    public void CallToolResult_JsonDocumentWithNullRoot_KeepsNonNullWireShape()
+    {
+        var result = new McpUiCallToolResult { StructuredContent = JsonDocument.Parse("null") };
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
+    }
+
+    [Fact]
+    public void CallToolResult_DeserializingNulls_KeepsNonNullWireShape()
+    {
+        var result = JsonSerializer.Deserialize<McpUiCallToolResult>("{\"content\":null,\"structuredContent\":null}")!;
+        Assert.Equal("{\"content\":[],\"structuredContent\":{},\"isError\":false}", JsonSerializer.Serialize(result));
     }
 
     [Fact]
@@ -615,71 +492,6 @@ public class HtmlWidgetHelpersTests
         var policy = new HtmlWidgetSecurityPolicy { ResourceDomains = ["https://example.com"] };
         var warnings = HtmlWidgetHelpers.ValidateSecurityPolicy(html, policy);
         Assert.Single(warnings);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_PassesUnicodeThroughCorrectly()
-    {
-        var opts = new InjectWidgetProtocolOptions { Name = "Widget \u2764\uFE0F" };
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol("<body></body>", opts);
-        Assert.Contains("name:'Widget \u2764\uFE0F'", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_IsIdempotent()
-    {
-        var html = "<body><p>Hello</p></body>";
-        var first = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        var second = HtmlWidgetHelpers.InjectWidgetProtocol(first);
-        Assert.Equal(first, second);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_NotificationHooksOptIn()
-    {
-        var html = "<body></body>";
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol(html);
-        // Without notifications option, no notification handlers injected
-        Assert.DoesNotContain("tool-result", result);
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_InjectsAllKnownNotificationTypes()
-    {
-        var allNotifications = new List<string>
-        {
-            "tool-result", "tool-input", "tool-input-partial",
-            "tool-cancelled", "host-context-changed", "resource-teardown"
-        };
-        var opts = new InjectWidgetProtocolOptions { Notifications = allNotifications };
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol("<body></body>", opts);
-        foreach (var n in allNotifications)
-        {
-            Assert.Contains(n, result);
-        }
-    }
-
-    [Fact]
-    public void InjectWidgetProtocol_UsesPayloadNameOverOptionsName()
-    {
-        // BuildHtmlWidgetMarkdown should use the payload name for the protocol script
-        var payload = new HtmlWidgetPayload
-        {
-            Name = "PayloadName",
-            Html = "<body>hi</body>",
-            Domain = "https://example.com",
-        };
-        var options = new HtmlWidgetMarkdownOptions
-        {
-            ProtocolOptions = new InjectWidgetProtocolOptions { Name = "OptionsName" }
-        };
-        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload, options);
-        // Parse the JSON and check injected HTML uses payload name
-        var json = result.Replace("```html-widget\n", "").Replace("\n```", "");
-        using var doc = JsonDocument.Parse(json);
-        var html = doc.RootElement.GetProperty("html").GetString()!;
-        Assert.Contains("name:'PayloadName'", html);
-        Assert.DoesNotContain("OptionsName", html);
     }
 
     [Fact]
@@ -734,36 +546,6 @@ public class HtmlWidgetHelpersTests
         Assert.Contains("Seattle", result);
         Assert.Contains("clipboardWrite", result);
     }
-
-    [Fact]
-    public void BuildHtmlWidgetMarkdown_ForwardsProtocolOptions()
-    {
-        var payload = new HtmlWidgetPayload
-        {
-            Name = "test",
-            Html = "<body>hi</body>",
-            Domain = "https://example.com",
-        };
-        var options = new HtmlWidgetMarkdownOptions
-        {
-            ProtocolOptions = new InjectWidgetProtocolOptions
-            {
-                Version = "3.0.0",
-                Notifications = ["tool-result"],
-                DebugCspViolations = true,
-            }
-        };
-        var result = HtmlWidgetHelpers.BuildHtmlWidgetMarkdown(payload, options);
-        // Parse the JSON from inside the code fence to check the injected HTML
-        var json = result.Replace("```html-widget\n", "").Replace("\n```", "");
-        using var doc = JsonDocument.Parse(json);
-        var html = doc.RootElement.GetProperty("html").GetString()!;
-        Assert.Contains("version:'3.0.0'", html);
-        Assert.Contains("tool-result", html);
-        Assert.Contains("securitypolicyviolation", html);
-    }
-
-    // --- Additional security policy validators ---
 
     [Fact]
     public void ValidateSecurityPolicy_DetectsImgSrc()
@@ -898,24 +680,6 @@ public class HtmlWidgetHelpersTests
         Assert.Single(warnings);
     }
 
-    [Fact]
-    public async Task InjectWidgetProtocol_FullScriptSnapshot()
-    {
-        var opts = new InjectWidgetProtocolOptions
-        {
-            Name = "My Widget",
-            Version = "2.0.0",
-            AvailableDisplayModes = ["inline", "fullscreen"],
-            Notifications = ["tool-result", "tool-input"],
-            DebugCspViolations = true,
-        };
-        var result = HtmlWidgetHelpers.InjectWidgetProtocol("<body><h1>Hello</h1></body>", opts);
-
-        var match = System.Text.RegularExpressions.Regex.Match(result, @"<script>(.*?)</script>", System.Text.RegularExpressions.RegexOptions.Singleline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        Assert.True(match.Success);
-        await VerifyXunit.Verifier.Verify(match.Groups[1].Value);
-    }
-
     // --- TryGetWidgetModelContext ---
 
     private static MessageActivity MessageActivityWithValue(object? value)
@@ -946,7 +710,7 @@ public class HtmlWidgetHelpersTests
         Assert.Equal("ui/update-model-context", result!.Method);
         Assert.NotNull(result.Params.Content);
         Assert.Single(result.Params.Content!);
-        Assert.Equal("hello", result.Params.Content![0].Text);
+        Assert.Equal("hello", result.Params.Content[0].Text);
     }
 
     [Fact]
@@ -980,7 +744,7 @@ public class HtmlWidgetHelpersTests
         var result = HtmlWidgetHelpers.TryGetWidgetModelContext(activity);
 
         Assert.NotNull(result);
-        Assert.Equal("wrapped", result!.Params.Content![0].Text);
+        Assert.Equal("wrapped", result!.Params.Content[0].Text);
     }
 
     [Fact]

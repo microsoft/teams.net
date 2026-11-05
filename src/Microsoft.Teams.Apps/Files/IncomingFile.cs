@@ -33,20 +33,31 @@ public sealed class IncomingFile
     /// <see cref="ContentUrl"/> through <c>/shares</c>, and this value arrives as a GUID, which is a SharePoint
     /// <c>listItemUniqueId</c> shape rather than a Graph <c>driveItem.id</c>.
     /// Present only when the wire provided it.
+    /// Always unset for inline images, which are not stored in OneDrive or SharePoint.
     /// </summary>
     public string? UniqueId { get; init; }
 
-    /// <summary>Display name including extension when known.</summary>
+    /// <summary>
+    /// Display name including extension when known.
+    /// An inline image has no name, so it is named <c>image-&lt;attachment id&gt;</c>.
+    /// An extension is added only for PNG, JPEG, GIF, or WebP.
+    /// Teams saves a pasted GIF as a static PNG, so the SDK cannot name or type it with confidence: it is listed as <c>.gif</c> and <c>image/gif</c> but downloads as a PNG.
+    /// </summary>
     public string Name { get; }
 
     /// <summary>
     /// The file's MIME type when the source provides one.
-    /// Always <c>null</c> for <see cref="FileSource.BotActivity"/> files: a <c>file.download.info</c> attachment carries no MIME type, only the <c>fileType</c> extension surfaced as <see cref="Extension"/>.
+    /// Always <c>null</c> for <see cref="FileSource.BotActivity"/> file attachments: a <c>file.download.info</c> attachment carries no MIME type, only the <c>fileType</c> extension surfaced as <see cref="Extension"/>.
     /// Populated for sources that do carry one, such as a <see cref="FileSource.Graph"/> drive item. To learn the type of the bytes you actually received, read <see cref="DownloadedFile.ContentType"/>, which is resolved from the download response.
+    /// <para>For an inline image, it is the type named by the format hint when that is PNG, JPEG, GIF, or WebP, otherwise <c>application/octet-stream</c>.
+    /// Teams saves a pasted GIF as a static PNG, so the SDK cannot name or type it with confidence: it is listed as <c>.gif</c> and <c>image/gif</c> but downloads as a PNG.</para>
     /// </summary>
     public string? ContentType { get; init; }
 
-    /// <summary>File extension without the dot (e.g. <c>pdf</c>), taken from the platform-supplied <c>fileType</c>. Absent when the wire omits it.</summary>
+    /// <summary>
+    /// File extension without the dot (e.g. <c>pdf</c>), taken from the platform-supplied <c>fileType</c>. Absent when the wire omits it.
+    /// For an inline image, it is taken from <see cref="Name"/> and is absent when the name has none.
+    /// </summary>
     public string? Extension { get; init; }
 
     /// <summary>Conversation scope the file arrived in (the SDK's <see cref="ConversationType"/>).</summary>
@@ -56,12 +67,22 @@ public sealed class IncomingFile
     public FileSource Source { get; }
 
     /// <summary>
+    /// How the file was attached: sent as a file, or pasted inline as an image.
+    /// See <see cref="Files.AttachmentStyle"/>.
+    /// </summary>
+    public AttachmentStyle AttachmentStyle { get; init; } = AttachmentStyle.File;
+
+    /// <summary>
     /// Browsable URL to the file in OneDrive/SharePoint, as sent on the attachment's <c>contentUrl</c>.
     /// Not fetchable for bytes despite the name, but it is the locator a Graph <c>/shares</c> resolution keys off; bytes come from <see cref="DownloadAsync"/> or <see cref="StreamAsync"/>.
+    /// For an inline image, it is the image's Bot API location instead.
     /// </summary>
     public Uri? ContentUrl { get; init; }
 
-    /// <summary>The raw underlying attachment/graph object for escape-hatch access.</summary>
+    /// <summary>
+    /// The raw underlying attachment/graph object for escape-hatch access.
+    /// For an inline image, only the image attachment is included; the HTML attachment that supplies its format hint stays in <c>ctx.Activity.Attachments</c>.
+    /// </summary>
     public object? Raw { get; init; }
 
     /// <summary>Short-lived, pre-authorized download URL (personal scope). Scope-dependent rather than universal, so it stays an initializer: the Graph path keys off <see cref="ContentUrl"/> instead.</summary>
@@ -70,6 +91,12 @@ public sealed class IncomingFile
     /// <summary>Graph credential for the current actor, resolved at fetch time rather than captured here.</summary>
     internal GraphCredential? Credential { get; init; }
 
+    /// <summary>For an inline image, the name without an extension; the downloaded extension comes from the bytes.</summary>
+    internal string? InlineImageBaseName { get; init; }
+
+    /// <summary>Bot API credential for inline images, resolved at fetch time.</summary>
+    internal BotApiCredential? BotApiCredential { get; init; }
+
     private bool _priorFetchSucceeded;
 
     /// <summary>Stream the bytes. Low-level primitive: returns the response body stream directly, single-consumption, not buffered or retained. Use for large files and pipelines (parse-as-you-go, pipe to disk). <see cref="DownloadAsync"/> is built on this. Uncapped: the consumer bounds it by how much it reads. Dispose the returned stream to release the underlying connection.</summary>
@@ -77,7 +104,7 @@ public sealed class IncomingFile
     public async Task<Stream> StreamAsync(CancellationToken cancellationToken = default)
     {
         OpenedFileStream opened = await _downloader
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, cancellationToken)
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, AttachmentStyle, BotApiCredential, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
         return opened;
@@ -88,7 +115,7 @@ public sealed class IncomingFile
     public async Task<DownloadedFile> DownloadAsync(CancellationToken cancellationToken = default)
     {
         OpenedFileStream opened = await _downloader
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, cancellationToken)
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, AttachmentStyle, BotApiCredential, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
 
@@ -97,8 +124,33 @@ public sealed class IncomingFile
             using MemoryStream buffer = new();
             await opened.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-            return new DownloadedFile(buffer.ToArray(), opened.ContentType, Name, opened.SourceUrl);
+            byte[] bytes = buffer.ToArray();
+            (string filename, string contentType) = ResolveDownloadedType(bytes, opened.ContentType);
+
+            return new DownloadedFile(bytes, contentType, filename, opened.SourceUrl);
         }
+    }
+
+    /// <summary>
+    /// The filename and MIME type for downloaded bytes.
+    /// <para>For an inline image, recognized bytes decide, then the hint-derived name and type, because the Teams service can return a different format from the hint (a GIF downloads as a static PNG).</para>
+    /// </summary>
+    private (string Filename, string ContentType) ResolveDownloadedType(byte[] bytes, string responseContentType)
+    {
+        if (AttachmentStyle != AttachmentStyle.InlineImage)
+        {
+            return (Name, responseContentType);
+        }
+
+        InlineImageFormat? sniffed = InlineImage.SniffImageFormat(bytes);
+
+        if (sniffed is not null && !string.IsNullOrEmpty(InlineImageBaseName))
+        {
+            (string name, _, string contentType) = InlineImage.InlineImageNaming(InlineImageBaseName, sniffed);
+            return (name, contentType);
+        }
+
+        return (Name, ContentType ?? InlineImage.OctetStream);
     }
 
     /// <summary>Convenience: run <see cref="DownloadAsync"/> then decode the bytes as UTF-8 (or a provided encoding). Re-fetches on each call (no memoized bytes); to read bytes several ways hold one <see cref="DownloadedFile"/> instead. No content-type check; decoding is lossy (invalid bytes become U+FFFD and never throw). For strict or binary-safe reads, use the <see cref="DownloadedFile.Bytes"/> of a <see cref="DownloadAsync"/> result.</summary>
@@ -116,7 +168,7 @@ public sealed class IncomingFile
     public async Task SaveAsAsync(string path, CancellationToken cancellationToken = default)
     {
         OpenedFileStream opened = await _downloader
-            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, cancellationToken)
+            .OpenFileStreamAsync(Scope, DownloadUrl, ContentUrl, ContentType, _priorFetchSucceeded, Credential, AttachmentStyle, BotApiCredential, cancellationToken)
             .ConfigureAwait(false);
         _priorFetchSucceeded = true;
 

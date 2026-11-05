@@ -189,10 +189,15 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
         logger?.HttpRequestError(method, url, response.StatusCode, responseHeaders, errorContent);
 
         string operationDescription = options.OperationDescription ?? "request";
-        throw new HttpRequestException(
+        HttpRequestException error = new(
             $"Error {operationDescription} {response.StatusCode}. {errorContent}",
             inner: null,
             statusCode: response.StatusCode);
+#pragma warning disable ExperimentalTeamsPlan // Classify the experimental service error at the transport boundary.
+        if (PlanConflictException.TryCreate(error, errorContent, out PlanConflictException? conflict))
+            throw conflict;
+#pragma warning restore ExperimentalTeamsPlan
+        throw error;
     }
 
     private static async Task<T?> DeserializeResponseAsync<T>(

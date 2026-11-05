@@ -12,13 +12,13 @@ namespace Microsoft.Teams.Core.UnitTests.Hosting;
 /// The identity guard on <see cref="BotTokenProvider.GetAgenticUserTokenAsync"/>.
 /// <para><b>Why this is worth its own file rather than being folded into the file-path tests.</b> Those all supply a
 /// well-formed identity, so none of them reaches this guard. The guard is what stands between a malformed inbound
-/// identity and <c>WithAgentUserIdentity</c>, which takes a <see cref="Guid"/> and would throw on a value that does
-/// not parse. Degrading to <c>null</c> lets the caller report "no Graph credential", which is a diagnosable error;
-/// throwing here would surface as an unhandled exception from inside token acquisition instead.</para>
-/// <para>The <see cref="Guid"/> branch is <b>.NET-specific</b>. TypeScript and Python carry the same two emptiness
-/// checks, but neither has to parse the user id, because neither underlying library demands a typed GUID. So this is
-/// the one arm of the guard with no counterpart to compare against, and the one most likely to be dropped by someone
-/// simplifying the condition.</para>
+/// identity and the object id (<see cref="Guid"/>) overload of <c>WithAgentUserIdentity</c>; the other overload
+/// takes a UPN, so the id has to parse before it can be passed. Degrading to <c>null</c> lets the caller report
+/// "no Graph credential", which is a diagnosable error; throwing here would surface as an unhandled exception from
+/// inside token acquisition instead.</para>
+/// <para>The <see cref="Guid"/> branch is <b>.NET-specific</b>. TS and PY carry the same two emptiness
+/// checks, but neither parses the user id. So this is the one arm of the guard with no counterpart to compare
+/// against.</para>
 /// </summary>
 public class BotTokenProviderAgenticIdentityTests
 {
@@ -78,8 +78,8 @@ public class BotTokenProviderAgenticIdentityTests
 
     /// <summary>
     /// A user id that is not a GUID is refused rather than parsed optimistically.
-    /// <para>Without this arm the value reaches <c>WithAgentUserIdentity</c>, which requires a <see cref="Guid"/>, and
-    /// the caller gets an exception from inside acquisition rather than a <c>NoGraphCredential</c> it can report.</para>
+    /// <para>Without this arm the value has no <see cref="Guid"/> to pass to the object id overload of
+    /// <c>WithAgentUserIdentity</c>, and the caller gets no <c>NoGraphCredential</c> it can report.</para>
     /// </summary>
     [Theory]
     [InlineData("not-a-guid")]

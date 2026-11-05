@@ -1,6 +1,6 @@
 # Targeted Messages Sample
 
-Demonstrates sending, updating, and deleting targeted (ephemeral) messages in a Teams bot, plus the slash-command surface (in developer preview) that delivers user prompts as targeted message activities. Targeted messages are visible only to a specific recipient in a group chat or channel.
+Demonstrates sending, updating, and deleting targeted (ephemeral) messages in a Teams bot, plus the slash-command surface that delivers user prompts as targeted message activities. Targeted messages are visible only to a specific recipient in a group chat or channel.
 
 ## What it shows
 
@@ -17,8 +17,8 @@ Demonstrates sending, updating, and deleting targeted (ephemeral) messages in a 
 
 ```json
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
-  "manifestVersion": "devPreview",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
   "id": "YOUR_BOT_ID",
   "bots": [
     {
@@ -73,7 +73,7 @@ Demonstrates sending, updating, and deleting targeted (ephemeral) messages in a 
 
 ### Manifest configuration
 
-The manifest uses `manifestVersion: "devPreview"` because the slash-command opt-in fields are only defined in the devPreview schema:
+The manifest uses `manifestVersion: "1.29"`, which defines the slash-command opt-in fields:
 
 - `bots[].supportsTargetedMessages: true` — opts the bot into receiving slash-command-style targeted messages.
 - `bots[].commandLists[].triggers: ["slash"]` — declares the listed commands (`test send`, `test reply`, `test update`, `test delete`, `test inbound`) as slash commands. They appear in the Teams `/` picker for group chats and channels.
