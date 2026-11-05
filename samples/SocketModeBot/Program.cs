@@ -9,8 +9,7 @@ using Microsoft.Teams.Apps.SocketMode;
 
 // Socket Mode receives activities over an outbound WebSocket, so the bot runs on a
 // generic host with no web server and no public messaging endpoint.
-// Socket Mode is recommended for new bots; existing bots may require
-// additional configuration.
+// Socket Mode is currently only available for new bots.
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
 {
     Args = args,

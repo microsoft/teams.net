@@ -75,7 +75,7 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// get the app with <c>host.UseTeamsBotApplication()</c>. Passing <see langword="false"/> clears any earlier Socket
     /// Mode configuration, so the bot receives activities over HTTP. Socket Mode is experimental: the API is in preview
     /// and may change, and it is recommended only for developing agents.
-    /// Socket Mode is recommended for new bots; existing bots may require additional configuration.
+    /// Socket Mode is currently only available for new bots.
     /// </remarks>
     /// <param name="enabled">Whether to receive activities over Socket Mode. Default is <see langword="true"/>.</param>
     /// <returns>This instance for chaining.</returns>
@@ -95,7 +95,7 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// Supported only in the public cloud. Build the bot with <c>Host.CreateApplicationBuilder()</c> (no web server) and
     /// get the app with <c>host.UseTeamsBotApplication()</c>. Socket Mode is experimental: the API is in preview and may
     /// change, and it is recommended only for developing agents.
-    /// Socket Mode is recommended for new bots; existing bots may require additional configuration.
+    /// Socket Mode is currently only available for new bots.
     /// </remarks>
     /// <param name="configure">Delegate to configure <see cref="SocketModeOptions"/>.</param>
     /// <returns>This instance for chaining.</returns>
