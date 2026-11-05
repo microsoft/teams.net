@@ -67,6 +67,10 @@ public sealed class Plan
     }
 
     /// <summary>Creates a standalone helper bound to the incoming activity's own ID.</summary>
+    /// <remarks>
+    /// In a chat thread, a standalone <c>CompleteAsync</c> is posted to the reply chain, as <c>ctx.send</c> does.
+    /// Typing updates, completions in a channel, and prompts outside a thread use the conversation.
+    /// </remarks>
     public static Plan CreateFromContext<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(context);
