@@ -446,4 +446,49 @@ public class PlanTests
         Assert.EndsWith("/activities/", handler.Requests[0].RequestUri!.AbsolutePath, StringComparison.Ordinal);
         Assert.Equal(PromptId, Assert.Single(handler.Bodies)["replyToId"]!.GetValue<string>());
     }
+
+    [Fact]
+    public async Task Rebuilt_WithSavedReplyChain_CompletesInThatChainAndKeepsTheShape()
+    {
+        (ApiClient api, RecordingHandler handler) = CreateClient();
+        const string saved = """{"conversationId":"opaque-conversation","replyToId":"prompt-id","replyChain":{"chatOrChannelId":"19:chat@thread.v2","replyChainId":"root-1"}}""";
+
+        Plan restored = new(api, JsonSerializer.Deserialize<PlanOptions>(saved)!);
+        await restored.CompleteAsync("Done");
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.EndsWith("/v3/conversations/19%3Achat%40thread.v2/replyChains/root-1", request.RequestUri!.AbsolutePath);
+        Assert.Equal(PromptId, Assert.Single(handler.Bodies)["replyToId"]!.GetValue<string>());
+        Assert.Equal(saved, JsonSerializer.Serialize(restored));
+    }
+
+    [Fact]
+    public async Task Rebuilt_WithSavedReplyChain_SendsTypingToTheConversation()
+    {
+        (ApiClient api, RecordingHandler handler) = CreateClient();
+        PlanOptions options = new()
+        {
+            ConversationId = ConversationId,
+            ReplyToId = PromptId,
+            ReplyChain = new PlanReplyChain { ChatOrChannelId = "19:chat@thread.v2", ReplyChainId = "root-1" },
+        };
+
+        await new Plan(api, options).StartAsync([]);
+
+        HttpRequestMessage request = Assert.Single(handler.Requests);
+        Assert.DoesNotContain("/replyChains/", request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task Rebuilt_FromShapeWithoutReplyChain_CompletesInTheConversation()
+    {
+        (ApiClient api, RecordingHandler handler) = CreateClient();
+        const string saved = """{"conversationId":"chat;messageid=thread-root","replyToId":"prompt-id"}""";
+
+        Plan restored = new(api, JsonSerializer.Deserialize<PlanOptions>(saved)!);
+        await restored.CompleteAsync("Done");
+
+        Assert.DoesNotContain("/replyChains/", Assert.Single(handler.Requests).RequestUri!.AbsolutePath);
+        Assert.Equal(saved, JsonSerializer.Serialize(restored));
+    }
 }

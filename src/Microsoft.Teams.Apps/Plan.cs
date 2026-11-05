@@ -13,9 +13,11 @@ namespace Microsoft.Teams.Apps;
 
 /// <summary>Explicit, prompt-bound plan updates. This helper does not own a workflow or a stream.</summary>
 /// <remarks>
-/// Persist the two IDs and supply a service-scoped API client when reconstructing for delayed work.
+/// Persist the IDs (and <see cref="ReplyChain"/>, when set) and supply a service-scoped API client when reconstructing for delayed work.
 /// Targeted Plan scenarios are not supported. Plan activities use ordinary create routing, and
 /// <see cref="Completion"/> does not inherit targeting from the originating context.
+/// In a chat thread, <c>CompleteAsync</c> is posted to the reply chain like <c>ctx.send</c>.
+/// Typing updates (start, update, stop, error) are sent to the conversation, as <c>ctx.send</c> does for typing activities.
 /// </remarks>
 [Experimental("ExperimentalTeamsPlan")]
 public sealed class Plan
@@ -29,6 +31,11 @@ public sealed class Plan
     /// <summary>The originating prompt's activity ID.</summary>
     [JsonPropertyName("replyToId")]
     public string ReplyToId { get; }
+
+    /// <summary>The reply chain (thread) of a chat that the completion is posted to, if any.</summary>
+    [JsonPropertyName("replyChain")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PlanReplyChain? ReplyChain { get; }
 
     /// <summary>Raised after a successful send; typing acknowledgements have no message response.</summary>
     public event EventHandler<PlanSentEventArgs>? Sent;
@@ -46,10 +53,17 @@ public sealed class Plan
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.ConversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.ReplyToId);
+        if (options.ReplyChain is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.ReplyChain.ChatOrChannelId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.ReplyChain.ReplyChainId);
+        }
+
         _client = apiClient.Conversations
             ?? throw new ArgumentException("Supply an API client scoped to the conversation's service URL.", nameof(apiClient));
         ConversationId = options.ConversationId;
         ReplyToId = options.ReplyToId;
+        ReplyChain = options.ReplyChain;
     }
 
     /// <summary>Creates a standalone helper bound to the incoming activity's own ID.</summary>
@@ -108,7 +122,7 @@ public sealed class Plan
             throw new ArgumentException("CompleteAsync cannot send non-complete Plan operations.", nameof(message));
         if (plans.Length == 0)
             activity.AddEntity(new PlanInfoEntity { PlanType = PlanTypes.Complete });
-        return SendActivityAsync(activity, cancellationToken);
+        return SendActivityAsync(activity, ReplyChain, cancellationToken);
     }
 
     private async Task SendUpdateAsync(PlanType operation, IEnumerable<PlanStep>? steps, CancellationToken cancellationToken)
@@ -119,14 +133,18 @@ public sealed class Plan
         };
         // Snapshot caller-owned steps and sources before handing the activity to the client.
         activity = JsonSerializer.Deserialize(activity.ToJson(), TeamsActivityInputJsonContext.Default.TeamsActivityInput)!;
-        await SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+        await SendActivityAsync(activity, null, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<SendActivityResponse?> SendActivityAsync(TeamsActivityInput activity, CancellationToken cancellationToken)
+    private async Task<SendActivityResponse?> SendActivityAsync(TeamsActivityInput activity, PlanReplyChain? replyChain, CancellationToken cancellationToken)
     {
         activity.ReplyToId = ReplyToId;
-        SendActivityResponse? result = await _client.CreateActivityAsync(
-            ConversationId, activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+#pragma warning disable ExperimentalTeamsThreading // the Plan completion is placed like the stable send methods
+        SendActivityResponse? result = replyChain is null
+            ? await _client.CreateActivityAsync(ConversationId, activity, cancellationToken: cancellationToken).ConfigureAwait(false)
+            : await _client.CreateReplyChainActivityAsync(
+                replyChain.ChatOrChannelId, replyChain.ReplyChainId, activity, cancellationToken: cancellationToken).ConfigureAwait(false);
+#pragma warning restore ExperimentalTeamsThreading
         if (activity.Type == TeamsActivityTypes.Typing)
             result = null;
         Sent?.Invoke(this, new PlanSentEventArgs(result));
