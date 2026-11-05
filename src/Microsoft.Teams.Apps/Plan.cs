@@ -74,7 +74,11 @@ public sealed class Plan
             ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(context));
         string replyToId = context.Activity.Id
             ?? throw new ArgumentException("Activity must have an Id.", nameof(context));
-        return new Plan(context.Api, new PlanOptions { ConversationId = conversationId, ReplyToId = replyToId });
+        ReplyChainPlacement? placement = context.GetInboundReplyChainPlacement();
+        PlanReplyChain? replyChain = placement is { InChannel: false } chat
+            ? new PlanReplyChain { ChatOrChannelId = chat.ChatOrChannelId, ReplyChainId = chat.ReplyChainId }
+            : null;
+        return new Plan(context.Api, new PlanOptions { ConversationId = conversationId, ReplyToId = replyToId, ReplyChain = replyChain });
     }
 
     /// <summary>Starts a plan with the supplied steps.</summary>

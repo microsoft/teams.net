@@ -1092,6 +1092,59 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(0, harness.Send.Calls);
     }
 
+    [Fact]
+    public async Task PlanCompleteAsync_InboundInsideReplyChainInAChat_RepliesInThatChain()
+    {
+        Harness harness = CreateHarness();
+        Plan plan = Plan.CreateFromContext(harness.ContextFor(InboundInThread()));
+
+        await plan.CompleteAsync("Done");
+
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal("1793257586005", harness.Reply.Activity!.ReplyToId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task PlanCompleteAsync_InboundTopLevelChatMessage_SendsToInboundConversation()
+    {
+        Harness harness = CreateHarness();
+        Plan plan = Plan.CreateFromContext(harness.ContextFor(Inbound(
+            conversationId: OpaqueConversationId,
+            id: "root-1",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } })));
+
+        await plan.CompleteAsync("Done");
+
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task PlanCompleteAsync_InboundInAChannel_SendsToInboundConversation()
+    {
+        Harness harness = CreateHarness();
+        Plan plan = Plan.CreateFromContext(harness.ContextFor(InboundInChannelThread()));
+
+        await plan.CompleteAsync("Done");
+
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task PlanTypingUpdates_InboundInsideReplyChainInAChat_SendToInboundConversation()
+    {
+        Harness harness = CreateHarness();
+        Plan plan = Plan.CreateFromContext(harness.ContextFor(InboundInThread()));
+
+        await plan.StartAsync([]);
+
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
     private static MessageActivity InboundInChannelThread() => Inbound(
         conversationId: ChannelThreadConversationId,
         id: "1793257586005",

@@ -52,9 +52,10 @@ internal sealed class PlanDemo(ILogger logger, CancellationToken stopping, TimeP
                 string saved = JsonSerializer.Serialize(new PlanOptions
                 {
                     ConversationId = plan.ConversationId,
-                    ReplyToId = plan.ReplyToId
+                    ReplyToId = plan.ReplyToId,
+                    ReplyChain = plan.ReplyChain
                 });
-                // Persist only the IDs. The scoped client stays in this process, not the Context.
+                // Persist only the binding. The scoped client stays in this process, not the Context.
                 Task continuation = ContinueLaterAsync(context.Api, saved, stopping);
                 _continuations.TryAdd(continuation, 0);
                 _ = continuation.ContinueWith(task => _continuations.TryRemove(task, out _),
