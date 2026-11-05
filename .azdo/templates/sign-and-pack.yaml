@@ -14,7 +14,7 @@ parameters:
     default: 'src/**/*.csproj'
 
 steps:
-  - task: EsrpCodeSigning@5
+  - task: EsrpCodeSigning@6
     displayName: 'Authenticode Sign DLLs'
     inputs:
       ConnectedServiceName: 'TeamsESRP-CP-230012'
@@ -66,7 +66,7 @@ steps:
       configuration: '$(buildConfiguration)'
       arguments: '/p:SymbolPackageFormat=snupkg'
 
-  - task: EsrpCodeSigning@5
+  - task: EsrpCodeSigning@6
     displayName: 'Sign NuGet Packages'
     inputs:
       ConnectedServiceName: 'TeamsESRP-CP-401405'
