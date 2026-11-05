@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -52,6 +53,7 @@ public class SocketModeHostingTests
 
         Assert.Empty(provider.GetServices<IHostedService>().OfType<SocketModeHostedService>());
         Assert.Null(provider.GetService<SocketModeTransport>());
+        Assert.Null(provider.GetRequiredService<TeamsBotApplication>().SocketMode);
     }
 
     [Fact]
@@ -105,6 +107,8 @@ public class SocketModeHostingTests
         services.AddTeamsBotApplication(options => options.UseSocketMode(configure));
 
         await using ServiceProvider provider = services.BuildServiceProvider();
+        SocketModeObserver socket = Assert.IsType<SocketModeObserver>(provider.GetRequiredService<TeamsBotApplication>().SocketMode);
+        socket.Events.Ready += (_, _) => { };
         IHostedService hosted = Assert.Single(provider.GetServices<IHostedService>().OfType<SocketModeHostedService>());
 
         await Assert.ThrowsAnyAsync<ArgumentException>(() => hosted.StartAsync(CancellationToken.None));
@@ -150,15 +154,30 @@ public class SocketModeHostingTests
 
         await using ServiceProvider provider = services.BuildServiceProvider();
         object body = new { hello = "world" };
-        provider.GetRequiredService<TeamsBotApplication>()
-            .OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, body)));
+        TeamsBotApplication app = provider.GetRequiredService<TeamsBotApplication>();
+        app.OnInvoke((_, _) => Task.FromResult(new InvokeResponse(202, body)));
+        SocketModeObserver socket = Assert.IsType<SocketModeObserver>(app.SocketMode);
+        SocketModeEvents events = socket.Events;
+        Assert.Same(provider.GetRequiredService<SocketModeEvents>(), events);
+        ConcurrentQueue<SocketModeReadyEventArgs> ready = new();
+        events.Ready += (_, e) => ready.Enqueue(e);
         IHostedService hosted = Assert.Single(provider.GetServices<IHostedService>().OfType<SocketModeHostedService>());
         SocketModeTransport transport = provider.GetRequiredService<SocketModeTransport>();
+        Assert.Equal(SocketModeStatus.Idle, socket.Status);
+        Assert.Equal(["amer", "emea"], socket.GeoList);
+        Assert.Equal(new Uri("https://botapi.skype.com/amer/v3/websockets/connect"), socket.NegotiateUrl);
+        Assert.Empty(socket.GeoStatuses);
 
         await hosted.StartAsync(CancellationToken.None);
 
         Assert.Equal(SocketModeStatus.Ready, transport.Status);
         Assert.Equal(2, factory.Connections.Count);
+        Assert.Equal(["amer", "emea"], ready.Select(e => e.Geo).OrderBy(geo => geo, StringComparer.Ordinal));
+        Assert.All(ready, e => Assert.False(string.IsNullOrEmpty(e.Frame.ConnectionId)));
+        Assert.Equal(SocketModeStatus.Ready, socket.Status);
+        Assert.Equal(["amer", "emea"], socket.GeoList);
+        Assert.All(socket.GeoStatuses.Values, status => Assert.Equal(SocketModeStatus.Ready, status));
+        IReadOnlyDictionary<string, SocketModeStatus> readySnapshot = socket.GeoStatuses;
 
         SocketReplyFrame? reply = await factory.Connections[0].Handlers.OnActivity(new SocketActivityEnvelope
         {
@@ -175,6 +194,9 @@ public class SocketModeHostingTests
         await hosted.StopAsync(CancellationToken.None);
 
         Assert.Equal(SocketModeStatus.Stopped, transport.Status);
+        Assert.Equal(SocketModeStatus.Stopped, socket.Status);
+        Assert.All(socket.GeoStatuses.Values, status => Assert.Equal(SocketModeStatus.Stopped, status));
+        Assert.All(readySnapshot.Values, status => Assert.Equal(SocketModeStatus.Ready, status));
         Assert.All(factory.Connections, connection => Assert.True(connection.Disposed));
     }
 

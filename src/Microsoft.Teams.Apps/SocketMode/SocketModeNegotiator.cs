@@ -243,12 +243,9 @@ internal sealed class SocketModeNegotiator : ISocketModeNegotiator
 [SuppressMessage(
    "Design",
    "CA1032:Implement standard exception constructors",
-   Justification = "This internal transport exception is constructed only from an HTTP status and Retry-After value.")]
-[SuppressMessage(
-    "Design",
-    "CA1064:Exceptions should be public",
-    Justification = "Socket Mode transport errors are internal implementation details, not public SDK contracts.")]
-internal sealed class SocketModeNegotiateException : Exception
+   Justification = "The SDK creates this response exception from an HTTP status and Retry-After value; consumers inspect it rather than construct it.")]
+[Experimental("ExperimentalTeamsSocketMode")]
+public sealed class SocketModeNegotiateException : Exception
 {
     /// <summary>
     /// Initializes a Socket Mode negotiation exception.
@@ -267,17 +264,17 @@ internal sealed class SocketModeNegotiateException : Exception
     /// <summary>
     /// Gets the HTTP status returned by the negotiate endpoint.
     /// </summary>
-    internal HttpStatusCode StatusCode { get; }
+    public HttpStatusCode StatusCode { get; }
 
     /// <summary>
     /// Gets the server-provided retry delay, when available.
     /// </summary>
-    internal TimeSpan? RetryAfter { get; }
+    public TimeSpan? RetryAfter { get; }
 
     /// <summary>
     /// Gets whether the service rejected the bot (HTTP 401 or 403), which retrying cannot fix.
     /// </summary>
-    internal bool IsAuthError => StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
+    public bool IsAuthError => StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden;
 
     /// <summary>
     /// Determines whether a connection failure must not be retried.

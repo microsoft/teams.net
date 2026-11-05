@@ -228,6 +228,23 @@ host.Run();
 - **Idempotent handlers** &mdash; The service can redeliver an activity, for example after a reconnect, so handlers
   should tolerate running more than once for the same activity.
 
+Subscribe to `teams.SocketMode.Events.Ready`, `.Disconnected`, and `.Reconnected` before starting the host
+to observe each geo's socket lifecycle. `Ready` carries the geo and ready frame and fires for each ready
+connection, including token rotation. `Disconnected` carries the geo, error, and `Terminal` flag: automatic
+recovery continues unless negotiation rejects the bot with HTTP 401/403. A terminal event means credentials
+or access must be fixed and the app restarted. `Reconnected` fires after readiness when delivery resumes
+following an unexpected interruption, not an uninterrupted rotation. Initial startup failures are thrown
+from host startup; normal shutdown does not raise a disconnect event.
+
+These events are experimental and observational. Handlers run synchronously, may run concurrently across
+geos, and should be short and thread-safe. Observer failures are logged without interrupting delivery or
+other observers. `SocketMode` is null when Socket Mode is disabled. Read-only diagnostics are available through
+`SocketMode.Status` (aggregate), `SocketMode.GeoStatuses` (a per-geo snapshot), `SocketMode.GeoList`, and
+`SocketMode.NegotiateUrl` (the resolved endpoint for the first geo).
+Negotiation failures expose `SocketModeNegotiateException.StatusCode`, `.RetryAfter` (a nullable `TimeSpan`),
+and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are not classified as terminal
+service-negotiation rejections.
+
 `UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
 Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
 Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.

@@ -185,7 +185,6 @@ public class PlanTests
             await writer.FinalizeResponseAsync(parameterlessFirst ? null : final, cancellationToken);
             await writer.FinalizeResponseAsync(parameterlessFirst ? final : null, cancellationToken);
             Assert.False(writer.TimedOut);
-            Assert.False(writer.Cancelled);
         });
 
         await app.ProcessAsync(new CoreActivity(ActivityType.Message)

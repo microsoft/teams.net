@@ -11,6 +11,8 @@ namespace Microsoft.Teams.Apps.HtmlWidget;
 /// <summary>
 /// Delegate for handling <c>htmlwidget/calltool</c> invoke activities.
 /// Sent when a widget calls a tool on the bot via the MCP Apps protocol.
+/// The request arguments carry a client-added <c>__msteams__</c> entry with <c>mcpUrl</c> and <c>correlationId</c>, which handlers should ignore.
+/// Handlers should validate arguments as untrusted input, never throw, and not authorize from <c>activity.from</c>.
 /// </summary>
 /// <param name="context">The context for the invoke activity with a strongly-typed <see cref="CallToolRequest"/> value.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>

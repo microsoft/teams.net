@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -33,7 +34,8 @@ internal sealed class SocketModeNegotiateResponse
 /// <summary>
 /// Identifies an established Socket Mode connection.
 /// </summary>
-internal sealed class SocketReadyFrame
+[Experimental("ExperimentalTeamsSocketMode")]
+public sealed class SocketReadyFrame
 {
     /// <summary>
     /// Gets the key identifying the bot connection.
