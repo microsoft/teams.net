@@ -9,7 +9,8 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 
 ## What it shows
 
-- `UseSocketMode(...)` on `AddTeamsBotApplication` to receive activities over Socket Mode, with `NegotiateBaseUrl` set to the canary ring. Socket Mode is currently only available on the Canary (`https://canary.botapi.skype.com`) and Pilot1 (`https://pilot1.botapi.skype.com`) rings.
+- `UseSocketMode()` on `AddTeamsBotApplication` to receive activities over Socket Mode using the default production endpoint (`https://botapi.skype.com`).
+- One connection per geo (`amer`, `emea`, `apac`) by default for inbound coverage across regions. Override with `Geos = [...]` or point at a custom ring with `NegotiateBaseUrl` in the `UseSocketMode(socket => ...)` callback.
 - `<NoWarn>$(NoWarn);ExperimentalTeamsSocketMode</NoWarn>` in the project file, because Socket Mode is experimental.
 - A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsBotApplication()` to get the app.
 - Per-geo `Ready`, `Disconnected`, and `Reconnected` subscriptions in `Program.cs`, plus a status snapshot after startup.
