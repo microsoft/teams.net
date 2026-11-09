@@ -527,15 +527,9 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
                 throw new ArgumentException($"Socket Mode geo '{geo}' is listed more than once.", nameof(geos));
             }
 
-            if (segment.Length == 0)
-            {
-                resolved.Add((segment, new Uri(baseUri.AbsoluteUri.TrimEnd('/') + SocketModeProtocol.NegotiatePath, UriKind.Absolute)));
-                continue;
-            }
-
             UriBuilder builder = new(baseUri)
             {
-                Host = $"{segment}.{baseUri.Host}",
+                Host = segment.Length > 0 ? $"{segment}.{baseUri.Host}" : baseUri.Host,
                 Path = baseUri.AbsolutePath.TrimEnd('/') + SocketModeProtocol.NegotiatePath,
                 Fragment = string.Empty,
             };

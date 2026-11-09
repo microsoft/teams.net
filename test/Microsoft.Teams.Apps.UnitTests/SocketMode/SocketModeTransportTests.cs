@@ -73,7 +73,10 @@ public class SocketModeTransportTests
     [Theory]
     [InlineData("https://botapi.example", "amer", "https://amer.botapi.example/v3/websockets/connect")]
     [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "apac", "https://apac.botapi.example:8443/ring/v3/websockets/connect?route=test")]
-    public async Task StartAsync_UsesGeoSubdomainsForCustomHosts(string baseUrl, string geo, string expectedUrl)
+    [InlineData("https://botapi.example/ring/?route=test", "", "https://botapi.example/ring/v3/websockets/connect?route=test")]
+    [InlineData("https://botapi.example/ring/#fragment", "", "https://botapi.example/ring/v3/websockets/connect")]
+    [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "", "https://botapi.example:8443/ring/v3/websockets/connect?route=test")]
+    public async Task StartAsync_ResolvesCustomBaseUrls(string baseUrl, string geo, string expectedUrl)
     {
         Harness harness = new(new SocketModeTransportOptions
         {
@@ -83,7 +86,7 @@ public class SocketModeTransportTests
 
         Task start = harness.Transport.StartAsync();
         FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
-        Assert.Equal(new Uri(expectedUrl), connection.NegotiateUri);
+        Assert.Equal(expectedUrl, connection.NegotiateUri.AbsoluteUri);
         connection.Ready();
         await start;
         await harness.Transport.DisposeAsync();
