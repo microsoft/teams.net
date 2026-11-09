@@ -32,7 +32,7 @@ public class SocketModeObserverTests
         observer.Events.Ready += (_, _) => { };
         Assert.Equal(0, created);
         Assert.Equal(SocketModeStatus.Idle, observer.Status);
-        Assert.Equal(new Uri("https://canary.botapi.skype.com/eu/v3/websockets/connect"), observer.NegotiateUrl);
+        Assert.Equal(new Uri("https://eu.canary.botapi.skype.com/v3/websockets/connect"), observer.NegotiateUrl);
         Assert.Equal(["eu"], observer.GeoList);
         Assert.Empty(observer.GeoStatuses);
         Assert.Equal(1, created);

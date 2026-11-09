@@ -247,10 +247,9 @@ and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are n
 service-negotiation rejections.
 
 `UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
-Custom base hosts retain geo path segments; an empty geo uses the base URL without a geo subdomain or path segment.
-Each geo's negotiated SignalR endpoint is logged at Information level on initial connection, reconnect,
-and token rotation. Credentials, query strings, and fragments
-are omitted from the logged URL.
+Custom base hosts also use geo subdomains, preserving any existing base path; an empty geo uses the base URL
+without a geo subdomain. Each geo's resolved connect/negotiate URL is logged at Debug level during startup
+under `Microsoft.Teams.Apps.SocketMode.SocketModeTransport`. The SignalR URL returned by negotiation is used unchanged.
 Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
 Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.
 `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier

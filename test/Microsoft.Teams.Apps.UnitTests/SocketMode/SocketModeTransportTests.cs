@@ -19,7 +19,8 @@ public class SocketModeTransportTests
     [Fact]
     public async Task StartAsync_ConnectsEveryDefaultGeo()
     {
-        Harness harness = new();
+        ErrorLogger logger = new();
+        Harness harness = new() { Logger = logger };
 
         Task start = harness.Transport.StartAsync();
         FakeConnection[] connections = await harness.Factory.WaitForAsync(3);
@@ -31,6 +32,14 @@ public class SocketModeTransportTests
                 "https://emea.botapi.skype.com/v3/websockets/connect",
             ],
             SortedUris(connections));
+        Assert.Equal(
+            [
+                "Socket Mode geo amer negotiate URL https://amer.botapi.skype.com/v3/websockets/connect.",
+                "Socket Mode geo apac negotiate URL https://apac.botapi.skype.com/v3/websockets/connect.",
+                "Socket Mode geo emea negotiate URL https://emea.botapi.skype.com/v3/websockets/connect.",
+            ],
+            logger.Records.Where(record => record.Level == LogLevel.Debug)
+                .Select(record => record.Message).Order(StringComparer.Ordinal));
         Assert.False(start.IsCompleted);
         Assert.Equal(SocketModeStatus.Connecting, harness.Transport.Status);
 
@@ -47,12 +56,16 @@ public class SocketModeTransportTests
     [Fact]
     public async Task StartAsync_EmptyGeoUsesProductionBaseWithoutSubdomain()
     {
-        Harness harness = new(new SocketModeTransportOptions { Geos = [""] });
+        ErrorLogger logger = new();
+        Harness harness = new(new SocketModeTransportOptions { Geos = [""] }) { Logger = logger };
 
         Task start = harness.Transport.StartAsync();
         FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
 
         Assert.Equal(new Uri("https://botapi.skype.com/v3/websockets/connect"), connection.NegotiateUri);
+        Assert.Equal(
+            "Socket Mode geo default negotiate URL https://botapi.skype.com/v3/websockets/connect.",
+            Assert.Single(logger.Records, record => record.Level == LogLevel.Debug).Message);
         connection.Ready();
         await start;
     }
@@ -62,7 +75,7 @@ public class SocketModeTransportTests
     {
         Harness harness = new(new SocketModeTransportOptions
         {
-            NegotiateBaseUri = new Uri("http://localhost:3978/"),
+            NegotiateBaseUri = new Uri("https://botapi.example:3978/ring/"),
             Geos = ["", " /eu/ "],
         });
 
@@ -71,8 +84,8 @@ public class SocketModeTransportTests
 
         Assert.Equal(
             [
-                "http://localhost:3978/eu/v3/websockets/connect",
-                "http://localhost:3978/v3/websockets/connect",
+                "https://botapi.example:3978/ring/v3/websockets/connect",
+                "https://eu.botapi.example:3978/ring/v3/websockets/connect",
             ],
             SortedUris(connections));
         foreach (FakeConnection connection in connections)
@@ -81,6 +94,27 @@ public class SocketModeTransportTests
         }
 
         await start;
+    }
+
+    [Theory]
+    [InlineData("https://botapi.example", "amer", "https://amer.botapi.example/v3/websockets/connect")]
+    [InlineData("https://botapi.example/ring/", " /eu/ ", "https://eu.botapi.example/ring/v3/websockets/connect")]
+    [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "apac", "https://apac.botapi.example:8443/ring/v3/websockets/connect?route=test")]
+    [InlineData("http://localhost:3978/", "amer", "http://amer.localhost:3978/v3/websockets/connect")]
+    public async Task StartAsync_UsesGeoSubdomainsForCustomHosts(string baseUrl, string geo, string expectedUrl)
+    {
+        Harness harness = new(new SocketModeTransportOptions
+        {
+            NegotiateBaseUri = new Uri(baseUrl),
+            Geos = [geo],
+        });
+
+        Task start = harness.Transport.StartAsync();
+        FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
+        Assert.Equal(new Uri(expectedUrl), connection.NegotiateUri);
+        connection.Ready();
+        await start;
+        await harness.Transport.DisposeAsync();
     }
 
     [Theory]

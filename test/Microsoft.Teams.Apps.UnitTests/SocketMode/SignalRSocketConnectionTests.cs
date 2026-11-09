@@ -11,7 +11,7 @@ public class SignalRSocketConnectionTests
     private static readonly Uri NegotiateUri =
         new("https://botapi.skype.com/amer/v3/websockets/connect");
     private static readonly Uri SignalRUri =
-        new("https://signalr.example.test/client");
+        new("https://signalr.example.test/client?hub=teams");
 
     [Fact]
     public async Task StartAsync_NegotiatesCreatesAndStartsConnection()
@@ -38,24 +38,23 @@ public class SignalRSocketConnectionTests
     }
 
     [Fact]
-    public async Task StartAsync_ReportsTheNegotiatedSignalRUrl()
+    public async Task StartAsync_ReportsSuccessfulNegotiation()
     {
         FakeNegotiator negotiator = new(SuccessfulNegotiation());
         FakeSignalRClientConnection signalR = new();
         FakeSignalRConnectionFactory signalRFactory = new(signalR);
-        Uri? negotiatedUrl = null;
+        bool negotiated = false;
         SocketConnectionHandlers handlers = new(
             _ => Task.FromResult<SocketReplyFrame?>(null),
             _ => { },
             (_, _) => { },
-            url => negotiatedUrl = url);
+            () => negotiated = true);
         await using SignalRSocketConnection connection = CreateConnection(negotiator, signalRFactory, handlers);
 
         Task start = connection.StartAsync(CancellationToken.None);
         await signalR.Started.Task;
 
-        Assert.Equal(SignalRUri, negotiatedUrl);
-        Assert.Equal(signalRFactory.Url, negotiatedUrl);
+        Assert.True(negotiated);
         signalR.Ready(new SocketReadyFrame());
         await start;
     }

@@ -53,7 +53,7 @@ internal sealed class SocketModeTransportOptions
     internal Uri NegotiateBaseUri { get; init; } = new(SocketModeProtocol.DefaultNegotiateBaseUrl);
 
     /// <summary>
-    /// Gets the geos to connect. An empty string connects without a geo subdomain or path segment.
+    /// Gets the geos to connect. An empty string connects without a geo subdomain.
     /// </summary>
     internal IReadOnlyList<string> Geos { get; init; } = SocketModeProtocol.DefaultGeos;
 
@@ -240,6 +240,14 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             "Socket Mode connecting {Count} geo(s): {Geos}.",
             geoSockets.Length,
             string.Join(", ", geoSockets.Select(geoSocket => geoSocket.Geo)));
+
+        foreach (var geo in _geos)
+        {
+            _logger.LogDebug(
+                "Socket Mode geo {Geo} negotiate URL {NegotiateUrl}.",
+                geo.Geo.Length > 0 ? geo.Geo : "default",
+                geo.NegotiateUri);
+        }
 
         using CancellationTokenSource startSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Exception? firstFailure = null;
@@ -499,11 +507,10 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         if (geos is null || geos.Count == 0)
         {
             throw new ArgumentException(
-                "Socket Mode requires at least one geo. Use an empty string to connect without a geo subdomain or path segment.",
+                "Socket Mode requires at least one geo. Use an empty string to connect without a geo subdomain.",
                 nameof(geos));
         }
 
-        string baseUrl = baseUri.AbsoluteUri.TrimEnd('/');
         HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
         List<(string Geo, Uri NegotiateUri)> resolved = [];
 
@@ -520,20 +527,19 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
                 throw new ArgumentException($"Socket Mode geo '{geo}' is listed more than once.", nameof(geos));
             }
 
-            if (segment.Length > 0 && baseUri.Host.Equals("botapi.skype.com", StringComparison.OrdinalIgnoreCase))
+            if (segment.Length == 0)
             {
-                UriBuilder builder = new(baseUrl + SocketModeProtocol.NegotiatePath)
-                {
-                    Host = $"{segment}.{baseUri.Host}",
-                };
-                resolved.Add((segment, builder.Uri));
+                resolved.Add((segment, new Uri(baseUri.AbsoluteUri.TrimEnd('/') + SocketModeProtocol.NegotiatePath, UriKind.Absolute)));
                 continue;
             }
 
-            string path = segment.Length > 0
-                ? $"/{Uri.EscapeDataString(segment)}{SocketModeProtocol.NegotiatePath}"
-                : SocketModeProtocol.NegotiatePath;
-            resolved.Add((segment, new Uri(baseUrl + path, UriKind.Absolute)));
+            UriBuilder builder = new(baseUri)
+            {
+                Host = $"{segment}.{baseUri.Host}",
+                Path = baseUri.AbsolutePath.TrimEnd('/') + SocketModeProtocol.NegotiatePath,
+                Fragment = string.Empty,
+            };
+            resolved.Add((segment, builder.Uri));
         }
 
         return resolved;

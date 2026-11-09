@@ -22,13 +22,13 @@ public sealed class SocketModeOptions
     /// <summary>
     /// Gets or sets the base URL used to negotiate each geo connection. Must use HTTPS unless it targets loopback.
     /// Defaults to <c>https://botapi.skype.com</c>. Override this to target a different Teams backend service ring.
-    /// Connections to <c>botapi.skype.com</c> use the geo as a subdomain; custom hosts use a geo path segment.
+    /// Connections use the geo as a subdomain, including for custom hosts, and preserve the base URL's path.
     /// </summary>
     public Uri NegotiateBaseUrl { get; set; } = new(SocketModeProtocol.DefaultNegotiateBaseUrl);
 
     /// <summary>
     /// Gets or sets the geos to connect, one connection each. An empty string connects to the base URL without a geo
-    /// subdomain or path segment. Defaults to <c>amer</c>, <c>emea</c>, and <c>apac</c>.
+    /// subdomain. Defaults to <c>amer</c>, <c>emea</c>, and <c>apac</c>.
     /// Override this to connect to a different set of geos.
     /// </summary>
     public IReadOnlyList<string> Geos { get; set; } = SocketModeProtocol.DefaultGeos;
