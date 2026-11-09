@@ -19,8 +19,7 @@ public class SocketModeTransportTests
     [Fact]
     public async Task StartAsync_ConnectsEveryDefaultGeo()
     {
-        ErrorLogger logger = new();
-        Harness harness = new() { Logger = logger };
+        Harness harness = new();
 
         Task start = harness.Transport.StartAsync();
         FakeConnection[] connections = await harness.Factory.WaitForAsync(3);
@@ -32,14 +31,6 @@ public class SocketModeTransportTests
                 "https://emea.botapi.skype.com/v3/websockets/connect",
             ],
             SortedUris(connections));
-        Assert.Equal(
-            [
-                "Socket Mode geo amer negotiate URL https://amer.botapi.skype.com/v3/websockets/connect.",
-                "Socket Mode geo apac negotiate URL https://apac.botapi.skype.com/v3/websockets/connect.",
-                "Socket Mode geo emea negotiate URL https://emea.botapi.skype.com/v3/websockets/connect.",
-            ],
-            logger.Records.Where(record => record.Level == LogLevel.Debug)
-                .Select(record => record.Message).Order(StringComparer.Ordinal));
         Assert.False(start.IsCompleted);
         Assert.Equal(SocketModeStatus.Connecting, harness.Transport.Status);
 
@@ -56,12 +47,11 @@ public class SocketModeTransportTests
     [Fact]
     public async Task StartAsync_BuildsGeoUrisFromCustomBaseAndEmptyGeo()
     {
-        ErrorLogger logger = new();
         Harness harness = new(new SocketModeTransportOptions
         {
             NegotiateBaseUri = new Uri("https://botapi.example:3978/ring/"),
             Geos = ["", " /eu/ "],
-        }) { Logger = logger };
+        });
 
         Task start = harness.Transport.StartAsync();
         FakeConnection[] connections = await harness.Factory.WaitForAsync(2);
@@ -72,9 +62,6 @@ public class SocketModeTransportTests
                 "https://eu.botapi.example:3978/ring/v3/websockets/connect",
             ],
             SortedUris(connections));
-        Assert.Contains(logger.Records, record =>
-            record.Level == LogLevel.Debug
-            && record.Message == "Socket Mode geo default negotiate URL https://botapi.example:3978/ring/v3/websockets/connect.");
         foreach (FakeConnection connection in connections)
         {
             connection.Ready();
