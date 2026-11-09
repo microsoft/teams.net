@@ -53,7 +53,7 @@ internal sealed class SocketModeTransportOptions
     internal Uri NegotiateBaseUri { get; init; } = new(SocketModeProtocol.DefaultNegotiateBaseUrl);
 
     /// <summary>
-    /// Gets the geos to connect. An empty string connects to the base URL without a geo segment.
+    /// Gets the geos to connect. An empty string connects without a geo subdomain or path segment.
     /// </summary>
     internal IReadOnlyList<string> Geos { get; init; } = SocketModeProtocol.DefaultGeos;
 
@@ -499,7 +499,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         if (geos is null || geos.Count == 0)
         {
             throw new ArgumentException(
-                "Socket Mode requires at least one geo. Use an empty string to connect without a geo segment.",
+                "Socket Mode requires at least one geo. Use an empty string to connect without a geo subdomain or path segment.",
                 nameof(geos));
         }
 
@@ -518,6 +518,16 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             if (!seen.Add(segment))
             {
                 throw new ArgumentException($"Socket Mode geo '{geo}' is listed more than once.", nameof(geos));
+            }
+
+            if (segment.Length > 0 && baseUri.Host.Equals("botapi.skype.com", StringComparison.OrdinalIgnoreCase))
+            {
+                UriBuilder builder = new(baseUrl + SocketModeProtocol.NegotiatePath)
+                {
+                    Host = $"{segment}.{baseUri.Host}",
+                };
+                resolved.Add((segment, builder.Uri));
+                continue;
             }
 
             string path = segment.Length > 0

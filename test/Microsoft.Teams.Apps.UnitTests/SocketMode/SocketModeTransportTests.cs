@@ -26,9 +26,9 @@ public class SocketModeTransportTests
 
         Assert.Equal(
             [
-                "https://botapi.skype.com/amer/v3/websockets/connect",
-                "https://botapi.skype.com/apac/v3/websockets/connect",
-                "https://botapi.skype.com/emea/v3/websockets/connect",
+                "https://amer.botapi.skype.com/v3/websockets/connect",
+                "https://apac.botapi.skype.com/v3/websockets/connect",
+                "https://emea.botapi.skype.com/v3/websockets/connect",
             ],
             SortedUris(connections));
         Assert.False(start.IsCompleted);
@@ -42,6 +42,19 @@ public class SocketModeTransportTests
         await start;
         Assert.Equal(SocketModeStatus.Ready, harness.Transport.Status);
         Assert.All(harness.Transport.GeoStatuses.Values, status => Assert.Equal(SocketModeStatus.Ready, status));
+    }
+
+    [Fact]
+    public async Task StartAsync_EmptyGeoUsesProductionBaseWithoutSubdomain()
+    {
+        Harness harness = new(new SocketModeTransportOptions { Geos = [""] });
+
+        Task start = harness.Transport.StartAsync();
+        FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
+
+        Assert.Equal(new Uri("https://botapi.skype.com/v3/websockets/connect"), connection.NegotiateUri);
+        connection.Ready();
+        await start;
     }
 
     [Fact]
@@ -892,7 +905,9 @@ public class SocketModeTransportTests
         public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers, Func<string?>? getReplacedConnectionId = null)
         {
             string[] segments = negotiateUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            string geo = segments.Length > 3 ? segments[0] : string.Empty;
+            string geo = negotiateUri.Host.EndsWith(".botapi.skype.com", StringComparison.OrdinalIgnoreCase)
+                ? negotiateUri.Host.Split('.')[0]
+                : segments.Length > 3 ? segments[0] : string.Empty;
             FakeConnection connection = new(
                 negotiateUri,
                 geo,

@@ -25,7 +25,7 @@ internal static class SocketModeProtocol
         Array.AsReadOnly(["amer", "emea", "apac"]);
 
     /// <summary>
-    /// The negotiate path appended after the geography segment.
+    /// The negotiate path appended to each geo's base URL.
     /// </summary>
     internal const string NegotiatePath = "/v3/websockets/connect";
 
