@@ -33,7 +33,5 @@ dotnet run --project samples/SocketModeBot/SocketModeBot.csproj
 
 Logging is configured in `appsettings.json`: Warning by default, with `Microsoft.Teams` and `SocketModeBot`
 at Information.
-Each geo's returned SignalR endpoint is logged at Information alongside the aggregate status, with no logging
-configuration changes needed. URL credentials, query strings, and fragments are omitted.
 
 The bot is ready when the log shows `Socket Mode ready across 3 geo(s).` (amer, emea, apac). Startup fails if any geo cannot connect within the startup timeout.

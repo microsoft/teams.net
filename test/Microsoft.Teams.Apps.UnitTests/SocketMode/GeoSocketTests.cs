@@ -1313,7 +1313,7 @@ public class GeoSocketTests
             ReplacesConnectionId = GetReplacedConnectionId?.Invoke();
             if (startError is null)
             {
-                Handlers.OnNegotiated?.Invoke(new Uri("https://signalr.example.test/client"));
+                Handlers.OnNegotiated?.Invoke();
             }
 
             Started.TrySetResult();

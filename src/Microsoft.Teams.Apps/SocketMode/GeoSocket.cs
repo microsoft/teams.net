@@ -371,24 +371,7 @@ internal sealed class GeoSocket : IAsyncDisposable
                 envelope => DispatchAsync(generation, envelope),
                 frame => HandleReady(generation, frame),
                 (error, planned) => HandleClosed(generation, error, planned),
-                signalRUri =>
-                {
-                    generation.TokenIssuedAt = _timeProvider.GetTimestamp();
-                    if (_logger.IsEnabled(LogLevel.Information))
-                    {
-                        UriBuilder endpoint = new(signalRUri)
-                        {
-                            UserName = string.Empty,
-                            Password = string.Empty,
-                            Query = string.Empty,
-                            Fragment = string.Empty,
-                        };
-                        _logger.LogInformation(
-                            "Socket Mode geo {Geo} connecting to SignalR endpoint {SignalRUrl}.",
-                            Geo,
-                            endpoint.Uri.AbsoluteUri);
-                    }
-                }),
+                () => generation.TokenIssuedAt = _timeProvider.GetTimestamp()),
             getReplacedConnectionId);
 
         bool owned;

@@ -243,7 +243,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
 
         foreach (var geo in _geos)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Socket Mode geo {Geo} negotiate URL {NegotiateUrl}.",
                 geo.Geo.Length > 0 ? geo.Geo : "default",
                 geo.NegotiateUri);
