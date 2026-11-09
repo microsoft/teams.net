@@ -16,7 +16,7 @@ public class SocketModeObserverTests
         await using SocketModeTransport transport = new(
             new SocketModeTransportOptions
             {
-                Geos = [" /emea/ "],
+                Geos = ["emea"],
             },
             new UnusedConnectionFactory(),
             _ => Task.FromResult(new SocketDispatchResult(200)),
@@ -31,7 +31,7 @@ public class SocketModeObserverTests
         observer.Events.Ready += (_, _) => { };
         Assert.Equal(0, created);
         Assert.Equal(SocketModeStatus.Idle, observer.Status);
-        Assert.Equal(new Uri("https://emea.smba.trafficmanager.net/v3/websockets/connect"), observer.NegotiateUrl);
+        Assert.Equal(new Uri("https://emea.botapi.skype.com/v3/websockets/connect"), observer.NegotiateUrl);
         Assert.Equal(["emea"], observer.GeoList);
         Assert.Empty(observer.GeoStatuses);
         Assert.Equal(1, created);

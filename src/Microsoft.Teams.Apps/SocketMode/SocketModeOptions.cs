@@ -20,8 +20,8 @@ namespace Microsoft.Teams.Apps.SocketMode;
 public sealed class SocketModeOptions
 {
     /// <summary>
-    /// Gets or sets the geos to connect, one connection each. At least one geo is required.
-    /// Defaults to <c>amer</c>, <c>emea</c>, and <c>apac</c>.
+    /// Gets or sets the geos to connect, one connection each.
+    /// Defaults to <c>amer</c>, <c>emea</c>, and <c>apac</c>, including when the list is empty.
     /// Override this to connect to a different set of geos.
     /// </summary>
     public IReadOnlyList<string> Geos { get; set; } = SocketModeProtocol.DefaultGeos;

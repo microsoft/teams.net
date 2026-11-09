@@ -215,7 +215,6 @@ host.Run();
 - **One connection per geo** &mdash; The bot connects to `amer`, `emea`, and `apac` by default. Startup waits until
   every geo is ready and fails if any geo cannot connect within 30 seconds. Dropped connections reconnect
   automatically, and connection tokens are rotated before they expire.
-  Production connect requests use `https://{geo}.smba.trafficmanager.net/v3/websockets/connect`.
 - **No web server** &mdash; `UseSocketMode` is the only switch; `UseTeamsBotApplication()` is the same call for both
   transports. With Socket Mode enabled it throws on a `WebApplication`, and a host that includes a web server fails
   to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.
@@ -247,7 +246,8 @@ and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are n
 service-negotiation rejections.
 
 `UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `Geos`.
-At least one geo is required; null, empty, whitespace-only, and duplicate geo entries are rejected.
+Use this setting to target specific geos from the three defaults: `amer`, `emea`, and `apac`.
+An empty geo list uses all three defaults.
 Each geo's resolved connect/negotiate URL is logged at Information level during startup
 under `Microsoft.Teams.Apps.SocketMode.SocketModeTransport`. The SignalR URL returned by negotiation is used unchanged.
 Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.

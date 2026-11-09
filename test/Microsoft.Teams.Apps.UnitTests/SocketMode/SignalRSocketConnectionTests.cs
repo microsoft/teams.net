@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 public class SignalRSocketConnectionTests
 {
     private static readonly Uri NegotiateUri =
-        new("https://amer.smba.trafficmanager.net/v3/websockets/connect");
+        new("https://amer.botapi.skype.com/v3/websockets/connect");
     private static readonly Uri SignalRUri =
         new("https://signalr.example.test/client?hub=teams");
 

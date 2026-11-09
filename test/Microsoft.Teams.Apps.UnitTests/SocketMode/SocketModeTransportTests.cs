@@ -16,19 +16,21 @@ public class SocketModeTransportTests
 {
     private static readonly DateTimeOffset Now = DateTimeOffset.FromUnixTimeMilliseconds(1_700_000_000_000);
 
-    [Fact]
-    public async Task StartAsync_ConnectsEveryDefaultGeo()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartAsync_ConnectsEveryDefaultGeo(bool emptyGeos)
     {
-        Harness harness = new();
+        Harness harness = new(emptyGeos ? new SocketModeTransportOptions { Geos = [] } : null);
 
         Task start = harness.Transport.StartAsync();
         FakeConnection[] connections = await harness.Factory.WaitForAsync(3);
 
         Assert.Equal(
             [
-                "https://amer.smba.trafficmanager.net/v3/websockets/connect",
-                "https://apac.smba.trafficmanager.net/v3/websockets/connect",
-                "https://emea.smba.trafficmanager.net/v3/websockets/connect",
+                "https://amer.botapi.skype.com/v3/websockets/connect",
+                "https://apac.botapi.skype.com/v3/websockets/connect",
+                "https://emea.botapi.skype.com/v3/websockets/connect",
             ],
             SortedUris(connections));
         Assert.False(start.IsCompleted);
@@ -42,42 +44,48 @@ public class SocketModeTransportTests
         await start;
         Assert.Equal(SocketModeStatus.Ready, harness.Transport.Status);
         Assert.All(harness.Transport.GeoStatuses.Values, status => Assert.Equal(SocketModeStatus.Ready, status));
+        await harness.Transport.DisposeAsync();
     }
 
     [Theory]
-    [InlineData("amer", "amer")]
-    [InlineData("emea", "emea")]
-    [InlineData("apac", "apac")]
-    [InlineData(" /emea/ ", "emea")]
-    public async Task StartAsync_ConnectsOneConfiguredGeo(string geo, string expectedGeo)
+    [InlineData(new object[] { new[] { "emea" } })]
+    [InlineData(new object[] { new[] { "custom-geo", "other-geo" } })]
+    [InlineData(new object[] { new[] { "amer", "AMER" } })]
+    [InlineData(new object[] { new[] { "amer.amer" } })]
+    public async Task StartAsync_ConnectsConfiguredGeos(string[] geos)
     {
         Harness harness = new(new SocketModeTransportOptions
         {
-            Geos = [geo],
+            Geos = geos,
         });
 
-        Task start = harness.Transport.StartAsync();
-        FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
-        Assert.Equal($"https://{expectedGeo}.smba.trafficmanager.net/v3/websockets/connect", connection.NegotiateUri.AbsoluteUri);
-        Assert.Equal([expectedGeo], harness.Transport.GeoList);
-        connection.Ready();
-        await start;
+        FakeConnection[] connections = await harness.StartReadyAsync();
+
+        Assert.Equal(
+            geos.Select(geo => $"https://{geo.ToLowerInvariant()}.botapi.skype.com/v3/websockets/connect").Order(StringComparer.Ordinal),
+            SortedUris(connections));
+        Assert.Equal(geos, harness.Transport.GeoList);
+        Assert.Equal(geos.Length, harness.Transport.GeoStatuses.Count);
+        Assert.All(harness.Transport.GeoStatuses.Values, status => Assert.Equal(SocketModeStatus.Ready, status));
         await harness.Transport.DisposeAsync();
     }
 
     [Theory]
     [InlineData(null)]
-    [InlineData(new object[] { new string[0] })]
     [InlineData(new object[] { new string[] { null! } })]
     [InlineData(new object[] { new[] { "" } })]
-    [InlineData(new object[] { new[] { " " } })]
-    [InlineData(new object[] { new[] { "/" } })]
-    [InlineData(new object[] { new[] { " / / " } })]
     [InlineData(new object[] { new[] { "amer", "" } })]
-    [InlineData(new object[] { new[] { "amer", "AMER" } })]
+    [InlineData(new object[] { new[] { "amer", "amer" } })]
     public void Constructor_RejectsInvalidGeos(string[]? geos)
     {
         Assert.Throws<ArgumentException>(() => new Harness(new SocketModeTransportOptions { Geos = geos! }).Transport);
+    }
+
+    [Fact]
+    public void Constructor_DoesNotInterpretGeoAsUrlSyntax()
+    {
+        Assert.Throws<UriFormatException>(() =>
+            new Harness(new SocketModeTransportOptions { Geos = ["attacker.example#"] }).Transport);
     }
 
     [Fact]

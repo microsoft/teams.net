@@ -48,7 +48,7 @@ public enum SocketModeStatus
 internal sealed class SocketModeTransportOptions
 {
     /// <summary>
-    /// Gets the geos to connect. At least one geo is required.
+    /// Gets the geos to connect. An empty list uses the default geos.
     /// </summary>
     internal IReadOnlyList<string> Geos { get; init; } = SocketModeProtocol.DefaultGeos;
 
@@ -112,7 +112,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     /// <param name="timeProvider">The time provider for supervision timing and reply timestamps.</param>
     /// <param name="random">The random source for reconnect jitter.</param>
     /// <param name="events">The optional public lifecycle observers.</param>
-    /// <exception cref="ArgumentException">Thrown when the geo list is null or empty, or contains null, empty, or duplicate entries.</exception>
+    /// <exception cref="ArgumentException">Thrown when the geo list is null or contains null, empty, or duplicate entries.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the startup timeout is negative.</exception>
     internal SocketModeTransport(
         SocketModeTransportOptions options,
@@ -498,14 +498,26 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
 
     private static List<(string Geo, Uri NegotiateUri)> ResolveGeos(IReadOnlyList<string> geos)
     {
-        if (geos is null || geos.Count == 0)
+        if (geos is null)
         {
-            throw new ArgumentException(
-                "Socket Mode requires at least one geo.",
-                nameof(geos));
+            throw new ArgumentException("Socket Mode geos cannot be null.", nameof(geos));
         }
 
-        HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+        if (geos.Count == 0)
+        {
+            geos = SocketModeProtocol.DefaultGeos;
+        }
+
+        if (geos.Contains(string.Empty))
+        {
+            throw new ArgumentException("Socket Mode geos must not contain an empty string.", nameof(geos));
+        }
+
+        if (new HashSet<string>(geos, StringComparer.Ordinal).Count != geos.Count)
+        {
+            throw new ArgumentException("Socket Mode geos must not contain duplicates.", nameof(geos));
+        }
+
         List<(string Geo, Uri NegotiateUri)> resolved = [];
 
         foreach (string geo in geos)
@@ -515,22 +527,11 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
                 throw new ArgumentException("Socket Mode geos cannot contain null.", nameof(geos));
             }
 
-            string segment = geo.Trim().Trim('/');
-            if (string.IsNullOrWhiteSpace(segment))
-            {
-                throw new ArgumentException("Socket Mode geos cannot be empty or whitespace.", nameof(geos));
-            }
-
-            if (!seen.Add(segment))
-            {
-                throw new ArgumentException($"Socket Mode geo '{geo}' is listed more than once.", nameof(geos));
-            }
-
-            UriBuilder builder = new(Uri.UriSchemeHttps, $"{segment}.{SocketModeProtocol.NegotiateHost}")
+            UriBuilder builder = new(Uri.UriSchemeHttps, $"{Uri.EscapeDataString(geo)}.{SocketModeProtocol.NegotiateHost}")
             {
                 Path = SocketModeProtocol.NegotiatePath,
             };
-            resolved.Add((segment, builder.Uri));
+            resolved.Add((geo, builder.Uri));
         }
 
         return resolved;
