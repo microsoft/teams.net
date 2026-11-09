@@ -48,12 +48,7 @@ public enum SocketModeStatus
 internal sealed class SocketModeTransportOptions
 {
     /// <summary>
-    /// Gets the base URL used to negotiate each geo connection.
-    /// </summary>
-    internal Uri NegotiateBaseUri { get; init; } = new(SocketModeProtocol.DefaultNegotiateBaseUrl);
-
-    /// <summary>
-    /// Gets the geos to connect. An empty string connects without a geo subdomain.
+    /// Gets the geos to connect. At least one geo is required.
     /// </summary>
     internal IReadOnlyList<string> Geos { get; init; } = SocketModeProtocol.DefaultGeos;
 
@@ -117,7 +112,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     /// <param name="timeProvider">The time provider for supervision timing and reply timestamps.</param>
     /// <param name="random">The random source for reconnect jitter.</param>
     /// <param name="events">The optional public lifecycle observers.</param>
-    /// <exception cref="ArgumentException">Thrown when the geos are empty, null, or duplicated.</exception>
+    /// <exception cref="ArgumentException">Thrown when the geo list is null or empty, or contains null, empty, or duplicate entries.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the startup timeout is negative.</exception>
     internal SocketModeTransport(
         SocketModeTransportOptions options,
@@ -140,9 +135,8 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         _random = random ?? Random.Shared;
         _events = events;
 
-        ArgumentNullException.ThrowIfNull(options.NegotiateBaseUri, nameof(options));
         ArgumentOutOfRangeException.ThrowIfLessThan(options.StartupTimeout, TimeSpan.Zero, nameof(options));
-        _geos = ResolveGeos(options.NegotiateBaseUri, options.Geos);
+        _geos = ResolveGeos(options.Geos);
     }
 
     /// <summary>
@@ -245,7 +239,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
         {
             _logger.LogInformation(
                 "Socket Mode geo {Geo} negotiate URL {NegotiateUrl}.",
-                geo.Geo?.Length > 0 ? geo.Geo : "default",
+                geo.Geo,
                 geo.NegotiateUri);
         }
 
@@ -502,12 +496,12 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             TeamsActivityTypes.Invoke,
             StringComparison.OrdinalIgnoreCase);
 
-    private static List<(string Geo, Uri NegotiateUri)> ResolveGeos(Uri baseUri, IReadOnlyList<string> geos)
+    private static List<(string Geo, Uri NegotiateUri)> ResolveGeos(IReadOnlyList<string> geos)
     {
         if (geos is null || geos.Count == 0)
         {
             throw new ArgumentException(
-                "Socket Mode requires at least one geo. Use an empty string to connect without a geo subdomain.",
+                "Socket Mode requires at least one geo.",
                 nameof(geos));
         }
 
@@ -522,16 +516,19 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             }
 
             string segment = geo.Trim().Trim('/');
+            if (string.IsNullOrWhiteSpace(segment))
+            {
+                throw new ArgumentException("Socket Mode geos cannot be empty or whitespace.", nameof(geos));
+            }
+
             if (!seen.Add(segment))
             {
                 throw new ArgumentException($"Socket Mode geo '{geo}' is listed more than once.", nameof(geos));
             }
 
-            UriBuilder builder = new(baseUri)
+            UriBuilder builder = new(Uri.UriSchemeHttps, $"{segment}.{SocketModeProtocol.NegotiateHost}")
             {
-                Host = segment.Length > 0 ? $"{segment}.{baseUri.Host}" : baseUri.Host,
-                Path = baseUri.AbsolutePath.TrimEnd('/') + SocketModeProtocol.NegotiatePath,
-                Fragment = string.Empty,
+                Path = SocketModeProtocol.NegotiatePath,
             };
             resolved.Add((segment, builder.Uri));
         }

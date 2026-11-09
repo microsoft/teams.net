@@ -26,9 +26,9 @@ public class SocketModeTransportTests
 
         Assert.Equal(
             [
-                "https://amer.botapi.skype.com/v3/websockets/connect",
-                "https://apac.botapi.skype.com/v3/websockets/connect",
-                "https://emea.botapi.skype.com/v3/websockets/connect",
+                "https://amer.smbatrafficmanager.net/v3/websockets/connect",
+                "https://apac.smbatrafficmanager.net/v3/websockets/connect",
+                "https://emea.smbatrafficmanager.net/v3/websockets/connect",
             ],
             SortedUris(connections));
         Assert.False(start.IsCompleted);
@@ -44,60 +44,40 @@ public class SocketModeTransportTests
         Assert.All(harness.Transport.GeoStatuses.Values, status => Assert.Equal(SocketModeStatus.Ready, status));
     }
 
-    [Fact]
-    public async Task StartAsync_BuildsGeoUrisFromCustomBaseAndEmptyGeo()
-    {
-        Harness harness = new(new SocketModeTransportOptions
-        {
-            NegotiateBaseUri = new Uri("https://botapi.example:3978/ring/"),
-            Geos = ["", " /eu/ "],
-        });
-
-        Task start = harness.Transport.StartAsync();
-        FakeConnection[] connections = await harness.Factory.WaitForAsync(2);
-
-        Assert.Equal(
-            [
-                "https://botapi.example:3978/ring/v3/websockets/connect",
-                "https://eu.botapi.example:3978/ring/v3/websockets/connect",
-            ],
-            SortedUris(connections));
-        foreach (FakeConnection connection in connections)
-        {
-            connection.Ready();
-        }
-
-        await start;
-    }
-
     [Theory]
-    [InlineData("https://botapi.example", "amer", "https://amer.botapi.example/v3/websockets/connect")]
-    [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "apac", "https://apac.botapi.example:8443/ring/v3/websockets/connect?route=test")]
-    [InlineData("https://botapi.example/ring/?route=test", "", "https://botapi.example/ring/v3/websockets/connect?route=test")]
-    [InlineData("https://botapi.example/ring/#fragment", "", "https://botapi.example/ring/v3/websockets/connect")]
-    [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "", "https://botapi.example:8443/ring/v3/websockets/connect?route=test")]
-    public async Task StartAsync_ResolvesCustomBaseUrls(string baseUrl, string geo, string expectedUrl)
+    [InlineData("amer", "amer")]
+    [InlineData("emea", "emea")]
+    [InlineData("apac", "apac")]
+    [InlineData(" /emea/ ", "emea")]
+    public async Task StartAsync_ConnectsOneConfiguredGeo(string geo, string expectedGeo)
     {
         Harness harness = new(new SocketModeTransportOptions
         {
-            NegotiateBaseUri = new Uri(baseUrl),
             Geos = [geo],
         });
 
         Task start = harness.Transport.StartAsync();
         FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
-        Assert.Equal(expectedUrl, connection.NegotiateUri.AbsoluteUri);
+        Assert.Equal($"https://{expectedGeo}.smbatrafficmanager.net/v3/websockets/connect", connection.NegotiateUri.AbsoluteUri);
+        Assert.Equal([expectedGeo], harness.Transport.GeoList);
         connection.Ready();
         await start;
         await harness.Transport.DisposeAsync();
     }
 
     [Theory]
+    [InlineData(null)]
     [InlineData(new object[] { new string[0] })]
+    [InlineData(new object[] { new string[] { null! } })]
+    [InlineData(new object[] { new[] { "" } })]
+    [InlineData(new object[] { new[] { " " } })]
+    [InlineData(new object[] { new[] { "/" } })]
+    [InlineData(new object[] { new[] { " / / " } })]
+    [InlineData(new object[] { new[] { "amer", "" } })]
     [InlineData(new object[] { new[] { "amer", "AMER" } })]
-    public void Constructor_RejectsInvalidGeos(string[] geos)
+    public void Constructor_RejectsInvalidGeos(string[]? geos)
     {
-        Assert.Throws<ArgumentException>(() => new Harness(new SocketModeTransportOptions { Geos = geos }).Transport);
+        Assert.Throws<ArgumentException>(() => new Harness(new SocketModeTransportOptions { Geos = geos! }).Transport);
     }
 
     [Fact]
@@ -913,10 +893,7 @@ public class SocketModeTransportTests
 
         public ISocketConnection Create(Uri negotiateUri, SocketConnectionHandlers handlers, Func<string?>? getReplacedConnectionId = null)
         {
-            string[] segments = negotiateUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            string geo = negotiateUri.Host.EndsWith(".botapi.skype.com", StringComparison.OrdinalIgnoreCase)
-                ? negotiateUri.Host.Split('.')[0]
-                : segments.Length > 3 ? segments[0] : string.Empty;
+            string geo = negotiateUri.Host.Split('.')[0];
             FakeConnection connection = new(
                 negotiateUri,
                 geo,

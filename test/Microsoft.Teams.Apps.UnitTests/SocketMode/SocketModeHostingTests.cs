@@ -94,7 +94,11 @@ public class SocketModeHostingTests
 
     public static TheoryData<Action<SocketModeOptions>> InvalidOptions => new()
     {
+        o => o.Geos = null!,
         o => o.Geos = [],
+        o => o.Geos = [""],
+        o => o.Geos = [" "],
+        o => o.Geos = ["amer", ""],
         o => o.Geos = ["amer", null!],
         o => o.Geos = ["amer", " AMER/"],
     };
@@ -135,7 +139,7 @@ public class SocketModeHostingTests
 
         using ServiceProvider provider = services.BuildServiceProvider();
         SocketModeNegotiateResponse response = await provider.GetRequiredService<ISocketModeNegotiator>()
-            .NegotiateAsync(new Uri("https://botapi.skype.com/amer/v3/websockets/connect"));
+            .NegotiateAsync(new Uri("https://amer.smbatrafficmanager.net/v3/websockets/connect"));
 
         Assert.Equal("signalr-token", response.AccessToken);
         Assert.Equal(["https://api.botframework.com/.default"], scopes);
@@ -165,7 +169,7 @@ public class SocketModeHostingTests
         SocketModeTransport transport = provider.GetRequiredService<SocketModeTransport>();
         Assert.Equal(SocketModeStatus.Idle, socket.Status);
         Assert.Equal(["amer", "emea"], socket.GeoList);
-        Assert.Equal(new Uri("https://amer.botapi.skype.com/v3/websockets/connect"), socket.NegotiateUrl);
+        Assert.Equal(new Uri("https://amer.smbatrafficmanager.net/v3/websockets/connect"), socket.NegotiateUrl);
         Assert.Empty(socket.GeoStatuses);
 
         await hosted.StartAsync(CancellationToken.None);

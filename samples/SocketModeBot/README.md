@@ -9,8 +9,8 @@ This sample is an echo bot that receives activities over Socket Mode instead of 
 
 ## What it shows
 
-- `UseSocketMode()` on `AddTeamsBotApplication` to receive activities over Socket Mode using the production connect endpoints (`https://{geo}.botapi.skype.com/v3/websockets/connect`).
-- One connection per geo (`amer`, `emea`, `apac`) by default for inbound coverage across regions. Override with `Geos = [...]` or point at a custom ring with `NegotiateBaseUrl` in the `UseSocketMode(socket => ...)` callback.
+- `UseSocketMode()` on `AddTeamsBotApplication` to receive activities over Socket Mode using the production connect endpoints (`https://{geo}.smbatrafficmanager.net/v3/websockets/connect`).
+- One connection per geo (`amer`, `emea`, `apac`) by default for inbound coverage across regions. Configure `Geos = [...]` in the `UseSocketMode(socket => ...)` callback with at least one geo.
 - `<NoWarn>$(NoWarn);ExperimentalTeamsSocketMode</NoWarn>` in the project file, because Socket Mode is experimental.
 - A generic host (`Host.CreateApplicationBuilder`) with no web server, and `UseTeamsBotApplication()` to get the app.
 - Per-geo `Ready`, `Disconnected`, and `Reconnected` subscriptions in `Program.cs`, plus a status snapshot after startup.

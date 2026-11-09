@@ -14,9 +14,9 @@ internal static class SocketModeProtocol
     internal const int CurrentVersion = 1;
 
     /// <summary>
-    /// The default base URL for Socket Mode negotiation.
+    /// The service hostname used for Socket Mode negotiation.
     /// </summary>
-    internal const string DefaultNegotiateBaseUrl = "https://botapi.skype.com";
+    internal const string NegotiateHost = "smbatrafficmanager.net";
 
     /// <summary>
     /// The default geographies for Socket Mode connections.
