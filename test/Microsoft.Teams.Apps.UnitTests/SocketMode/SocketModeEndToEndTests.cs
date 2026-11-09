@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.SocketMode;
 using Microsoft.Teams.Core.Schema;
@@ -41,8 +42,21 @@ public class SocketModeEndToEndTests
             stack.Http.Requests.Select(request => request.AbsoluteUri).Order(StringComparer.Ordinal));
         Assert.All(stack.Http.Authorizations, authorization => Assert.Equal("Bearer bot-token", authorization));
         Assert.Equal(
-            ["https://signalr.test/amer", "https://signalr.test/apac", "https://signalr.test/emea"],
+            [
+                "https://signalr.test/amer?access_token=secret#fragment",
+                "https://signalr.test/apac?access_token=secret#fragment",
+                "https://signalr.test/emea?access_token=secret#fragment",
+            ],
             clients.Select(client => client.Url.AbsoluteUri).Order(StringComparer.Ordinal));
+        Assert.Equal(
+            [
+                "Socket Mode geo amer connecting to SignalR endpoint https://signalr.test/amer.",
+                "Socket Mode geo apac connecting to SignalR endpoint https://signalr.test/apac.",
+                "Socket Mode geo emea connecting to SignalR endpoint https://signalr.test/emea.",
+            ],
+            stack.Logger.Information.Where(message => message.Contains("connecting to SignalR endpoint", StringComparison.Ordinal))
+                .Order(StringComparer.Ordinal));
+        Assert.DoesNotContain(stack.Logger.Information, message => message.Contains("secret", StringComparison.Ordinal));
 
         FakeSignalRClient emea = clients.Single(client => client.Url.AbsolutePath == "/emea");
         SocketReplyFrame? reply = await emea.ActivityAsync(new SocketActivityEnvelope
@@ -120,7 +134,7 @@ public class SocketModeEndToEndTests
                     Dispatched.Enqueue(activity);
                     return Task.FromResult(new SocketDispatchResult(200, null));
                 },
-                NullLogger.Instance,
+                Logger,
                 botKey: "bot-id");
         }
 
@@ -128,6 +142,24 @@ public class SocketModeEndToEndTests
         internal FakeSignalRClientFactory SignalR { get; } = new();
         internal ConcurrentQueue<CoreActivity> Dispatched { get; } = new();
         internal SocketModeTransport Transport { get; }
+        internal InformationLogger Logger { get; } = new();
+    }
+
+    private sealed class InformationLogger : ILogger
+    {
+        internal ConcurrentQueue<string> Information { get; } = new();
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Information;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == LogLevel.Information)
+            {
+                Information.Enqueue(formatter(state, exception));
+            }
+        }
     }
 
     private sealed class NegotiateHandler : HttpMessageHandler
@@ -169,7 +201,7 @@ public class SocketModeEndToEndTests
             }
 
             string geo = uri.Host.Split('.')[0];
-            string json = $$"""{"url":"https://signalr.test/{{geo}}","accessToken":"token-{{geo}}","expiresIn":3600}""";
+            string json = $$"""{"url":"https://signalr.test/{{geo}}?access_token=secret#fragment","accessToken":"token-{{geo}}","expiresIn":3600}""";
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json"),

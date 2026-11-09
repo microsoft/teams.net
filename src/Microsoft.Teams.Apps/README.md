@@ -250,6 +250,8 @@ service-negotiation rejections.
 Custom base hosts also use geo subdomains, preserving any existing base path; an empty geo uses the base URL
 without a geo subdomain. Each geo's resolved connect/negotiate URL is logged at Debug level during startup
 under `Microsoft.Teams.Apps.SocketMode.SocketModeTransport`. The SignalR URL returned by negotiation is used unchanged.
+Each geo's returned SignalR endpoint is also logged at Information level on connection attempts, including
+reconnects and token rotations. URL credentials, query strings, and fragments are omitted from this log.
 Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
 Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.
 `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier

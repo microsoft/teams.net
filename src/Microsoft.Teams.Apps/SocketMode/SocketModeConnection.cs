@@ -59,12 +59,12 @@ internal sealed class SocketConnectionHandlers
     /// <param name="onActivity">Handles an incoming activity envelope.</param>
     /// <param name="onReady">Handles the ready frame.</param>
     /// <param name="onClosed">Handles connection closure and indicates whether it was planned.</param>
-    /// <param name="onNegotiated">Runs when negotiate succeeds, which is when the token lifetime starts.</param>
+    /// <param name="onNegotiated">Receives the SignalR URL when negotiate succeeds, which is when the token lifetime starts.</param>
     internal SocketConnectionHandlers(
         Func<SocketActivityEnvelope, Task<SocketReplyFrame?>> onActivity,
         Action<SocketReadyFrame> onReady,
         Action<Exception?, bool> onClosed,
-        Action? onNegotiated = null)
+        Action<Uri>? onNegotiated = null)
     {
         OnActivity = onActivity ?? throw new ArgumentNullException(nameof(onActivity));
         OnReady = onReady ?? throw new ArgumentNullException(nameof(onReady));
@@ -90,5 +90,5 @@ internal sealed class SocketConnectionHandlers
     /// <summary>
     /// Gets the callback that runs when negotiate succeeds.
     /// </summary>
-    internal Action? OnNegotiated { get; }
+    internal Action<Uri>? OnNegotiated { get; }
 }
