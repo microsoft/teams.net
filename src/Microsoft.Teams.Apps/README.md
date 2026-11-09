@@ -215,7 +215,7 @@ host.Run();
 - **One connection per geo** &mdash; The bot connects to `amer`, `emea`, and `apac` by default. Startup waits until
   every geo is ready and fails if any geo cannot connect within 30 seconds. Dropped connections reconnect
   automatically, and connection tokens are rotated before they expire.
-  Production connect requests use `https://{geo}.smbatrafficmanager.net/v3/websockets/connect`.
+  Production connect requests use `https://{geo}.smba.trafficmanager.net/v3/websockets/connect`.
 - **No web server** &mdash; `UseSocketMode` is the only switch; `UseTeamsBotApplication()` is the same call for both
   transports. With Socket Mode enabled it throws on a `WebApplication`, and a host that includes a web server fails
   to start. Tabs, OAuth callbacks, health endpoints, and other HTTP routes are unavailable.

@@ -26,9 +26,9 @@ public class SocketModeTransportTests
 
         Assert.Equal(
             [
-                "https://amer.smbatrafficmanager.net/v3/websockets/connect",
-                "https://apac.smbatrafficmanager.net/v3/websockets/connect",
-                "https://emea.smbatrafficmanager.net/v3/websockets/connect",
+                "https://amer.smba.trafficmanager.net/v3/websockets/connect",
+                "https://apac.smba.trafficmanager.net/v3/websockets/connect",
+                "https://emea.smba.trafficmanager.net/v3/websockets/connect",
             ],
             SortedUris(connections));
         Assert.False(start.IsCompleted);
@@ -58,7 +58,7 @@ public class SocketModeTransportTests
 
         Task start = harness.Transport.StartAsync();
         FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
-        Assert.Equal($"https://{expectedGeo}.smbatrafficmanager.net/v3/websockets/connect", connection.NegotiateUri.AbsoluteUri);
+        Assert.Equal($"https://{expectedGeo}.smba.trafficmanager.net/v3/websockets/connect", connection.NegotiateUri.AbsoluteUri);
         Assert.Equal([expectedGeo], harness.Transport.GeoList);
         connection.Ready();
         await start;

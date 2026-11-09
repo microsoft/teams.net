@@ -16,7 +16,7 @@ internal static class SocketModeProtocol
     /// <summary>
     /// The service hostname used for Socket Mode negotiation.
     /// </summary>
-    internal const string NegotiateHost = "smbatrafficmanager.net";
+    internal const string NegotiateHost = "smba.trafficmanager.net";
 
     /// <summary>
     /// The default geographies for Socket Mode connections.

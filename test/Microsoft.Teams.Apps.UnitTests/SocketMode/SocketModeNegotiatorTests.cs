@@ -11,10 +11,10 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 public class SocketModeNegotiatorTests
 {
     private const string BotToken = "bot-token";
-    private static readonly Uri NegotiateUri = new("https://amer.smbatrafficmanager.net/v3/websockets/connect");
+    private static readonly Uri NegotiateUri = new("https://amer.smba.trafficmanager.net/v3/websockets/connect");
 
     [Theory]
-    [InlineData("https://amer.smbatrafficmanager.net/v3/websockets/connect")]
+    [InlineData("https://amer.smba.trafficmanager.net/v3/websockets/connect")]
     [InlineData("http://localhost:5000/v3/websockets/connect")]
     [InlineData("http://127.0.0.1:5000/v3/websockets/connect")]
     [InlineData("http://[::1]:5000/v3/websockets/connect")]
@@ -30,11 +30,11 @@ public class SocketModeNegotiatorTests
     }
 
     [Theory]
-    [InlineData("http://amer.smbatrafficmanager.net/v3/websockets/connect")]
+    [InlineData("http://amer.smba.trafficmanager.net/v3/websockets/connect")]
     [InlineData("http://127.0.0.2/v3/websockets/connect")]
-    [InlineData("wss://amer.smbatrafficmanager.net/v3/websockets/connect")]
+    [InlineData("wss://amer.smba.trafficmanager.net/v3/websockets/connect")]
     [InlineData("ws://localhost:5000/v3/websockets/connect")]
-    [InlineData("ftp://amer.smbatrafficmanager.net/v3/websockets/connect")]
+    [InlineData("ftp://amer.smba.trafficmanager.net/v3/websockets/connect")]
     public async Task NegotiateAsync_RejectsUnsupportedNegotiateUris(string uri)
     {
         RecordingHandler handler = SuccessHandler();

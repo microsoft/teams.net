@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 
 public class GeoSocketTests
 {
-    private static readonly Uri NegotiateUri = new("https://amer.smbatrafficmanager.net/v3/websockets/connect");
+    private static readonly Uri NegotiateUri = new("https://amer.smba.trafficmanager.net/v3/websockets/connect");
 
     [Fact]
     public async Task StartAsync_CompletesOnlyAfterSocketReady()
