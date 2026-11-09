@@ -32,7 +32,7 @@ public class GeoSocketTests
     }
 
     [Fact]
-    public async Task StartAsync_LogsGeoAndSignalREndpointWithoutSecrets()
+    public async Task StartAsync_LogsGeoAndSignalREndpointAtInformationWithoutSecrets()
     {
         Harness harness = new();
         FakeConnection connection = harness.Factory.Enqueue();
@@ -42,7 +42,7 @@ public class GeoSocketTests
 
         Assert.Equal(
             "Socket Mode geo amer connecting to SignalR endpoint https://signalr.example.test:8443/client.",
-            Assert.Single(harness.Logger.DebugMessages));
+            Assert.Single(harness.Logger.InformationMessages));
         await harness.Socket.DisposeAsync();
     }
 
@@ -1393,17 +1393,17 @@ public class GeoSocketTests
 
     private sealed class RecordingLogger : ILogger
     {
-        private readonly List<string> _debugMessages = [];
+        private readonly List<string> _informationMessages = [];
         private readonly List<(string Message, Exception? Exception)> _warnings = [];
         private readonly List<Exception?> _errors = [];
 
-        internal string[] DebugMessages
+        internal string[] InformationMessages
         {
             get
             {
-                lock (_debugMessages)
+                lock (_informationMessages)
                 {
-                    return [.. _debugMessages];
+                    return [.. _informationMessages];
                 }
             }
         }
@@ -1433,7 +1433,7 @@ public class GeoSocketTests
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull => null;
 
-        public bool IsEnabled(LogLevel logLevel) => true;
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Information;
 
         public void Log<TState>(
             LogLevel logLevel,
@@ -1442,11 +1442,11 @@ public class GeoSocketTests
             Exception? exception,
             Func<TState, Exception?, string> formatter)
         {
-            if (logLevel == LogLevel.Debug)
+            if (logLevel == LogLevel.Information)
             {
-                lock (_debugMessages)
+                lock (_informationMessages)
                 {
-                    _debugMessages.Add(formatter(state, exception));
+                    _informationMessages.Add(formatter(state, exception));
                 }
             }
             else if (logLevel == LogLevel.Warning)
