@@ -32,6 +32,21 @@ public class GeoSocketTests
     }
 
     [Fact]
+    public async Task StartAsync_LogsGeoAndSignalREndpointWithoutSecrets()
+    {
+        Harness harness = new();
+        FakeConnection connection = harness.Factory.Enqueue();
+        connection.SignalRUri = new Uri("https://user:password@signalr.example.test:8443/client?access_token=secret#fragment");
+
+        await harness.StartReadyAsync(connection);
+
+        Assert.Equal(
+            "Socket Mode geo amer connecting to SignalR endpoint https://signalr.example.test:8443/client.",
+            Assert.Single(harness.Logger.DebugMessages));
+        await harness.Socket.DisposeAsync();
+    }
+
+    [Fact]
     public async Task StartAsync_RetriesWithBackoffWithinBudget()
     {
         Harness harness = new() { Backoff = _ => TimeSpan.FromSeconds(2) };
@@ -1276,6 +1291,8 @@ public class GeoSocketTests
 
         internal SocketConnectionHandlers Handlers { get; set; } = null!;
 
+        internal Uri SignalRUri { get; set; } = new("https://signalr.example.test/client");
+
         internal Func<string?>? GetReplacedConnectionId { get; set; }
 
         /// <summary>
@@ -1313,7 +1330,7 @@ public class GeoSocketTests
             ReplacesConnectionId = GetReplacedConnectionId?.Invoke();
             if (startError is null)
             {
-                Handlers.OnNegotiated?.Invoke();
+                Handlers.OnNegotiated?.Invoke(SignalRUri);
             }
 
             Started.TrySetResult();
@@ -1376,8 +1393,20 @@ public class GeoSocketTests
 
     private sealed class RecordingLogger : ILogger
     {
+        private readonly List<string> _debugMessages = [];
         private readonly List<(string Message, Exception? Exception)> _warnings = [];
         private readonly List<Exception?> _errors = [];
+
+        internal string[] DebugMessages
+        {
+            get
+            {
+                lock (_debugMessages)
+                {
+                    return [.. _debugMessages];
+                }
+            }
+        }
 
         internal Exception?[] Errors
         {
@@ -1413,7 +1442,14 @@ public class GeoSocketTests
             Exception? exception,
             Func<TState, Exception?, string> formatter)
         {
-            if (logLevel == LogLevel.Warning)
+            if (logLevel == LogLevel.Debug)
+            {
+                lock (_debugMessages)
+                {
+                    _debugMessages.Add(formatter(state, exception));
+                }
+            }
+            else if (logLevel == LogLevel.Warning)
             {
                 lock (_warnings)
                 {

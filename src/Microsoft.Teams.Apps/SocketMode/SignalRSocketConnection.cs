@@ -143,14 +143,15 @@ internal sealed class SignalRSocketConnection : ISocketConnection
                 await _negotiator
                     .NegotiateAsync(_negotiateUri, _getReplacedConnectionId, startSource.Token)
                     .ConfigureAwait(false);
-            _handlers.OnNegotiated?.Invoke();
+            Uri signalRUri = new(negotiateResponse.Url!, UriKind.Absolute);
+            _handlers.OnNegotiated?.Invoke(signalRUri);
 
             TokenLifetime = negotiateResponse.ExpiresIn > 0
                 ? TimeSpan.FromSeconds(negotiateResponse.ExpiresIn)
                 : null;
 
             ISignalRClientConnection connection = _createSignalRClientConnection(
-                new Uri(negotiateResponse.Url!, UriKind.Absolute),
+                signalRUri,
                 negotiateResponse.AccessToken!);
             if (!TryPublishConnection(connection))
             {

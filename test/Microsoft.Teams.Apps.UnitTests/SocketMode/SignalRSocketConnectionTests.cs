@@ -38,6 +38,29 @@ public class SignalRSocketConnectionTests
     }
 
     [Fact]
+    public async Task StartAsync_ReportsTheNegotiatedSignalRUrl()
+    {
+        FakeNegotiator negotiator = new(SuccessfulNegotiation());
+        FakeSignalRClientConnection signalR = new();
+        FakeSignalRConnectionFactory signalRFactory = new(signalR);
+        Uri? negotiatedUrl = null;
+        SocketConnectionHandlers handlers = new(
+            _ => Task.FromResult<SocketReplyFrame?>(null),
+            _ => { },
+            (_, _) => { },
+            url => negotiatedUrl = url);
+        await using SignalRSocketConnection connection = CreateConnection(negotiator, signalRFactory, handlers);
+
+        Task start = connection.StartAsync(CancellationToken.None);
+        await signalR.Started.Task;
+
+        Assert.Equal(SignalRUri, negotiatedUrl);
+        Assert.Equal(signalRFactory.Url, negotiatedUrl);
+        signalR.Ready(new SocketReadyFrame());
+        await start;
+    }
+
+    [Fact]
     public async Task StartAsync_DoesNotCompleteBeforeSocketReady()
     {
         TestHarness harness = CreateHarness();
