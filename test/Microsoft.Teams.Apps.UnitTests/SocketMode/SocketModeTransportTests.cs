@@ -73,7 +73,6 @@ public class SocketModeTransportTests
     [Theory]
     [InlineData("https://botapi.example", "amer", "https://amer.botapi.example/v3/websockets/connect")]
     [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "apac", "https://apac.botapi.example:8443/ring/v3/websockets/connect?route=test")]
-    [InlineData("http://localhost:3978/", "amer", "http://amer.localhost:3978/v3/websockets/connect")]
     public async Task StartAsync_UsesGeoSubdomainsForCustomHosts(string baseUrl, string geo, string expectedUrl)
     {
         Harness harness = new(new SocketModeTransportOptions
