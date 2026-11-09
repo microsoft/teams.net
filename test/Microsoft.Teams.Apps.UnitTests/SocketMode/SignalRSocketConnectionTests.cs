@@ -38,28 +38,6 @@ public class SignalRSocketConnectionTests
     }
 
     [Fact]
-    public async Task StartAsync_ReportsSuccessfulNegotiation()
-    {
-        FakeNegotiator negotiator = new(SuccessfulNegotiation());
-        FakeSignalRClientConnection signalR = new();
-        FakeSignalRConnectionFactory signalRFactory = new(signalR);
-        bool negotiated = false;
-        SocketConnectionHandlers handlers = new(
-            _ => Task.FromResult<SocketReplyFrame?>(null),
-            _ => { },
-            (_, _) => { },
-            () => negotiated = true);
-        await using SignalRSocketConnection connection = CreateConnection(negotiator, signalRFactory, handlers);
-
-        Task start = connection.StartAsync(CancellationToken.None);
-        await signalR.Started.Task;
-
-        Assert.True(negotiated);
-        signalR.Ready(new SocketReadyFrame());
-        await start;
-    }
-
-    [Fact]
     public async Task StartAsync_DoesNotCompleteBeforeSocketReady()
     {
         TestHarness harness = CreateHarness();

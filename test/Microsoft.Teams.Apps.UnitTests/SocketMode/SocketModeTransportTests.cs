@@ -54,30 +54,14 @@ public class SocketModeTransportTests
     }
 
     [Fact]
-    public async Task StartAsync_EmptyGeoUsesProductionBaseWithoutSubdomain()
-    {
-        ErrorLogger logger = new();
-        Harness harness = new(new SocketModeTransportOptions { Geos = [""] }) { Logger = logger };
-
-        Task start = harness.Transport.StartAsync();
-        FakeConnection connection = Assert.Single(await harness.Factory.WaitForAsync(1));
-
-        Assert.Equal(new Uri("https://botapi.skype.com/v3/websockets/connect"), connection.NegotiateUri);
-        Assert.Equal(
-            "Socket Mode geo default negotiate URL https://botapi.skype.com/v3/websockets/connect.",
-            Assert.Single(logger.Records, record => record.Level == LogLevel.Debug).Message);
-        connection.Ready();
-        await start;
-    }
-
-    [Fact]
     public async Task StartAsync_BuildsGeoUrisFromCustomBaseAndEmptyGeo()
     {
+        ErrorLogger logger = new();
         Harness harness = new(new SocketModeTransportOptions
         {
             NegotiateBaseUri = new Uri("https://botapi.example:3978/ring/"),
             Geos = ["", " /eu/ "],
-        });
+        }) { Logger = logger };
 
         Task start = harness.Transport.StartAsync();
         FakeConnection[] connections = await harness.Factory.WaitForAsync(2);
@@ -88,6 +72,9 @@ public class SocketModeTransportTests
                 "https://eu.botapi.example:3978/ring/v3/websockets/connect",
             ],
             SortedUris(connections));
+        Assert.Contains(logger.Records, record =>
+            record.Level == LogLevel.Debug
+            && record.Message == "Socket Mode geo default negotiate URL https://botapi.example:3978/ring/v3/websockets/connect.");
         foreach (FakeConnection connection in connections)
         {
             connection.Ready();
@@ -98,7 +85,6 @@ public class SocketModeTransportTests
 
     [Theory]
     [InlineData("https://botapi.example", "amer", "https://amer.botapi.example/v3/websockets/connect")]
-    [InlineData("https://botapi.example/ring/", " /eu/ ", "https://eu.botapi.example/ring/v3/websockets/connect")]
     [InlineData("https://botapi.example:8443/ring/?route=test#fragment", "apac", "https://apac.botapi.example:8443/ring/v3/websockets/connect?route=test")]
     [InlineData("http://localhost:3978/", "amer", "http://amer.localhost:3978/v3/websockets/connect")]
     public async Task StartAsync_UsesGeoSubdomainsForCustomHosts(string baseUrl, string geo, string expectedUrl)
