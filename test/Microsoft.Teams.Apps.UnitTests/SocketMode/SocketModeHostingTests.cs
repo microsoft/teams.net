@@ -167,7 +167,6 @@ public class SocketModeHostingTests
         SocketModeTransport transport = provider.GetRequiredService<SocketModeTransport>();
         Assert.Equal(SocketModeStatus.Idle, socket.Status);
         Assert.Equal(["amer", "emea"], socket.GeoList);
-        Assert.Equal(new Uri("https://amer.botapi.skype.com/v3/websockets/connect"), socket.NegotiateUrl);
         Assert.Empty(socket.GeoStatuses);
 
         await hosted.StartAsync(CancellationToken.None);

@@ -183,9 +183,6 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
     /// <summary>Gets a snapshot of the resolved geo identifiers.</summary>
     internal IReadOnlyList<string> GeoList => Array.AsReadOnly(_geos.Select(geo => geo.Geo).ToArray());
 
-    /// <summary>Gets the resolved negotiation endpoint for the first geo.</summary>
-    internal Uri NegotiateUrl => _geos[0].NegotiateUri;
-
     /// <inheritdoc />
     TimeSpan IGeoSocketOwner.StartupTimeout => _options.StartupTimeout;
 
@@ -513,7 +510,7 @@ internal sealed class SocketModeTransport : IGeoSocketOwner, IAsyncDisposable
             throw new ArgumentException("Socket Mode geos must not contain an empty string.", nameof(geos));
         }
 
-        if (new HashSet<string>(geos, StringComparer.Ordinal).Count != geos.Count)
+        if (new HashSet<string>(geos, StringComparer.OrdinalIgnoreCase).Count != geos.Count)
         {
             throw new ArgumentException("Socket Mode geos must not contain duplicates.", nameof(geos));
         }

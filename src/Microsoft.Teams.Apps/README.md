@@ -239,8 +239,7 @@ from host startup; normal shutdown does not raise a disconnect event.
 These events are experimental and observational. Handlers run synchronously, may run concurrently across
 geos, and should be short and thread-safe. Observer failures are logged without interrupting delivery or
 other observers. `SocketMode` is null when Socket Mode is disabled. Read-only diagnostics are available through
-`SocketMode.Status` (aggregate), `SocketMode.GeoStatuses` (a per-geo snapshot), `SocketMode.GeoList`, and
-`SocketMode.NegotiateUrl` (the resolved endpoint for the first geo).
+`SocketMode.Status` (aggregate), `SocketMode.GeoStatuses` (a per-geo snapshot), and `SocketMode.GeoList`.
 Negotiation failures expose `SocketModeNegotiateException.StatusCode`, `.RetryAfter` (a nullable `TimeSpan`),
 and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are not classified as terminal
 service-negotiation rejections.
