@@ -34,9 +34,9 @@ public class SocketModeEndToEndTests
         Assert.Equal(SocketModeStatus.Ready, stack.Transport.Status);
         Assert.Equal(
             [
-                "https://botapi.skype.com/amer/v3/websockets/connect",
-                "https://botapi.skype.com/apac/v3/websockets/connect",
-                "https://botapi.skype.com/emea/v3/websockets/connect",
+                "https://amer.botapi.skype.com/v3/websockets/connect",
+                "https://apac.botapi.skype.com/v3/websockets/connect",
+                "https://emea.botapi.skype.com/v3/websockets/connect",
             ],
             stack.Http.Requests.Select(request => request.AbsoluteUri).Order(StringComparer.Ordinal));
         Assert.All(stack.Http.Authorizations, authorization => Assert.Equal("Bearer bot-token", authorization));
@@ -168,7 +168,7 @@ public class SocketModeEndToEndTests
                 return Task.FromResult(throttled);
             }
 
-            string geo = uri.Segments[1].TrimEnd('/');
+            string geo = uri.Host.Split('.')[0];
             string json = $$"""{"url":"https://signalr.test/{{geo}}","accessToken":"token-{{geo}}","expiresIn":3600}""";
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
