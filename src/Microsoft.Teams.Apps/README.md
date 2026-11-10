@@ -245,7 +245,11 @@ Negotiation failures expose `SocketModeNegotiateException.StatusCode`, `.RetryAf
 and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are not classified as terminal
 service-negotiation rejections.
 
-`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
+`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `Geos`.
+Use this setting to target specific geos from the three defaults: `amer`, `emea`, and `apac`.
+An empty geo list uses all three defaults.
+Each geo's resolved connect/negotiate URL is logged at Information level during startup
+under `Microsoft.Teams.Apps.SocketMode.SocketModeTransport`. The SignalR URL returned by negotiation is used unchanged.
 Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
 Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.
 `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier

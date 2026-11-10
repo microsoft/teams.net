@@ -11,30 +11,12 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 public class SocketModeNegotiatorTests
 {
     private const string BotToken = "bot-token";
-    private static readonly Uri NegotiateUri = new("https://botapi.skype.com/amer/v3/websockets/connect");
+    private static readonly Uri NegotiateUri = new("https://amer.botapi.skype.com/v3/websockets/connect");
 
     [Theory]
-    [InlineData("https://botapi.skype.com/v3/websockets/connect")]
-    [InlineData("http://localhost:5000/v3/websockets/connect")]
-    [InlineData("http://127.0.0.1:5000/v3/websockets/connect")]
-    [InlineData("http://[::1]:5000/v3/websockets/connect")]
-    public async Task NegotiateAsync_AllowsSecureAndLoopbackUris(string uri)
-    {
-        RecordingHandler handler = SuccessHandler();
-        SocketModeNegotiator negotiator = CreateNegotiator(handler);
-
-        SocketModeNegotiateResponse response = await negotiator.NegotiateAsync(new Uri(uri));
-
-        Assert.Equal("https://signalr.example.test/client", response.Url);
-        Assert.Equal(1, handler.SendCount);
-    }
-
-    [Theory]
-    [InlineData("http://botapi.skype.com/v3/websockets/connect")]
-    [InlineData("http://127.0.0.2/v3/websockets/connect")]
-    [InlineData("wss://botapi.skype.com/v3/websockets/connect")]
-    [InlineData("ws://localhost:5000/v3/websockets/connect")]
-    [InlineData("ftp://botapi.skype.com/v3/websockets/connect")]
+    [InlineData("http://amer.botapi.skype.com/v3/websockets/connect")]
+    [InlineData("wss://amer.botapi.skype.com/v3/websockets/connect")]
+    [InlineData("ftp://amer.botapi.skype.com/v3/websockets/connect")]
     public async Task NegotiateAsync_RejectsUnsupportedNegotiateUris(string uri)
     {
         RecordingHandler handler = SuccessHandler();
