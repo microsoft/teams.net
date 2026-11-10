@@ -13,6 +13,7 @@ namespace Microsoft.Teams.Apps.SocketMode;
 /// Socket Mode opens one connection per geo and waits until every geo is ready before the host finishes starting.
 /// It is supported only in the public cloud, and runs on a host without a web server
 /// (<c>Host.CreateApplicationBuilder</c>). Settings are validated when the host starts.
+/// Negotiation URLs are managed by the SDK. Do not depend on these URLs; they may change in the future.
 /// Socket Mode is experimental: the API is in preview and may change, and it is recommended only for developing agents.
 /// Socket Mode is currently only available for new bots.
 /// </remarks>

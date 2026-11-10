@@ -40,5 +40,6 @@ public sealed class SocketModeObserver
     /// Gets the resolved negotiation endpoint for the first configured geo, for diagnostics.
     /// Each geo connects to its own endpoint.
     /// </summary>
+    /// <remarks>This URL is managed by the SDK and is for diagnostics only. Do not depend on it; it may change in the future.</remarks>
     public Uri NegotiateUrl => _transport.Value.NegotiateUrl;
 }
