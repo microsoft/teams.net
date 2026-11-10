@@ -239,13 +239,16 @@ from host startup; normal shutdown does not raise a disconnect event.
 These events are experimental and observational. Handlers run synchronously, may run concurrently across
 geos, and should be short and thread-safe. Observer failures are logged without interrupting delivery or
 other observers. `SocketMode` is null when Socket Mode is disabled. Read-only diagnostics are available through
-`SocketMode.Status` (aggregate), `SocketMode.GeoStatuses` (a per-geo snapshot), `SocketMode.GeoList`, and
-`SocketMode.NegotiateUrl` (the resolved endpoint for the first geo).
+`SocketMode.Status` (aggregate), `SocketMode.GeoStatuses` (a per-geo snapshot), and `SocketMode.GeoList`.
 Negotiation failures expose `SocketModeNegotiateException.StatusCode`, `.RetryAfter` (a nullable `TimeSpan`),
 and `.IsAuthError` for HTTP 401/403. Downstream SignalR negotiation errors are not classified as terminal
 service-negotiation rejections.
 
-`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `NegotiateBaseUrl` and `Geos`.
+`UseSocketMode(configure)` accepts a `SocketModeOptions` callback to change only `Geos`.
+Use this setting to target specific geos from the three defaults: `amer`, `emea`, and `apac`.
+An empty geo list uses all three defaults.
+Each geo's resolved connect/negotiate URL is logged at Information level during startup
+under `Microsoft.Teams.Apps.SocketMode.SocketModeTransport`. The SignalR URL returned by negotiation is used unchanged.
 Startup and readiness timeouts and reconnect backoff are managed internally by the SDK.
 Keep-alive and server timeout use the SignalR client defaults of 15 and 30 seconds, respectively.
 `UseSocketMode(bool)` turns Socket Mode on with the defaults, or off with `false`, which clears any earlier

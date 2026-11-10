@@ -116,7 +116,7 @@ internal sealed class GeoSocket : IAsyncDisposable
     /// Initializes a supervisor for one geo.
     /// </summary>
     /// <param name="owner">The transport that owns this geo.</param>
-    /// <param name="geo">The geo identifier. Empty when the negotiate URL has no geo segment.</param>
+    /// <param name="geo">The geo identifier.</param>
     /// <param name="negotiateUri">The negotiate endpoint for the geo.</param>
     /// <param name="connectionFactory">Creates one connection per generation.</param>
     /// <param name="logger">The logger for lifecycle events.</param>

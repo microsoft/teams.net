@@ -35,10 +35,4 @@ public sealed class SocketModeObserver
 
     /// <summary>Gets the resolved geo identifiers the transport connects to.</summary>
     public IReadOnlyList<string> GeoList => _transport.Value.GeoList;
-
-    /// <summary>
-    /// Gets the resolved negotiation endpoint for the first configured geo, for diagnostics.
-    /// Each geo connects to its own endpoint.
-    /// </summary>
-    public Uri NegotiateUrl => _transport.Value.NegotiateUrl;
 }

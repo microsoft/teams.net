@@ -8,13 +8,13 @@ namespace Microsoft.Teams.Apps.UnitTests.SocketMode;
 public class SocketModeOptionsTests
 {
     [Fact]
-    public void Properties_ContainOnlyNegotiateBaseUrlAndGeos()
+    public void Properties_ContainOnlyGeos()
     {
         var properties = typeof(SocketModeOptions).GetProperties(
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
 
         Assert.Equal(
-            [nameof(SocketModeOptions.Geos), nameof(SocketModeOptions.NegotiateBaseUrl)],
+            [nameof(SocketModeOptions.Geos)],
             properties.Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal));
         Assert.All(properties, property =>
         {
@@ -28,7 +28,6 @@ public class SocketModeOptionsTests
     {
         SocketModeOptions options = new();
 
-        Assert.Equal(new Uri("https://botapi.skype.com"), options.NegotiateBaseUrl);
         Assert.Equal(["amer", "emea", "apac"], options.Geos);
         SocketModeTransportOptions transport = options.ToTransportOptions();
         Assert.Equal(TimeSpan.FromSeconds(30), transport.StartupTimeout);
@@ -45,19 +44,17 @@ public class SocketModeOptionsTests
     }
 
     [Fact]
-    public void ToTransportOptions_CopiesEndpointAndSnapshotsGeos()
+    public void ToTransportOptions_SnapshotsGeos()
     {
         List<string> geos = ["emea"];
         SocketModeOptions options = new()
         {
-            NegotiateBaseUrl = new Uri("https://example.test"),
             Geos = geos,
         };
 
         SocketModeTransportOptions transport = options.ToTransportOptions();
         geos.Add("apac");
 
-        Assert.Equal(new Uri("https://example.test"), transport.NegotiateBaseUri);
         Assert.Equal(["emea"], transport.Geos);
     }
 

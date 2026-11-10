@@ -16,8 +16,7 @@ public class SocketModeObserverTests
         await using SocketModeTransport transport = new(
             new SocketModeTransportOptions
             {
-                NegotiateBaseUri = new Uri("https://canary.botapi.skype.com/"),
-                Geos = [" /eu/ "],
+                Geos = ["emea"],
             },
             new UnusedConnectionFactory(),
             _ => Task.FromResult(new SocketDispatchResult(200)),
@@ -32,8 +31,7 @@ public class SocketModeObserverTests
         observer.Events.Ready += (_, _) => { };
         Assert.Equal(0, created);
         Assert.Equal(SocketModeStatus.Idle, observer.Status);
-        Assert.Equal(new Uri("https://canary.botapi.skype.com/eu/v3/websockets/connect"), observer.NegotiateUrl);
-        Assert.Equal(["eu"], observer.GeoList);
+        Assert.Equal(["emea"], observer.GeoList);
         Assert.Empty(observer.GeoStatuses);
         Assert.Equal(1, created);
     }
