@@ -50,7 +50,7 @@ public class SocketModeTransportTests
     [Theory]
     [InlineData(new object[] { new[] { "emea" } })]
     [InlineData(new object[] { new[] { "custom-geo", "other-geo" } })]
-    [InlineData(new object[] { new[] { "amer", "AMER" } })]
+    [InlineData(new object[] { new[] { "AMER" } })]
     [InlineData(new object[] { new[] { "amer.amer" } })]
     public async Task StartAsync_ConnectsConfiguredGeos(string[] geos)
     {
@@ -76,6 +76,7 @@ public class SocketModeTransportTests
     [InlineData(new object[] { new[] { "" } })]
     [InlineData(new object[] { new[] { "amer", "" } })]
     [InlineData(new object[] { new[] { "amer", "amer" } })]
+    [InlineData(new object[] { new[] { "amer", "AMER" } })]
     public void Constructor_RejectsInvalidGeos(string[]? geos)
     {
         Assert.Throws<ArgumentException>(() => new Harness(new SocketModeTransportOptions { Geos = geos! }).Transport);
