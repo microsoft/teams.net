@@ -24,6 +24,7 @@ public sealed class SocketModeOptions
     /// Gets or sets the geos to connect, one connection each.
     /// Defaults to <c>amer</c>, <c>emea</c>, and <c>apac</c>, including when the list is empty.
     /// Override this to connect to a different set of geos.
+    /// Entries must be non-empty and unique, ignoring case.
     /// </summary>
     public IReadOnlyList<string> Geos { get; set; } = SocketModeProtocol.DefaultGeos;
 
