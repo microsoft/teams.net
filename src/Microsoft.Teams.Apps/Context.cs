@@ -181,6 +181,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Sends a typing indicator to the conversation.
     /// </summary>
+    /// <remarks>
+    /// In a chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// An inbound activity without <c>channelData.replyChain.id</c> is not placed, and the activity is sent to the inbound conversation.
+    /// </remarks>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> TypingAsync(CancellationToken cancellationToken = default)
@@ -189,7 +196,20 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
 
         TeamsActivityInput typing = new(TeamsActivityTypes.Typing);
-        return Api.Conversations.CreateActivityAsync(conversationId, typing, cancellationToken: cancellationToken);
+
+        Task<SendActivityResponse?> SendToInboundConversation()
+            => Api.Conversations.CreateActivityAsync(conversationId, typing, cancellationToken: cancellationToken);
+
+#pragma warning disable ExperimentalTeamsThreading // typing is placed like the stable send methods
+        if (GetInboundReplyChainPlacement() is { } placement)
+        {
+            return ReplyChainFallback.SendAsync(
+                () => Api.Conversations.CreateReplyChainActivityAsync(placement.ChatOrChannelId, placement.ReplyChainId, typing, cancellationToken: cancellationToken),
+                placement.InChannel ? SendToInboundConversation : null);
+        }
+#pragma warning restore ExperimentalTeamsThreading
+
+        return SendToInboundConversation();
     }
 
     /// <summary>

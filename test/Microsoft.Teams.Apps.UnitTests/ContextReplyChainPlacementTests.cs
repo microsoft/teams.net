@@ -164,20 +164,116 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(0, harness.Reply.Calls);
     }
 
+    [Theory]
+    [InlineData("personal", OpaqueConversationId, ChatId)]
+    [InlineData("groupChat", GroupChatId, GroupChatId)]
+    public async Task Typing_InboundInsideReplyChain_RepliesInThatChain(string conversationType, string conversationId, string chatId)
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: conversationId,
+            id: "105",
+            channelData: new { chat = new { id = chatId }, replyChain = new { id = "100" } },
+            conversationType: conversationType));
+
+        await context.TypingAsync();
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(chatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Reply.Activity!.Type);
+        Assert.False(harness.Reply.IsTargeted);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData("top-level")]
+    [InlineData("without-reply-chain")]
+    [InlineData("conversation-update")]
+    public async Task Typing_InboundNotInsideAThread_SendsToInboundConversation(string inbound)
+    {
+        Harness harness = CreateHarness();
+        TeamsActivity activity = inbound switch
+        {
+            "top-level" => Inbound(
+                conversationId: OpaqueConversationId,
+                id: "100",
+                channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+                conversationType: "personal"),
+            "without-reply-chain" => Inbound(
+                conversationId: OpaqueConversationId,
+                id: "105",
+                channelData: new { chat = new { id = ChatId } },
+                conversationType: "personal"),
+            _ => Shape("other", messageId: "105", replyChainId: "100", type: "conversationUpdate"),
+        };
+        Context<TeamsActivity> context = new(harness.App, activity);
+
+        await context.TypingAsync();
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Send.Activity!.Type);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Typing_PersonalReplyChainRouteRejected_PropagatesWithoutSendingToTheInboundConversation(HttpStatusCode statusCode)
+    {
+        Harness harness = CreateHarness(statusCode);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: OpaqueConversationId,
+            id: "105",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+            conversationType: "personal"));
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.TypingAsync());
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
     [Fact]
-    public async Task Typing_InboundInsideReplyChain_IsNotPlaced()
+    public async Task Typing_ChannelReplyChainRouteNotFound_SendsToInboundConversationInstead()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        await context.TypingAsync();
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Send.Activity!.Type);
+    }
+
+#pragma warning disable CS0618 // exercising the obsolete Typing overload
+    [Fact]
+    public async Task ObsoleteTyping_InboundInsideReplyChain_RepliesInThatChain()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
             conversationId: OpaqueConversationId,
-            id: "reply-2",
-            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } }));
+            id: "105",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+            conversationType: "personal"));
 
-        await context.TypingAsync();
+        await context.Typing();
 
-        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
-        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Reply.Activity!.Type);
+        Assert.False(harness.Reply.IsTargeted);
+        Assert.Equal(0, harness.Send.Calls);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData("card-message")]
