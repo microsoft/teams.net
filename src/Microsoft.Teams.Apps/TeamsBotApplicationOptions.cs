@@ -22,6 +22,16 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// </summary>
     public Uri? GraphBaseUrl { get; set; }
 
+    /// <summary>
+    /// How the context's <see cref="Context{TActivity}.ReplyAsync(MessageActivityInput, ReplyOptions?, CancellationToken)"/> places and quotes its response. See <see cref="Apps.ReplyMode"/>.
+    /// A mode passed to a single reply call with <see cref="ReplyOptions.Mode"/> overrides this setting.
+    /// Defaults to <see cref="ReplyMode.Combined"/>.
+    /// </summary>
+    /// <remarks>
+    /// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
+    /// </remarks>
+    public ReplyMode ReplyMode { get; set; } = ReplyMode.Combined;
+
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
 
     /// <summary>

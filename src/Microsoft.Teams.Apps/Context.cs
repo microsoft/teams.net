@@ -126,9 +126,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
-    /// Sends a text message as a reply to the current activity, placed like <see cref="SendAsync(string, CancellationToken)"/>.
-    /// The response is automatically quoted (rendered as a quote bubble above the response in Teams) only when the inbound activity id is a plain numeric message id (all digits, not all zeros).
-    /// Otherwise it is sent without a quote, exactly like <see cref="SendAsync(string, CancellationToken)"/>.
+    /// Replies to the inbound activity, quoting it by default.
     /// </summary>
     /// <remarks>
     /// In a chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
@@ -136,6 +134,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// In a channel, sends into the reply chain of the inbound message.
     /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
     /// An inbound activity without <c>channelData.replyChain.id</c> is not placed, and the activity is sent to the inbound conversation.
+    /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
+    /// The app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting applies; in <see cref="ReplyMode.Thread"/> mode the quote is left out wherever the reply lands in a thread. See <see cref="ReplyMode"/>.
     /// </remarks>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -144,10 +144,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => ReplyAsync(new MessageActivityInput().WithText(text), cancellationToken);
 
     /// <summary>
-    /// Sends an activity to the conversation.
-    /// The response is automatically quoted (rendered as a quote bubble above the response in Teams) only when the inbound activity id is a plain numeric message id (all digits, not all zeros).
-    /// Otherwise it is sent without a quote, exactly like <see cref="SendAsync(MessageActivityInput, CancellationToken)"/>.
-    /// Explicit quotes through <see cref="QuoteAsync(string, MessageActivityInput, CancellationToken)"/> are unchanged.
+    /// Replies to the inbound activity, quoting it by default.
     /// </summary>
     /// <remarks>
     /// In a chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
@@ -155,14 +152,55 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// In a channel, sends into the reply chain of the inbound message.
     /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
     /// An inbound activity without <c>channelData.replyChain.id</c> is not placed, and the activity is sent to the inbound conversation.
+    /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
+    /// <c>options.Mode</c> overrides the app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting; in <see cref="ReplyMode.Thread"/> mode the quote is left out wherever the reply lands in a thread. See <see cref="ReplyMode"/>.
+    /// </remarks>
+    /// <param name="text">The text to send.</param>
+    /// <param name="options">Options for this reply.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> ReplyAsync(string text, ReplyOptions? options, CancellationToken cancellationToken = default)
+        => ReplyAsync(new MessageActivityInput().WithText(text), options, cancellationToken);
+
+    /// <summary>
+    /// Replies to the inbound activity, quoting it by default.
+    /// </summary>
+    /// <remarks>
+    /// In a chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// An inbound activity without <c>channelData.replyChain.id</c> is not placed, and the activity is sent to the inbound conversation.
+    /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
+    /// The app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting applies; in <see cref="ReplyMode.Thread"/> mode the quote is left out wherever the reply lands in a thread. See <see cref="ReplyMode"/>.
     /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(MessageActivityInput activity, CancellationToken cancellationToken = default)
+        => ReplyAsync(activity, null, cancellationToken);
+
+    /// <summary>
+    /// Replies to the inbound activity, quoting it by default.
+    /// </summary>
+    /// <remarks>
+    /// In a chat, sends into the reply chain (thread) when the inbound activity is inside one, and at top level otherwise.
+    /// The inbound activity can be a message, a card action, an invoke, a reaction, an edit or a delete.
+    /// In a channel, sends into the reply chain of the inbound message.
+    /// In a channel, when the service answers HTTP 404, sends to the inbound conversation instead.
+    /// An inbound activity without <c>channelData.replyChain.id</c> is not placed, and the activity is sent to the inbound conversation.
+    /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
+    /// <c>options.Mode</c> overrides the app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting; in <see cref="ReplyMode.Thread"/> mode the quote is left out wherever the reply lands in a thread. See <see cref="ReplyMode"/>.
+    /// </remarks>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="options">Options for this reply.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> ReplyAsync(MessageActivityInput activity, ReplyOptions? options, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        if (IsQuotableActivity(Activity))
+        ReplyMode mode = options?.Mode ?? TeamsBotApplication.ReplyMode;
+        if (IsQuotableActivity(Activity) && !(mode == ReplyMode.Thread && IsThreadableInbound()))
         {
             return QuoteAsync(Activity.Id!, activity, cancellationToken);
         }
@@ -177,6 +215,14 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => activity.Id is { Length: > 0 } id
             && id.All(char.IsAsciiDigit)
             && id.Any(c => c != '0');
+
+    /// <summary>
+    /// Whether a reply to the inbound activity lands in a thread: the inbound carries <c>channelData.replyChain.id</c> and either <c>channelData.channel.id</c> or <c>channelData.chat.id</c>.
+    /// <see cref="ReplyMode.Thread"/> leaves the quote out of such replies.
+    /// </summary>
+    private bool IsThreadableInbound()
+        => !string.IsNullOrWhiteSpace(Activity.ChannelData?.ReplyChain?.Id)
+            && (!string.IsNullOrWhiteSpace(Activity.ChannelData?.Channel?.Id) || !string.IsNullOrWhiteSpace(Activity.ChannelData?.Chat?.Id));
 
     /// <summary>
     /// Sends a typing indicator to the conversation.

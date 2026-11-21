@@ -615,4 +615,20 @@ public class TeamsBotApplicationTests
 
         Assert.NotNull(ctor);
     }
+
+    [Fact]
+    public void Constructor_WithoutOptions_UsesTheCombinedReplyMode()
+    {
+        Mock<UserTokenClient> userTokenClient = new(
+            new HttpClient(),
+            new Mock<IConfiguration>().Object,
+            NullLogger<UserTokenClient>.Instance);
+        Mock<ConversationClient> conversationClient = new(new HttpClient(), NullLogger<ConversationClient>.Instance);
+        ApiClient apiClient = new(new HttpClient(), conversationClient.Object, userTokenClient.Object);
+
+        // Apps built without options, such as those registered by the M365Extensions AddTeamsSdk method, get their reply mode from this fallback.
+        TeamsBotApplication app = new(apiClient, new HttpContextAccessor(), NullLogger<TeamsBotApplication>.Instance);
+
+        Assert.Equal(ReplyMode.Combined, app.ReplyMode);
+    }
 }

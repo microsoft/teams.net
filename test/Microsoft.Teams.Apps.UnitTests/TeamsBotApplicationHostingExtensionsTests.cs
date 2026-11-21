@@ -210,6 +210,46 @@ public class TeamsBotApplicationHostingExtensionsTests
         Assert.Null(loader);
     }
 
+    [Fact]
+    public void AddTeamsBotApplication_ReplyModeCallback_ReachesTheApp()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "reply-mode-client-id",
+            ["AzureAd:TenantId"] = "reply-mode-tenant-id"
+        };
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(configData).Build());
+        services.AddLogging();
+        services.AddTeamsBotApplication(options => options.ReplyMode = ReplyMode.Thread);
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        TeamsBotApplication app = serviceProvider.GetRequiredService<TeamsBotApplication>();
+
+        Assert.Equal(ReplyMode.Thread, app.ReplyMode);
+    }
+
+    [Fact]
+    public void AddTeamsBotApplication_WithCustomSubclass_ReplyModeCallback_ReachesTheApp()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "reply-mode-subclass-client-id",
+            ["AzureAd:TenantId"] = "reply-mode-subclass-tenant-id"
+        };
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(configData).Build());
+        services.AddLogging();
+        services.AddTeamsBotApplication<SubclassBot>(options => options.ReplyMode = ReplyMode.Quote);
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        SubclassBot bot = serviceProvider.GetRequiredService<SubclassBot>();
+
+        Assert.Equal(ReplyMode.Quote, bot.ReplyMode);
+    }
+
     private sealed class SubclassBot : TeamsBotApplication
     {
         public bool ConstructedViaDI { get; }
