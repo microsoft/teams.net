@@ -24,16 +24,17 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             **Interacting with Messages**
 
             **Quoting:**
-            - `quote reply` - auto-quote your message
+            - `quote reply` - auto-quote your message with `ReplyMode.Quote` (stays at the level of your message)
             - `quote message` - quote a previously sent message
             - `quote add` - compose a quote with the message builder
             - `quote batch` - combine multiple quotes
             - `quote manual` - combine a quote and text manually
 
             **Threading:**
-            - `thread reply` - send a reactive, quoted reply (in a channel, in the same thread; in a 1:1 chat, matches the level of your message)
-            - `thread send` - send reactively without quoting (in a channel, in the same thread; in a 1:1 chat, matches the level of your message)
-            - `thread proactive` - send a proactive reply in a thread on your message
+            - `thread reply` - reply with the default reply mode, `Combined` (in a chat, starts a thread under your top-level message, quoted)
+            - `thread reply unquoted` - reply with `ReplyMode.Thread` (same placement, no quote)
+            - `thread send` - send reactively without quoting (in a channel, in the same thread; in a chat, matches the level of your message)
+            - `thread proactive` - send a proactive reply in a thread on your message, as a bot does when it replies later
             - `thread top-level` - send a new top-level message, outside any reply chain (thread)
 
             **Reactions:**
@@ -57,7 +58,7 @@ teamsApp.OnMessage("(?s)^.*$", async (context, cancellationToken) =>
     string text = context.Activity.TextWithoutMentions ?? "";
     if (Regex.IsMatch(
         text,
-        @"(?i)^(help|quote (reply|message|add|batch|manual)|thread (send|reply|proactive|top-level)|reaction (add \S+|remove \S+|proactive))$"))
+        @"(?i)^(help|quote (reply|message|add|batch|manual)|thread (send|reply|reply unquoted|proactive|top-level)|reaction (add \S+|remove \S+|proactive))$"))
     {
         return;
     }

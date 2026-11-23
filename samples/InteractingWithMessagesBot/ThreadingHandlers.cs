@@ -8,14 +8,30 @@ internal static class ThreadingHandlers
 {
     internal static void Register(TeamsBotApplication teamsApp)
     {
+        // "thread reply" uses the app's reply mode, Combined by default: in a chat, a reply to a top-level message starts a thread under it, a reply inside a thread stays in that thread, and the inbound message is quoted.
+        // "thread reply unquoted" passes ReplyMode.Thread: the same placement, without the quote.
+        // The Quote mode is shown by the "quote reply" command.
+        // In a channel every reply goes in the thread of the inbound message, so the mode only decides the quote.
+        // The app-wide default is set with AddTeamsBotApplication(options => options.ReplyMode = ...).
         teamsApp.OnMessage("(?i)^thread reply$", async (context, cancellationToken) =>
         {
-            await context.ReplyAsync("This is a quoted reply. In a channel it goes in the same thread. In a 1:1 chat it matches the level of your message.", cancellationToken);
+            await context.ReplyAsync("This reply uses the default reply mode, `Combined`. In a chat it starts a thread under your top-level message, or stays in your thread, and quotes your message.", cancellationToken);
         });
 
+        teamsApp.OnMessage("(?i)^thread reply unquoted$", async (context, cancellationToken) =>
+        {
+            await context.ReplyAsync(
+                "This reply uses `ReplyMode.Thread`. It lands in a thread like `Combined`, without a quote.",
+                new ReplyOptions { Mode = ReplyMode.Thread },
+                cancellationToken);
+        });
+
+        // In a channel, the message is sent in the same thread.
+        // In a chat, it matches the level of the inbound message: in the thread when the inbound message is in one, otherwise at top level.
+        // In a chat, unlike ReplyAsync, SendAsync never starts a new thread.
         teamsApp.OnMessage("(?i)^thread send$", async (context, cancellationToken) =>
         {
-            await context.SendAsync("This is sent without quoting. In a channel it goes in the same thread. In a 1:1 chat it matches the level of your message.", cancellationToken);
+            await context.SendAsync("This is sent without quoting. In a channel it goes in the same thread. In a chat it matches the level of your message.", cancellationToken);
         });
 
         // The reply chain is taken from ChannelData.ReplyChain.Id.

@@ -10,9 +10,13 @@ internal static class QuotingHandlers
 {
     internal static void Register(TeamsBotApplication teamsApp)
     {
+        // "quote reply" passes ReplyMode.Quote so the reply stays at the level of the inbound message instead of starting a thread.
         teamsApp.OnMessage("(?i)^quote reply$", async (context, cancellationToken) =>
         {
-            await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
+            await context.ReplyAsync(
+                "Thanks for your message! This reply auto-quotes it.",
+                new ReplyOptions { Mode = ReplyMode.Quote },
+                cancellationToken);
         });
 
         teamsApp.OnMessage("(?i)^quote message$", async (context, cancellationToken) =>
