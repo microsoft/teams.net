@@ -25,7 +25,9 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// <summary>
     /// How the context's <see cref="Context{TActivity}.ReplyAsync(MessageActivityInput, ReplyOptions?, CancellationToken)"/> places and quotes its response. See <see cref="Apps.ReplyMode"/>.
     /// A mode passed to a single reply call with <see cref="ReplyOptions.Mode"/> overrides this setting.
+    /// <see cref="ReplyMode.Quote"/> quotes the inbound message and matches the reply to the level of that message.
     /// Defaults to <see cref="ReplyMode.Combined"/>.
+    /// It is not read from configuration; set it in code, e.g. <c>builder.Services.AddTeamsBotApplication(options => options.ReplyMode = ReplyMode.Quote)</c>.
     /// </summary>
     /// <remarks>
     /// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
