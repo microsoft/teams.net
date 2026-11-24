@@ -327,6 +327,20 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
+    public async Task Send_ReactionWhoseIdDiffersFromItsReplyToId_IsPlacedByTheReplyToId()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, Shape("reaction", messageId: "100", replyChainId: "100", replyToId: "105"));
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
     public async Task Send_MessageActionInsideAThread_ComparesTheMessagePayloadIdNotTheReplyId()
     {
         Harness harness = CreateHarness();
@@ -1512,6 +1526,24 @@ public class ContextReplyChainPlacementTests
     }
 
     [Theory]
+    [InlineData(null, true)]
+    [InlineData(ReplyMode.Thread, false)]
+    public async Task Reply_TopLevelChatReaction_StartsAThreadQuotingTheReactedMessageByMode(ReplyMode? mode, bool quoted)
+    {
+        Harness harness = CreateHarness(replyMode: mode);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("reaction", "group"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        Assert.Equal(quoted ? "<quoted messageId=\"100\"/> hi" : "hi", Assert.IsType<MessageActivityInput>(harness.Reply.Activity).Text);
+        Assert.Equal(quoted, IsQuoted(harness));
+    }
+
+    [Theory]
     [InlineData("text")]
     [InlineData("activity")]
     [InlineData("text with options")]
@@ -1862,8 +1894,9 @@ public class ContextReplyChainPlacementTests
                 invokeName = "task/fetch";
                 break;
             case "reaction":
+                // The service sends a reaction with its id equal to replyToId, the id of the reacted message.
                 activityType = "messageReaction";
-                id = "f:9f78d1f3";
+                id = messageId!;
                 replyToId ??= messageId;
                 break;
             case "edit":
