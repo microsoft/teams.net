@@ -1575,6 +1575,28 @@ public class ContextReplyChainPlacementTests
     }
 
     [Theory]
+    [InlineData("personal")]
+    [InlineData("group")]
+    public async Task ApiUpdate_ReplyThatStartedAThread_GoesToTheInboundConversation(string chat)
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", chat));
+        SendActivityResponse? sent = await context.ReplyAsync("Working on it");
+
+        // The context has no update method, so an app updates a sent activity through Context.Api with a conversation id it chooses.
+        await context.Api.Conversations.UpdateActivityAsync(context.Activity.Conversation!.Id!, sent!.Id!, new MessageActivityInput().WithText("Done"));
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(chat == "group" ? GroupChatId : ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Update.Calls);
+        Assert.Equal(chat == "group" ? GroupChatId : OpaqueConversationId, harness.Update.ConversationId);
+        Assert.Equal("reply-id", harness.Update.ActivityId);
+        Assert.Equal(Harness.ServiceUrl, harness.Update.ServiceUrl);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
     [InlineData("text")]
     [InlineData("activity")]
     [InlineData("text with options")]
@@ -2000,6 +2022,7 @@ public class ContextReplyChainPlacementTests
         public required TeamsBotApplication App { get; init; }
         public required Capture Send { get; init; }
         public required Capture Reply { get; init; }
+        public required Capture Update { get; init; }
 
         public Context<MessageActivity> ContextFor(MessageActivity inbound) => new(App, inbound);
     }
@@ -2018,6 +2041,7 @@ public class ContextReplyChainPlacementTests
         Mock<ConversationClient> conversationClient = new(new HttpClient(), NullLogger<ConversationClient>.Instance);
         Capture send = new();
         Capture reply = new();
+        Capture update = new();
 
         conversationClient
             .Setup(c => c.SendActivityAsync(
@@ -2068,6 +2092,29 @@ public class ContextReplyChainPlacementTests
                     : Task.FromException<SendActivityResponse?>(failure);
             });
 
+        conversationClient
+            .Setup(c => c.UpdateActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (conversationId, activityId, activity, serviceUrl, isTargeted, _, _, _) =>
+                {
+                    update.Calls++;
+                    update.ConversationId = conversationId;
+                    update.ActivityId = activityId;
+                    update.ServiceUrl = serviceUrl;
+                    update.Activity = activity;
+                    update.IsTargeted = isTargeted;
+                })
+            .Returns<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (_, activityId, _, _, _, _, _, _) => Task.FromResult(new UpdateActivityResponse { Id = activityId }));
+
         TeamsBotApplicationOptions options = new() { AppId = "test-app-id" };
         if (replyMode is { } mode)
         {
@@ -2080,6 +2127,6 @@ public class ContextReplyChainPlacementTests
             logger ?? NullLogger<TeamsBotApplication>.Instance,
             options);
 
-        return new Harness { App = app, Send = send, Reply = reply };
+        return new Harness { App = app, Send = send, Reply = reply, Update = update };
     }
 }
