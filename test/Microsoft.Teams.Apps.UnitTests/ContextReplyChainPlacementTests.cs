@@ -1304,6 +1304,23 @@ public class ContextReplyChainPlacementTests
         Assert.True(IsQuoted(harness));
     }
 
+    [Theory]
+    [InlineData("chat thread message")]
+    [InlineData("channel message")]
+    public async Task Reply_QuoteModeInsideAThread_StaysInThatThread(string shape)
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Quote);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape(shape));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(shape == "channel message" ? ChannelId : ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        Assert.True(IsQuoted(harness));
+    }
+
     [Fact]
     public async Task Reply_ThreadModeInsideAChatThread_IsStillPlacedInThatChain()
     {
@@ -1348,9 +1365,9 @@ public class ContextReplyChainPlacementTests
     }
 
     [Theory]
-    [InlineData("channel conversation type without a channel id", true)]
-    [InlineData("channel id without a conversation type", false)]
-    public async Task Reply_ThreadMode_ReadsChannelDataNotTheConversationType(string shape, bool quoted)
+    [InlineData("channel conversation type without a channel id")]
+    [InlineData("channel id without a conversation type")]
+    public async Task Reply_ThreadModeOnAPayloadThatIsNotPlaced_KeepsTheQuote(string shape)
     {
         Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
         Context<MessageActivity> context = harness.ContextFor(shape == "channel id without a conversation type"
@@ -1366,7 +1383,10 @@ public class ContextReplyChainPlacementTests
 
         await context.ReplyAsync("hi");
 
-        Assert.Equal(quoted, IsQuoted(harness));
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.True(IsQuoted(harness));
     }
 
     [Theory]
@@ -1384,6 +1404,9 @@ public class ContextReplyChainPlacementTests
             ? context.ReplyAsync("hi", options)
             : context.ReplyAsync(new MessageActivityInput().WithText("hi"), options));
 
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
         Assert.Equal(quoted, IsQuoted(harness));
     }
 
@@ -1611,6 +1634,21 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(1, harness.Send.Calls);
         Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
         Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task Reply_ThreadModeOnATopLevelChatActivityThatCannotStartAThread_StaysAtTopLevelWithTheQuote()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, Shape("other", messageId: "100", replyChainId: "100", type: "messageReaction", conversationType: "personal"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal("<quoted messageId=\"100\"/> hi", Assert.IsType<MessageActivityInput>(harness.Send.Activity).Text);
+        Assert.True(IsQuoted(harness));
     }
 
     [Fact]

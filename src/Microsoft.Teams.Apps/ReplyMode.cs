@@ -13,7 +13,8 @@ namespace Microsoft.Teams.Apps;
 /// In a channel every reply already goes into the thread of the inbound message, so the mode only decides the quote: <see cref="Thread"/> drops it, <see cref="Combined"/> and <see cref="Quote"/> keep it.
 /// The mode applies to message activities only.
 /// It does not affect <see cref="TeamsBotApplication.ReplyAsync(string, string, TeamsActivityInput, Uri?, AgenticIdentity?, CancellationToken)"/>, <see cref="Context{TActivity}.SendAsync(MessageActivityInput, CancellationToken)"/>, <see cref="Context{TActivity}.QuoteAsync(string, MessageActivityInput, CancellationToken)"/>, <see cref="Context{TActivity}.TypingAsync(CancellationToken)"/>, streams or plans.
-/// When the inbound activity carries no <c>channelData.chat.id</c> and <c>channelData.replyChain.id</c> (e.g. in a meeting), a reply is never threaded and keeps the quote in every mode.
+/// A reply that does not land in a thread keeps the quote in every mode, including <see cref="Thread"/>.
+/// In a chat that is when the inbound activity carries no <c>channelData.chat.id</c> and <c>channelData.replyChain.id</c> (e.g. in a meeting), or the message it is about cannot start a thread.
 /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
 /// This API is in preview and may change in the future. Diagnostic: ExperimentalTeamsThreading
 /// </remarks>
@@ -31,7 +32,7 @@ public enum ReplyMode
     Quote,
 
     /// <summary>
-    /// Like <see cref="Combined"/>, without the quote.
+    /// Like <see cref="Combined"/>, without the quote when the reply lands in a thread.
     /// </summary>
     Thread,
 }

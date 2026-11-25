@@ -9,7 +9,7 @@ internal static class ThreadingHandlers
     internal static void Register(TeamsBotApplication teamsApp)
     {
         // "thread reply" uses the app's reply mode, Combined by default: in a chat, a reply to a top-level message starts a thread under it, a reply inside a thread stays in that thread, and the inbound message is quoted.
-        // "thread reply unquoted" passes ReplyMode.Thread: the same placement, without the quote.
+        // "thread reply unquoted" passes ReplyMode.Thread: the same placement, without the quote when the reply lands in a thread.
         // The Quote mode is shown by the "quote reply" command.
         // In a channel every reply goes in the thread of the inbound message, so the mode only decides the quote.
         // The app-wide default is set with AddTeamsBotApplication(options => options.ReplyMode = ...).
@@ -21,7 +21,7 @@ internal static class ThreadingHandlers
         teamsApp.OnMessage("(?i)^thread reply unquoted$", async (context, cancellationToken) =>
         {
             await context.ReplyAsync(
-                "This reply uses `ReplyMode.Thread`. It lands in a thread like `Combined`, without a quote.",
+                "This reply uses `ReplyMode.Thread`. It is placed like `ReplyMode.Combined`, without the quote when it lands in a thread.",
                 new ReplyOptions { Mode = ReplyMode.Thread },
                 cancellationToken);
         });

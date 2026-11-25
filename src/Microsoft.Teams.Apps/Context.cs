@@ -137,7 +137,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// For inbound activities without <c>channelData.replyChain.id</c>, and other inbound activities, the reply is sent to the inbound conversation.
     /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
     /// The app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting applies.
-    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
+    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out when the reply lands in a thread, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
     /// </remarks>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -159,7 +159,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// For inbound activities without <c>channelData.replyChain.id</c>, and other inbound activities, the reply is sent to the inbound conversation.
     /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
     /// <see cref="ReplyOptions.Mode"/> overrides the app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting.
-    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
+    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out when the reply lands in a thread, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
     /// </remarks>
     /// <param name="text">The text to send.</param>
     /// <param name="options">Options for this reply.</param>
@@ -183,7 +183,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// A typing activity never starts a new thread.
     /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
     /// The app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting applies.
-    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
+    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out when the reply lands in a thread, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
     /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
@@ -206,7 +206,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// A typing activity never starts a new thread.
     /// The reply quotes the inbound activity only when that activity can be quoted, so a reply to a card action or another invoke is sent without a quote.
     /// <see cref="ReplyOptions.Mode"/> overrides the app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting.
-    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
+    /// In <see cref="ReplyMode.Thread"/> mode the quote is left out when the reply lands in a thread, and in a chat <see cref="ReplyMode.Quote"/> mode keeps the reply at the level of the inbound activity. See <see cref="ReplyMode"/>.
     /// </remarks>
     /// <param name="activity">The activity to send.</param>
     /// <param name="options">Options for this reply.</param>
@@ -219,7 +219,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         ArgumentNullException.ThrowIfNull(activity);
         ReplyMode mode = options?.Mode ?? TeamsBotApplication.ReplyMode;
         bool isMessage = activity.Type == TeamsActivityTypes.Message;
-        bool quote = isMessage && IsQuotableActivity(Activity) && !(mode == ReplyMode.Thread && IsThreadableInbound());
+        bool quote = isMessage && IsQuotableActivity(Activity) && !(mode == ReplyMode.Thread && IsThreadModeReplyThreaded());
         MessageActivityInput toSend = quote ? CopyWithQuote(activity, Activity.Id!) : activity;
         return SendCoreAsync(toSend, useOriginAsRoot: isMessage && mode != ReplyMode.Quote, cancellationToken: cancellationToken);
     }
@@ -233,12 +233,20 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             && id.Any(c => c != '0');
 
     /// <summary>
-    /// Whether a reply to the inbound activity lands in a thread: the inbound carries <c>channelData.replyChain.id</c> and either <c>channelData.channel.id</c> or <c>channelData.chat.id</c>.
-    /// <see cref="ReplyMode.Thread"/> leaves the quote out of such replies.
+    /// Whether a <see cref="ReplyMode.Thread"/> reply lands in a thread, so <see cref="ReplyMode.Thread"/> leaves the quote out.
+    /// In a channel every reply goes into the thread of the inbound message, through the reply chain or the inbound conversation, so the inbound needs only <c>channelData.replyChain.id</c> and <c>channelData.channel.id</c> or <c>channelData.chat.id</c>.
+    /// In a chat the reply must be placed in a reply chain (see <see cref="GetInboundReplyChainPlacement(bool)"/>).
     /// </summary>
-    private bool IsThreadableInbound()
-        => !string.IsNullOrWhiteSpace(Activity.ChannelData?.ReplyChain?.Id)
-            && (!string.IsNullOrWhiteSpace(Activity.ChannelData?.Channel?.Id) || !string.IsNullOrWhiteSpace(Activity.ChannelData?.Chat?.Id));
+    private bool IsThreadModeReplyThreaded()
+    {
+        if (Activity.Conversation?.ConversationType == ConversationTypes.Channel)
+        {
+            return !string.IsNullOrWhiteSpace(Activity.ChannelData?.ReplyChain?.Id)
+                && (!string.IsNullOrWhiteSpace(Activity.ChannelData?.Channel?.Id) || !string.IsNullOrWhiteSpace(Activity.ChannelData?.Chat?.Id));
+        }
+
+        return GetInboundReplyChainPlacement(useOriginAsRoot: true) is not null;
+    }
 
     /// <summary>
     /// Prepends the quote of <paramref name="messageId"/> to a copy of the message, leaving the caller's message unchanged.

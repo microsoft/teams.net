@@ -32,7 +32,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 
             **Threading:**
             - `thread reply` - reply with the default reply mode, `Combined` (in a chat, starts a thread under your top-level message, quoted)
-            - `thread reply unquoted` - reply with `ReplyMode.Thread` (same placement, no quote)
+            - `thread reply unquoted` - reply with `ReplyMode.Thread` (same placement, no quote when it lands in a thread)
             - `thread send` - send reactively without quoting (in a channel, in the same thread; in a chat, matches the level of your message)
             - `thread proactive` - send a proactive reply in a thread on your message, as a bot does when it replies later
             - `thread top-level` - send a new top-level message, outside any reply chain (thread)

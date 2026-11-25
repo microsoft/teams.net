@@ -10,7 +10,7 @@ in a separate handler class.
 
 ## Reply modes
 
-`context.ReplyAsync()` places and quotes its response according to the reply mode. Set it for the whole app, or pass it on a single call (this sample keeps the default, `Combined`):
+`context.ReplyAsync()` places and quotes its response according to the reply mode. Set it for the whole app, or pass it on a single call, which overrides the app setting (this sample keeps the default, `Combined`):
 
 ```csharp
 webAppBuilder.Services.AddTeamsBotApplication(options => options.ReplyMode = ReplyMode.Thread);
@@ -21,7 +21,7 @@ await context.ReplyAsync("Hello!", new ReplyOptions { Mode = ReplyMode.Quote });
 | Mode | In a chat | Quote |
 |------|-----------|-------|
 | `Combined` (default) | A reply to a top-level message starts a thread under it; a reply inside a thread stays in that thread | Yes |
-| `Thread` | Same as `Combined` | No |
+| `Thread` | Same as `Combined` | No, when the reply lands in a thread |
 | `Quote` | The reply stays at the level of the inbound message | Yes |
 
 In a channel every reply goes in the thread of the inbound message, so the mode only decides the quote.
@@ -44,7 +44,7 @@ In a channel every reply goes in the thread of the inbound message, so the mode 
 | Command | Behavior |
 |---------|----------|
 | `thread reply` | `context.ReplyAsync()` with the default reply mode, `Combined`. In a chat, a reply to a top-level message starts a thread under it, and a reply inside a thread stays in that thread. The inbound message is quoted. In a channel it is sent in the same thread |
-| `thread reply unquoted` | `context.ReplyAsync(text, new ReplyOptions { Mode = ReplyMode.Thread })`. The same placement as `Combined`, without the quote |
+| `thread reply unquoted` | `context.ReplyAsync(text, new ReplyOptions { Mode = ReplyMode.Thread })`. The same placement as `Combined`, without the quote when the reply lands in a thread |
 | `thread send` | `context.SendAsync()` sends reactively without quoting. In a channel it is sent in the same thread. In a chat it matches the level of your message (in the thread if your message is in one, otherwise top-level). In a chat, unlike `ReplyAsync`, `SendAsync` never starts a new thread |
 | `thread proactive` | `teamsApp.ReplyAsync()` replies in the reply chain (thread) of your message without the inbound activity, as a bot does when it replies later. It never quotes. It uses `ChannelData.Chat.Id` (or `ChannelData.Channel.Id`) and `ChannelData.ReplyChain.Id`. Without `ReplyChain.Id` the sample answers that there is not enough thread metadata |
 | `thread top-level` | `teamsApp.SendAsync()` to `ChannelData.Chat.Id` (or `ChannelData.Channel.Id`) sends a new top-level message |
