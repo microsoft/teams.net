@@ -1,6 +1,6 @@
 # ExtAIBot — Microsoft.Extensions.AI sample
 
-A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dotnet/ai/ai-extensions) and Azure OpenAI. Demonstrates streaming responses, per-conversation memory, a local clarification tool, remote MCP server tools, inline citations, follow-up suggestions, and custom feedback.
+A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dotnet/ai/ai-extensions) and either Azure OpenAI or Anthropic Claude. Demonstrates streaming responses, per-conversation memory, a local clarification tool, remote MCP server tools, inline citations, follow-up suggestions, and custom feedback.
 
 ## What it shows
 
@@ -15,11 +15,17 @@ A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dot
 ## Prerequisites
 
 - Bot registered and installed in Teams.
-- Azure Open AI configured
+- Azure OpenAI configured
+  - `AI_PROVIDER=azure-openai`
   - `AzureOpenAI__Endpoint`
   - `AzureOpenAI__ApiKey`
   - `AzureOpenAI__Deployment`
 
+Or Anthropic configured:
+
+- `AI_PROVIDER=anthropic`
+- `ANTHROPIC_API_KEY`
+- `ANTHROPIC_MODEL`
 
 The bot initializes the MS Learn MCP tool set at startup before accepting messages. If the MCP server is unreachable the app will fail to start.
 
@@ -56,7 +62,8 @@ ChatOptions options = new()
 };
 ```
 
-`UseFunctionInvocation()` then handles all tool calls — local or remote — transparently during streaming.
+`UseFunctionInvocation()` then handles all tool calls — local or remote — transparently during streaming with either provider.
+
 ## Running the Sample
 
 ~~~bash
