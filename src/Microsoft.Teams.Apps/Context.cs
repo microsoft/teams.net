@@ -234,7 +234,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <summary>
     /// Whether a <see cref="ReplyMode.Thread"/> reply lands in a thread, so <see cref="ReplyMode.Thread"/> leaves the quote out.
-    /// In a channel every reply goes into the thread of the inbound message, through the reply chain or the inbound conversation, so the inbound needs only <c>channelData.replyChain.id</c> and <c>channelData.channel.id</c> or <c>channelData.chat.id</c>.
+    /// In a channel every reply goes into the thread of the inbound message, through the reply chain or the inbound conversation, so the inbound needs only <c>channelData.replyChain.id</c> and <c>channelData.channel.id</c>.
     /// In a chat the reply must be placed in a reply chain (see <see cref="GetInboundReplyChainPlacement(bool)"/>).
     /// </summary>
     private bool IsThreadModeReplyThreaded()
@@ -242,7 +242,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         if (Activity.Conversation?.ConversationType == ConversationTypes.Channel)
         {
             return !string.IsNullOrWhiteSpace(Activity.ChannelData?.ReplyChain?.Id)
-                && (!string.IsNullOrWhiteSpace(Activity.ChannelData?.Channel?.Id) || !string.IsNullOrWhiteSpace(Activity.ChannelData?.Chat?.Id));
+                && !string.IsNullOrWhiteSpace(Activity.ChannelData?.Channel?.Id);
         }
 
         return GetInboundReplyChainPlacement(useOriginAsRoot: true) is not null;

@@ -1366,20 +1366,28 @@ public class ContextReplyChainPlacementTests
 
     [Theory]
     [InlineData("channel conversation type without a channel id")]
+    [InlineData("channel conversation type with a chat id instead of a channel id")]
     [InlineData("channel id without a conversation type")]
     public async Task Reply_ThreadModeOnAPayloadThatIsNotPlaced_KeepsTheQuote(string shape)
     {
         Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
-        Context<MessageActivity> context = harness.ContextFor(shape == "channel id without a conversation type"
-            ? Inbound(
+        Context<MessageActivity> context = harness.ContextFor(shape switch
+        {
+            "channel id without a conversation type" => Inbound(
                 conversationId: ChannelThreadConversationId,
                 id: "105",
-                channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "100" } })
-            : Inbound(
+                channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "100" } }),
+            "channel conversation type with a chat id instead of a channel id" => Inbound(
+                conversationId: ChannelThreadConversationId,
+                id: "105",
+                channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+                conversationType: "channel"),
+            _ => Inbound(
                 conversationId: ChannelThreadConversationId,
                 id: "105",
                 channelData: new { channel = new { id = " " }, replyChain = new { id = "100" } },
-                conversationType: "channel"));
+                conversationType: "channel"),
+        });
 
         await context.ReplyAsync("hi");
 
