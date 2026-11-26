@@ -53,11 +53,12 @@ internal static class ReactionHandlers
                 cancellationToken: cancellationToken);
         });
 
+        // The answer is sent with ReplyAsync, so in a chat a reaction to a top-level message gets its answer in a thread under that message.
         teamsApp.OnMessageReaction(async (context, cancellationToken) =>
         {
             string reactionsAdded = string.Join(", ", context.Activity.ReactionsAdded?.Select(r => r.Type) ?? []);
             string reactionsRemoved = string.Join(", ", context.Activity.ReactionsRemoved?.Select(r => r.Type) ?? []);
-            await context.SendAsync(
+            await context.ReplyAsync(
                 $"Reactions added: {reactionsAdded}; reactions removed: {reactionsRemoved}",
                 cancellationToken);
         });

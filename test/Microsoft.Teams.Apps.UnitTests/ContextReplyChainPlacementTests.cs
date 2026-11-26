@@ -164,20 +164,116 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(0, harness.Reply.Calls);
     }
 
+    [Theory]
+    [InlineData("personal", OpaqueConversationId, ChatId)]
+    [InlineData("groupChat", GroupChatId, GroupChatId)]
+    public async Task Typing_InboundInsideReplyChain_RepliesInThatChain(string conversationType, string conversationId, string chatId)
+    {
+        Harness harness = CreateHarness();
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: conversationId,
+            id: "105",
+            channelData: new { chat = new { id = chatId }, replyChain = new { id = "100" } },
+            conversationType: conversationType));
+
+        await context.TypingAsync();
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(chatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Reply.Activity!.Type);
+        Assert.False(harness.Reply.IsTargeted);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData("top-level")]
+    [InlineData("without-reply-chain")]
+    [InlineData("conversation-update")]
+    public async Task Typing_InboundNotInsideAThread_SendsToInboundConversation(string inbound)
+    {
+        Harness harness = CreateHarness();
+        TeamsActivity activity = inbound switch
+        {
+            "top-level" => Inbound(
+                conversationId: OpaqueConversationId,
+                id: "100",
+                channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+                conversationType: "personal"),
+            "without-reply-chain" => Inbound(
+                conversationId: OpaqueConversationId,
+                id: "105",
+                channelData: new { chat = new { id = ChatId } },
+                conversationType: "personal"),
+            _ => Shape("other", messageId: "105", replyChainId: "100", type: "conversationUpdate"),
+        };
+        Context<TeamsActivity> context = new(harness.App, activity);
+
+        await context.TypingAsync();
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Send.Activity!.Type);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Typing_PersonalReplyChainRouteRejected_PropagatesWithoutSendingToTheInboundConversation(HttpStatusCode statusCode)
+    {
+        Harness harness = CreateHarness(statusCode);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: OpaqueConversationId,
+            id: "105",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+            conversationType: "personal"));
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.TypingAsync());
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
     [Fact]
-    public async Task Typing_InboundInsideReplyChain_IsNotPlaced()
+    public async Task Typing_ChannelReplyChainRouteNotFound_SendsToInboundConversationInstead()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound);
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        await context.TypingAsync();
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChannelId, harness.Reply.ConversationId);
+        Assert.Equal("root-1", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Send.Activity!.Type);
+    }
+
+#pragma warning disable CS0618 // exercising the obsolete Typing overload
+    [Fact]
+    public async Task ObsoleteTyping_InboundInsideReplyChain_RepliesInThatChain()
     {
         Harness harness = CreateHarness();
         Context<MessageActivity> context = harness.ContextFor(Inbound(
             conversationId: OpaqueConversationId,
-            id: "reply-2",
-            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "root-1" } }));
+            id: "105",
+            channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+            conversationType: "personal"));
 
-        await context.TypingAsync();
+        await context.Typing();
 
-        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
-        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Reply.Activity!.Type);
+        Assert.False(harness.Reply.IsTargeted);
+        Assert.Equal(0, harness.Send.Calls);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData("card-message")]
@@ -200,6 +296,7 @@ public class ContextReplyChainPlacementTests
     }
 
     [Theory]
+    [InlineData("typed-message")]
     [InlineData("card-message")]
     [InlineData("card-invoke")]
     [InlineData("message-action")]
@@ -227,6 +324,20 @@ public class ContextReplyChainPlacementTests
 
         Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
         Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task Send_ReactionWhoseIdDiffersFromItsReplyToId_IsPlacedByTheReplyToId()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, Shape("reaction", messageId: "100", replyChainId: "100", replyToId: "105"));
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
     }
 
     [Fact]
@@ -820,6 +931,20 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
+    public async Task Reply_ChannelFallbackAfterNotFoundFails_PropagatesTheFallbackError()
+    {
+        Harness harness = CreateHarness(HttpStatusCode.NotFound, sendFailure: new HttpRequestException("boom", null, HttpStatusCode.InternalServerError));
+        Context<MessageActivity> context = harness.ContextFor(InboundInChannelThread());
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.ReplyAsync("hi"));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, ex.StatusCode);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+    }
+
+    [Fact]
     public async Task CreateFromContext_ChannelInboundInsideThread_StartsTheStreamInThatChain()
     {
         Harness harness = CreateHarness();
@@ -1145,6 +1270,614 @@ public class ContextReplyChainPlacementTests
         Assert.Equal(0, harness.Reply.Calls);
     }
 
+    [Theory]
+    [InlineData("chat thread message")]
+    [InlineData("top-level chat message")]
+    [InlineData("channel message")]
+    [InlineData("channel edit")]
+    public async Task Reply_ThreadMode_LeavesOutTheQuote(string shape)
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape(shape));
+
+        await context.ReplyAsync("hi");
+
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData(ReplyMode.Combined, "chat thread message")]
+    [InlineData(ReplyMode.Combined, "top-level chat message")]
+    [InlineData(ReplyMode.Combined, "channel message")]
+    [InlineData(ReplyMode.Combined, "channel edit")]
+    [InlineData(ReplyMode.Quote, "chat thread message")]
+    [InlineData(ReplyMode.Quote, "top-level chat message")]
+    [InlineData(ReplyMode.Quote, "channel message")]
+    [InlineData(ReplyMode.Quote, "channel edit")]
+    public async Task Reply_CombinedAndQuoteModes_KeepTheQuote(ReplyMode mode, string shape)
+    {
+        Harness harness = CreateHarness(replyMode: mode);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape(shape));
+
+        await context.ReplyAsync("hi");
+
+        Assert.True(IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData("chat thread message")]
+    [InlineData("channel message")]
+    public async Task Reply_QuoteModeInsideAThread_StaysInThatThread(string shape)
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Quote);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape(shape));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(shape == "channel message" ? ChannelId : ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        Assert.True(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_ThreadModeInsideAChatThread_IsStillPlacedInThatChain()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape("chat thread message"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_ThreadModeOnAChannelActivityWithoutAReplyChainId_KeepsTheQuote()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, Shape("typed-message", messageId: "105", replyChainId: null, conversationType: "channel"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.True(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_ThreadModeWithoutChatOrReplyChainIds_KeepsTheQuoteAndSendsToTheInboundConversation()
+    {
+        const string MeetingConversationId = "19:meeting_abc@thread.v2";
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<MessageActivity> context = harness.ContextFor(Inbound(
+            conversationId: MeetingConversationId,
+            id: "105",
+            channelData: new { meeting = new { id = "meeting-1" } },
+            conversationType: "groupChat"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.True(IsQuoted(harness));
+        Assert.Equal(MeetingConversationId, harness.Send.ConversationId);
+    }
+
+    [Theory]
+    [InlineData("channel conversation type without a channel id")]
+    [InlineData("channel conversation type with a chat id instead of a channel id")]
+    [InlineData("channel id without a conversation type")]
+    public async Task Reply_ThreadModeOnAPayloadThatIsNotPlaced_KeepsTheQuote(string shape)
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<MessageActivity> context = harness.ContextFor(shape switch
+        {
+            "channel id without a conversation type" => Inbound(
+                conversationId: ChannelThreadConversationId,
+                id: "105",
+                channelData: new { channel = new { id = ChannelId }, replyChain = new { id = "100" } }),
+            "channel conversation type with a chat id instead of a channel id" => Inbound(
+                conversationId: ChannelThreadConversationId,
+                id: "105",
+                channelData: new { chat = new { id = ChatId }, replyChain = new { id = "100" } },
+                conversationType: "channel"),
+            _ => Inbound(
+                conversationId: ChannelThreadConversationId,
+                id: "105",
+                channelData: new { channel = new { id = " " }, replyChain = new { id = "100" } },
+                conversationType: "channel"),
+        });
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(ChannelThreadConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.True(IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData(ReplyMode.Quote, ReplyMode.Thread, "text", false)]
+    [InlineData(ReplyMode.Quote, ReplyMode.Thread, "activity", false)]
+    [InlineData(ReplyMode.Thread, ReplyMode.Quote, "text", true)]
+    [InlineData(ReplyMode.Thread, ReplyMode.Quote, "activity", true)]
+    public async Task Reply_PerCallMode_OverridesTheAppSetting(ReplyMode appMode, ReplyMode callMode, string overload, bool quoted)
+    {
+        Harness harness = CreateHarness(replyMode: appMode);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape("chat thread message"));
+        ReplyOptions options = new() { Mode = callMode };
+
+        await (overload == "text"
+            ? context.ReplyAsync("hi", options)
+            : context.ReplyAsync(new MessageActivityInput().WithText("hi"), options));
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(quoted, IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_OptionsWithoutAMode_UseTheAppSetting()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape("chat thread message"));
+
+        await context.ReplyAsync("hi", new ReplyOptions());
+
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData("text")]
+    [InlineData("activity")]
+    [InlineData("text with null options")]
+    [InlineData("activity with null options")]
+    [InlineData("obsolete text")]
+    public async Task Reply_EachOverloadWithoutAMode_FollowsTheAppSetting(string overload)
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape("chat thread message"));
+
+#pragma warning disable CS0618 // the obsolete Reply(string) follows the app setting too
+        await (overload switch
+        {
+            "text" => context.ReplyAsync("hi"),
+            "activity" => context.ReplyAsync(new MessageActivityInput().WithText("hi")),
+            "text with null options" => context.ReplyAsync("hi", null),
+            "activity with null options" => context.ReplyAsync(new MessageActivityInput().WithText("hi"), null),
+            _ => context.Reply("hi"),
+        });
+#pragma warning restore CS0618
+
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_NoModeSet_QuotesByDefault()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape("chat thread message"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.True(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_UnknownMode_ActsLikeCombined()
+    {
+        Harness harness = CreateHarness(replyMode: (ReplyMode)7);
+        Context<TeamsActivity> context = new(harness.App, ReplyModeShape("chat thread message"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.True(IsQuoted(harness));
+    }
+
+    public static TheoryData<string, string, ReplyMode?> TopLevelChatShapesInThreadingModes
+    {
+        get
+        {
+            TheoryData<string, string, ReplyMode?> data = new();
+            foreach (ReplyMode? mode in new ReplyMode?[] { null, ReplyMode.Thread })
+            {
+                foreach ((string shape, string chat) in TopLevelChatCases)
+                {
+                    data.Add(shape, chat, mode);
+                }
+            }
+
+            return data;
+        }
+    }
+
+    public static TheoryData<string, string> TopLevelChatShapes
+    {
+        get
+        {
+            TheoryData<string, string> data = new();
+            foreach ((string shape, string chat) in TopLevelChatCases)
+            {
+                data.Add(shape, chat);
+            }
+
+            return data;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(TopLevelChatShapesInThreadingModes))]
+    public async Task Reply_TopLevelChatActivity_StartsAThreadUnderTheMessageItIsAbout(string shape, string chat, ReplyMode? mode)
+    {
+        Harness harness = CreateHarness(replyMode: mode);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape(shape, chat));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(chat == "group" ? GroupChatId : ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [MemberData(nameof(TopLevelChatShapes))]
+    public async Task Reply_QuoteModeOnATopLevelChatActivity_StaysAtTopLevel(string shape, string chat)
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Quote);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape(shape, chat));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(chat == "group" ? GroupChatId : OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(ReplyMode.Combined, true)]
+    [InlineData(ReplyMode.Thread, false)]
+    [InlineData((ReplyMode)7, true)]
+    public async Task Reply_TopLevelChatMessage_StartsAThreadQuotingByMode(ReplyMode? mode, bool quoted)
+    {
+        Harness harness = CreateHarness(replyMode: mode);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        Assert.Equal(quoted ? "<quoted messageId=\"100\"/> hi" : "hi", Assert.IsType<MessageActivityInput>(harness.Reply.Activity).Text);
+        Assert.Equal(quoted, IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(ReplyMode.Thread, false)]
+    public async Task Reply_TopLevelChatReaction_StartsAThreadQuotingTheReactedMessageByMode(ReplyMode? mode, bool quoted)
+    {
+        Harness harness = CreateHarness(replyMode: mode);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("reaction", "group"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        Assert.Equal(quoted ? "<quoted messageId=\"100\"/> hi" : "hi", Assert.IsType<MessageActivityInput>(harness.Reply.Activity).Text);
+        Assert.Equal(quoted, IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData("personal")]
+    [InlineData("group")]
+    public async Task ApiUpdate_ReplyThatStartedAThread_GoesToTheInboundConversation(string chat)
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", chat));
+        SendActivityResponse? sent = await context.ReplyAsync("Working on it");
+
+        // The context has no update method, so an app updates a sent activity through Context.Api with a conversation id it chooses.
+        await context.Api.Conversations.UpdateActivityAsync(context.Activity.Conversation!.Id!, sent!.Id!, new MessageActivityInput().WithText("Done"));
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal(chat == "group" ? GroupChatId : ChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(1, harness.Update.Calls);
+        Assert.Equal(chat == "group" ? GroupChatId : OpaqueConversationId, harness.Update.ConversationId);
+        Assert.Equal("reply-id", harness.Update.ActivityId);
+        Assert.Equal(Harness.ServiceUrl, harness.Update.ServiceUrl);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData("text")]
+    [InlineData("activity")]
+    [InlineData("text with options")]
+    [InlineData("activity with options")]
+    [InlineData("obsolete text")]
+    public async Task Reply_EachOverloadOnATopLevelChatMessage_StartsAThread(string overload)
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+#pragma warning disable CS0618 // the obsolete Reply(string) starts a thread too
+        await (overload switch
+        {
+            "text" => context.ReplyAsync("hi"),
+            "activity" => context.ReplyAsync(new MessageActivityInput().WithText("hi")),
+            "text with options" => context.ReplyAsync("hi", new ReplyOptions()),
+            "activity with options" => context.ReplyAsync(new MessageActivityInput().WithText("hi"), new ReplyOptions()),
+            _ => context.Reply("hi"),
+        });
+#pragma warning restore CS0618
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData(ReplyMode.Quote, ReplyMode.Thread, true)]
+    [InlineData(ReplyMode.Combined, ReplyMode.Quote, false)]
+    public async Task Reply_PerCallModeOnATopLevelChatMessage_DecidesWhetherItStartsAThread(ReplyMode appMode, ReplyMode callMode, bool threaded)
+    {
+        Harness harness = CreateHarness(replyMode: appMode);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.ReplyAsync("hi", new ReplyOptions { Mode = callMode });
+
+        Assert.Equal(threaded ? 1 : 0, harness.Reply.Calls);
+        Assert.Equal(threaded ? 0 : 1, harness.Send.Calls);
+    }
+
+    [Theory]
+    [InlineData("card message with an f: replyToId")]
+    [InlineData("card message without a replyToId")]
+    [InlineData("invoke with an encrypted replyToId")]
+    [InlineData("reaction without a replyToId")]
+    [InlineData("invoke whose replyToId and reply chain id are both f:root")]
+    [InlineData("payload without a reply chain id")]
+    [InlineData("payload without a chat id")]
+    public async Task Reply_TopLevelChatActivityWithoutAMessageThatCanBeAThreadRoot_StaysAtTopLevel(string shape)
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, shape switch
+        {
+            "card message with an f: replyToId" => Shape("card-message", messageId: null, replyChainId: "100", replyToId: "f:7be43fc9", conversationType: "personal"),
+            "card message without a replyToId" => Shape("card-message", messageId: null, replyChainId: "100", conversationType: "personal"),
+            "invoke with an encrypted replyToId" => Shape("card-invoke", messageId: null, replyChainId: "100", replyToId: "1:abc", conversationType: "personal"),
+            "reaction without a replyToId" => Shape("other", messageId: "100", replyChainId: "100", type: "messageReaction", conversationType: "personal"),
+            "invoke whose replyToId and reply chain id are both f:root" => Shape("card-invoke", messageId: null, replyChainId: "f:root", replyToId: "f:root", conversationType: "personal"),
+            "payload without a reply chain id" => Inbound(conversationId: OpaqueConversationId, id: "100", channelData: new { chat = new { id = ChatId } }, conversationType: "personal"),
+            _ => Inbound(conversationId: OpaqueConversationId, id: "100", channelData: new { replyChain = new { id = "100" } }, conversationType: "personal"),
+        });
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task Reply_ThreadModeOnATopLevelChatActivityThatCannotStartAThread_StaysAtTopLevelWithTheQuote()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, Shape("other", messageId: "100", replyChainId: "100", type: "messageReaction", conversationType: "personal"));
+
+        await context.ReplyAsync("hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(OpaqueConversationId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.Equal("<quoted messageId=\"100\"/> hi", Assert.IsType<MessageActivityInput>(harness.Send.Activity).Text);
+        Assert.True(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_TypingActivityOnATopLevelChatMessage_IsNeitherThreadedNorQuoted()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.ReplyAsync(new MessageActivityInput { Type = TeamsActivityTypes.Typing });
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Send.Activity!.Type);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Quote_TypingActivity_IsSentWithoutAQuote()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.QuoteAsync("100", new MessageActivityInput { Type = TeamsActivityTypes.Typing });
+
+        Assert.Equal(TeamsActivityTypes.Typing, harness.Send.Activity!.Type);
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Quote_TopLevelChatMessage_StaysAtTopLevel()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.QuoteAsync("100", "hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.True(IsQuoted(harness));
+    }
+
+#pragma warning disable CS0618 // the obsolete Reply(MessageActivity) keeps its own route
+    [Fact]
+    public async Task ObsoleteReplyWithAMessageActivity_TopLevelChatMessage_StaysAtTopLevel()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.Reply(new MessageActivity("hello"));
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+#pragma warning restore CS0618
+
+    [Fact]
+    public async Task CreateFromContext_TopLevelChatMessage_StartsTheStreamInTheInboundConversation()
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+        TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
+
+        await writer.AppendResponseAsync("hello");
+
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task PlanCompleteAsync_TopLevelChatMessage_SendsToInboundConversation()
+    {
+        Harness harness = CreateHarness();
+        Plan plan = Plan.CreateFromContext(new Context<TeamsActivity>(harness.App, TopLevelChatShape("typed-message", "group")));
+
+        await plan.CompleteAsync("Done");
+
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Fact]
+    public async Task Send_AppThreadModeOnATopLevelChatMessage_StaysAtTopLevel()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Thread);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        await context.SendAsync("hi");
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task Reply_TopLevelGroupChatMessageThreadRejected_ThrowsWithoutSendingElsewhere(HttpStatusCode statusCode)
+    {
+        Harness harness = CreateHarness(statusCode);
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+
+        HttpRequestException ex = await Assert.ThrowsAsync<HttpRequestException>(() => context.ReplyAsync("hi"));
+
+        Assert.Equal(statusCode, ex.StatusCode);
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+    }
+
+    [Fact]
+    public async Task Reply_TargetedTopLevelGroupChatMessage_StartsATargetedThreadWithoutTheQuote()
+    {
+        Harness harness = CreateHarness();
+        TeamsActivity inbound = TopLevelChatShape("typed-message", "group");
+        inbound.Recipient!.IsTargeted = true;
+        Context<TeamsActivity> context = new(harness.App, inbound);
+
+        await context.ReplyAsync(new MessageActivityInput()
+            .WithText("only you")
+            .WithRecipient(new TeamsChannelAccount { Id = "user-1" }, isTargeted: true));
+
+        Assert.Equal(1, harness.Reply.Calls);
+        Assert.True(harness.Reply.IsTargeted);
+        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
+        Assert.Equal("100", harness.Reply.ActivityId);
+        Assert.Equal(0, harness.Send.Calls);
+        TeamsActivityInput sent = Assert.IsAssignableFrom<TeamsActivityInput>(harness.Reply.Activity);
+        Assert.Equal("100", Assert.Single(sent.Entities!.OfType<TargetedMessageInfoEntity>()).MessageId);
+        Assert.False(IsQuoted(harness));
+    }
+
+    [Fact]
+    public async Task Reply_TargetedTopLevelGroupChatMessageInQuoteMode_StaysAtTopLevelAsTargeted()
+    {
+        Harness harness = CreateHarness(replyMode: ReplyMode.Quote);
+        TeamsActivity inbound = TopLevelChatShape("typed-message", "group");
+        inbound.Recipient!.IsTargeted = true;
+        Context<TeamsActivity> context = new(harness.App, inbound);
+
+        await context.ReplyAsync(new MessageActivityInput()
+            .WithText("only you")
+            .WithRecipient(new TeamsChannelAccount { Id = "user-1" }, isTargeted: true));
+
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.True(harness.Send.IsTargeted);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
+    }
+
+    [Theory]
+    [InlineData("reply")]
+    [InlineData("quote")]
+    public async Task ReplyAndQuote_QuoteACopy_LeavingTheCallersMessageUnchanged(string method)
+    {
+        Harness harness = CreateHarness();
+        Context<TeamsActivity> context = new(harness.App, TopLevelChatShape("typed-message", "group"));
+        MessageActivityInput message = new MessageActivityInput().WithText("hi").AddEntity(new ClientInfoEntity { Locale = "en-US" });
+
+        await (method == "reply" ? context.ReplyAsync(message) : context.QuoteAsync("100", message));
+
+        Assert.Equal("hi", message.Text);
+        Assert.IsType<ClientInfoEntity>(Assert.Single(message.Entities!));
+        CoreActivityInput sentActivity = Assert.Single(new[] { harness.Reply.Activity, harness.Send.Activity }.OfType<CoreActivityInput>());
+        TeamsActivityInput sent = Assert.IsAssignableFrom<TeamsActivityInput>(sentActivity);
+        Assert.Single(sent.Entities!.OfType<ClientInfoEntity>());
+        Assert.Single(sent.Entities!.OfType<QuotedReplyEntity>());
+    }
+
+    private static readonly (string Shape, string Chat)[] TopLevelChatCases =
+        (from chat in new[] { "personal", "group" }
+         from shape in new[] { "typed-message", "card-message", "card-invoke", "message-action", "reaction", "edit", "delete" }
+         select (shape, chat)).ToArray();
+
+    // An activity at top level in a chat, about the message with id 100, which is also channelData.replyChain.id.
+    // In the 1:1 the chat id differs from the conversation id; in the group chat both are the group chat id.
+    private static TeamsActivity TopLevelChatShape(string shape, string chat) => chat == "group"
+        ? Shape(shape, messageId: "100", replyChainId: "100", conversationType: "groupChat", chatId: GroupChatId)
+        : Shape(shape, messageId: "100", replyChainId: "100", conversationType: "personal");
+
+    private static TeamsActivity ReplyModeShape(string shape) => shape switch
+    {
+        "chat thread message" => Shape("typed-message", messageId: "105", replyChainId: "100", conversationType: "personal"),
+        "top-level chat message" => Shape("typed-message", messageId: "100", replyChainId: "100", conversationType: "groupChat"),
+        "channel message" => Shape("typed-message", messageId: "105", replyChainId: "100", conversationType: "channel"),
+        "channel edit" => Shape("edit", messageId: "105", replyChainId: "100", conversationType: "channel"),
+        _ => throw new ArgumentOutOfRangeException(nameof(shape), shape, null),
+    };
+
+    // Exactly one send is expected, on whichever route the reply took.
+    private static bool IsQuoted(Harness harness)
+    {
+        CoreActivityInput sent = Assert.Single(new[] { harness.Reply.Activity, harness.Send.Activity }.OfType<CoreActivityInput>());
+        return sent.ToJson().Contains("quotedReply", StringComparison.Ordinal);
+    }
+
     private static MessageActivity InboundInChannelThread() => Inbound(
         conversationId: ChannelThreadConversationId,
         id: "1793257586005",
@@ -1177,7 +1910,7 @@ public class ContextReplyChainPlacementTests
         return (MessageActivity)TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
     }
 
-    private static TeamsActivity Shape(string shape, string? messageId, string? replyChainId, string? replyToId = null, string? type = null, string? conversationType = null, string? sourceJson = null)
+    private static TeamsActivity Shape(string shape, string? messageId, string? replyChainId, string? replyToId = null, string? type = null, string? conversationType = null, string? sourceJson = null, string? chatId = null)
     {
         bool inChannel = conversationType == "channel";
         Dictionary<string, object> channelData = new();
@@ -1187,7 +1920,7 @@ public class ContextReplyChainPlacementTests
         }
         else
         {
-            channelData["chat"] = new { id = ChatId };
+            channelData["chat"] = new { id = chatId ?? ChatId };
         }
 
         if (replyChainId is not null)
@@ -1229,8 +1962,9 @@ public class ContextReplyChainPlacementTests
                 invokeName = "task/fetch";
                 break;
             case "reaction":
+                // The service sends a reaction with its id equal to replyToId, the id of the reacted message.
                 activityType = "messageReaction";
-                id = "f:9f78d1f3";
+                id = messageId!;
                 replyToId ??= messageId;
                 break;
             case "edit":
@@ -1252,7 +1986,7 @@ public class ContextReplyChainPlacementTests
             channelData["source"] = JsonDocument.Parse(sourceJson).RootElement;
         }
 
-        string conversationId = inChannel ? ChannelThreadConversationId : OpaqueConversationId;
+        string conversationId = inChannel ? ChannelThreadConversationId : chatId ?? OpaqueConversationId;
         string json = JsonSerializer.Serialize(new
         {
             type = activityType,
@@ -1288,11 +2022,12 @@ public class ContextReplyChainPlacementTests
         public required TeamsBotApplication App { get; init; }
         public required Capture Send { get; init; }
         public required Capture Reply { get; init; }
+        public required Capture Update { get; init; }
 
         public Context<MessageActivity> ContextFor(MessageActivity inbound) => new(App, inbound);
     }
 
-    private static Harness CreateHarness(HttpStatusCode? replyFailureStatus = null, Exception? replyFailure = null, Exception? sendFailure = null, Func<int, Exception?>? replyFailureByCall = null, ILogger<TeamsBotApplication>? logger = null)
+    private static Harness CreateHarness(HttpStatusCode? replyFailureStatus = null, Exception? replyFailure = null, Exception? sendFailure = null, Func<int, Exception?>? replyFailureByCall = null, ILogger<TeamsBotApplication>? logger = null, ReplyMode? replyMode = null)
     {
         if (replyFailureStatus is { } status)
         {
@@ -1306,6 +2041,7 @@ public class ContextReplyChainPlacementTests
         Mock<ConversationClient> conversationClient = new(new HttpClient(), NullLogger<ConversationClient>.Instance);
         Capture send = new();
         Capture reply = new();
+        Capture update = new();
 
         conversationClient
             .Setup(c => c.SendActivityAsync(
@@ -1356,12 +2092,41 @@ public class ContextReplyChainPlacementTests
                     : Task.FromException<SendActivityResponse?>(failure);
             });
 
+        conversationClient
+            .Setup(c => c.UpdateActivityAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CoreActivityInput>(),
+                It.IsAny<Uri>(),
+                It.IsAny<bool>(),
+                It.IsAny<BotRequestContext?>(),
+                It.IsAny<Dictionary<string, string>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (conversationId, activityId, activity, serviceUrl, isTargeted, _, _, _) =>
+                {
+                    update.Calls++;
+                    update.ConversationId = conversationId;
+                    update.ActivityId = activityId;
+                    update.ServiceUrl = serviceUrl;
+                    update.Activity = activity;
+                    update.IsTargeted = isTargeted;
+                })
+            .Returns<string, string, CoreActivityInput, Uri, bool, BotRequestContext?, Dictionary<string, string>?, CancellationToken>(
+                (_, activityId, _, _, _, _, _, _) => Task.FromResult(new UpdateActivityResponse { Id = activityId }));
+
+        TeamsBotApplicationOptions options = new() { AppId = "test-app-id" };
+        if (replyMode is { } mode)
+        {
+            options.ReplyMode = mode;
+        }
+
         TeamsBotApplication app = new(
             new ApiClient(new HttpClient(), conversationClient.Object, userTokenClient.Object),
             new HttpContextAccessor(),
             logger ?? NullLogger<TeamsBotApplication>.Instance,
-            new TeamsBotApplicationOptions { AppId = "test-app-id" });
+            options);
 
-        return new Harness { App = app, Send = send, Reply = reply };
+        return new Harness { App = app, Send = send, Reply = reply, Update = update };
     }
 }

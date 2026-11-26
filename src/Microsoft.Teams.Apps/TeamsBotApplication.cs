@@ -125,6 +125,9 @@ public class TeamsBotApplication : BotApplication
     /// <summary>The Graph scope derived from <see cref="GraphBaseUrl"/>. Derived rather than configured so the host and the audience cannot disagree.</summary>
     private string GraphScope => $"{(GraphBaseUrl ?? Files.GraphShare.DefaultBaseUrlRoot).ToString().TrimEnd('/')}/.default";
 
+    /// <summary>The app's <see cref="TeamsBotApplicationOptions.ReplyMode"/> setting, read by the context's <c>ReplyAsync</c> when a call passes no mode. See <see cref="Apps.ReplyMode"/>.</summary>
+    internal ReplyMode ReplyMode { get; }
+
     /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/> without a file downloader.
     /// <para>Preserves the exact signature shipped in 2.1.0. C# bakes optional arguments into the CALLER, so an
@@ -191,6 +194,7 @@ public class TeamsBotApplication : BotApplication
         Router = new Router(logger);
         FileDownloader = fileDownloader ?? Files.FileDownloader.CreateDefault();
         GraphBaseUrl = options?.GraphBaseUrl;
+        ReplyMode = options?.ReplyMode ?? ReplyMode.Combined;
 
         if (options is not null)
         {
