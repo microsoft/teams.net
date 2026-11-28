@@ -443,6 +443,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             && Activity.Recipient?.IsTargeted == true
             && Activity.Id is not null)
         {
+            // AddToActivity edits the activity, so edit a copy and leave the caller's activity unchanged.
+            activity = activity is MessageActivityInput message ? message.Copy() : activity.Copy();
             TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
 
