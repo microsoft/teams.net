@@ -1793,7 +1793,7 @@ public class ContextReplyChainPlacementTests
     }
 
     [Fact]
-    public async Task Reply_TargetedTopLevelGroupChatMessage_StartsATargetedThreadWithoutTheQuote()
+    public async Task Reply_TargetedTopLevelGroupChatMessage_DoesNotStartAThread()
     {
         Harness harness = CreateHarness();
         TeamsActivity inbound = TopLevelChatShape("typed-message", "group");
@@ -1804,13 +1804,10 @@ public class ContextReplyChainPlacementTests
             .WithText("only you")
             .WithRecipient(new TeamsChannelAccount { Id = "user-1" }, isTargeted: true));
 
-        Assert.Equal(1, harness.Reply.Calls);
-        Assert.True(harness.Reply.IsTargeted);
-        Assert.Equal(GroupChatId, harness.Reply.ConversationId);
-        Assert.Equal("100", harness.Reply.ActivityId);
-        Assert.Equal(0, harness.Send.Calls);
-        TeamsActivityInput sent = Assert.IsAssignableFrom<TeamsActivityInput>(harness.Reply.Activity);
-        Assert.Equal("100", Assert.Single(sent.Entities!.OfType<TargetedMessageInfoEntity>()).MessageId);
+        Assert.Equal(1, harness.Send.Calls);
+        Assert.True(harness.Send.IsTargeted);
+        Assert.Equal(GroupChatId, harness.Send.ConversationId);
+        Assert.Equal(0, harness.Reply.Calls);
         Assert.False(IsQuoted(harness));
     }
 

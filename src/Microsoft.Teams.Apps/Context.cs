@@ -567,9 +567,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Whether a response at top level in a chat can start a thread under the origin message: the origin message id is a plain number equal to <c>channelData.replyChain.id</c>.
     /// For a reaction or a card action the origin message is the message the user acted on, not the inbound activity.
+    /// Never true for a targeted inbound message: the service rejects a reply chain rooted on a targeted message (<c>400 Replies are not allowed for Targeted Messages</c>).
     /// </summary>
     private bool CanUseOriginAsRoot()
-        => GetOriginMessageId() is { } originId
+        => Activity.Recipient?.IsTargeted != true
+            && GetOriginMessageId() is { } originId
             && originId == Activity.ChannelData?.ReplyChain?.Id
             && ReplyChainFallback.IsPlainNonZeroNumber(originId);
 
