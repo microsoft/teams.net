@@ -91,6 +91,28 @@ public class PromptPreviewTests
     }
 
     [Fact]
+    public async Task SendActivityAsync_DoesNotChangeCallerActivity_AndUsesCurrentMessageId_WhenReusedAcrossTargetedTurns()
+    {
+        TestHarness harness = CreateHarness();
+        CaptureSlot captured = SetupCapture(harness);
+
+        MessageActivity first = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
+        MessageActivity second = BuildInbound(targetedInbound: true, inboundId: "1772129782999", convType: ConversationTypes.GroupChat);
+
+        MessageActivityInput template = new MessageActivityInput().WithText("noted").WithRecipient(first.From!, isTargeted: true);
+
+        await new Context<MessageActivity>(harness.App, first).SendAsync(template);
+
+        Assert.Null(template.Entities);
+        Assert.Equal("1772129782775", ((TeamsActivityInput)captured.Value!).Entities!.OfType<TargetedMessageInfoEntity>().Single().MessageId);
+
+        await new Context<MessageActivity>(harness.App, second).SendAsync(template);
+
+        Assert.Null(template.Entities);
+        Assert.Equal("1772129782999", ((TeamsActivityInput)captured.Value!).Entities!.OfType<TargetedMessageInfoEntity>().Single().MessageId);
+    }
+
+    [Fact]
     public async Task SendActivityAsync_SendsTargetedMessage_InPersonalChat()
     {
         TestHarness harness = CreateHarness();
