@@ -137,6 +137,41 @@ public class PromptPreviewTests
         Assert.NotNull(captured.Value);
     }
 
+    [Fact]
+    public async Task SendActivityAsync_TargetsReplyAtSender_WhenInboundIsTargetedAndNoRecipientSet()
+    {
+        TestHarness harness = CreateHarness();
+        CaptureSlot captured = SetupCapture(harness);
+
+        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
+        Context<MessageActivity> ctx = new(harness.App, inbound);
+        MessageActivityInput outbound = new MessageActivityInput().WithText("noted");
+
+        await ctx.SendAsync(outbound);
+
+        Assert.True(captured.IsTargeted);
+        Assert.NotNull(captured.Value);
+        Assert.Equal("user-1", captured.Value!.Recipient?.Id);
+        Assert.True(captured.Value.Recipient?.IsTargeted);
+        Assert.NotNull(((TeamsActivityInput)captured.Value).Entities?.OfType<TargetedMessageInfoEntity>().SingleOrDefault());
+        Assert.Null(outbound.Recipient);
+        Assert.Null(inbound.From!.IsTargeted);
+    }
+
+    [Fact]
+    public async Task SendActivityAsync_StaysPublic_WhenCallerSetsAnUntargetedRecipient()
+    {
+        TestHarness harness = CreateHarness();
+        CaptureSlot captured = SetupCapture(harness);
+
+        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
+        Context<MessageActivity> ctx = new(harness.App, inbound);
+
+        await ctx.SendAsync(new MessageActivityInput().WithText("for everyone").WithRecipient(inbound.From!, isTargeted: false));
+
+        Assert.False(captured.IsTargeted);
+    }
+
     // ==================== Helpers ====================
 
     private sealed class CaptureSlot

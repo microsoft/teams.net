@@ -9,6 +9,7 @@ using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
 
@@ -435,6 +436,19 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     {
         string conversationId = Activity.Conversation?.Id
             ?? throw new InvalidOperationException("Activity.Conversation.Id is required to send an activity.");
+
+        // A message answering a targeted inbound message is targeted at its sender unless the caller chose a recipient.
+        // This works on a copy so the caller's activity is left as it was.
+        if (activity is MessageActivityInput message
+            && message.Recipient is null
+            && message.Id is null
+            && Activity.Recipient?.IsTargeted == true
+            && Activity.From is { } sender)
+        {
+            message = message.Copy();
+            message.Recipient = new ChannelAccount { Id = sender.Id, Name = sender.Name, TenantId = sender.TenantId, IsTargeted = true };
+            activity = message;
+        }
 
         bool isTargeted = activity.Recipient?.IsTargeted == true;
 
